@@ -1114,6 +1114,16 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   transition: all var(--cr-transition);
 }
 .cr-video-marker:hover { background: var(--cr-burgundy-faded); border-color: var(--cr-burgundy); }
+/* -- Dead video fallback -- */
+.cr-video-dead {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 10px; padding: 28px 20px; text-align: center;
+  background: var(--cr-stone); border-radius: var(--cr-radius); min-height: 180px;
+}
+.cr-video-dead-icon { font-size: 2rem; opacity: 0.6; }
+.cr-video-dead-title { font-weight: 700; font-size: 0.95rem; color: var(--cr-text); }
+.cr-video-dead-msg { font-size: 0.82rem; color: var(--cr-text-muted); line-height: 1.5; max-width: 320px; }
+.cr-video-dead-link { font-size: 0.8rem; color: var(--cr-burgundy); text-decoration: underline; margin-top: 2px; }
 
 /* ═══════════════════════════════════════════════════════════════
    INFO CARDS (Clinical Vignettes, Myth/Fact, Skill Builders)
@@ -5928,27 +5938,65 @@ function renderResources(wrap, block) {
 // ─── VIDEO EMBED ───
 function renderVideoEmbed(wrap, block) {
   const url = block.videoUrl || '';
+
+  // Admin audit flagged this block as dead -- skip iframe
+  if (block.videoStatus === 'dead') {
+    wrap.innerHTML = crVideoDeadHtml(block, 'This video is no longer available.');
+    return wrap;
+  }
+
   let embedHtml = '';
-  
-  // YouTube
-  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  let ytId = null;
+
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\s?#]+)/);
   if (ytMatch) {
-    embedHtml = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}" allowfullscreen title="${esc(block.videoTitle || '')}"></iframe>`;
+    ytId = ytMatch[1];
+    embedHtml = `<iframe src="https://www.youtube.com/embed/${ytId}" allowfullscreen title="${esc(block.videoTitle || '')}"></iframe>`;
   } else if (url) {
     embedHtml = `<video src="${esc(url)}" controls></video>`;
   }
-  
+
   const markers = block.markers || [];
-  
+
   wrap.innerHTML = `<div class="cr-video">
     ${block.videoTitle ? `<h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:12px">${esc(block.videoTitle)}</h4>` : ''}
-    <div class="cr-video-wrap">${embedHtml || '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--cr-text-muted)">Video not available</div>'}</div>
-    ${markers.length > 0 ? `<div class="cr-video-markers">${markers.map(m => 
-      `<span class="cr-video-marker" title="${esc(m.prompt || '')}">${esc(m.time)} — ${esc(m.label)}</span>`
+    <div class="cr-video-wrap">${embedHtml || crVideoDeadHtml(block, 'No video URL configured.')}</div>
+    ${markers.length > 0 ? `<div class="cr-video-markers">${markers.map(m =>
+      `<span class="cr-video-marker" title="${esc(m.prompt || '')}">${esc(m.time)} -- ${esc(m.label)}</span>`
     ).join('')}</div>` : ''}
     ${block.videoDuration ? `<p style="font-size:0.8em;color:var(--cr-text-muted);margin-top:6px">Duration: ${esc(block.videoDuration)}</p>` : ''}
   </div>`;
+
+  // Live async check -- swap iframe for fallback if YouTube oEmbed returns non-OK.
+  // Swallowed on network error so offline users keep their iframe.
+  if (ytId) {
+    const wrapRef = wrap;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 7000);
+    fetch('https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=' + ytId + '&format=json',
+      { signal: ctrl.signal }
+    ).then(r => { clearTimeout(timer); if (!r.ok) crReplaceVideoWithDead(wrapRef, block); })
+     .catch(() => clearTimeout(timer));
+  }
+
   return wrap;
+}
+
+// -- VIDEO DEAD-LINK HELPERS --
+function crVideoDeadHtml(block, msg) {
+  const link = block.videoUrl
+    ? '<a href="' + esc(block.videoUrl) + '" target="_blank" rel="noopener" class="cr-video-dead-link">Try opening directly</a>'
+    : '';
+  return '<div class="cr-video-dead">'
+    + '<div class="cr-video-dead-icon">&#127916;</div>'
+    + '<div class="cr-video-dead-title">' + esc(block.videoTitle || 'Video Unavailable') + '</div>'
+    + '<div class="cr-video-dead-msg">' + esc(msg || 'This video could not be loaded.') + '</div>'
+    + link + '</div>';
+}
+
+function crReplaceVideoWithDead(wrap, block) {
+  const vw = wrap.querySelector('.cr-video-wrap');
+  if (vw) vw.innerHTML = crVideoDeadHtml(block, 'This video has been removed or made private.');
 }
 
 // ─── KNOWLEDGE CHECK (multi-question inline block) ───
