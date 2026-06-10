@@ -62,6 +62,10 @@ const ContentBlockSchema = new mongoose.Schema({
       'timeline',
       'video',
       'videoEmbed',
+      'statCard',
+      'caseStudy',
+      'pullQuote',
+      'tableBlock',
     ],
     required: true
   },
@@ -204,7 +208,31 @@ const ContentBlockSchema = new mongoose.Schema({
     year: Number,
     source: String,
     url: String
-  }]
+  }],
+
+  // ── statCard ──
+  stats: [{
+    value: String,
+    label: String,
+    description: String
+  }],
+
+  // ── caseStudy ──
+  caseTitle: String,
+  caseClient: String,
+  casePresentingConcerns: String,
+  caseBackground: String,
+  caseClinicianNotes: String,
+  caseDiscussion: String,
+
+  // ── pullQuote ──
+  quote: String,
+  attribution: String,
+
+  // ── tableBlock ──
+  tableHeaders: [String],
+  tableRows: [[String]],
+  tableCaption: String
 }, { _id: false, strict: false });
 
 const SectionSchema = new mongoose.Schema({

@@ -3716,6 +3716,12 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 // ═══════════════════════════════════════════════════════════════
 let course = null;
 let currentSectionIndex = 0;
+// ── Within-section pagination ──
+// When a section holds more than BLOCK_PAGE_SIZE content blocks, the viewer
+// splits them into pages so learners aren't handed an endless scroll. The
+// page index resets to 0 whenever the section changes (see goToSection).
+const BLOCK_PAGE_SIZE = 8;
+let currentBlockPage = 0;
 let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
@@ -4366,6 +4372,7 @@ function goToSection(i) {
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
+  currentBlockPage = 0; // reset within-section pagination on section change
   buildSectionNav();
   renderCurrentSection();
   updateProgress();
@@ -4387,6 +4394,22 @@ function nextSection() {
   } else if (course.assessment?.questions?.length > 0) {
     showAssessment();
   }
+}
+
+// ── Within-section pagination controls ──
+// Advance/retreat the current page of content blocks without leaving the
+// section. Re-renders in place and scrolls back to the top so the next page
+// of blocks starts at the top of the viewport.
+function nextBlockPage() {
+  currentBlockPage++;
+  renderCurrentSection();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function prevBlockPage() {
+  if (currentBlockPage > 0) currentBlockPage--;
+  renderCurrentSection();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function showAssessment() {
@@ -4617,12 +4640,34 @@ function renderCurrentSection() {
     </div>`;
   }
   
-  // Render each block
-  blocks.forEach((block, i) => {
+  // Render each block (paginated within the section). The real block index
+  // (pageStart + localIndex) is passed to renderBlock so per-block element IDs
+  // stay stable regardless of which page is showing.
+  const totalBlockPages = Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE));
+  if (currentBlockPage >= totalBlockPages) currentBlockPage = totalBlockPages - 1;
+  if (currentBlockPage < 0) currentBlockPage = 0;
+  const pageStart = currentBlockPage * BLOCK_PAGE_SIZE;
+  const pageBlocks = blocks.slice(pageStart, pageStart + BLOCK_PAGE_SIZE);
+  pageBlocks.forEach((block, localIndex) => {
+    const i = pageStart + localIndex;
     const el = renderBlock(block, i);
     if (el) area.appendChild(el);
   });
-  
+
+  // Within-section pager — only when the section spans more than one page.
+  if (totalBlockPages > 1) {
+    const pager = document.createElement('div');
+    pager.className = 'cr-block-pager';
+    pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--cr-border)';
+    pager.innerHTML = `
+      <button type="button" data-action="prevBlockPage" ${currentBlockPage === 0 ? 'disabled' : ''}
+        style="padding:8px 16px;border:1.5px solid var(--cr-border);border-radius:8px;background:#fff;color:var(--cr-navy);font-size:0.83rem;font-weight:700;cursor:${currentBlockPage === 0 ? 'default' : 'pointer'};opacity:${currentBlockPage === 0 ? '0.5' : '1'}">← Previous</button>
+      <span style="font-size:0.83rem;color:var(--cr-text-muted)">Page ${currentBlockPage + 1} of ${totalBlockPages}</span>
+      <button type="button" data-action="nextBlockPage" ${currentBlockPage >= totalBlockPages - 1 ? 'disabled' : ''}
+        style="padding:8px 16px;border:none;border-radius:8px;background:var(--cr-burgundy);color:#fff;font-size:0.83rem;font-weight:700;cursor:${currentBlockPage >= totalBlockPages - 1 ? 'default' : 'pointer'};opacity:${currentBlockPage >= totalBlockPages - 1 ? '0.5' : '1'}">More →</button>`;
+    area.appendChild(pager);
+  }
+
   // References now live in the collapsible References drawer (buildReferences()),
   // not inline. Intentionally not appended to the section body.
   const isLast = currentSectionIndex === course.sections.length - 1;
@@ -4895,11 +4940,21 @@ function renderBlock(block, index) {
     case 'callout': return renderCallout(wrap, block);
     case 'fillInBlank': return renderFillInBlank(wrap, block, index);
     case 'keyTakeaway': return renderKeyTakeaway(wrap, block);
-    default:
+    default: {
+      // Convention-based dispatch for newer block types whose renderers are
+      // named render<Type> (e.g. a "statCard" block resolves to the matching
+      // capitalized renderer). Lets us add the stat-card, case-study,
+      // pull-quote, and table block renderers without growing the switch.
+      // Falls back to the unsupported notice when no renderer is found.
+      const t = (block.type || '').toString();
+      const fnName = 'render' + t.charAt(0).toUpperCase() + t.slice(1);
+      const fn = typeof window !== 'undefined' ? window[fnName] : undefined;
+      if (typeof fn === 'function') return fn(wrap, block);
       wrap.innerHTML = `<div class="cr-card" style="border-left:4px solid var(--cr-gold)">
         <p style="font-size:0.9em;color:var(--cr-text-muted)">Unsupported block type: <code>${esc(block.type)}</code></p>
       </div>`;
       return wrap;
+    }
   }
 }
 
@@ -5754,6 +5809,97 @@ function renderKeyTakeaway(wrap, block) {
     html += '<ul style="margin:0;padding-left:18px">';
     items.forEach(t => { html += `<li style="font-size:0.85rem;line-height:1.65;margin-bottom:3px;color:var(--cr-text)">${esc(t)}</li>`; });
     html += '</ul>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── STAT CARD ───
+function renderStatCard(wrap, block) {
+  const stats = block.stats || [];
+  let html = '<div class="cr-statcard">';
+  if (block.title) {
+    html += `<h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:14px">${esc(block.title)}</h4>`;
+  }
+  html += '<div style="display:flex;flex-wrap:wrap;gap:16px">';
+  stats.forEach(s => {
+    html += `<div style="flex:1 1 140px;min-width:140px;background:var(--cr-gold-faded);border:1.5px solid var(--cr-gold);border-radius:12px;padding:18px 16px;text-align:center">
+      <div style="font-family:var(--cr-font-display);font-weight:800;font-size:1.9rem;line-height:1.1;color:var(--cr-burgundy)">${esc(s.value || '')}</div>
+      ${s.label ? `<div style="font-size:0.85rem;font-weight:700;color:var(--cr-navy);margin-top:6px">${esc(s.label)}</div>` : ''}
+      ${s.description ? `<div style="font-size:0.78rem;color:var(--cr-text-muted);margin-top:4px;line-height:1.5">${esc(s.description)}</div>` : ''}
+    </div>`;
+  });
+  html += '</div></div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── CASE STUDY ───
+function renderCaseStudy(wrap, block) {
+  const row = (label, value) => value
+    ? `<div style="margin-bottom:12px">
+         <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--cr-burgundy);margin-bottom:4px">${esc(label)}</div>
+         <div class="cr-prose" style="font-size:0.88rem;line-height:1.65;color:var(--cr-text)">${esc(value)}</div>
+       </div>`
+    : '';
+  let html = `<div class="cr-casestudy cr-card" style="border-left:4px solid var(--cr-burgundy);padding:20px 22px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:${block.caseClient ? '4px' : '14px'}">
+      <span style="font-size:1.1rem">📋</span>
+      <span style="font-family:var(--cr-font-display);font-weight:700;font-size:1.1rem;color:var(--cr-navy)">${esc(block.caseTitle || 'Case Study')}</span>
+    </div>`;
+  if (block.caseClient) {
+    html += `<div style="font-size:0.82rem;color:var(--cr-text-muted);margin-bottom:14px">${esc(block.caseClient)}</div>`;
+  }
+  html += row('Presenting Concerns', block.casePresentingConcerns);
+  html += row('Background', block.caseBackground);
+  html += row('Clinician Notes', block.caseClinicianNotes);
+  html += row('Discussion', block.caseDiscussion);
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── PULL QUOTE ───
+function renderPullQuote(wrap, block) {
+  let html = `<blockquote class="cr-pullquote" style="margin:0;border-left:4px solid var(--cr-gold);background:var(--cr-gold-faded);border-radius:0 12px 12px 0;padding:20px 24px">
+    <p style="font-family:var(--cr-font-display);font-size:1.25rem;line-height:1.5;font-style:italic;color:var(--cr-navy);margin:0">${esc(block.quote || '')}</p>`;
+  if (block.attribution) {
+    html += `<footer style="font-size:0.85rem;font-weight:700;color:var(--cr-burgundy);margin-top:12px">— ${esc(block.attribution)}</footer>`;
+  }
+  html += '</blockquote>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// ─── TABLE BLOCK ───
+function renderTableBlock(wrap, block) {
+  const headers = block.tableHeaders || [];
+  const rows = block.tableRows || [];
+  let html = '<div class="cr-tableblock">';
+  if (block.title) {
+    html += `<h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:12px">${esc(block.title)}</h4>`;
+  }
+  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.85rem">';
+  if (headers.length) {
+    html += '<thead><tr>';
+    headers.forEach(h => {
+      html += `<th style="text-align:left;padding:10px 12px;background:var(--cr-burgundy);color:#fff;font-weight:700;border:1px solid var(--cr-border)">${esc(h)}</th>`;
+    });
+    html += '</tr></thead>';
+  }
+  html += '<tbody>';
+  rows.forEach((r, ri) => {
+    const cells = Array.isArray(r) ? r : [r];
+    html += `<tr style="background:${ri % 2 ? 'var(--cr-gold-faded)' : '#fff'}">`;
+    cells.forEach(c => {
+      html += `<td style="padding:10px 12px;border:1px solid var(--cr-border);line-height:1.55;color:var(--cr-text)">${esc(c == null ? '' : c)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  if (block.tableCaption) {
+    html += `<p style="font-size:0.78rem;color:var(--cr-text-muted);margin-top:8px;font-style:italic">${esc(block.tableCaption)}</p>`;
   }
   html += '</div>';
   wrap.innerHTML = html;
@@ -7908,6 +8054,8 @@ document.addEventListener('click', function(e) {
     // ─── Navigation ───
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
+    case 'prevBlockPage': prevBlockPage(); break;
+    case 'nextBlockPage': nextBlockPage(); break;
     case 'goToSection': goToSection(idx); break;
     case 'showAssessment': showAssessment(); break;
     
