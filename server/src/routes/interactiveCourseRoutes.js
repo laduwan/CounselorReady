@@ -35,7 +35,8 @@ async function findCourseByIdOrSlug(param) {
 }
 
 // ── CONTENT GATING ──────────────────────────────────────────
-const FREE_CE_HOUR_LIMIT = 4; // Free users get 4 CE hours before paywall
+const FREE_COURSES_PER_MONTH = 4;   // free plan: 4 courses/month
+const FREE_MAX_COURSE_HOURS  = 1;   // free plan covers 1-CE-hour courses only
 
 /**
  * Strip sensitive content from course for preview/unauthenticated users.
@@ -71,6 +72,53 @@ function stripContent(courseObj) {
   return obj;
 }
 
+function currentMonthKey() { return new Date().toISOString().slice(0, 7); }
+
+function effectiveFreeCoursesUsed(user) {
+  if (!user) return 0;
+  if (user.freeCoursesResetMonth !== currentMonthKey()) return 0; // month rolled over
+  return user.freeCoursesUsedThisMonth ?? 0;
+}
+
+// Free-tier eligibility for a PAID course. Read-only (does NOT consume a slot).
+function freeTierDecision(user, course) {
+  const courseHours = course.ceHours || course.ceuHours || 1;
+  if (courseHours > FREE_MAX_COURSE_HOURS) {
+    return { allowed: false, code: 'OVER_FREE_HOUR_LIMIT',
+      message: 'Free plan covers 1-hour courses only. Subscribe or purchase this course to enroll.' };
+  }
+  if (effectiveFreeCoursesUsed(user) >= FREE_COURSES_PER_MONTH) {
+    return { allowed: false, code: 'MONTHLY_LIMIT',
+      message: `You've used your ${FREE_COURSES_PER_MONTH} free courses this month. Subscribe for unlimited access.` };
+  }
+  return { allowed: true, code: 'FREE_OK' };
+}
+
+// True if user already has paid/admin/free-course access (no slot needed).
+function hasPaidOrFreeAccess(user, course) {
+  if (!user) return false;
+  if (user.role === 'admin') return true;
+  if (course.accessType === 'free') return true;
+  const purchased = user.purchasedCourses?.some(
+    pc => pc.courseId?.toString() === course._id.toString());
+  if (purchased) return true;
+  const status = user.subscription?.status || 'free';
+  const plan   = user.subscription?.plan   || 'free';
+  return ['active','trial','lifetime'].includes(status) && plan !== 'free';
+}
+
+// Atomically persist consumption of one monthly free slot (month-aware).
+async function consumeFreeSlot(user) {
+  const month = currentMonthKey();
+  const sameMonth = user.freeCoursesResetMonth === month;
+  const newCount = (sameMonth ? (user.freeCoursesUsedThisMonth ?? 0) : 0) + 1;
+  return User.updateOne({ _id: user._id }, { $set: {
+    freeCoursesResetMonth: month,
+    freeCoursesUsedThisMonth: newCount,
+    ...(sameMonth ? {} : { freeLimitEmailSentThisMonth: false })
+  }});
+}
+
 /**
  * Gate course content based on user authentication, subscription, and enrollment.
  * Returns: full course, stripped preview, or course with metadata flags.
@@ -102,21 +150,12 @@ async function gateContent(courseObj, user) {
 
   if (isActiveSub && subPlan !== 'free') return courseObj;
 
-  // Free-tier users: check CE hour budget
-  const freeHoursUsed = user.freeHoursUsed ?? 0;
-  const courseHours = courseObj.ceHours || courseObj.ceuHours || 1;
-
-  if (freeHoursUsed < FREE_CE_HOUR_LIMIT) {
-    const courseWithMeta = courseObj.toObject ? courseObj.toObject() : { ...courseObj };
-    courseWithMeta._freeHoursRemaining = FREE_CE_HOUR_LIMIT - freeHoursUsed;
-    courseWithMeta._freeHoursUsed = freeHoursUsed;
-    return courseWithMeta;
-  }
-
-  // Exhausted free hours + no subscription → strip
+  // Free-tier user on a paid course: full content ONLY if already enrolled.
+  // Enrollment (POST /enroll or first GET /progress) is the single chokepoint that
+  // enforced the 1-hour cap and the monthly quota — so trust it here.
+  if (isEnrolled) return courseObj;
   const stripped = stripContent(courseObj);
-  stripped._freeHoursExhausted = true;
-  stripped._freeHoursUsed = freeHoursUsed;
+  stripped._requiresEnrollment = true;
   return stripped;
 }
 
@@ -341,20 +380,23 @@ router.get('/:id/progress', protect, async (req, res) => {
 
     // If no progress exists, create initial progress
     if (!progress) {
+      const paid = hasPaidOrFreeAccess(req.user, course);
+      const freeDecision = paid ? { allowed: true } : freeTierDecision(req.user, course);
+      if (!paid && !freeDecision.allowed) {
+        return res.status(403).json({ success: false, error: 'Enrollment required',
+          code: freeDecision.code, message: freeDecision.message });
+      }
       progress = new CourseProgress({
         userId: req.user._id,
         courseId: course._id,
         sectionProgress: course.sections.map((section, index) => ({
-          sectionId: section._id,
-          sectionIndex: index,
-          viewedBlocks: [],
-          completedBlocks: [],
-          quizAttempts: [],
-          status: 'not_started'
+          sectionId: section._id, sectionIndex: index,
+          viewedBlocks: [], completedBlocks: [], quizAttempts: [], status: 'not_started'
         })),
         assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
       });
       await progress.save();
+      if (!paid) consumeFreeSlot(req.user).catch(() => {}); // free-tier consumes 1 slot, once
     }
 
     res.json({ success: true, data: progress });
@@ -398,29 +440,26 @@ router.post('/:id/enroll', protect, async (req, res) => {
 
     let accessGranted = false;
     let usedFreeHours = false;
+    let freeDenial = null;
 
     if (isAdmin || isFree || hasPurchased) {
       accessGranted = true;
     } else if (isActiveSub && subPlan !== 'free') {
       accessGranted = true;
     } else {
-      // Free-tier: check CE hour budget
-      const freeHoursUsed = user.freeHoursUsed ?? 0;
-      const courseHours = course.ceHours || course.ceuHours || 1;
-      if (freeHoursUsed + courseHours <= FREE_CE_HOUR_LIMIT) {
-        accessGranted = true;
-        usedFreeHours = true;
-      }
+      const decision = freeTierDecision(user, course);
+      if (decision.allowed) { accessGranted = true; usedFreeHours = true; }
+      else { freeDenial = decision; }
     }
 
     if (!accessGranted) {
       return res.status(403).json({
         success: false,
-        error: 'Subscription required',
-        code: 'SUBSCRIPTION_REQUIRED',
-        message: `You've used your ${FREE_CE_HOUR_LIMIT} free CE hours. Subscribe for unlimited access.`,
-        freeHoursUsed: user.freeHoursUsed ?? 0,
-        freeHoursLimit: FREE_CE_HOUR_LIMIT
+        error: freeDenial?.code === 'OVER_FREE_HOUR_LIMIT' ? 'Upgrade required' : 'Subscription required',
+        code: freeDenial?.code || 'SUBSCRIPTION_REQUIRED',
+        message: freeDenial?.message || `Subscribe for unlimited access.`,
+        freeCoursesUsedThisMonth: effectiveFreeCoursesUsed(user),
+        freeCoursesLimit: FREE_COURSES_PER_MONTH
       });
     }
 
@@ -458,11 +497,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
 
     await progress.save();
 
-    // Increment free hours used (fire-and-forget)
-    if (usedFreeHours) {
-      const courseHours = course.ceHours || course.ceuHours || 1;
-      User.findByIdAndUpdate(user._id, { $inc: { freeHoursUsed: courseHours } }).catch(() => {});
-    }
+    if (usedFreeHours) { consumeFreeSlot(user).catch(() => {}); }
 
     // Log enrollment to admin activity feed (fire-and-forget)
     logActivity(ACTIVITY_TYPES.USER_ENROLLED, {
