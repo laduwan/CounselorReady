@@ -4,6 +4,13 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import express from 'express';
+import request from 'supertest';
+
+// Mutable holder so the mocked `protect` middleware can inject the current
+// test user onto req.user. vi.hoisted lets the mock factory reference it
+// despite vi.mock hoisting.
+const auth = vi.hoisted(() => ({ user: null }));
 
 // Mock all dependencies before importing (same approach as contentGating.test.js).
 // The mongoose stub is slightly fuller than that file's: interactiveCourseRoutes.js
@@ -33,11 +40,23 @@ vi.mock('mongoose', () => {
   };
   return { default: mongoose, Schema };
 });
-vi.mock('../models/InteractiveCourse.js', () => ({
-  Course: { findOne: vi.fn() },
-  CourseProgress: { findOne: vi.fn() },
-  ContentInteraction: {}
-}));
+
+// CourseProgress is used both as a static (findOne/countDocuments) and as a
+// constructor (`new CourseProgress({...})` then `.save()`), so the mock is a
+// vi.fn constructor with statics hung off it.
+vi.mock('../models/InteractiveCourse.js', () => {
+  const CourseProgress = vi.fn(function (data) {
+    Object.assign(this, data);
+    this.save = vi.fn().mockResolvedValue(this);
+  });
+  CourseProgress.findOne = vi.fn();
+  CourseProgress.countDocuments = vi.fn();
+  return {
+    Course: { findById: vi.fn(), findOne: vi.fn() },
+    CourseProgress,
+    ContentInteraction: {}
+  };
+});
 // interactiveCourseRoutes.js also imports these two models at module load.
 // Their real schemas reference mongoose.Schema.Types.ObjectId, which the
 // lightweight mongoose mock above does not provide — so they must be mocked
@@ -46,17 +65,18 @@ vi.mock('../models/Gamification.js', () => ({ default: {} }));
 vi.mock('../models/UserCredential.js', () => ({ default: {} }));
 vi.mock('../models/Certificate.js', () => ({ default: {} }));
 vi.mock('../models/Evaluation.js', () => ({ default: {} }));
-vi.mock('../models/User.js', () => ({ default: {} }));
+vi.mock('../models/User.js', () => ({ default: { updateOne: vi.fn().mockResolvedValue({}) } }));
 vi.mock('../middleware/auth.js', () => ({
-  protect: (req, res, next) => next(),
-  optionalAuth: (req, res, next) => next(),
+  protect: (req, res, next) => { req.user = auth.user; next(); },
+  optionalAuth: (req, res, next) => { req.user = auth.user; next(); },
   requireAdmin: (req, res, next) => next()
 }));
 vi.mock('../middleware/tenantScope.js', () => ({
   attachTenantScope: (req, res, next) => next()
 }));
 vi.mock('../services/activityTrackingService.js', () => ({
-  logActivity: vi.fn(),
+  // Returns a promise: the enroll handler chains `.catch()` on the result.
+  logActivity: vi.fn().mockResolvedValue(undefined),
   ACTIVITY_TYPES: {}
 }));
 vi.mock('../utils/certificate.js', () => ({
@@ -68,9 +88,7 @@ vi.mock('../utils/certificate.js', () => ({
 // at load time, several of which instantiate external clients on import
 // (e.g. freeCourseLimitEmail.js → `new Resend(process.env.RESEND_API_KEY)`,
 // config/twilio.js → a Twilio client). Mocking the wrapper modules keeps the
-// real clients — and their required API keys — out of the test. The original
-// contentGating.test.js predates these imports, which is why it currently
-// fails to load on main.
+// real clients — and their required API keys — out of the test.
 vi.mock('../services/freeCourseLimitEmail.js', () => ({ checkAndSendFreeLimit: vi.fn() }));
 vi.mock('../services/rewardsService.js', () => ({
   awardCourseCompletion: vi.fn(),
@@ -92,22 +110,37 @@ vi.mock('resend', () => ({
   Resend: class { constructor() { this.emails = { send: vi.fn() }; } }
 }));
 
-const { CourseProgress } = await import('../models/InteractiveCourse.js');
-const { _gateContent: gateContent } = await import('../routes/interactiveCourseRoutes.js');
+const { Course, CourseProgress } = await import('../models/InteractiveCourse.js');
+const { default: User } = await import('../models/User.js');
+const routerModule = await import('../routes/interactiveCourseRoutes.js');
+const { _gateContent: gateContent } = routerModule;
+const router = routerModule.default;
 
-// FREE_CE_HOUR_LIMIT in interactiveCourseRoutes.js is 4.
-const FREE_CE_HOUR_LIMIT = 4;
+// New policy constants (mirrors interactiveCourseRoutes.js).
+const FREE_COURSES_PER_MONTH = 4;
+
+const THIS_MONTH = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+const LAST_MONTH = (() => {
+  const d = new Date();
+  d.setMonth(d.getMonth() - 1);
+  return d.toISOString().slice(0, 7);
+})();
+
+// Express app mounting the real router so route handlers run end-to-end.
+const app = express();
+app.use(express.json());
+app.use('/api/interactive-courses', router);
 
 // Course whose _id has a working toString(), matching the purchase-check pattern:
-//   pc.courseId?.toString() === courseObj._id.toString()
+//   pc.courseId?.toString() === course._id.toString()
 // accessType defaults to a *non-free* tier so the `accessType === 'free'`
-// early-return (which would short-circuit before the purchase/sub/free-hour
-// checks) does not fire. Tests that want a free course override accessType.
+// early-return does not fire. Tests that want a free course override accessType.
 function makeCourse(overrides = {}) {
   return {
     _id: { toString: () => 'course123' },
     title: 'Test Course',
     slug: 'test-course',
+    ceHours: 1,
     sections: [
       {
         title: 'Section 1',
@@ -139,6 +172,16 @@ function makeCourse(overrides = {}) {
   };
 }
 
+function freeUser(overrides = {}) {
+  return {
+    _id: 'user1',
+    role: 'user',
+    email: 'free@example.com',
+    subscription: { plan: 'free', status: 'free' },
+    ...overrides
+  };
+}
+
 // Assert the caller received the full, ungated course object.
 function expectFullContent(result) {
   expect(result._isPreview).toBeUndefined();
@@ -146,130 +189,154 @@ function expectFullContent(result) {
   expect(result.assessment.questions).toHaveLength(2);
 }
 
-// Assert the caller received the stripped preview. stripContent() sets
-// _isPreview and rewrites each section to a single truncated text preview block
-// flagged with _stripped (it does NOT empty assessment.questions), so the
-// reliable signal that gating stripped the content is the section shape.
+// Assert the caller received the stripped preview.
 function expectStripped(result) {
   expect(result._isPreview).toBe(true);
   expect(result.sections[0]._stripped).toBe(true);
   expect(result.sections[0].contentBlocks).toHaveLength(1);
 }
 
-describe('gateContent — purchasedCourses access check', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    // Enrollment lookup is awaited inside gateContent but does not by itself
-    // grant access; default it to null so each test starts clean.
-    CourseProgress.findOne.mockResolvedValue(null);
+beforeEach(() => {
+  vi.clearAllMocks();
+  auth.user = null;
+  CourseProgress.findOne.mockResolvedValue(null);
+  CourseProgress.countDocuments.mockResolvedValue(0);
+  User.updateOne.mockResolvedValue({});
+});
+
+describe('POST /:id/enroll — monthly free-course policy', () => {
+  it('1. free user, 0 courses this month, ceHours=1 → enrolls (201) and consumes one slot', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 1 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
+
+    const res = await request(app).post('/api/interactive-courses/course123/enroll');
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+    expect(CourseProgress).toHaveBeenCalledTimes(1); // progress doc created
+    // Slot consumed once: count bumped to 1 for the current month.
+    expect(User.updateOne).toHaveBeenCalledTimes(1);
+    const [, update] = User.updateOne.mock.calls[0];
+    expect(update.$set.freeCoursesUsedThisMonth).toBe(1);
+    expect(update.$set.freeCoursesResetMonth).toBe(THIS_MONTH);
   });
 
-  it('1. grants full content when purchasedCourses contains the matching courseId (free plan + exhausted free hours)', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'free', status: 'free' },
-      freeHoursUsed: 10, // well past FREE_CE_HOUR_LIMIT — purchase must still win
-      purchasedCourses: [
-        { courseId: { toString: () => 'course123' }, slug: 'test-course', purchasedAt: new Date() }
-      ]
-    };
-    const result = await gateContent(course, user);
-    expectFullContent(result);
+  it('2. free user, ceHours=3 → 403 OVER_FREE_HOUR_LIMIT, no progress created', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 3 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
+
+    const res = await request(app).post('/api/interactive-courses/course123/enroll');
+
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('OVER_FREE_HOUR_LIMIT');
+    expect(CourseProgress).not.toHaveBeenCalled();
+    expect(User.updateOne).not.toHaveBeenCalled();
   });
 
-  it('2. does NOT grant access via the purchase path when purchasedCourses holds a DIFFERENT courseId', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'free', status: 'free' },
-      freeHoursUsed: FREE_CE_HOUR_LIMIT, // exhausted so the only way to full is purchase/sub
-      purchasedCourses: [
-        { courseId: { toString: () => 'differentCourse' }, slug: 'other-course', purchasedAt: new Date() }
-      ]
-    };
-    const result = await gateContent(course, user);
-    // Non-matching purchase → falls through → free hours exhausted → stripped
-    expectStripped(result);
-    expect(result._freeHoursExhausted).toBe(true);
+  it('3. free user, freeCoursesUsedThisMonth=4 this month → 403 MONTHLY_LIMIT', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 1 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 4, freeCoursesResetMonth: THIS_MONTH });
+
+    const res = await request(app).post('/api/interactive-courses/course123/enroll');
+
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('MONTHLY_LIMIT');
+    expect(res.body.freeCoursesUsedThisMonth).toBe(4);
+    expect(res.body.freeCoursesLimit).toBe(FREE_COURSES_PER_MONTH);
+    expect(CourseProgress).not.toHaveBeenCalled();
   });
 
-  it('3. falls through to the subscription/free-hours check when purchasedCourses is an empty array', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'free', status: 'free' },
-      freeHoursUsed: 0,
-      purchasedCourses: []
-    };
-    const result = await gateContent(course, user);
-    // No purchase → free-tier with budget remaining → full content + free-hours meta
-    expectFullContent(result);
-    expect(result._freeHoursRemaining).toBe(FREE_CE_HOUR_LIMIT);
-    expect(result._freeHoursUsed).toBe(0);
+  it('4. free user, freeCoursesUsedThisMonth=4 but reset month is last month → allowed (counter reset)', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 1 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 4, freeCoursesResetMonth: LAST_MONTH });
+
+    const res = await request(app).post('/api/interactive-courses/course123/enroll');
+
+    expect(res.status).toBe(201);
+    expect(CourseProgress).toHaveBeenCalledTimes(1);
+    // Reset path: new count starts at 1 and the month key is rewritten.
+    const [, update] = User.updateOne.mock.calls[0];
+    expect(update.$set.freeCoursesUsedThisMonth).toBe(1);
+    expect(update.$set.freeCoursesResetMonth).toBe(THIS_MONTH);
+    expect(update.$set.freeLimitEmailSentThisMonth).toBe(false);
   });
 });
 
-describe('gateContent — subscription, free-hours, and trial gating', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+describe('GET /:id/progress — auto-create gating', () => {
+  it('6. free user, 3-hour course, no progress → 403 and no progress doc created', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 3 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
+
+    const res = await request(app).get('/api/interactive-courses/course123/progress');
+
+    expect(res.status).toBe(403);
+    expect(res.body.code).toBe('OVER_FREE_HOUR_LIMIT');
+    expect(CourseProgress).not.toHaveBeenCalled();
+    expect(User.updateOne).not.toHaveBeenCalled();
+  });
+
+  it('free user, 1-hour course, no progress → progress auto-created and slot consumed', async () => {
+    Course.findById.mockResolvedValue(makeCourse({ ceHours: 1 }));
+    auth.user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
+
+    const res = await request(app).get('/api/interactive-courses/course123/progress');
+
+    expect(res.status).toBe(200);
+    expect(CourseProgress).toHaveBeenCalledTimes(1);
+    expect(User.updateOne).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('gateContent — enrollment-gated content for free-tier users', () => {
+  it('5a. free user NOT enrolled → stripped preview with _requiresEnrollment', async () => {
     CourseProgress.findOne.mockResolvedValue(null);
-  });
+    const course = makeCourse({ ceHours: 1 });
+    const user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
 
-  it('4. serves content to a free-tier user with 0 freeHoursUsed (free-hours path)', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'free', status: 'free' },
-      freeHoursUsed: 0
-    };
     const result = await gateContent(course, user);
-    expectFullContent(result);
-    expect(result._freeHoursRemaining).toBe(FREE_CE_HOUR_LIMIT);
-  });
 
-  it('5. strips content for a free-tier user at/over FREE_CE_HOUR_LIMIT freeHoursUsed', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'free', status: 'free' },
-      freeHoursUsed: FREE_CE_HOUR_LIMIT
-    };
-    const result = await gateContent(course, user);
     expectStripped(result);
-    expect(result._freeHoursExhausted).toBe(true);
-    expect(result._freeHoursUsed).toBe(FREE_CE_HOUR_LIMIT);
+    expect(result._requiresEnrollment).toBe(true);
   });
 
-  it('6. grants full content to a user with an active trial', async () => {
-    const course = makeCourse();
-    const user = {
-      _id: 'user1',
-      role: 'user',
-      subscription: { plan: 'professional', status: 'trial' }
-    };
+  it('5b. free user ENROLLED → full content', async () => {
+    CourseProgress.findOne.mockResolvedValue({ _id: 'prog1' }); // enrolled
+    const course = makeCourse({ ceHours: 1 });
+    const user = freeUser({ freeCoursesUsedThisMonth: 0, freeCoursesResetMonth: THIS_MONTH });
+
+    const result = await gateContent(course, user);
+
+    expectFullContent(result);
+  });
+
+  it('7a. purchased course → full content regardless of month count', async () => {
+    CourseProgress.findOne.mockResolvedValue(null);
+    const course = makeCourse({ ceHours: 5 });
+    const user = freeUser({
+      freeCoursesUsedThisMonth: 99,
+      freeCoursesResetMonth: THIS_MONTH,
+      purchasedCourses: [
+        { courseId: { toString: () => 'course123' }, slug: 'test-course', purchasedAt: new Date() }
+      ]
+    });
+
     const result = await gateContent(course, user);
     expectFullContent(result);
   });
 
-  it('7. strips content for a user with an expired trial and no purchase', async () => {
-    const course = makeCourse();
+  it('7b. active paid subscription → full content regardless of hours/month count', async () => {
+    CourseProgress.findOne.mockResolvedValue(null);
+    const course = makeCourse({ ceHours: 5 });
     const user = {
       _id: 'user1',
       role: 'user',
-      subscription: { plan: 'professional', status: 'expired' },
-      // Expired (non-active) subscription falls through to the free-hours check;
-      // with hours exhausted and no purchase, the content is stripped.
-      freeHoursUsed: FREE_CE_HOUR_LIMIT,
-      purchasedCourses: []
+      email: 'pro@example.com',
+      subscription: { plan: 'professional', status: 'active' },
+      freeCoursesUsedThisMonth: 99,
+      freeCoursesResetMonth: THIS_MONTH
     };
+
     const result = await gateContent(course, user);
-    expectStripped(result);
-    expect(result._freeHoursExhausted).toBe(true);
+    expectFullContent(result);
   });
 });

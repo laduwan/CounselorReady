@@ -84,9 +84,6 @@ export async function checkAndSendFreeLimit(userId) {
     user.freeCoursesResetMonth = currentMonth;
   }
 
-  // Increment usage
-  user.freeCoursesUsedThisMonth += 1;
-
   // Check if limit reached and email not yet sent
   if (user.freeCoursesUsedThisMonth >= FREE_COURSE_LIMIT && !user.freeLimitEmailSentThisMonth) {
     const firstName = user.profile?.firstName || 'there';
