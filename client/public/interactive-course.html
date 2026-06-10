@@ -3856,6 +3856,7 @@ async function crPost(path, body) {
 
 function loadCourse(data) {
   if (!data) { showError('No course data provided'); return; }
+  window.__crCurrentCourse = data; // [Stage 5f] expose for retrieval popup
   
   // ── Normalize: passThreshold → passingScore ──
   if (data.assessment) {
@@ -4382,6 +4383,7 @@ function goToSection(i) {
   completedSections.add(currentSectionIndex);
   visitedSections.add(i);
   currentSectionIndex = i;
+  window.__crCurrentSectionIndex = i; // [Stage 5f] expose for retrieval popup
   currentBlockPage = 0; // reset within-section pagination on section change
   buildSectionNav();
   renderCurrentSection();
@@ -8571,5 +8573,6 @@ function dismissNPS() {
     </div>
   </div>
 </div>
+<script src="cr-retrieval-popup.js" defer></script>
 </body>
 </html>
