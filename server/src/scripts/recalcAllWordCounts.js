@@ -19,22 +19,28 @@ async function run() {
   const courses = await InteractiveCourse.find({}).lean();
   console.log(`Found ${courses.length} courses\n`);
 
-  let increased = 0, decreased = 0, unchanged = 0;
+  let increased = 0, decreased = 0, unchanged = 0, skipped = 0;
 
   for (const raw of courses) {
     const oldWc = raw.wordCount ?? 0;
-    const doc = await InteractiveCourse.findById(raw._id);
-    await doc.save();
-    const newWc = doc.wordCount ?? 0;
-
     const slug = (raw.slug || String(raw._id)).padEnd(30).slice(0, 30);
-    const title = (raw.title || '(untitled)').slice(0, 50);
-    const arrow = oldWc === newWc ? '==' : oldWc < newWc ? '->' : '->';
-    console.log(`${slug} | ${String(oldWc).padStart(6)} ${arrow} ${String(newWc).padEnd(6)} | ${title}`);
 
-    if (newWc > oldWc) increased++;
-    else if (newWc < oldWc) decreased++;
-    else unchanged++;
+    try {
+      const doc = await InteractiveCourse.findById(raw._id);
+      await doc.save();
+      const newWc = doc.wordCount ?? 0;
+
+      const title = (raw.title || '(untitled)').slice(0, 50);
+      const arrow = oldWc === newWc ? '==' : oldWc < newWc ? '->' : '->';
+      console.log(`${slug} | ${String(oldWc).padStart(6)} ${arrow} ${String(newWc).padEnd(6)} | ${title}`);
+
+      if (newWc > oldWc) increased++;
+      else if (newWc < oldWc) decreased++;
+      else unchanged++;
+    } catch (err) {
+      skipped++;
+      console.log(`✗ SKIPPED ${(raw.slug || String(raw._id))}: ${err.message}`);
+    }
   }
 
   console.log('\n── Summary ────────────────────────────────────────────');
@@ -42,6 +48,7 @@ async function run() {
   console.log(`  Increased          : ${increased}`);
   console.log(`  Decreased          : ${decreased}`);
   console.log(`  Unchanged          : ${unchanged}`);
+  console.log(`  Skipped            : ${skipped}`);
 
   await mongoose.disconnect();
 }
