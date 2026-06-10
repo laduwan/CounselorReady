@@ -3730,7 +3730,7 @@ let currentSectionIndex = 0;
 // When a section holds more than BLOCK_PAGE_SIZE content blocks, the viewer
 // splits them into pages so learners aren't handed an endless scroll. The
 // page index resets to 0 whenever the section changes (see goToSection).
-const BLOCK_PAGE_SIZE = 8;
+const BLOCK_PAGE_SIZE = 4;
 let currentBlockPage = 0;
 let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
@@ -8573,6 +8573,34 @@ function dismissNPS() {
     </div>
   </div>
 </div>
+<style id="cr-stage-5d1-viewer-cleanup">
+  /* Stage 5d.1+ — hide the Learning Objectives tracker on content sections */
+  #crObjectivesTracker { display: none !important; }
+
+  /* Stage 5d.1+ — pull-quote frame: text blocks whose only inner content is a single <blockquote> */
+  .cr-block[data-block-type="text"]:has(.cr-prose > blockquote:only-child),
+  .cr-block[data-block-type="text"]:has(> blockquote:only-child) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 1em 0 !important;
+  }
+  /* Stage 5d.1+ — punchline frame: text blocks containing only a centered italic paragraph */
+  .cr-block[data-block-type="text"]:has(.cr-prose > p:only-child[style*="text-align: center"]),
+  .cr-block[data-block-type="text"]:has(> p:only-child[style*="text-align: center"]) {
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0.5em 0 1em !important;
+  }
+  /* Stage 5d.1+ — strip cr-prose padding so inner content reaches full width */
+  .cr-block[data-block-type="text"]:has(.cr-prose > blockquote:only-child) .cr-prose,
+  .cr-block[data-block-type="text"]:has(.cr-prose > p:only-child[style*="text-align: center"]) .cr-prose {
+    padding: 0 !important;
+  }
+</style>
 <script src="cr-retrieval-popup.js" defer></script>
 </body>
 </html>
