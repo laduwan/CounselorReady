@@ -78,6 +78,7 @@ import adminCoursePresentationRoutes from './routes/adminCoursePresentation.js';
 import organizationsRoutes from './routes/organizations.js';
 import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
+import videoAuditRoutes from './routes/videoAudit.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -157,6 +158,7 @@ export const ROUTE_MANIFEST = [
   ['/api/organizations',         organizationsRoutes,       'Organizations'],
   ['/api/audit-kit',             auditKitRoutes,            'Audit Kit'],
   ['/api/uploads',               uploadsRoutes,             'Uploads'],
+  ['/api/admin/video-audit',      videoAuditRoutes,          'Video Link Audit'],
 ];
 
 /**
