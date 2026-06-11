@@ -10,10 +10,12 @@
  * The viewer (interactive-course.html) already renders any unknown calloutType
  * as 'info', so remapping invalid values to 'info' is a visual no-op.
  *
- * This script ONLY sets `order` indices and remaps the calloutType string. It
- * never deletes or moves block content. It re-validates before saving and
- * refuses to write a still-broken doc. Idempotent: re-running changes nothing
- * once a course is fixed. Saving recomputes wordCount via the pre-save hook.
+ * This script ONLY normalizes enum/required scalars: `order` indices, the
+ * calloutType string, accessType, and assessment question `type` strings. It
+ * never deletes or moves block content (and never touches price or options).
+ * It re-validates before saving and refuses to write a still-broken doc.
+ * Idempotent: re-running changes nothing once a course is fixed. Saving
+ * recomputes wordCount via the pre-save hook.
  *
  * NAMED import below: the default export of InteractiveCourse.js is a plain
  * object with no .find — importing the default is the exact bug that made
@@ -38,6 +40,31 @@ const target = args.find(a => !a.startsWith('--'));
 
 const VALID_CALLOUTS = new Set(['info', 'warning', 'ethics', 'clinical', 'tip', 'key', 'donot', 'protocol']);
 const CALLOUT_REMAP = { document: 'info', reference: 'info' }; // any other invalid value also → 'info'
+
+const VALID_ACCESS = new Set(['free', 'subscription', 'purchase']);
+const ACCESS_REMAP = { paid: 'subscription', premium: 'subscription', individual: 'purchase', buy: 'purchase' };
+
+const VALID_QTYPE = new Set(['multipleChoice', 'multiSelect', 'trueFalse']);
+const QTYPE_NORMALIZE = {
+  multiplechoice: 'multipleChoice', multiple_choice: 'multipleChoice', 'multiple-choice': 'multipleChoice',
+  mc: 'multipleChoice', choice: 'multipleChoice', single: 'multipleChoice',
+  multiselect: 'multiSelect', multi_select: 'multiSelect', 'multi-select': 'multiSelect', checkbox: 'multiSelect',
+  truefalse: 'trueFalse', true_false: 'trueFalse', 'true-false': 'trueFalse', tf: 'trueFalse', boolean: 'trueFalse', bool: 'trueFalse'
+};
+
+// Returns the corrected type string, or null if `q.type` is already valid.
+// Normalizes a known alias, else infers from the options shape.
+function normalizeQType(q) {
+  if (q.type && VALID_QTYPE.has(q.type)) return null;            // already valid
+  if (q.type) {
+    const k = String(q.type).toLowerCase().replace(/\s+/g, '');
+    if (QTYPE_NORMALIZE[k]) return QTYPE_NORMALIZE[k];
+  }
+  const opts = q.options || [];
+  if (opts.filter(o => o.isCorrect).length > 1) return 'multiSelect';
+  if (opts.length === 2 && opts.every(o => /^(true|false)$/i.test((o.text || '').trim()))) return 'trueFalse';
+  return 'multipleChoice';
+}
 
 // Mutates `course` in place. Returns per-course counts. Only touches `order`
 // and `calloutType` — never block content.
@@ -82,6 +109,7 @@ function validationPaths(course) {
   console.log(`Found ${courses.length} course(s)\n`);
 
   let scanned = 0, orderFieldsFixed = 0, calloutTypesRemapped = 0, saved = 0, stillInvalid = 0;
+  let accessFixed = 0, qtypeFixed = 0;
 
   for (const course of courses) {
     scanned++;
@@ -91,6 +119,25 @@ function validationPaths(course) {
     const { orderFixed, calloutRemapped } = repairCourse(course);
     orderFieldsFixed += orderFixed;
     calloutTypesRemapped += calloutRemapped;
+
+    // accessType enum repair
+    if (course.accessType && !VALID_ACCESS.has(course.accessType)) {
+      const nv = ACCESS_REMAP[String(course.accessType).toLowerCase()] || 'subscription';
+      console.log(`accessType ${course.slug}: '${course.accessType}' -> '${nv}'`);
+      course.accessType = nv; accessFixed++;
+    }
+
+    // assessment question type enum repair (string-normalize, else infer from options)
+    (course.assessment?.questions || []).forEach((q, qi) => {
+      const nt = normalizeQType(q);
+      if (nt && nt !== q.type) {
+        console.log(`qtype ${course.slug} q${qi}: '${q.type}' -> '${nt}'`);
+        q.type = nt; qtypeFixed++;
+      }
+    });
+
+    // Visibility: surface accessType + price (so the dry run flags missing prices)
+    console.log(`  ${course.slug} | accessType=${course.accessType} | price=${course.price ?? 'MISSING'}`);
 
     const remaining = validationPaths(course);
     if (remaining.length) {
@@ -113,6 +160,8 @@ function validationPaths(course) {
   console.log(`  Total scanned        : ${scanned}`);
   console.log(`  Order fields fixed   : ${orderFieldsFixed}`);
   console.log(`  calloutTypes remapped: ${calloutTypesRemapped}`);
+  console.log(`  accessType remapped  : ${accessFixed}`);
+  console.log(`  question types fixed : ${qtypeFixed}`);
   console.log(`  Saved                : ${saved}${DRY ? ' (dry run)' : ''}`);
   console.log(`  Still invalid        : ${stillInvalid}`);
 
