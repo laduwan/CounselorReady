@@ -714,106 +714,67 @@ const COURSE_DATA = {
   },
   "references": [
     {
-      "title": "The National Intimate Partner and Sexual Violence Survey. CDC.",
-      "author": "Basile, K",
-      "year": 2022,
-      "source": "e National Intimate Partner and Sexual Violence Survey. CDC."
+      "citation": "American Psychological Association. (2017). Clinical practice guideline for the treatment of posttraumatic stress disorder (PTSD) in adults. https://www.apa.org/ptsd-guideline"
     },
     {
-      "title": "Treating trauma and traumatic grief in children and adolescents (2nd ed.). Guilford Press.",
-      "author": "Cohen, J",
-      "year": 2017,
-      "source": "grief in children and adolescents (2nd ed.). Guilford Press."
+      "citation": "Basile, K. (2022). The National Intimate Partner and Sexual Violence Survey. CDC."
     },
     {
-      "title": "Prolonged exposure therapy for PTSD: Therapist guide (2nd ed.). Oxford University Press.",
-      "author": "Foa, E",
-      "year": 2019,
-      "source": "or PTSD: Therapist guide (2nd ed.). Oxford University Press."
+      "citation": "Campbell, R., Dworkin, E., & Cabral, G. (2009). An ecological model of the impact of sexual assault on women’s mental health. Trauma, Violence, & Abuse, 10(3), 225–246. https://doi.org/10.1177/1524838009334456"
     },
     {
-      "title": "In an unspoken voice. North Atlantic Books.",
-      "author": "Levine, P",
-      "year": 2010,
-      "source": "e, P. A. (2010). In an unspoken voice. North Atlantic Books."
+      "citation": "Cohen, J. A., Mannarino, A. P., & Deblinger, E. (2017). Treating trauma and traumatic grief in children and adolescents (2nd ed.). Guilford Press."
     },
     {
-      "title": "Tonic immobility during sexual assault. Acta Obstetricia et Gynecologica Scandinavica, 96(8), 932–938.",
-      "author": "Möller, A",
-      "year": 2017,
-      "source": "ta Obstetricia et Gynecologica Scandinavica, 96(8), 932–938."
+      "citation": "Courtois, C. A., & Ford, J. D. (2013). Treatment of complex trauma: A sequenced, relationship-based approach. Guilford Press."
     },
     {
-      "title": "Statistics about sexual violence.",
-      "author": "National Sexual Violence Resource Center",
-      "year": 2015,
-      "source": "e Resource Center. (2015). Statistics about sexual violence."
+      "citation": "Foa, E. B., Hembree, E. A., Rothbaum, B. O., & Rauch, S. A. M. (2019). Prolonged exposure therapy for PTSD: Emotional processing of traumatic experiences (2nd ed.). Oxford University Press."
     },
     {
-      "title": "Trauma and the body. Norton.",
-      "author": "Ogden, P",
-      "year": 2006,
-      "source": "Minton, K., & Pain, C. (2006). Trauma and the body. Norton."
+      "citation": "Foynes, M. (2014). Child abuse: Betrayal and disclosure. Child Abuse & Neglect, 33(4), 209–217."
     },
     {
-      "title": "The polyvagal theory. Norton.",
-      "author": "Porges, S",
-      "year": 2011,
-      "source": "Porges, S. W. (2011). The polyvagal theory. Norton."
+      "citation": "Herman, J. L. (2015). Trauma and recovery: The aftermath of violence—from domestic abuse to political terror (Rev. ed.). Basic Books. (Original work published 1992)"
     },
     {
-      "title": "Cognitive processing therapy for PTSD. Guilford Press.",
-      "author": "Resick, P",
-      "year": 2017,
-      "source": "017). Cognitive processing therapy for PTSD. Guilford Press."
+      "citation": "Levine, P. (2010). In an unspoken voice. North Atlantic Books."
     },
     {
-      "title": "Trauma-informed care in behavioral health services (TIP 57).",
-      "author": "SAMHSA",
-      "year": 2014,
-      "source": "Trauma-informed care in behavioral health services (TIP 57)."
+      "citation": "Möller, A. (2017). Tonic immobility during sexual assault. Acta Obstetricia et Gynecologica Scandinavica, 96(8), 932–938."
     },
     {
-      "title": "Eye movement desensitization and reprocessing therapy (3rd ed.). Guilford Press.",
-      "author": "Shapiro, F",
-      "year": 2018,
-      "source": "tization and reprocessing therapy (3rd ed.). Guilford Press."
+      "citation": "National Sexual Violence Resource Center (2015). Statistics about sexual violence."
     },
     {
-      "title": "The developing mind. Guilford Press.",
-      "author": "Siegel, D",
-      "year": 1999,
-      "source": "Siegel, D. J. (1999). The developing mind. Guilford Press."
+      "citation": "Ogden, P., Minton, K., & Pain, C. (2006). Trauma and the body: A sensorimotor approach to psychotherapy. W. W. Norton."
     },
     {
-      "title": "The Posttraumatic Growth Inventory. Journal of Traumatic Stress, 9(3), 455–471.",
-      "author": "Tedeschi, R",
-      "year": 1996,
-      "source": "rowth Inventory. Journal of Traumatic Stress, 9(3), 455–471."
+      "citation": "Porges, S. (2011). The polyvagal theory. Norton."
     },
     {
-      "title": "The body keeps the score. Viking.",
-      "author": "van der Kolk, B",
-      "year": 2014,
-      "source": "an der Kolk, B. A. (2014). The body keeps the score. Viking."
+      "citation": "Resick, P. A., Monson, C. M., & Chard, K. M. (2017). Cognitive processing therapy for PTSD: A comprehensive manual. Guilford Press."
     },
     {
-      "title": "The PTSD Checklist for DSM-5 (PCL-5). National Center for PTSD.",
-      "author": "Weathers, F",
-      "year": 2013,
-      "source": "PTSD Checklist for DSM-5 (PCL-5). National Center for PTSD."
+      "citation": "Ryan, C. (2009). Family rejection as predictor of negative health outcomes. Pediatrics, 123(1), 346–352."
     },
     {
-      "title": "Child abuse: Betrayal and disclosure. Child Abuse & Neglect, 33(4), 209–217.",
-      "author": "Foynes, M",
-      "year": 2014,
-      "source": "rayal and disclosure. Child Abuse & Neglect, 33(4), 209–217."
+      "citation": "SAMHSA (2014). Trauma-informed care in behavioral health services (TIP 57)."
     },
     {
-      "title": "Family rejection as predictor of negative health outcomes. Pediatrics, 123(1), 346–352.",
-      "author": "Ryan, C",
-      "year": 2009,
-      "source": "or of negative health outcomes. Pediatrics, 123(1), 346–352."
+      "citation": "Shapiro, F. (2018). Eye movement desensitization and reprocessing (EMDR) therapy: Basic principles, protocols, and procedures (3rd ed.). Guilford Press."
+    },
+    {
+      "citation": "Siegel, D. J. (1999). The developing mind: How relationships and the brain interact to shape who we are. Guilford Press."
+    },
+    {
+      "citation": "Tedeschi, R. (1996). The Posttraumatic Growth Inventory. Journal of Traumatic Stress, 9(3), 455–471."
+    },
+    {
+      "citation": "van der Kolk, B. A. (2014). The body keeps the score: Brain, mind, and body in the healing of trauma. Viking."
+    },
+    {
+      "citation": "Weathers, F. (2013). The PTSD Checklist for DSM-5 (PCL-5). National Center for PTSD."
     }
   ],
   "sections": [
@@ -1571,6 +1532,42 @@ const COURSE_DATA = {
   ]
 };
 
+COURSE_DATA.references = [
+  {
+    "author": "American Psychological Association. (2017). Clinical practice guideline for the treatment of posttraumatic stress disorder (PTSD) in adults. https://www.apa.org/ptsd-guideline"
+  },
+  {
+    "author": "Campbell, R., Dworkin, E., & Cabral, G. (2009). An ecological model of the impact of sexual assault on women’s mental health. Trauma, Violence, & Abuse, 10(3), 225–246. https://doi.org/10.1177/1524838009334456"
+  },
+  {
+    "author": "Cohen, J. A., Mannarino, A. P., & Deblinger, E. (2017). Treating trauma and traumatic grief in children and adolescents (2nd ed.). Guilford Press"
+  },
+  {
+    "author": "Courtois, C. A., & Ford, J. D. (2013). Treatment of complex trauma: A sequenced, relationship-based approach. Guilford Press"
+  },
+  {
+    "author": "Foa, E. B., Hembree, E. A., Rothbaum, B. O., & Rauch, S. A. M. (2019). Prolonged exposure therapy for PTSD: Emotional processing of traumatic experiences (2nd ed.). Oxford University Press"
+  },
+  {
+    "author": "Herman, J. L. (2015). Trauma and recovery: The aftermath of violence—from domestic abuse to political terror (Rev. ed.). Basic Books. (Original work published 1992)"
+  },
+  {
+    "author": "Ogden, P., Minton, K., & Pain, C. (2006). Trauma and the body: A sensorimotor approach to psychotherapy. W. W. Norton"
+  },
+  {
+    "author": "Resick, P. A., Monson, C. M., & Chard, K. M. (2017). Cognitive processing therapy for PTSD: A comprehensive manual. Guilford Press"
+  },
+  {
+    "author": "Shapiro, F. (2018). Eye movement desensitization and reprocessing (EMDR) therapy: Basic principles, protocols, and procedures (3rd ed.). Guilford Press"
+  },
+  {
+    "author": "Siegel, D. J. (1999). The developing mind: How relationships and the brain interact to shape who we are. Guilford Press"
+  },
+  {
+    "author": "van der Kolk, B. A. (2014). The body keeps the score: Brain, mind, and body in the healing of trauma. Viking"
+  }
+];
+
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
 async function main(){
@@ -1579,6 +1576,7 @@ async function main(){
   if(!doc){ console.error('CR-305 not found:', COURSE_DATA.slug); process.exit(1); }
   for(const k of Object.keys(COURSE_DATA)) doc[k]=COURSE_DATA[k];
   doc.modules=undefined; doc.markModified('sections'); doc.markModified('assessment');
+  doc.markModified('references');
   await doc.save();
   const fresh=await Course.findById(doc._id).lean();
   console.log('Saved. Sections:',fresh.sections?.length,'| wordCount:',fresh.wordCount,'| accessType:',fresh.accessType,'| status:',fresh.status);

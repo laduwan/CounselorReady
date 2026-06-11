@@ -1483,8 +1483,79 @@ const COURSE_DATA = {
         }
       ]
     }
+  ],
+  "references": [
+    {
+      "citation": "American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787"
+    },
+    {
+      "citation": "Annon, J. S. (1976). The PLISSIT model: A proposed conceptual scheme for the behavioral treatment of sexual problems. Journal of Sex Education and Therapy, 2(1), 1–15. https://doi.org/10.1080/01614576.1976.11074483"
+    },
+    {
+      "citation": "Bancroft, J. (2009). Human sexuality and its problems (3rd ed.). Churchill Livingstone/Elsevier."
+    },
+    {
+      "citation": "Basson, R. (2001). Using a different model for female sexual response to address women’s problematic low sexual desire. Journal of Sex & Marital Therapy, 27(5), 395–403. https://doi.org/10.1080/713846827"
+    },
+    {
+      "citation": "DeLamater, J., & Koepsel, E. (2015). Relationships and sexual expression in later life: A biopsychosocial perspective. Sexual and Relationship Therapy, 30(1), 37–59. https://doi.org/10.1080/14681994.2014.939506"
+    },
+    {
+      "citation": "Fortenberry, J. D. (2013). Puberty and adolescent sexuality. Hormones and Behavior, 64(2), 280–287. https://doi.org/10.1016/j.yhbeh.2013.03.007"
+    },
+    {
+      "citation": "Lindau, S. T., Schumm, L. P., Laumann, E. O., Levinson, W., O’Muircheartaigh, C. A., & Waite, L. J. (2007). A study of sexuality and health among older adults in the United States. New England Journal of Medicine, 357(8), 762–774. https://doi.org/10.1056/NEJMoa067423"
+    },
+    {
+      "citation": "Nusbaum, M. R. H., & Hamilton, C. D. (2002). The proactive sexual health history. American Family Physician, 66(9), 1705–1712."
+    },
+    {
+      "citation": "Tolman, D. L., & McClelland, S. I. (2011). Normative sexuality development in adolescence: A decade in review, 2000–2009. Journal of Research on Adolescence, 21(1), 242–255. https://doi.org/10.1111/j.1532-7795.2010.00726.x"
+    },
+    {
+      "citation": "World Association for Sexual Health. (2014). Declaration of sexual rights. https://worldsexualhealth.net/"
+    },
+    {
+      "citation": "World Health Organization. (2006). Defining sexual health: Report of a technical consultation on sexual health, 28–31 January 2002, Geneva. World Health Organization."
+    }
   ]
 };
+
+COURSE_DATA.references = [
+  {
+    "author": "American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787"
+  },
+  {
+    "author": "Annon, J. S. (1976). The PLISSIT model: A proposed conceptual scheme for the behavioral treatment of sexual problems. Journal of Sex Education and Therapy, 2(1), 1–15. https://doi.org/10.1080/01614576.1976.11074483"
+  },
+  {
+    "author": "Bancroft, J. (2009). Human sexuality and its problems (3rd ed.). Churchill Livingstone/Elsevier"
+  },
+  {
+    "author": "Basson, R. (2001). Using a different model for female sexual response to address women’s problematic low sexual desire. Journal of Sex & Marital Therapy, 27(5), 395–403. https://doi.org/10.1080/713846827"
+  },
+  {
+    "author": "DeLamater, J., & Koepsel, E. (2015). Relationships and sexual expression in later life: A biopsychosocial perspective. Sexual and Relationship Therapy, 30(1), 37–59. https://doi.org/10.1080/14681994.2014.939506"
+  },
+  {
+    "author": "Fortenberry, J. D. (2013). Puberty and adolescent sexuality. Hormones and Behavior, 64(2), 280–287. https://doi.org/10.1016/j.yhbeh.2013.03.007"
+  },
+  {
+    "author": "Lindau, S. T., Schumm, L. P., Laumann, E. O., Levinson, W., O’Muircheartaigh, C. A., & Waite, L. J. (2007). A study of sexuality and health among older adults in the United States. New England Journal of Medicine, 357(8), 762–774. https://doi.org/10.1056/NEJMoa067423"
+  },
+  {
+    "author": "Nusbaum, M. R. H., & Hamilton, C. D. (2002). The proactive sexual health history. American Family Physician, 66(9), 1705–1712"
+  },
+  {
+    "author": "Tolman, D. L., & McClelland, S. I. (2011). Normative sexuality development in adolescence: A decade in review, 2000–2009. Journal of Research on Adolescence, 21(1), 242–255. https://doi.org/10.1111/j.1532-7795.2010.00726.x"
+  },
+  {
+    "author": "World Association for Sexual Health. (2014). Declaration of sexual rights. https://worldsexualhealth.net/"
+  },
+  {
+    "author": "World Health Organization. (2006). Defining sexual health: Report of a technical consultation on sexual health, 28–31 January 2002, Geneva. World Health Organization"
+  }
+];
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -1500,10 +1571,11 @@ async function main() {
   doc.modules = undefined; // clear stale modules[] so only sections[] remain
   doc.markModified('sections');
   doc.markModified('assessment');
+  doc.markModified('references');
 
   await doc.save(); // triggers pre-save wordCount hook + schema validation
   const fresh = await Course.findById(doc._id).lean();
-  console.log('Saved. Sections:', fresh.sections?.length, '| wordCount:', fresh.wordCount, '| accessType:', fresh.accessType, '| status:', fresh.status);
+  console.log('Saved. Sections:', fresh.sections?.length, '| wordCount:', fresh.wordCount, '| accessType:', fresh.accessType, '| status:', fresh.status, '| refs:', fresh.references?.length);
 
   await mongoose.disconnect();
   console.log('Done.');
