@@ -902,11 +902,11 @@ const course = {
           "options": [
             {
               "text": "Is usually the safest choice",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Has real costs for clients, therapists, and treatment",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Is appropriate when the client seems fragile",
@@ -917,8 +917,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Avoidance feels safer in the moment but carries real costs — eroded effectiveness, an inauthenticity the client senses, therapist resentment, and a missed corrective experience."
         },
         {
           "order": 24,
@@ -950,11 +950,11 @@ const course = {
           "options": [
             {
               "text": "They typically resolve on their own",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "The therapy becomes increasingly constrained",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Clients don't notice",
@@ -965,8 +965,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Unaddressed elephants accumulate and progressively constrain the work, shaping the therapy from the background."
         },
         {
           "type": "multipleChoice",
@@ -975,7 +975,7 @@ const course = {
           "options": [
             {
               "text": "Temperamental conflict avoidance",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Countertransference from personal history",
@@ -987,11 +987,11 @@ const course = {
             },
             {
               "text": "Excessive confrontation in training",
-              "isCorrect": false
+              "isCorrect": true
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 3,
+          "explanation": "Temperament, countertransference, and skills gaps all drive avoidance; excessive confrontation in training is not a typical contributor."
         }
       ]
     },
@@ -1256,11 +1256,11 @@ const course = {
           "options": [
             {
               "text": "\"We need to talk about your problem with lateness.\"",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "\"I've noticed something I'd like to understand better. Is this a good time?\"",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "\"Don't take this personally, but...\"",
@@ -1271,8 +1271,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "An effective opening signals importance without alarm, frames collaboratively, and seeks permission — unlike accusatory or label-laden openers."
         },
         {
           "order": 44,
@@ -1305,7 +1305,7 @@ const course = {
           "options": [
             {
               "text": "Immediately offer solutions",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Defend your observation",
@@ -1313,15 +1313,15 @@ const course = {
             },
             {
               "text": "Pause and listen to the client's response",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Provide additional evidence",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "After an observation, the COMPASS step is to Pause and listen — creating space for the client’s response rather than rushing to solutions or defense."
         },
         {
           "type": "multipleChoice",
@@ -1330,11 +1330,11 @@ const course = {
           "options": [
             {
               "text": "Summarizing everything discussed",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Expressing appreciation and reaffirming commitment",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Setting consequences for non-compliance",
@@ -1345,8 +1345,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Strengthen Connection means expressing appreciation and reaffirming the shared commitment, reinforcing the relationship."
         }
       ]
     },
@@ -1516,11 +1516,11 @@ const course = {
           "options": [
             {
               "text": "Stern authority",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Curious compassion",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Detached objectivity",
@@ -1531,8 +1531,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "The recommended stance is curious compassion — treating the behavior as communication to be understood, not misconduct to be punished."
         },
         {
           "type": "multipleChoice",
@@ -1541,11 +1541,11 @@ const course = {
           "options": [
             {
               "text": "Implement consequences immediately",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Explore what the lateness might be communicating",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Extend the session to make up the time",
@@ -1556,8 +1556,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "The therapist first explores what the lateness may be communicating rather than jumping to consequences."
         },
         {
           "order": 27,
@@ -1590,11 +1590,11 @@ const course = {
           "options": [
             {
               "text": "Never mention it again",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Follow through consistently and check in about changes",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Wait for the client to bring it up",
@@ -1605,8 +1605,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Addressing a behavior is not a one-time event; the therapist follows through consistently and checks in about changes."
         }
       ]
     },
@@ -1721,11 +1721,11 @@ const course = {
           "options": [
             {
               "text": "Wait indefinitely for change to occur",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Address the lack of progress directly and explore reasons collaboratively",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Terminate immediately",
@@ -1736,8 +1736,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "A lack of progress is addressed directly, with the reasons explored collaboratively rather than avoided or met with abrupt termination."
         },
         {
           "order": 21,
@@ -1770,7 +1770,7 @@ const course = {
           "options": [
             {
               "text": "Accept immediately without discussion",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Refuse to allow termination",
@@ -1778,15 +1778,15 @@ const course = {
             },
             {
               "text": "Share honest concerns while respecting client autonomy",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Express disappointment in the client",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "The therapist shares honest concerns about premature termination while respecting the client’s autonomy to decide."
         },
         {
           "type": "multipleChoice",
@@ -1795,7 +1795,7 @@ const course = {
           "options": [
             {
               "text": "The client is difficult to work with",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "The therapist needs the caseload slot",
@@ -1803,15 +1803,15 @@ const course = {
             },
             {
               "text": "The client needs services outside the therapist's competence",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "The client disagrees with the therapist",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Therapist-initiated termination is appropriate when the client needs services outside the therapist’s competence — an ethical referral, not a convenience."
         },
         {
           "type": "multipleChoice",
@@ -1820,7 +1820,7 @@ const course = {
           "options": [
             {
               "text": "Continue the same approach indefinitely",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Blame the client for lack of progress",
@@ -1828,15 +1828,15 @@ const course = {
             },
             {
               "text": "Acknowledge the failure honestly and explore alternatives including referral",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Pretend progress is occurring",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "When treatment has failed, the ethical response is honest acknowledgment and exploration of alternatives, including referral."
         }
       ]
     },
@@ -1980,11 +1980,11 @@ const course = {
           "options": [
             {
               "text": "Pretend not to notice to avoid making the client uncomfortable",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Name the difference and invite the client's perspective",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Assume the client wants a therapist of their own race",
@@ -1995,8 +1995,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "The therapist names racial difference and invites the client’s perspective rather than pretending not to notice."
         },
         {
           "type": "multipleChoice",
@@ -2005,7 +2005,7 @@ const course = {
           "options": [
             {
               "text": "Defend their intentions immediately",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Explain what they really meant",
@@ -2013,15 +2013,15 @@ const course = {
             },
             {
               "text": "Thank the client, acknowledge impact, and commit to doing better",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Challenge the client's perception",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Effective repair means thanking the client, acknowledging impact regardless of intent, and committing to do better — not defending."
         },
         {
           "type": "multipleChoice",
@@ -2030,11 +2030,11 @@ const course = {
           "options": [
             {
               "text": "Is inappropriate and destabilizing",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Can be helpful and is done in service of the client",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Should only happen if the client brings it up",
@@ -2045,8 +2045,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Naming power dynamics, done in service of the client, can be helpful rather than destabilizing."
         },
         {
           "type": "multipleChoice",
@@ -2055,11 +2055,11 @@ const course = {
           "options": [
             {
               "text": "\"I've studied your culture extensively and understand it well.\"",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "\"I want to learn from you about your experience, knowing my understanding has limits.\"",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "\"Culture doesn't really affect therapy.\"",
@@ -2070,8 +2070,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Cultural humility is an ongoing posture of learning from the client while recognizing the limits of one’s own understanding."
         }
       ]
     },
@@ -2273,11 +2273,11 @@ const course = {
           "options": [
             {
               "text": "Direct expression of dissatisfaction",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Client becoming distant, compliant, or superficially engaged",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Client leaving the session",
@@ -2288,8 +2288,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Withdrawal ruptures involve the client moving away — becoming distant, compliant, or superficially engaged — rather than confronting directly."
         },
         {
           "order": 35,
@@ -2330,7 +2330,7 @@ const course = {
           "options": [
             {
               "text": "Defend themselves immediately",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Explain what they really meant",
@@ -2338,15 +2338,15 @@ const course = {
             },
             {
               "text": "Listen non-defensively to understand the client's experience",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Terminate the session",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "When criticized during a rupture, the therapist listens non-defensively to understand the client’s experience."
         },
         {
           "type": "multipleChoice",
@@ -2355,7 +2355,7 @@ const course = {
           "options": [
             {
               "text": "Weaken the therapeutic alliance",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Predict poor outcomes",
@@ -2363,15 +2363,15 @@ const course = {
             },
             {
               "text": "Strengthen alliance and predict positive outcomes",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Should be avoided entirely",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Successfully repaired ruptures strengthen the alliance and predict positive outcomes."
         },
         {
           "type": "text",
