@@ -81,11 +81,11 @@ const course = {
         "options": [
           {
             "text": "A specific DSM-5 diagnosis",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "A behavioral description of challenging patterns regardless of diagnosis",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Only clients with personality disorders",
@@ -96,8 +96,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "High-conflict is a behavioral description of challenging patterns regardless of diagnosis."
       },
       {
         "type": "multipleChoice",
@@ -105,7 +105,7 @@ const course = {
         "options": [
           {
             "text": "All-or-nothing thinking",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Intense emotional reactions",
@@ -113,15 +113,15 @@ const course = {
           },
           {
             "text": "Consistent insight into their contribution to problems",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Pattern of interpersonal conflict",
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 2,
+        "explanation": "Consistent insight into one’s own contribution is NOT characteristic; all-or-nothing thinking, intense reactions, and recurrent conflict are."
       },
       {
         "type": "multipleChoice",
@@ -129,11 +129,11 @@ const course = {
         "options": [
           {
             "text": "Poor character and lack of willpower",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Biological emotional vulnerability combined with invalidating environments",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Genetic factors only",
@@ -144,8 +144,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "The biosocial model locates BPD in the transaction between biological emotional vulnerability and invalidating environments."
       },
       {
         "type": "multipleChoice",
@@ -153,11 +153,11 @@ const course = {
         "options": [
           {
             "text": "Terminating therapy prematurely",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "The tendency to view people as all good or all bad",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Multiple personality disorder",
@@ -168,8 +168,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Splitting is the tendency to view people as all-good or all-bad without integration."
       },
       {
         "type": "multipleChoice",
@@ -177,11 +177,11 @@ const course = {
         "options": [
           {
             "text": "Diagnose the client accurately",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Feel and act in ways consistent with the client's projections",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Project their own issues onto the client",
@@ -192,8 +192,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Through projective identification, the therapist may begin to feel and act in line with the client’s projections."
       },
       {
         "type": "multipleChoice",
@@ -201,11 +201,11 @@ const course = {
         "options": [
           {
             "text": "Being deliberately manipulative",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Unconsciously checking if the therapist will abandon them or handle their intensity",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Trying to get the therapist fired",
@@ -216,8 +216,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Testing is usually an unconscious check of whether the therapist will abandon them or can handle their intensity."
       },
       {
         "type": "multipleChoice",
@@ -225,11 +225,11 @@ const course = {
         "options": [
           {
             "text": "Always agreeing with the client",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Treating the client as a capable person, not a fragile patient",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Being rude to the client",
@@ -240,8 +240,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Radical genuineness treats the client as a capable person rather than a fragile patient."
       },
       {
         "type": "multipleChoice",
@@ -249,11 +249,11 @@ const course = {
         "options": [
           {
             "text": "There is no distinction; they mean the same thing",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Validation acknowledges the emotion without necessarily agreeing about the situation",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Validation is always inappropriate",
@@ -264,8 +264,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Validation acknowledges the emotion without necessarily agreeing about the situation or interpretation."
       },
       {
         "type": "multipleChoice",
@@ -273,11 +273,11 @@ const course = {
         "options": [
           {
             "text": "Negate the validation",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Connect validation to behavioral guidance without negating either",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Confuse the client",
@@ -288,8 +288,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "“And” connects validation to behavioral guidance without negating either."
       },
       {
         "type": "multipleChoice",
@@ -297,11 +297,11 @@ const course = {
         "options": [
           {
             "text": "Joyful, Appreciative, Determined, Eager",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Justify, Argue, Defend, Explain (things to avoid overdoing)",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Judgment, Anger, Disappointment, Evaluation",
@@ -312,8 +312,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "JADE — Justify, Argue, Defend, Explain — names the over-explaining to avoid when holding a boundary."
       },
       {
         "type": "multipleChoice",
@@ -321,11 +321,11 @@ const course = {
         "options": [
           {
             "text": "There is no difference",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Limit-setting maintains structure while remaining collaborative; punishment is retaliatory",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Punishment is more effective",
@@ -336,8 +336,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Limit-setting maintains structure while remaining collaborative; punishment is retaliatory."
       },
       {
         "type": "multipleChoice",
@@ -345,11 +345,11 @@ const course = {
         "options": [
           {
             "text": "Maintaining appropriate boundaries",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Dreading sessions and feeling relief when client cancels",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Following treatment protocols",
@@ -360,8 +360,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Dreading sessions and feeling relief when a client cancels can signal countertransference."
       },
       {
         "type": "multipleChoice",
@@ -369,7 +369,7 @@ const course = {
         "options": [
           {
             "text": "Skills acquisition",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Quality-of-life-interfering behaviors",
@@ -377,15 +377,15 @@ const course = {
           },
           {
             "text": "Life-threatening behaviors",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Financial issues",
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 2,
+        "explanation": "DBT addresses life-threatening behaviors first in its hierarchy of treatment targets."
       },
       {
         "type": "multipleChoice",
@@ -393,11 +393,11 @@ const course = {
         "options": [
           {
             "text": "Filling entire caseload with high-conflict clients for efficiency",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Balancing caseload so not every client is high-conflict",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Never accepting high-conflict clients",
@@ -408,8 +408,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Healthy caseload management balances the load so not every client is high-conflict."
       },
       {
         "type": "multipleChoice",
@@ -417,11 +417,11 @@ const course = {
         "options": [
           {
             "text": "They are deliberately trying to make therapy difficult",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "High-conflict patterns typically developed as survival strategies in difficult circumstances",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "They cannot benefit from therapy",
@@ -432,8 +432,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "High-conflict patterns typically developed as survival strategies in difficult circumstances."
       },
       {
         "type": "multipleChoice",
@@ -441,11 +441,11 @@ const course = {
         "options": [
           {
             "text": "Abandon the boundary to maintain the relationship",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Acknowledge the underlying need while maintaining the boundary",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Immediately terminate treatment",
@@ -456,8 +456,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Effective therapists acknowledge the underlying need while maintaining the boundary."
       },
       {
         "type": "multipleChoice",
@@ -465,11 +465,11 @@ const course = {
         "options": [
           {
             "text": "Optional but nice to have",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Essential for sustainability, not optional",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Only needed after burnout occurs",
@@ -480,8 +480,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Self-care is essential for sustainability, not optional."
       },
       {
         "type": "multipleChoice",
@@ -489,7 +489,7 @@ const course = {
         "options": [
           {
             "text": "Only sought during crises",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "Avoided to maintain client confidentiality",
@@ -497,15 +497,15 @@ const course = {
           },
           {
             "text": "Ongoing, not just crisis-driven",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Only for trainees",
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 2,
+        "explanation": "Consultation and supervision should be ongoing, not just crisis-driven."
       },
       {
         "type": "multipleChoice",
@@ -513,11 +513,11 @@ const course = {
         "options": [
           {
             "text": "A decorating style for therapy offices",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "The hypervigilance and fear of triggering clients that therapists experience",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "A diagnosis category",
@@ -528,8 +528,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "The “eggshell” experience is the hypervigilance and fear of triggering clients that therapists feel."
       },
       {
         "type": "multipleChoice",
@@ -537,11 +537,11 @@ const course = {
         "options": [
           {
             "text": "Is always a sign of therapist failure",
-            "isCorrect": true
+            "isCorrect": false
           },
           {
             "text": "May be appropriate care when client needs specialized treatment or fit isn't working",
-            "isCorrect": false
+            "isCorrect": true
           },
           {
             "text": "Should never happen",
@@ -552,8 +552,8 @@ const course = {
             "isCorrect": false
           }
         ],
-        "correctAnswer": 0,
-        "explanation": ""
+        "correctAnswer": 1,
+        "explanation": "Referral may be appropriate care when the client needs specialized treatment or the fit isn’t working."
       },
       {
         "type": "trueFalse",
@@ -827,11 +827,11 @@ const course = {
           "options": [
             {
               "text": "A DSM-5 diagnosis",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "A behavioral description regardless of specific diagnosis",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Another term for borderline personality disorder",
@@ -842,8 +842,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "High-conflict is a behavioral description of challenging patterns, not a diagnosis or a synonym for any one disorder."
         },
         {
           "type": "multipleChoice",
@@ -852,7 +852,7 @@ const course = {
           "options": [
             {
               "text": "All-or-nothing thinking",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Blame externalization",
@@ -860,15 +860,15 @@ const course = {
             },
             {
               "text": "Consistent self-reflection about their contribution to problems",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Pattern of interpersonal conflict",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "All-or-nothing thinking, blame externalization, and recurrent conflict are typical; consistent self-reflection about one’s own contribution is not."
         },
         {
           "order": 23,
@@ -901,11 +901,11 @@ const course = {
           "options": [
             {
               "text": "The caregiver is consistently warm and responsive",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "The caregiver is simultaneously the source of fear and comfort",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "The child has no caregiver",
@@ -916,8 +916,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Disorganized attachment develops when the caregiver is simultaneously the source of fear and comfort, leaving the child without a coherent strategy."
         },
         {
           "type": "multipleChoice",
@@ -926,11 +926,11 @@ const course = {
           "options": [
             {
               "text": "More fear of abandonment",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "More sensitivity to perceived criticism and shame",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "More open expression of distress",
@@ -941,8 +941,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Narcissistic presentations typically involve heightened sensitivity to perceived criticism and shame, contrasted with the borderline fear of abandonment."
         }
       ]
     },
@@ -1117,11 +1117,11 @@ const course = {
           "options": [
             {
               "text": "Conscious manipulation",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Unconscious processes testing whether the therapist is different from previous caregivers",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Signs that the client should be terminated",
@@ -1132,8 +1132,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Testing behaviors are usually unconscious processes checking whether the therapist is different from earlier caregivers — not deliberate manipulation."
         },
         {
           "type": "multipleChoice",
@@ -1142,7 +1142,7 @@ const course = {
           "options": [
             {
               "text": "Become rigid and punitive",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Abandon the boundary to preserve the relationship",
@@ -1150,15 +1150,15 @@ const course = {
             },
             {
               "text": "Maintain the boundary clearly and kindly",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Terminate the client for boundary violations",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "When boundaries are tested, the therapist maintains the boundary clearly and kindly — neither rigid and punitive nor abandoning it."
         },
         {
           "type": "multipleChoice",
@@ -1167,11 +1167,11 @@ const course = {
           "options": [
             {
               "text": "Are irrelevant to treatment",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Are data about the client's internal world",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Should be ignored",
@@ -1182,8 +1182,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Feelings evoked through projective identification are data about the client’s internal world, to be noticed and used rather than enacted or dismissed."
         }
       ]
     },
@@ -1280,11 +1280,11 @@ const course = {
           "options": [
             {
               "text": "They are the same thing",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Validation acknowledges emotional experience without necessarily endorsing interpretations or behaviors",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Validation is always inappropriate with high-conflict clients",
@@ -1295,8 +1295,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Validation acknowledges emotional experience without necessarily endorsing the client’s interpretations or behaviors — it is not agreement."
         },
         {
           "order": 16,
@@ -1336,11 +1336,11 @@ const course = {
           "options": [
             {
               "text": "Negates the validation",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Connects validation to behavioral guidance without negating either",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Should be replaced with \"but\"",
@@ -1351,8 +1351,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "“And” connects validation to behavioral guidance without negating either, unlike “but,” which cancels the validation."
         },
         {
           "type": "multipleChoice",
@@ -1361,7 +1361,7 @@ const course = {
           "options": [
             {
               "text": "Hiding behind the therapist role",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Treating the client as fragile",
@@ -1369,15 +1369,15 @@ const course = {
             },
             {
               "text": "Treating the client as a capable, equal person",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Agreeing with everything the client says",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Radical genuineness means relating to the client as a capable, equal person rather than from behind the professional role or as if fragile."
         },
         {
           "type": "multipleChoice",
@@ -1386,11 +1386,11 @@ const course = {
           "options": [
             {
               "text": "Match the client's intensity",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Validate the emotion and set limits on the behavior",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "End the session immediately",
@@ -1401,8 +1401,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "With escalation, the therapist validates the emotion while setting limits on the behavior — staying regulated rather than matching intensity."
         },
         {
           "type": "text",
@@ -1672,11 +1672,11 @@ const course = {
           "options": [
             {
               "text": "They punish problematic behavior",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "They provide containment, safety, and reality testing",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "They keep the therapist distant from the client",
@@ -1687,8 +1687,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Boundaries provide containment, safety, and reality testing; they are care for the work, not punishment or distance."
         },
         {
           "order": 38,
@@ -1764,7 +1764,7 @@ const course = {
           "options": [
             {
               "text": "Responding as if they were genuine emergencies",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Ignoring them completely",
@@ -1772,15 +1772,15 @@ const course = {
             },
             {
               "text": "Validating the distress while redirecting to skills",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Terminating the client for manipulation",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Pseudo-emergencies are met by validating the distress while redirecting to skills — neither treating them as true emergencies nor dismissing them."
         }
       ]
     },
@@ -1945,11 +1945,11 @@ const course = {
           "options": [
             {
               "text": "Indicate the therapist needs more training",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Are normal responses to genuinely difficult work",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Should never be discussed",
@@ -1960,8 +1960,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Countertransference reactions are normal responses to genuinely difficult work, to be noticed and used rather than taken as signs of inadequacy."
         },
         {
           "order": 30,
@@ -1993,7 +1993,7 @@ const course = {
           "options": [
             {
               "text": "End the session immediately",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Tell the client what you're feeling",
@@ -2001,15 +2001,15 @@ const course = {
             },
             {
               "text": "Notice what you're feeling",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Interpret the client's behavior",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "The first in-session step when activated is to notice what you’re feeling — awareness precedes regulation and any disclosure."
         },
         {
           "order": 32,
@@ -2042,11 +2042,11 @@ const course = {
           "options": [
             {
               "text": "Taking on as many high-conflict clients as possible",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Balancing high-intensity clients with clients who are lower-intensity",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Avoiding all high-conflict clients",
@@ -2057,8 +2057,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Sustainable caseloads balance high-intensity clients with lower-intensity ones rather than concentrating high-conflict cases."
         }
       ]
     },
@@ -2208,7 +2208,7 @@ const course = {
           "options": [
             {
               "text": "Explicit agreements about expectations",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Clear treatment goals",
@@ -2216,15 +2216,15 @@ const course = {
             },
             {
               "text": "Unlimited between-session access",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Session frequency and length",
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 2,
+          "explanation": "Frame elements include clear expectations, goals, and session parameters; unlimited between-session access is not part of a healthy frame."
         },
         {
           "type": "multipleChoice",
@@ -2233,11 +2233,11 @@ const course = {
           "options": [
             {
               "text": "Preventing any discussion of difficult topics",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Containing chaos and maximizing productive use of time",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Making the client feel controlled",
@@ -2248,8 +2248,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Structure contains chaos and maximizes productive use of time, supporting rather than controlling the client."
         },
         {
           "order": 28,
@@ -2282,11 +2282,11 @@ const course = {
           "options": [
             {
               "text": "The client is difficult",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "The client needs treatment outside your scope or the fit isn't working",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "The client disagrees with you",
@@ -2297,8 +2297,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Referral is appropriate when the client needs treatment outside one’s scope or the fit isn’t working — a clinical decision, not a reaction to difficulty."
         },
         {
           "type": "multipleChoice",
@@ -2307,11 +2307,11 @@ const course = {
           "options": [
             {
               "text": "Occasionally feeling tired after difficult sessions",
-              "isCorrect": true
+              "isCorrect": false
             },
             {
               "text": "Chronic exhaustion, cynicism, and depersonalization",
-              "isCorrect": false
+              "isCorrect": true
             },
             {
               "text": "Taking consultation seriously",
@@ -2322,8 +2322,8 @@ const course = {
               "isCorrect": false
             }
           ],
-          "correctAnswer": 0,
-          "explanation": "⚠️ Verify correct answer before publishing."
+          "correctAnswer": 1,
+          "explanation": "Burnout warning signs are chronic exhaustion, cynicism, and depersonalization — distinct from ordinary tiredness or healthy self-care."
         },
         {
           "type": "text",
