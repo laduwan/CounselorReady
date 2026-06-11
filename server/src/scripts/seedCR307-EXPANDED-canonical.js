@@ -764,100 +764,73 @@ const COURSE_DATA = {
   },
   "references": [
     {
-      "title": "AASECT position on sex addiction. https://www.aasect.org",
-      "author": "American Association of Sexuality Educators, Counselors and Therapists",
-      "year": 2016,
-      "source": "6). AASECT position on sex addiction. https://www.aasect.org"
+      "citation": "American Association of Sexuality Educators, Counselors and Therapists (2016). AASECT position on sex addiction. https://www.aasect.org"
     },
     {
-      "title": "Sexual addiction, sexual compulsivity, sexual impulsivity, or what? Journal of Sex Research, 41(3), 225–234.",
-      "author": "Bancroft, J",
-      "year": 2004,
-      "source": "pulsivity, or what? Journal of Sex Research, 41(3), 225–234."
+      "citation": "Bancroft, J. (2004). Sexual addiction, sexual compulsivity, sexual impulsivity, or what? Journal of Sex Research, 41(3), 225–234."
     },
     {
-      "title": "Out of the shadows: Understanding sexual addiction. CompCare Publications.",
-      "author": "Carnes, P",
-      "year": 1983,
-      "source": "dows: Understanding sexual addiction. CompCare Publications."
+      "citation": "Briken, P. (2020). An integrated model to assess and treat compulsive sexual behaviour disorder. Nature Reviews Urology, 17(7), 391–406. https://doi.org/10.1038/s41585-020-0343-7"
     },
     {
-      "title": "Is your patient suffering from compulsive sexual behavior? Psychiatric Annals, 22(6), 320–325.",
-      "author": "Coleman, E",
-      "year": 1992,
-      "source": "pulsive sexual behavior? Psychiatric Annals, 22(6), 320–325."
+      "citation": "Carnes, P. (1983). Out of the shadows: Understanding sexual addiction. CompCare Publications."
     },
     {
-      "title": "What's in a name? Terminology for designating a syndrome of driven sexual behavior. Sexual Addiction & Compulsivity, 8(",
-      "author": "Goodman, A",
-      "year": 2001,
-      "source": "behavior. Sexual Addiction & Compulsivity, 8(3–4), 191–213."
+      "citation": "Coleman, E. (1992). Is your patient suffering from compulsive sexual behavior? Psychiatric Annals, 22(6), 320–325."
     },
     {
-      "title": "Hypersexual disorder: A proposed diagnosis for DSM-5. Archives of Sexual Behavior, 39(2), 377–400.",
-      "author": "Kafka, M",
-      "year": 2010,
-      "source": "osis for DSM-5. Archives of Sexual Behavior, 39(2), 377–400."
+      "citation": "Gola, M., & Potenza, M. N. (2018). Promoting educational, classification, treatment, and policy initiatives: Commentary on: Compulsive sexual behaviour disorder in the ICD-11 (Kraus et al., 2018). Journal of Behavioral Addictions, 7(2), 208–210. https://doi.org/10.1556/2006.7.2018.51"
     },
     {
-      "title": "Hypersexuality and recidivism among sexual offenders. Sexual Addiction & Compulsivity, 20(1–2), 91–105.",
-      "author": "Kingston, D",
-      "year": 2013,
-      "source": "offenders. Sexual Addiction & Compulsivity, 20(1–2), 91–105."
+      "citation": "Goodman, A. (2001). What's in a name? Terminology for designating a syndrome of driven sexual behavior. Sexual Addiction & Compulsivity, 8("
     },
     {
-      "title": "Should compulsive sexual behavior be considered an addiction? Addiction, 111(12), 2097–2106.",
-      "author": "Kraus, S",
-      "year": 2016,
-      "source": "r be considered an addiction? Addiction, 111(12), 2097–2106."
+      "citation": "Grubbs, J. B., Hoagland, K. C., Lee, B. N., Grant, J. T., Davison, P., Reid, R. C., & Kraus, S. W. (2020). Sexual addiction 25 years on: A systematic and methodological review of empirical literature and an agenda for future research. Clinical Psychology Review, 82, 101925. https://doi.org/10.1016/j.cpr.2020.101925"
     },
     {
-      "title": "Impulsive-compulsive sexual behavior. CNS Spectrums, 11(12), 944–955.",
-      "author": "Mick, T",
-      "year": 2006,
-      "source": "-compulsive sexual behavior. CNS Spectrums, 11(12), 944–955."
+      "citation": "Grubbs, J. B., Perry, S. L., Wilt, J. A., & Reid, R. C. (2019). Pornography problems due to moral incongruence: An integrative model with a systematic review and meta-analysis. Archives of Sexual Behavior, 48(2), 397–415. https://doi.org/10.1007/s10508-018-1248-x"
     },
     {
-      "title": "Data do not support sex as addictive. Lancet Psychiatry, 4(12), 899.",
-      "author": "Prause, N",
-      "year": 2017,
-      "source": "not support sex as addictive. Lancet Psychiatry, 4(12), 899."
+      "citation": "Hook, J. N., Reid, R. C., Penberthy, J. K., Davis, D. E., & Jennings, D. J., II. (2014). Methodological review of treatments for nonparaphilic hypersexual behavior. Journal of Sex & Marital Therapy, 40(4), 294–308. https://doi.org/10.1080/0092623X.2012.751075"
     },
     {
-      "title": "Reliability, validity, and psychometric development of the Hypersexual Behavior Inventory in an outpatient sample of me",
-      "author": "Reid, R",
-      "year": 2011,
-      "source": "ample of men. Sexual Addiction & Compulsivity, 18(1), 30–51."
+      "citation": "Kafka, M. P. (2010). Hypersexual disorder: A proposed diagnosis for DSM-V. Archives of Sexual Behavior, 39(2), 377–400. https://doi.org/10.1007/s10508-009-9574-7"
     },
     {
-      "title": "Current status and future directions in couple therapy. Annual Review of Psychology, 57, 317–344.",
-      "author": "Snyder, D",
-      "year": 2006,
-      "source": "in couple therapy. Annual Review of Psychology, 57, 317–344."
+      "citation": "Kingston, D. (2013). Hypersexuality and recidivism among sexual offenders. Sexual Addiction & Compulsivity, 20(1–2), 91–105."
     },
     {
-      "title": "The traumatic nature of disclosure for wives of sexual addicts. Sexual Addiction & Compulsivity, 13(2–3), 247–267.",
-      "author": "Steffens, B",
-      "year": 2006,
-      "source": "addicts. Sexual Addiction & Compulsivity, 13(2–3), 247–267."
+      "citation": "Kraus, S. (2016). Should compulsive sexual behavior be considered an addiction? Addiction, 111(12), 2097–2106."
     },
     {
-      "title": "Hypersexuality: A critical review and introduction to the 'Sexhavior Cycle.' Archives of Sexual Behavior, 46(8), 2231–2",
-      "author": "Walton, M",
-      "year": 2017,
-      "source": "avior Cycle.' Archives of Sexual Behavior, 46(8), 2231–2251."
+      "citation": "Kraus, S. W., Krueger, R. B., Briken, P., First, M. B., Stein, D. J., Kaplan, M. S., … Reed, G. M. (2018). Compulsive sexual behaviour disorder in the ICD-11. World Psychiatry, 17(1), 109–110. https://doi.org/10.1002/wps.20499"
     },
     {
-      "title": "International classification of diseases (11th revision). https://icd.who.int",
-      "author": "World Health Organization",
-      "year": 2019,
-      "source": "ssification of diseases (11th revision). https://icd.who.int"
+      "citation": "Mick, T. (2006). Impulsive-compulsive sexual behavior. CNS Spectrums, 11(12), 944–955."
     },
     {
-      "title": "Hypersexual disorder: A more cautious approach. Archives of Sexual Behavior, 39(3), 594–596.",
-      "author": "Winters, J",
-      "year": 2010,
-      "source": "tious approach. Archives of Sexual Behavior, 39(3), 594–596."
+      "citation": "Prause, N. (2017). Data do not support sex as addictive. Lancet Psychiatry, 4(12), 899."
+    },
+    {
+      "citation": "Reid, R. (2011). Reliability, validity, and psychometric development of the Hypersexual Behavior Inventory in an outpatient sample of me"
+    },
+    {
+      "citation": "Reid, R. C., Carpenter, B. N., Hook, J. N., Garos, S., Manning, J. C., Gilliland, R., … Fong, T. (2012). Report of findings in a DSM-5 field trial for hypersexual disorder. The Journal of Sexual Medicine, 9(11), 2868–2877. https://doi.org/10.1111/j.1743-6109.2012.02936.x"
+    },
+    {
+      "citation": "Snyder, D. (2006). Current status and future directions in couple therapy. Annual Review of Psychology, 57, 317–344."
+    },
+    {
+      "citation": "Steffens, B. (2006). The traumatic nature of disclosure for wives of sexual addicts. Sexual Addiction & Compulsivity, 13(2–3), 247–267."
+    },
+    {
+      "citation": "Walton, M. (2017). Hypersexuality: A critical review and introduction to the 'Sexhavior Cycle.' Archives of Sexual Behavior, 46(8), 2231–2"
+    },
+    {
+      "citation": "Winters, J. (2010). Hypersexual disorder: A more cautious approach. Archives of Sexual Behavior, 39(3), 594–596."
+    },
+    {
+      "citation": "World Health Organization. (2019). International classification of diseases (11th rev.). https://icd.who.int/"
     }
   ],
   "sections": [
@@ -1663,6 +1636,36 @@ const COURSE_DATA = {
   ]
 };
 
+COURSE_DATA.references = [
+  {
+    "author": "Briken, P. (2020). An integrated model to assess and treat compulsive sexual behaviour disorder. Nature Reviews Urology, 17(7), 391–406. https://doi.org/10.1038/s41585-020-0343-7"
+  },
+  {
+    "author": "Gola, M., & Potenza, M. N. (2018). Promoting educational, classification, treatment, and policy initiatives: Commentary on compulsive sexual behaviour disorder in the ICD-11. Journal of Behavioral Addictions, 7(2), 208–210. https://doi.org/10.1556/2006.7.2018.51"
+  },
+  {
+    "author": "Grubbs, J. B., Hoagland, K. C., Lee, B. N., Grant, J. T., Davison, P., Reid, R. C., & Kraus, S. W. (2020). Sexual addiction 25 years on: A systematic and methodological review of empirical literature and an agenda for future research. Clinical Psychology Review, 82, 101925. https://doi.org/10.1016/j.cpr.2020.101925"
+  },
+  {
+    "author": "Grubbs, J. B., Perry, S. L., Wilt, J. A., & Reid, R. C. (2019). Pornography problems due to moral incongruence: An integrative model with a systematic review and meta-analysis. Archives of Sexual Behavior, 48(2), 397–415. https://doi.org/10.1007/s10508-018-1248-x"
+  },
+  {
+    "author": "Hook, J. N., Reid, R. C., Penberthy, J. K., Davis, D. E., & Jennings, D. J., II. (2014). Methodological review of treatments for nonparaphilic hypersexual behavior. Journal of Sex & Marital Therapy, 40(4), 294–308. https://doi.org/10.1080/0092623X.2012.751075"
+  },
+  {
+    "author": "Kafka, M. P. (2010). Hypersexual disorder: A proposed diagnosis for DSM-V. Archives of Sexual Behavior, 39(2), 377–400. https://doi.org/10.1007/s10508-009-9574-7"
+  },
+  {
+    "author": "Kraus, S. W., Krueger, R. B., Briken, P., First, M. B., Stein, D. J., Kaplan, M. S., … Reed, G. M. (2018). Compulsive sexual behaviour disorder in the ICD-11. World Psychiatry, 17(1), 109–110. https://doi.org/10.1002/wps.20499"
+  },
+  {
+    "author": "Reid, R. C., Carpenter, B. N., Hook, J. N., Garos, S., Manning, J. C., Gilliland, R., … Fong, T. (2012). Report of findings in a DSM-5 field trial for hypersexual disorder. The Journal of Sexual Medicine, 9(11), 2868–2877. https://doi.org/10.1111/j.1743-6109.2012.02936.x"
+  },
+  {
+    "author": "World Health Organization. (2019). International classification of diseases (11th rev.). https://icd.who.int/"
+  }
+];
+
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
 async function main(){
@@ -1671,6 +1674,7 @@ async function main(){
   if(!doc){ console.error('CR-307 not found:', COURSE_DATA.slug); process.exit(1); }
   for(const k of Object.keys(COURSE_DATA)) doc[k]=COURSE_DATA[k];
   doc.modules=undefined; doc.markModified('sections'); doc.markModified('assessment');
+  doc.markModified('references');
   await doc.save();
   const fresh=await Course.findById(doc._id).lean();
   console.log('Saved. Sections:',fresh.sections?.length,'| wordCount:',fresh.wordCount,'| accessType:',fresh.accessType,'| status:',fresh.status);

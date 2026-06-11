@@ -789,94 +789,67 @@ const COURSE_DATA = {
   },
   "references": [
     {
-      "title": "Demarginalizing the intersection of race and sex. University of Chicago Legal Forum, 140, 139–167.",
-      "author": "Crenshaw, K",
-      "year": 1989,
-      "source": "ce and sex. University of Chicago Legal Forum, 140, 139–167."
+      "citation": "American Psychological Association (2012). Guidelines for psychological practice with lesbian, gay, and bisexual clients. American Psychologist, 67(1), 10–42."
     },
     {
-      "title": "Prejudice, social stress, and mental health in lesbian, gay, and bisexual populations. Psychological Bulletin, 129(5),",
-      "author": "Meyer, I",
-      "year": 2003,
-      "source": "sexual populations. Psychological Bulletin, 129(5), 674–697."
+      "citation": "American Psychological Association. (2015). Guidelines for psychological practice with transgender and gender nonconforming people. American Psychologist, 70(9), 832–864. https://doi.org/10.1037/a0039906"
     },
     {
-      "title": "Family rejection as a predictor of negative health outcomes. Pediatrics, 123(1), 346–352.",
-      "author": "Ryan, C",
-      "year": 2009,
-      "source": "or of negative health outcomes. Pediatrics, 123(1), 346–352."
+      "citation": "American Psychological Association. (2021). APA guidelines for psychological practice with sexual minority persons. https://www.apa.org/about/policy/psychological-practice-sexual-minority-persons.pdf"
     },
     {
-      "title": "Chosen name use is linked to reduced depressive symptoms, suicidal ideation, and suicidal behavior among transgender yo",
-      "author": "Russell, S",
-      "year": 2018,
-      "source": "sgender youth. Journal of Adolescent Health, 63(4), 503–505."
+      "citation": "APA Task Force on Appropriate Therapeutic Responses to Sexual Orientation (2009). Report. American Psychological Association."
     },
     {
-      "title": "National survey on LGBTQ youth mental health. https://www.thetrevorproject.org",
-      "author": "The Trevor Project",
-      "year": 2022,
-      "source": "LGBTQ youth mental health. https://www.thetrevorproject.org"
+      "citation": "Balsam, K. (2011). Cultural victimization among LGBT people of color. Journal of GLBT Family Studies, 7(4), 398–421."
     },
     {
-      "title": "World Professional Association for Transgender Health standards of care, version 8. International Journal of Transgende",
-      "author": "Coleman, E",
-      "year": 2022,
-      "source": "nternational Journal of Transgender Health, 23(S1), S1–S259."
+      "citation": "Bockting, W. O., Miner, M. H., Swinburne Romine, R. E., Hamilton, A., & Coleman, E. (2013). Stigma, mental health, and resilience in an online sample of the US transgender population. American Journal of Public Health, 103(5), 943–951. https://doi.org/10.2105/AJPH.2013.301241"
     },
     {
-      "title": "Uncovering clinical principles and techniques to address minority stress, mental health, and related health risks among",
-      "author": "Pachankis, J",
-      "year": 2014,
-      "source": "g gay and bisexual men. Clinical Psychology, 21(4), 313–330."
+      "citation": "Coleman, E., Radix, A. E., Bouman, W. P., Brown, G. R., de Vries, A. L. C., Deutsch, M. B., … Arcelus, J. (2022). Standards of care for the health of transgender and gender diverse people, version 8. International Journal of Transgender Health, 23(sup1), S1–S259. https://doi.org/10.1080/26895269.2022.2100644"
     },
     {
-      "title": "Guidelines for psychological practice with lesbian, gay, and bisexual clients. American Psychologist, 67(1), 10–42.",
-      "author": "American Psychological Association",
-      "year": 2012,
-      "source": ", and bisexual clients. American Psychologist, 67(1), 10–42."
+      "citation": "Crenshaw, K. (1989). Demarginalizing the intersection of race and sex. University of Chicago Legal Forum, 140, 139–167."
     },
     {
-      "title": "Guidelines for psychological practice with transgender and gender nonconforming people. American Psychologist, 70(9), 8",
-      "author": "APA",
-      "year": 2015,
-      "source": "nonconforming people. American Psychologist, 70(9), 832–864."
+      "citation": "Crenshaw, K. (1991). Mapping the margins: Intersectionality, identity politics, and violence against women of color. Stanford Law Review, 43(6), 1241–1299. https://doi.org/10.2307/1229039"
     },
     {
-      "title": "Cultural victimization among LGBT people of color. Journal of GLBT Family Studies, 7(4), 398–421.",
-      "author": "Balsam, K",
-      "year": 2011,
-      "source": "ple of color. Journal of GLBT Family Studies, 7(4), 398–421."
+      "citation": "Hatzenbuehler, M. L. (2009). How does sexual minority stigma “get under the skin”? A psychological mediation framework. Psychological Bulletin, 135(5), 707–730. https://doi.org/10.1037/a0016441"
     },
     {
-      "title": "Global health burden and needs of transgender populations. Lancet, 388(10042), 412–436.",
-      "author": "Reisner, S",
-      "year": 2016,
-      "source": "eds of transgender populations. Lancet, 388(10042), 412–436."
+      "citation": "Hendricks, M. L., & Testa, R. J. (2012). A conceptual framework for clinical work with transgender and gender nonconforming clients: An adaptation of the minority stress model. Professional Psychology: Research and Practice, 43(5), 460–467. https://doi.org/10.1037/a0029597"
     },
     {
-      "title": "A conceptual framework for clinical work with transgender and gender nonconforming clients. Professional Psychology, 43",
-      "author": "Hendricks, M",
-      "year": 2012,
-      "source": "conforming clients. Professional Psychology, 43(5), 460–467."
+      "citation": "Meyer, I. H. (2003). Prejudice, social stress, and mental health in lesbian, gay, and bisexual populations: Conceptual issues and research evidence. Psychological Bulletin, 129(5), 674–697. https://doi.org/10.1037/0033-2909.129.5.674"
     },
     {
-      "title": "Report. American Psychological Association.",
-      "author": "APA Task Force on Appropriate Therapeutic Responses to Sexual Orientation",
-      "year": 2009,
-      "source": "ntation. (2009). Report. American Psychological Association."
+      "citation": "Pachankis, J. (2014). Uncovering clinical principles and techniques to address minority stress, mental health, and related health risks among"
     },
     {
-      "title": "Ending conversion therapy: Supporting and affirming LGBTQ youth. SAMHSA.",
-      "author": "Substance Abuse and Mental Health Services Administration",
-      "year": 2015,
-      "source": "rsion therapy: Supporting and affirming LGBTQ youth. SAMHSA."
+      "citation": "Reed, G. M., Drescher, J., Krueger, R. B., Atalla, E., Cochran, S. D., First, M. B., … Saxena, S. (2016). Disorders related to sexuality and gender identity in the ICD-11. World Psychiatry, 15(3), 205–221. https://doi.org/10.1002/wps.20354"
     },
     {
-      "title": "LGBT people in the US not protected by state non-discrimination statutes. UCLA School of Law.",
-      "author": "Williams Institute",
-      "year": 2020,
-      "source": "ed by state non-discrimination statutes. UCLA School of Law."
+      "citation": "Reisner, S. (2016). Global health burden and needs of transgender populations. Lancet, 388(10042), 412–436."
+    },
+    {
+      "citation": "Russell, S. (2018). Chosen name use is linked to reduced depressive symptoms, suicidal ideation, and suicidal behavior among transgender yo"
+    },
+    {
+      "citation": "Russell, S. T., & Fish, J. N. (2016). Mental health in lesbian, gay, bisexual, and transgender (LGBT) youth. Annual Review of Clinical Psychology, 12, 465–487. https://doi.org/10.1146/annurev-clinpsy-021815-093153"
+    },
+    {
+      "citation": "Ryan, C. (2009). Family rejection as a predictor of negative health outcomes. Pediatrics, 123(1), 346–352."
+    },
+    {
+      "citation": "Substance Abuse and Mental Health Services Administration (2015). Ending conversion therapy: Supporting and affirming LGBTQ youth. SAMHSA."
+    },
+    {
+      "citation": "The Trevor Project (2022). National survey on LGBTQ youth mental health. https://www.thetrevorproject.org"
+    },
+    {
+      "citation": "Williams Institute (2020). LGBT people in the US not protected by state non-discrimination statutes. UCLA School of Law."
     }
   ],
   "sections": [
@@ -1641,6 +1614,39 @@ const COURSE_DATA = {
   ]
 };
 
+COURSE_DATA.references = [
+  {
+    "author": "American Psychological Association. (2015). Guidelines for psychological practice with transgender and gender nonconforming people. American Psychologist, 70(9), 832–864. https://doi.org/10.1037/a0039906"
+  },
+  {
+    "author": "American Psychological Association. (2021). APA guidelines for psychological practice with sexual minority persons. https://www.apa.org/about/policy/psychological-practice-sexual-minority-persons.pdf"
+  },
+  {
+    "author": "Bockting, W. O., Miner, M. H., Swinburne Romine, R. E., Hamilton, A., & Coleman, E. (2013). Stigma, mental health, and resilience in an online sample of the US transgender population. American Journal of Public Health, 103(5), 943–951. https://doi.org/10.2105/AJPH.2013.301241"
+  },
+  {
+    "author": "Coleman, E., Radix, A. E., Bouman, W. P., Brown, G. R., de Vries, A. L. C., Deutsch, M. B., … Arcelus, J. (2022). Standards of care for the health of transgender and gender diverse people, version 8. International Journal of Transgender Health, 23(sup1), S1–S259. https://doi.org/10.1080/26895269.2022.2100644"
+  },
+  {
+    "author": "Crenshaw, K. (1991). Mapping the margins: Intersectionality, identity politics, and violence against women of color. Stanford Law Review, 43(6), 1241–1299. https://doi.org/10.2307/1229039"
+  },
+  {
+    "author": "Hatzenbuehler, M. L. (2009). How does sexual minority stigma “get under the skin”? A psychological mediation framework. Psychological Bulletin, 135(5), 707–730. https://doi.org/10.1037/a0016441"
+  },
+  {
+    "author": "Hendricks, M. L., & Testa, R. J. (2012). A conceptual framework for clinical work with transgender and gender nonconforming clients: An adaptation of the minority stress model. Professional Psychology: Research and Practice, 43(5), 460–467. https://doi.org/10.1037/a0029597"
+  },
+  {
+    "author": "Meyer, I. H. (2003). Prejudice, social stress, and mental health in lesbian, gay, and bisexual populations: Conceptual issues and research evidence. Psychological Bulletin, 129(5), 674–697. https://doi.org/10.1037/0033-2909.129.5.674"
+  },
+  {
+    "author": "Reed, G. M., Drescher, J., Krueger, R. B., Atalla, E., Cochran, S. D., First, M. B., … Saxena, S. (2016). Disorders related to sexuality and gender identity in the ICD-11. World Psychiatry, 15(3), 205–221. https://doi.org/10.1002/wps.20354"
+  },
+  {
+    "author": "Russell, S. T., & Fish, J. N. (2016). Mental health in lesbian, gay, bisexual, and transgender (LGBT) youth. Annual Review of Clinical Psychology, 12, 465–487. https://doi.org/10.1146/annurev-clinpsy-021815-093153"
+  }
+];
+
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
 async function main(){
@@ -1649,6 +1655,7 @@ async function main(){
   if(!doc){ console.error('CR-304 not found:', COURSE_DATA.slug); process.exit(1); }
   for(const k of Object.keys(COURSE_DATA)) doc[k]=COURSE_DATA[k];
   doc.modules=undefined; doc.markModified('sections'); doc.markModified('assessment');
+  doc.markModified('references');
   await doc.save();
   const fresh=await Course.findById(doc._id).lean();
   console.log('Saved. Sections:',fresh.sections?.length,'| wordCount:',fresh.wordCount,'| accessType:',fresh.accessType,'| status:',fresh.status);
