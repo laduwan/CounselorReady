@@ -814,100 +814,85 @@ const COURSE_DATA = {
   },
   "references": [
     {
-      "title": "AASECT scope of practice. https://www.aasect.org",
-      "author": "American Association of Sexuality Educators, Counselors and Therapists",
-      "year": 2023,
-      "source": "ts. (2023). AASECT scope of practice. https://www.aasect.org"
+      "citation": "American Association of Sexuality Educators, Counselors and Therapists (2023). AASECT scope of practice. https://www.aasect.org"
     },
     {
-      "title": "Human sexuality and its problems (3rd ed.). Churchill Livingstone.",
-      "author": "Bancroft, J",
-      "year": 2009,
-      "source": "sexuality and its problems (3rd ed.). Churchill Livingstone."
+      "citation": "American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787"
     },
     {
-      "title": "Using a different model for female sexual response to address women's problematic low sexual desire. Journal of Sex & M",
-      "author": "Basson, R",
-      "year": 2001,
-      "source": "al desire. Journal of Sex & Marital Therapy, 27(5), 395–403."
+      "citation": "Annon, J. S. (1976). The PLISSIT model: A proposed conceptual scheme for the behavioral treatment of sexual problems. Journal of Sex Education and Therapy, 2(1), 1–15. https://doi.org/10.1080/01614576.1976.11074483"
     },
     {
-      "title": "Group mindfulness-based therapy significantly improves sexual desire in women. Behaviour Research and Therapy, 57, 43–5",
-      "author": "Brotto, L",
-      "year": 2014,
-      "source": "desire in women. Behaviour Research and Therapy, 57, 43–54."
+      "citation": "Bancroft, J. (2009). Human sexuality and its problems (3rd ed.). Churchill Livingstone."
     },
     {
-      "title": "Becoming orgasmic: A sexual and personal growth program for women. Prentice Hall.",
-      "author": "Heiman, J",
-      "year": 1988,
-      "source": "sexual and personal growth program for women. Prentice Hall."
+      "citation": "Bancroft, J., & Janssen, E. (2000). The dual control model of male sexual response: A theoretical approach to centrally mediated erectile dysfunction. Neuroscience & Biobehavioral Reviews, 24(5), 571–579. https://doi.org/10.1016/S0149-7634(00)00024-5"
     },
     {
-      "title": "Disorders of sexual desire. Brunner/Mazel.",
-      "author": "Kaplan, H",
-      "year": 1979,
-      "source": "an, H. S. (1979). Disorders of sexual desire. Brunner/Mazel."
+      "citation": "Barlow, D. H. (1986). Causes of sexual dysfunction: The role of anxiety and cognitive interference. Journal of Consulting and Clinical Psychology, 54(2), 140–148. https://doi.org/10.1037/0022-006X.54.2.140"
     },
     {
-      "title": "Principles and practice of sex therapy (4th ed.). Guilford Press.",
-      "author": "Leiblum, S",
-      "year": 2007,
-      "source": "iples and practice of sex therapy (4th ed.). Guilford Press."
+      "citation": "Basson, R. (2000). The female sexual response: A different model. Journal of Sex & Marital Therapy, 26(1), 51–65. https://doi.org/10.1080/009262300278641"
     },
     {
-      "title": "Human sexual response. Little, Brown.",
-      "author": "Masters, W",
-      "year": 1966,
-      "source": "Johnson, V. E. (1966). Human sexual response. Little, Brown."
+      "citation": "Basson, R. (2001). Using a different model for female sexual response to address women's problematic low sexual desire. Journal of Sex & M"
     },
     {
-      "title": "Sexual awareness: Your guide to healthy couple sexuality. Routledge.",
-      "author": "McCarthy, B",
-      "year": 2012,
-      "source": "wareness: Your guide to healthy couple sexuality. Routledge."
+      "citation": "Binik, Y. M., & Hall, K. S. K. (Eds.). (2020). Principles and practice of sex therapy (6th ed.). Guilford Press."
     },
     {
-      "title": "The Female Sexual Function Index (FSFI): A multidimensional self-report instrument for the assessment of female sexual",
-      "author": "Rosen, R",
-      "year": 2000,
-      "source": "function. Journal of Sex & Marital Therapy, 26(2), 191–208."
+      "citation": "Brotto, L. (2014). Group mindfulness-based therapy significantly improves sexual desire in women. Behaviour Research and Therapy, 57, 43–5"
     },
     {
-      "title": "The International Index of Erectile Function (IIEF). Urology, 49(6), 822–830.",
-      "author": "Rosen, R",
-      "year": 1997,
-      "source": "Index of Erectile Function (IIEF). Urology, 49(6), 822–830."
+      "citation": "Brotto, L. (2016). Psychological and interpersonal dimensions of sexual function and dysfunction. Journal of Sexual Medicine, 13(4), 538–5"
     },
     {
-      "title": "A new view of women's sexual problems: Why new? Why now? Journal of Sex Research, 38(2), 89–96.",
-      "author": "Tiefer, L",
-      "year": 2001,
-      "source": "ms: Why new? Why now? Journal of Sex Research, 38(2), 89–96."
+      "citation": "Heiman, J. (1988). Becoming orgasmic: A sexual and personal growth program for women. Prentice Hall."
     },
     {
-      "title": "Intersystems approaches to sex therapy. In K. Hertlein, G. Weeks, & N. Gambescia (Eds.), Systemic sex therapy (2nd ed.,",
-      "author": "Weeks, G",
-      "year": 2015,
-      "source": "(Eds.), Systemic sex therapy (2nd ed., pp. 3–24). Routledge."
+      "citation": "Kaplan, H. (1979). Disorders of sexual desire. Brunner/Mazel."
     },
     {
-      "title": "Defining sexual health: Report of a technical consultation on sexual health. WHO.",
-      "author": "World Health Organization",
-      "year": 2006,
-      "source": "h: Report of a technical consultation on sexual health. WHO."
+      "citation": "Kaplan, H. S. (1974). The new sex therapy: Active treatment of sexual dysfunctions. Brunner/Mazel."
     },
     {
-      "title": "The new male sexuality (Rev. ed.). Bantam.",
-      "author": "Zilbergeld, B",
-      "year": 1999,
-      "source": "rgeld, B. (1999). The new male sexuality (Rev. ed.). Bantam."
+      "citation": "Leiblum, S. (2007). Principles and practice of sex therapy (4th ed.). Guilford Press."
     },
     {
-      "title": "Psychological and interpersonal dimensions of sexual function and dysfunction. Journal of Sexual Medicine, 13(4), 538–5",
-      "author": "Brotto, L",
-      "year": 2016,
-      "source": "and dysfunction. Journal of Sexual Medicine, 13(4), 538–571."
+      "citation": "Masters, W. (1966). Human sexual response. Little, Brown."
+    },
+    {
+      "citation": "Masters, W. H., & Johnson, V. E. (1970). Human sexual inadequacy. Little, Brown."
+    },
+    {
+      "citation": "McCarthy, B. (2012). Sexual awareness: Your guide to healthy couple sexuality. Routledge."
+    },
+    {
+      "citation": "Metz, M. E., & McCarthy, B. W. (2007). The “good-enough sex” model for couple sexual satisfaction. Sexual and Relationship Therapy, 22(3), 351–362. https://doi.org/10.1080/14681990601013492"
+    },
+    {
+      "citation": "Rosen, R. (1997). The International Index of Erectile Function (IIEF). Urology, 49(6), 822–830."
+    },
+    {
+      "citation": "Rosen, R. (2000). The Female Sexual Function Index (FSFI): A multidimensional self-report instrument for the assessment of female sexual"
+    },
+    {
+      "citation": "Tiefer, L. (2001). A new view of women's sexual problems: Why new? Why now? Journal of Sex Research, 38(2), 89–96."
+    },
+    {
+      "citation": "Weeks, G. (2015). Intersystems approaches to sex therapy. In K. Hertlein, G. Weeks, & N. Gambescia (Eds.), Systemic sex therapy (2nd ed.,"
+    },
+    {
+      "citation": "Weiner, L., & Avery-Clark, C. (2017). Sensate focus in sex therapy: The illustrated manual. Routledge."
+    },
+    {
+      "citation": "Wincze, J. P., & Weisberg, R. B. (2015). Sexual dysfunction: A guide for assessment and treatment (3rd ed.). Guilford Press."
+    },
+    {
+      "citation": "World Health Organization (2006). Defining sexual health: Report of a technical consultation on sexual health. WHO."
+    },
+    {
+      "citation": "Zilbergeld, B. (1999). The new male sexuality (Rev. ed.). Bantam."
     }
   ],
   "sections": [
@@ -1785,6 +1770,42 @@ const COURSE_DATA = {
   ]
 };
 
+COURSE_DATA.references = [
+  {
+    "author": "American Psychiatric Association. (2022). Diagnostic and statistical manual of mental disorders (5th ed., text rev.). https://doi.org/10.1176/appi.books.9780890425787"
+  },
+  {
+    "author": "Annon, J. S. (1976). The PLISSIT model: A proposed conceptual scheme for the behavioral treatment of sexual problems. Journal of Sex Education and Therapy, 2(1), 1–15. https://doi.org/10.1080/01614576.1976.11074483"
+  },
+  {
+    "author": "Bancroft, J., & Janssen, E. (2000). The dual control model of male sexual response: A theoretical approach to centrally mediated erectile dysfunction. Neuroscience & Biobehavioral Reviews, 24(5), 571–579. https://doi.org/10.1016/S0149-7634(00)00024-5"
+  },
+  {
+    "author": "Barlow, D. H. (1986). Causes of sexual dysfunction: The role of anxiety and cognitive interference. Journal of Consulting and Clinical Psychology, 54(2), 140–148. https://doi.org/10.1037/0022-006X.54.2.140"
+  },
+  {
+    "author": "Basson, R. (2000). The female sexual response: A different model. Journal of Sex & Marital Therapy, 26(1), 51–65. https://doi.org/10.1080/009262300278641"
+  },
+  {
+    "author": "Binik, Y. M., & Hall, K. S. K. (Eds.). (2020). Principles and practice of sex therapy (6th ed.). Guilford Press"
+  },
+  {
+    "author": "Kaplan, H. S. (1974). The new sex therapy: Active treatment of sexual dysfunctions. Brunner/Mazel"
+  },
+  {
+    "author": "Masters, W. H., & Johnson, V. E. (1970). Human sexual inadequacy. Little, Brown"
+  },
+  {
+    "author": "Metz, M. E., & McCarthy, B. W. (2007). The “good-enough sex” model for couple sexual satisfaction. Sexual and Relationship Therapy, 22(3), 351–362. https://doi.org/10.1080/14681990601013492"
+  },
+  {
+    "author": "Weiner, L., & Avery-Clark, C. (2017). Sensate focus in sex therapy: The illustrated manual. Routledge"
+  },
+  {
+    "author": "Wincze, J. P., & Weisberg, R. B. (2015). Sexual dysfunction: A guide for assessment and treatment (3rd ed.). Guilford Press"
+  }
+];
+
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
 async function main(){
@@ -1793,6 +1814,7 @@ async function main(){
   if(!doc){ console.error('CR-306 not found:', COURSE_DATA.slug); process.exit(1); }
   for(const k of Object.keys(COURSE_DATA)) doc[k]=COURSE_DATA[k];
   doc.modules=undefined; doc.markModified('sections'); doc.markModified('assessment');
+  doc.markModified('references');
   await doc.save();
   const fresh=await Course.findById(doc._id).lean();
   console.log('Saved. Sections:',fresh.sections?.length,'| wordCount:',fresh.wordCount,'| accessType:',fresh.accessType,'| status:',fresh.status);
