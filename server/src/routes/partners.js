@@ -10,6 +10,9 @@ import dns from 'dns/promises';
 import Stripe from 'stripe';
 import { Resend } from 'resend';
 import Partner from '../models/Partner.js';
+import CommissionLedger from '../models/CommissionLedger.js';
+import { MARKETPLACE_AGREEMENT } from '../config/marketplaceAgreement.js';
+import { sendPartnerAgreementCopy } from '../services/partnerAgreementEmail.js';
 import User from '../models/User.js';
 import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
@@ -201,6 +204,136 @@ router.get('/admin/analytics', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// ══════════════════════════════════════════════
+// ADMIN: COMMISSION RECONCILIATION & PAYOUTS
+// ══════════════════════════════════════════════
+
+// ── Admin: commission summary grouped by partner (amounts owed) ──
+router.get('/admin/commissions', protect, requireAdmin, async (req, res) => {
+  try {
+    const status = req.query.status || 'pending';
+    const match = status === 'all' ? {} : { status };
+
+    const entries = await CommissionLedger.find(match).sort({ createdAt: -1 }).lean();
+
+    // Total advertising expense (the 15% we pay partners to sell our courses)
+    const advertisingTotal = entries
+      .filter(e => e.accountingCategory === 'advertising')
+      .reduce((s, e) => s + (e.distributorAmount || 0), 0);
+    // Total content cost (the 85% we pass to partners for their courses)
+    const cogsTotal = entries
+      .filter(e => e.accountingCategory === 'cogs')
+      .reduce((s, e) => s + (e.ownerAmount || 0), 0);
+
+    // Amount owed to each partner = their distributor cut + their owner cut
+    const byPartner = {};
+    for (const e of entries) {
+      const add = (pid, amount) => {
+        if (!pid) return;
+        const k = String(pid);
+        byPartner[k] = byPartner[k] || { partnerId: k, owed: 0, pending: 0, paid: 0, entries: 0 };
+        byPartner[k].owed += amount;
+        byPartner[k][e.status === 'paid' ? 'paid' : 'pending'] += amount;
+        byPartner[k].entries += 1;
+      };
+      add(e.distributorPartnerId, e.distributorAmount || 0);
+      add(e.ownerPartnerId, e.ownerAmount || 0);
+    }
+
+    const ids = Object.keys(byPartner);
+    const partners = await Partner.find({ _id: { $in: ids } }).select('name slug billing.stripeCustomerId').lean();
+    const pmap = Object.fromEntries(partners.map(p => [String(p._id), p]));
+    const rows = Object.values(byPartner).map(r => ({
+      ...r,
+      owed: Math.round(r.owed * 100) / 100,
+      pending: Math.round(r.pending * 100) / 100,
+      paid: Math.round(r.paid * 100) / 100,
+      name: pmap[r.partnerId]?.name || '(unknown)',
+      slug: pmap[r.partnerId]?.slug || '',
+      hasStripeCustomer: !!pmap[r.partnerId]?.billing?.stripeCustomerId
+    })).sort((a, b) => b.pending - a.pending);
+
+    // Clawbacks: entries refunded/disputed after they were already paid to a partner.
+    // (Partial refunds stay 'paid' with a partial clawbackAmount; full refunds become 'void'.)
+    const clawbackEntries = await CommissionLedger.find({ clawbackRequired: true, clawbackAmount: { $gt: 0 } }).lean();
+    const clawbackOwed = clawbackEntries.reduce((s, e) => s + (e.clawbackAmount || 0), 0);
+
+    res.json({
+      status,
+      totals: {
+        advertisingExpense: Math.round(advertisingTotal * 100) / 100,
+        contentCost: Math.round(cogsTotal * 100) / 100,
+        totalPendingOwed: Math.round(rows.reduce((s, r) => s + r.pending, 0) * 100) / 100,
+        clawbackOwed: Math.round(clawbackOwed * 100) / 100,
+        clawbackCount: clawbackEntries.length
+      },
+      partners: rows
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Admin: settle a partner's pending commissions ──
+router.post('/admin/commissions/settle', protect, requireAdmin, async (req, res) => {
+  try {
+    const { partnerId, method = 'external', reference } = req.body;
+    if (!partnerId) return res.status(400).json({ error: 'partnerId is required' });
+    if (!['credit', 'cash', 'external', 'connect'].includes(method)) {
+      return res.status(400).json({ error: 'Invalid settlement method' });
+    }
+
+    const pending = await CommissionLedger.find({
+      status: 'pending',
+      $or: [{ distributorPartnerId: partnerId }, { ownerPartnerId: partnerId }]
+    });
+    if (!pending.length) return res.status(400).json({ error: 'No pending commissions for this partner' });
+
+    const owed = pending.reduce((s, e) =>
+      s + (String(e.distributorPartnerId) === String(partnerId) ? e.distributorAmount : e.ownerAmount), 0);
+    const owedRounded = Math.round(owed * 100) / 100;
+
+    // Deterministic idempotency key for THIS exact batch of entries. A retry (e.g. Stripe
+    // succeeded but the DB write failed) recomputes the same pending set → same key → Stripe
+    // returns the original credit instead of issuing a second one. Concurrent settles for the
+    // same partner read the same set → same key → still one credit.
+    const batchIds = pending.map(e => String(e._id)).sort();
+    const batchHash = crypto.createHash('sha256').update(batchIds.join(',')).digest('hex').slice(0, 32);
+    const idemKey = `settle_${partnerId}_${batchHash}`;
+
+    let payoutRef = reference || null;
+
+    // Cheapest path: apply as account credit against their CounselorReady partner invoice
+    if (method === 'credit') {
+      const partner = await Partner.findById(partnerId);
+      const customerId = partner?.billing?.stripeCustomerId;
+      if (stripe && customerId) {
+        // Negative balance transaction = credit toward the customer's next invoice.
+        // The idempotency key makes this safe to retry without double-crediting.
+        const bt = await stripe.customers.createBalanceTransaction(customerId, {
+          amount: -Math.round(owedRounded * 100),
+          currency: 'usd',
+          description: `Marketplace earnings credit (${pending.length} sale${pending.length !== 1 ? 's' : ''})`
+        }, { idempotencyKey: idemKey });
+        payoutRef = bt.id;
+      } else {
+        payoutRef = payoutRef || 'manual-credit';
+      }
+    }
+
+    // Only flip entries that are STILL pending, so a concurrent/retried settle can't re-process
+    // entries another call already settled. modifiedCount reflects what this call actually claimed.
+    const upd = await CommissionLedger.updateMany(
+      { _id: { $in: pending.map(e => e._id) }, status: 'pending' },
+      { $set: { status: 'paid', paidAt: new Date(), settlementMethod: method, payoutRef } }
+    );
+
+    res.json({ message: `Settled $${owedRounded.toFixed(2)} across ${upd.modifiedCount} entr${upd.modifiedCount !== 1 ? 'ies' : 'y'}`, settled: owedRounded, count: upd.modifiedCount, method, payoutRef });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ── Partner admin: update own branding ──
 router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
   try {
@@ -232,6 +365,60 @@ router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
 
     await partner.save();
     res.json({ partner });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+const PRIMARY_DOMAIN = process.env.PRIMARY_DOMAIN || 'counselorready.com';
+const RESERVED_SUBDOMAINS = new Set([
+  'www', 'api', 'app', 'admin', 'mail', 'email', 'smtp', 'ftp', 'ns1', 'ns2', 'mx',
+  'static', 'cdn', 'assets', 'img', 'images', 'media', 'status', 'support', 'help',
+  'blog', 'docs', 'dashboard', 'partner', 'partners', 'course', 'courses', 'login',
+  'logout', 'signup', 'register', 'account', 'accounts', 'billing', 'pay', 'payments',
+  'checkout', 'store', 'shop', 'legal', 'about', 'contact', 'go', 'link', 'links',
+  'my', 'portal', 'secure', 'dev', 'staging', 'test', 'beta', 'demo', 'm', 'mobile'
+]);
+
+/**
+ * PUT /my/subdomain — set the partner's personalized address (vanity subdomain) on the
+ * primary domain, e.g. acme -> acme.counselorready.com. Available on every plan. Send an empty
+ * value to clear it (reverts to the slug-based address).
+ */
+router.put('/my/subdomain', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    let sub = (req.body.subdomain || '').toString().trim().toLowerCase();
+
+    // Clearing the vanity subdomain reverts to the slug-based address.
+    if (sub === '') {
+      if (!partner.branding) partner.branding = {};
+      partner.branding.subdomain = undefined;
+      await partner.save();
+      return res.json({ subdomain: null, address: `${partner.slug}.${PRIMARY_DOMAIN}` });
+    }
+
+    if (!/^[a-z0-9-]+$/.test(sub) || sub.length < 3 || sub.length > 40 || sub.startsWith('-') || sub.endsWith('-')) {
+      return res.status(400).json({ error: 'Use 3\u201340 characters: lowercase letters, numbers, and hyphens (not starting or ending with a hyphen).' });
+    }
+    if (RESERVED_SUBDOMAINS.has(sub)) {
+      return res.status(400).json({ error: `"${sub}" is reserved. Please choose another.` });
+    }
+
+    // Must not collide with any other partner's slug or vanity subdomain (both resolve as hosts).
+    const clash = await Partner.findOne({
+      _id: { $ne: partner._id },
+      $or: [{ slug: sub }, { 'branding.subdomain': sub }]
+    }).select('_id').lean();
+    if (clash) return res.status(409).json({ error: `"${sub}" is already taken.` });
+
+    if (!partner.branding) partner.branding = {};
+    partner.branding.subdomain = sub;
+    await partner.save();
+    res.json({ subdomain: sub, address: `${sub}.${PRIMARY_DOMAIN}` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -293,6 +480,234 @@ router.get('/my/courses', protect, requirePartnerAdmin, async (req, res) => {
     }));
 
     res.json({ courses: results });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// COURSE SYNDICATION / MARKETPLACE ("marketing additive")
+// ══════════════════════════════════════════════
+
+// ── Partner admin: get syndication opt-in state + opportunity counts ──
+router.get('/my/syndication', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const syn = partner.syndication || {};
+    const rate = syn.distributorRate ?? 0.15;
+    const anyOn = !!(syn.importPlatformCourses || syn.listInMarketplace);
+    const accepted = syn.agreedVersion === MARKETPLACE_AGREEMENT.version;
+
+    const [platformCount, myPublished] = await Promise.all([
+      InteractiveCourse.countDocuments({ $or: [{ partnerId: null }, { partnerId: { $exists: false } }], status: 'published' }),
+      InteractiveCourse.countDocuments({ partnerId, status: 'published' })
+    ]);
+
+    res.json({
+      syndication: {
+        importPlatformCourses: !!syn.importPlatformCourses,
+        listInMarketplace: !!syn.listInMarketplace,
+        distributorRate: rate,
+        agreedAt: syn.agreedAt || null,
+        agreedVersion: syn.agreedVersion || null
+      },
+      agreement: {
+        currentVersion: MARKETPLACE_AGREEMENT.version,
+        effectiveDate: MARKETPLACE_AGREEMENT.effectiveDate,
+        url: MARKETPLACE_AGREEMENT.url,
+        accepted,                                   // accepted the current version?
+        acceptedVersion: syn.agreedVersion || null,
+        acceptedAt: syn.agreedAt || null,
+        // terms changed since they accepted AND they still have a program enabled
+        reacceptanceRequired: anyOn && !accepted
+      },
+      distributorPercent: Math.round(rate * 100),
+      ownerPercent: Math.round((1 - rate) * 100),
+      opportunities: {
+        platformCoursesAvailable: platformCount, // CR courses they could add to their library
+        myPublishedCourses: myPublished          // their courses that could be listed in the CR marketplace
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: set syndication opt-in ──
+router.put('/my/syndication', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const { importPlatformCourses, listInMarketplace, acceptedVersion } = req.body;
+    if (!partner.syndication) partner.syndication = {};
+
+    // Resulting program state after applying this request
+    const willImport = importPlatformCourses !== undefined ? !!importPlatformCourses : !!partner.syndication.importPlatformCourses;
+    const willList = listInMarketplace !== undefined ? !!listInMarketplace : !!partner.syndication.listInMarketplace;
+    const willBeOn = willImport || willList;
+    const alreadyAcceptedCurrent = partner.syndication.agreedVersion === MARKETPLACE_AGREEMENT.version;
+
+    // Enabling (or keeping on) a program requires acceptance of the CURRENT agreement version.
+    // The server only honors acceptance of its own current version — never a client-supplied older one.
+    if (willBeOn && !alreadyAcceptedCurrent) {
+      if (acceptedVersion !== MARKETPLACE_AGREEMENT.version) {
+        return res.status(409).json({
+          error: 'Agreement acceptance required',
+          code: 'AGREEMENT_ACCEPTANCE_REQUIRED',
+          currentVersion: MARKETPLACE_AGREEMENT.version,
+          agreementUrl: MARKETPLACE_AGREEMENT.url
+        });
+      }
+    }
+
+    if (importPlatformCourses !== undefined) partner.syndication.importPlatformCourses = !!importPlatformCourses;
+    if (listInMarketplace !== undefined) partner.syndication.listInMarketplace = !!listInMarketplace;
+    if (partner.syndication.distributorRate == null) partner.syndication.distributorRate = 0.15;
+
+    // Record acceptance (clickwrap audit trail) when a valid current-version acceptance was supplied
+    // and it advances the recorded version.
+    let newAcceptance = null;
+    if (willBeOn && acceptedVersion === MARKETPLACE_AGREEMENT.version && !alreadyAcceptedCurrent) {
+      const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.ip || null;
+      partner.syndication.agreedAt = new Date();
+      partner.syndication.agreedByUserId = req.user._id;
+      partner.syndication.agreedVersion = MARKETPLACE_AGREEMENT.version;
+      if (!Array.isArray(partner.syndication.acceptances)) partner.syndication.acceptances = [];
+      newAcceptance = {
+        version: MARKETPLACE_AGREEMENT.version,
+        at: new Date(),
+        byUserId: req.user._id,
+        byEmail: req.user.email,
+        ip,
+        userAgent: req.headers['user-agent'] || null,
+        programs: { importPlatformCourses: partner.syndication.importPlatformCourses, listInMarketplace: partner.syndication.listInMarketplace }
+      };
+      partner.syndication.acceptances.push(newAcceptance);
+    }
+
+    partner.markModified('syndication');
+    await partner.save();
+
+    // Email the partner a copy of the agreement they just accepted (fire-and-forget).
+    if (newAcceptance) {
+      sendPartnerAgreementCopy({
+        to: req.user.email,
+        name: req.user.profile?.firstName || null,
+        partnerName: partner.name,
+        acceptance: newAcceptance,
+        archive: true
+      }).catch(err => console.error('[partners] agreement copy email failed:', err.message));
+    }
+
+    res.json({
+      message: 'Syndication preferences saved',
+      syndication: partner.syndication,
+      agreement: { currentVersion: MARKETPLACE_AGREEMENT.version, acceptedVersion: partner.syndication.agreedVersion || null }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * POST /my/agreement/resend — re-send the partner a copy of the agreement they accepted.
+ */
+router.post('/my/agreement/resend', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+    const accs = partner.syndication?.acceptances || [];
+    if (!accs.length) return res.status(400).json({ error: 'No accepted agreement on file' });
+    const latest = accs[accs.length - 1];
+    const result = await sendPartnerAgreementCopy({
+      to: req.user.email,
+      name: req.user.profile?.firstName || null,
+      partnerName: partner.name,
+      acceptance: latest
+    });
+    if (!result.sent) return res.status(502).json({ error: 'Could not send the copy', reason: result.reason });
+    res.json({ message: `A copy was sent to ${req.user.email}`, version: latest.version });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: library = own courses + (if opted in) syndicated CR catalog ──
+router.get('/my/library', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const partner = await Partner.findById(partnerId).lean();
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const rate = partner.syndication?.distributorRate ?? 0.15;
+    const own = await InteractiveCourse.find({ partnerId })
+      .select('title slug ceHours status price accessType pricingTier description')
+      .sort({ createdAt: -1 }).lean();
+
+    let syndicated = [];
+    if (partner.syndication?.importPlatformCourses) {
+      syndicated = await InteractiveCourse.find({
+        $or: [{ partnerId: null }, { partnerId: { $exists: false } }],
+        status: 'published'
+      }).select('title slug ceHours price accessType pricingTier description').sort({ title: 1 }).lean();
+    }
+
+    res.json({
+      own: own.map(c => ({ ...c, source: 'own' })),
+      syndicated: syndicated.map(c => ({
+        ...c,
+        source: 'platform',
+        // partner is the distributor on CR courses → they keep `rate`
+        yourCutPercent: Math.round(rate * 100),
+        yourCutPerSale: c.price ? Math.round(c.price * rate * 100) / 100 : 0
+      })),
+      distributorPercent: Math.round(rate * 100)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: marketplace earnings (from CommissionLedger) ──
+router.get('/my/earnings', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+
+    // A partner is owed money two ways:
+    //  - as distributor of our courses → their 15% (distributorAmount, distributorPartnerId = me)
+    //  - as owner of their courses we sold → their 85% (ownerAmount, ownerPartnerId = me)
+    const entries = await CommissionLedger.find({
+      $or: [{ distributorPartnerId: partnerId }, { ownerPartnerId: partnerId }]
+    }).sort({ createdAt: -1 }).limit(500).lean();
+
+    const owedFor = (e) => String(e.distributorPartnerId) === String(partnerId) ? e.distributorAmount : e.ownerAmount;
+    const roleFor = (e) => String(e.distributorPartnerId) === String(partnerId)
+      ? 'Resold a CounselorReady course' : 'Your course sold via marketplace';
+
+    let pending = 0, lifetime = 0;
+    const rows = entries.map(e => {
+      const amount = owedFor(e);
+      lifetime += amount;
+      if (e.status === 'pending') pending += amount;
+      return {
+        date: e.createdAt, courseTitle: e.courseTitle, grossAmount: e.grossAmount,
+        yourShare: Math.round(amount * 100) / 100, status: e.status,
+        role: roleFor(e), paidAt: e.paidAt || null
+      };
+    });
+
+    res.json({
+      balancePending: Math.round(pending * 100) / 100,
+      lifetimeEarned: Math.round(lifetime * 100) / 100,
+      count: rows.length,
+      entries: rows
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

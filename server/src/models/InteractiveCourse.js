@@ -265,6 +265,11 @@ const CourseSchema = new mongoose.Schema({
   description: { type: String, required: true },
   thumbnail: String,
 
+  // Marketplace / white-label ownership. CourseSchema is strict, so this MUST be declared
+  // here or Mongoose silently drops it on save (partner courses would lose their owner).
+  // null/absent = platform-owned (CounselorReady) course.
+  partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
+
   // Course-level header (CReady viewer hero banner). Phase A presentation
   // editor writes these via PATCH /api/admin/course-presentation/:courseCode/header.
   // CourseSchema is strict, so these MUST be declared here or Mongoose drops them.

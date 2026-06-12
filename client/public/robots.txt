@@ -1,7 +1,9 @@
+# CounselorReady — https://counselorready.com
 User-agent: *
 Allow: /
 Disallow: /api/
-Disallow: /admin/
+Disallow: /admin
+Disallow: /partner
 Disallow: /settings
 
 Sitemap: https://counselorready.com/sitemap.xml

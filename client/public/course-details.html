@@ -465,6 +465,59 @@
       setMeta(null, 'article', 'og:type');
       setMeta(null, window.location.href, 'og:url');
       if (currentCourse.thumbnail) setMeta(null, currentCourse.thumbnail, 'og:image');
+      setMeta(null, 'CounselorReady', 'og:site_name');
+
+      // Twitter Card
+      setMeta('twitter:card', currentCourse.thumbnail ? 'summary_large_image' : 'summary');
+      setMeta('twitter:title', currentCourse.title + ' — CounselorReady CE Course');
+      setMeta('twitter:description', seoDesc);
+      if (currentCourse.thumbnail) setMeta('twitter:image', currentCourse.thumbnail);
+
+      // Canonical → pretty URL
+      const canonicalUrl = `https://counselorready.com/courses/${currentCourse.slug}`;
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) { canonical = document.createElement('link'); canonical.setAttribute('rel', 'canonical'); document.head.appendChild(canonical); }
+      canonical.setAttribute('href', canonicalUrl);
+      setMeta(null, canonicalUrl, 'og:url');
+
+      // Course structured data (schema.org/Course) for rich results
+      try {
+        const priceNum = Number(currentCourse.price);
+        const courseLd = {
+          '@context': 'https://schema.org',
+          '@type': 'Course',
+          name: currentCourse.title,
+          description: seoDesc,
+          url: canonicalUrl,
+          provider: {
+            '@type': 'EducationalOrganization',
+            name: 'CounselorReady',
+            url: 'https://counselorready.com'
+          },
+          hasCourseInstance: {
+            '@type': 'CourseInstance',
+            courseMode: 'online',
+            ...(ceHours ? { courseWorkload: `PT${ceHours}H` } : {})
+          },
+          ...(currentCourse.courseCode ? { courseCode: currentCourse.courseCode } : {}),
+          ...(currentCourse.thumbnail ? { image: currentCourse.thumbnail } : {}),
+          ...(ceHours ? { educationalCredentialAwarded: `${ceHours} NBCC-approved CE hour${ceHours !== 1 ? 's' : ''} (ACEP Provider #7760)` } : {}),
+          ...(Array.isArray(currentCourse.categories) && currentCourse.categories.length ? { about: currentCourse.categories } : {}),
+          ...(!isNaN(priceNum) ? {
+            offers: {
+              '@type': 'Offer',
+              price: priceNum,
+              priceCurrency: 'USD',
+              availability: 'https://schema.org/InStock',
+              category: priceNum === 0 ? 'Free' : 'Paid',
+              url: canonicalUrl
+            }
+          } : {})
+        };
+        let ld = document.getElementById('course-jsonld');
+        if (!ld) { ld = document.createElement('script'); ld.type = 'application/ld+json'; ld.id = 'course-jsonld'; document.head.appendChild(ld); }
+        ld.textContent = JSON.stringify(courseLd);
+      } catch (e) { /* non-fatal */ }
       
       // Basic info
       document.getElementById('courseTitle').textContent = currentCourse.title;

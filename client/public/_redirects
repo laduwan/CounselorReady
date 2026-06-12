@@ -34,6 +34,20 @@
 /organization        /organization.html         200
 /group-licenses      /group-licenses.html       200
 /partner-dashboard   /partner-dashboard.html    200
+# ── Partner portal sub-pages (slash paths used by dashboard links + backend redirects) ──
+/partner/users       /partner-users.html        200
+/partner/branding    /partner-branding.html     200
+/partner/reports     /partner-reports.html      200
+/partner/billing     /partner-billing.html      200
+/partner-users       /partner-users.html        200
+/partner-branding    /partner-branding.html     200
+/partner-reports     /partner-reports.html      200
+/partner-billing     /partner-billing.html      200
+/partner/marketplace /partner-marketplace.html  200
+/partner-marketplace /partner-marketplace.html  200
+/partner/earnings    /partner-earnings.html     200
+/partner-earnings    /partner-earnings.html     200
+/admin-payouts       /admin-payouts.html        200
 /recommendations     /recommendations.html      200
 /research-ready      /research-ready.html       200
 /about               /about.html               200
@@ -48,7 +62,7 @@
 # ── Course & learning routes ──
 /interactive-course  /interactive-course.html   200
 /learn/:slug         /interactive-course.html?slug=:slug  200
-/courses/:slug       /course-details.html?slug=:slug      200
+/courses/:slug       /courses/:slug.html                  200
 
 # ── Admin pages ──
 /admin               /admin.html               200

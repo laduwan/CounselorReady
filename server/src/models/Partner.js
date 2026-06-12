@@ -28,6 +28,10 @@ const partnerSchema = new mongoose.Schema({
     companyName: { type: String },
     tagline: { type: String },
     customDomain: { type: String, lowercase: true, trim: true },
+    // Personalized vanity host on the primary domain, e.g. "acme" -> acme.counselorready.com.
+    // Distinct from `slug` (the stable internal handle) so partners can change their public
+    // address without breaking internal references. Falls back to `slug` when unset.
+    subdomain: { type: String, lowercase: true, trim: true, match: [/^[a-z0-9-]+$/, 'Subdomain may only contain lowercase letters, numbers, and hyphens'] },
     colorScheme: { type: String, default: 'burgundy' },
     accentColor: { type: String, default: '#D4A855' }
   },
@@ -93,6 +97,36 @@ const partnerSchema = new mongoose.Schema({
     }
   },
 
+  // Course syndication / marketplace ("marketing additive" — opt-in during setup)
+  syndication: {
+    // Partner opts to add CounselorReady's published catalog to their branded library.
+    // On those sales the partner (distributor) keeps `distributorRate`, CR keeps the rest.
+    importPlatformCourses: { type: Boolean, default: false },
+    // Partner opts to list their own published courses in the CounselorReady marketplace.
+    // On those sales CounselorReady (distributor) keeps `distributorRate`, the partner keeps the rest.
+    listInMarketplace: { type: Boolean, default: false },
+    // Distributor's share of a syndicated sale (0.15 = 15%). Owner keeps 1 - rate.
+    distributorRate: { type: Number, default: 0.15, min: 0, max: 1 },
+    agreedAt: { type: Date },
+    agreedByUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    // Version of the Partner Marketplace Agreement currently accepted (matches
+    // server/src/config/marketplaceAgreement.js). Cleared/superseded on re-acceptance.
+    agreedVersion: { type: String },
+    // Append-only clickwrap audit trail — one entry per acceptance event.
+    acceptances: [{
+      version: { type: String, required: true },
+      at: { type: Date, default: Date.now },
+      byUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      byEmail: { type: String },
+      ip: { type: String },
+      userAgent: { type: String },
+      programs: {
+        importPlatformCourses: { type: Boolean },
+        listInMarketplace: { type: Boolean }
+      }
+    }]
+  },
+
   // Admin who created this partner
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -111,6 +145,7 @@ const partnerSchema = new mongoose.Schema({
 
 partnerSchema.index({ active: 1 });
 partnerSchema.index({ 'branding.customDomain': 1 });
+partnerSchema.index({ 'branding.subdomain': 1 });
 
 const Partner = mongoose.model('Partner', partnerSchema);
 
