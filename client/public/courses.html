@@ -232,6 +232,7 @@
             <div class="p-5">
               <!-- Title -->
               <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2 line-clamp-2">${course.title}</h3>
+              ${course.marketplacePartner ? `<div class="mb-2"><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:11px;font-size:10px;font-weight:600;background:${course.marketplacePartner.color}14;color:${course.marketplacePartner.color}"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21 8 14 2 9.4h7.6z"/></svg>Offered by ${course.marketplacePartner.name}</span></div>` : ''}
               
               ${course.subtitle ? `<p class="text-forest-600 text-sm mb-3">${course.subtitle}</p>` : ''}
               

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Branding | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld{width:100%;padding:.55rem .75rem;border:1px solid #e7e5e4;border-radius:.5rem;font-size:.875rem;outline:none}
+    .fld:focus{box-shadow:0 0 0 2px #4A7C59}
+    .lbl{display:block;font-size:.75rem;font-weight:600;color:#57534e;margin-bottom:.35rem}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Branding</h1>
+      <p class="text-gray-500 mt-1">Customize how your learning portal looks to your users</p>
+    </div>
+
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading branding...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <div id="content" class="hidden grid lg:grid-cols-3 gap-6">
+
+      <!-- Form -->
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-900">Identity</h2>
+          <div>
+            <label class="lbl" for="companyName">Company name</label>
+            <input id="companyName" class="fld" placeholder="Your organization" oninput="syncPreview()">
+          </div>
+          <div>
+            <label class="lbl" for="tagline">Tagline</label>
+            <input id="tagline" class="fld" placeholder="A short line shown under your name" oninput="syncPreview()">
+          </div>
+          <div>
+            <label class="lbl" for="logoUrl">Logo URL</label>
+            <input id="logoUrl" class="fld" placeholder="https://.../logo.png" oninput="syncPreview()">
+            <p class="text-xs text-stone-400 mt-1">Paste a hosted image URL (PNG/SVG). Recommended height ~48px.</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-900">Colors</h2>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="lbl" for="primaryColor">Primary color</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="primaryColor" class="h-10 w-12 rounded border border-stone-200 cursor-pointer" value="#6B1D34" oninput="document.getElementById('primaryHex').value=this.value;syncPreview()">
+                <input id="primaryHex" class="fld" value="#6B1D34" oninput="document.getElementById('primaryColor').value=this.value;syncPreview()">
+              </div>
+            </div>
+            <div>
+              <label class="lbl" for="accentColor">Accent color</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="accentColor" class="h-10 w-12 rounded border border-stone-200 cursor-pointer" value="#D4A855" oninput="document.getElementById('accentHex').value=this.value;syncPreview()">
+                <input id="accentHex" class="fld" value="#D4A855" oninput="document.getElementById('accentColor').value=this.value;syncPreview()">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-900">Your CounselorReady Address</h2>
+          <p class="text-xs text-stone-500 -mt-2">A branded address on counselorready.com — included on every plan.</p>
+          <div>
+            <label class="lbl" for="subdomain">Subdomain</label>
+            <div class="flex items-stretch">
+              <input id="subdomain" class="fld rounded-r-none" placeholder="your-brand" style="border-right:0">
+              <span class="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-stone-300 bg-stone-50 text-stone-500 text-sm">.counselorready.com</span>
+            </div>
+            <p class="text-xs text-stone-400 mt-1">3–40 characters: lowercase letters, numbers, and hyphens.</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="saveSubdomain()" id="subBtn" class="bg-hunter-700 hover:bg-hunter-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Save Address</button>
+            <span id="subMsg" class="text-xs"></span>
+          </div>
+          <div id="addrLine" class="hidden text-xs text-stone-600 border-t border-stone-100 pt-3">
+            Live at <a id="addrLink" href="#" target="_blank" rel="noopener" class="text-burgundy-700 hover:underline font-medium"></a>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <h2 class="text-sm font-semibold text-stone-900">Custom Domain</h2>
+          <div>
+            <label class="lbl" for="customDomain">Domain</label>
+            <input id="customDomain" class="fld" placeholder="learn.yourcompany.com">
+            <p class="text-xs text-stone-400 mt-1">After saving, verify ownership on the
+              <a href="/partner-domain.html" class="text-burgundy-700 hover:underline">domain page</a>.
+              Available on Professional and Enterprise plans.</p>
+          </div>
+          <div id="domainStatus" class="hidden text-xs"></div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="save()" id="saveBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">Save Changes</button>
+          <span id="saveMsg" class="text-sm"></span>
+        </div>
+      </div>
+
+      <!-- Live preview -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-xl border border-gray-200 p-5 sticky top-6">
+          <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">Live Preview</p>
+          <div class="rounded-xl overflow-hidden border border-stone-200">
+            <div id="pvHeader" class="p-4 flex items-center gap-3" style="background:#6B1D34">
+              <div id="pvLogoWrap"></div>
+              <div>
+                <p id="pvName" class="font-display text-lg font-bold text-white leading-tight">Your Company</p>
+                <p id="pvTagline" class="text-xs text-white/80"></p>
+              </div>
+            </div>
+            <div class="p-4 bg-white space-y-3">
+              <div class="h-2.5 w-3/4 rounded bg-stone-200"></div>
+              <div class="h-2.5 w-1/2 rounded bg-stone-200"></div>
+              <button id="pvBtn" class="mt-2 text-white text-xs font-medium px-3 py-1.5 rounded-lg" style="background:#6B1D34">Start Course</button>
+              <span id="pvBadge" class="ml-2 text-xs font-medium px-2 py-1 rounded-full" style="background:#D4A85522;color:#B8903A">CE Credit</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    let PARTNER_SLUG = '';
+    function renderAddress(label) {
+      const addr = `${label}.counselorready.com`;
+      const line = document.getElementById('addrLine');
+      const link = document.getElementById('addrLink');
+      link.textContent = addr;
+      link.href = `https://${addr}`;
+      line.classList.remove('hidden');
+    }
+    async function saveSubdomain() {
+      const btn = document.getElementById('subBtn');
+      const msg = document.getElementById('subMsg');
+      const val = document.getElementById('subdomain').value.trim().toLowerCase();
+      btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+      try {
+        const res = await fetch(`${API}/api/partners/my/subdomain`, {
+          method: 'PUT', headers: AUTH, body: JSON.stringify({ subdomain: val })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not save address');
+        document.getElementById('subdomain').value = data.subdomain || '';
+        renderAddress(data.subdomain || PARTNER_SLUG);
+        msg.className = 'text-xs text-hunter-700'; msg.innerHTML = '<i class="fas fa-check"></i> Saved';
+      } catch (err) {
+        msg.className = 'text-xs text-red-600'; msg.textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Address';
+        setTimeout(() => { msg.textContent = ''; }, 4000);
+      }
+    }
+
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      const un = document.getElementById('userName'); if (un) un.textContent = p.name || '';
+      const av = document.getElementById('userAvatar'); if (av) av.textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    function esc(s){ if(s==null) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const res = await fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null);
+        if (!res || !res.ok) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+        const { partner } = await res.json();
+        const b = partner.branding || {};
+
+        document.getElementById('companyName').value = b.companyName || partner.name || '';
+        document.getElementById('tagline').value = b.tagline || '';
+        document.getElementById('logoUrl').value = b.logoUrl || '';
+        document.getElementById('primaryColor').value = b.primaryColor || '#6B1D34';
+        document.getElementById('primaryHex').value = b.primaryColor || '#6B1D34';
+        document.getElementById('accentColor').value = b.accentColor || '#D4A855';
+        document.getElementById('accentHex').value = b.accentColor || '#D4A855';
+        document.getElementById('customDomain').value = b.customDomain || '';
+
+        // Personalized address (subdomain), falling back to slug
+        PARTNER_SLUG = partner.slug || '';
+        document.getElementById('subdomain').value = b.subdomain || '';
+        renderAddress(b.subdomain || PARTNER_SLUG);
+
+        const ds = document.getElementById('domainStatus');
+        if (b.customDomain) {
+          const verified = partner.domainVerification?.verified;
+          ds.className = 'text-xs ' + (verified ? 'text-hunter-700' : 'text-amber-600');
+          ds.innerHTML = verified
+            ? '<i class="fas fa-check-circle"></i> Domain verified'
+            : '<i class="fas fa-clock"></i> Domain not yet verified';
+          ds.classList.remove('hidden');
+        }
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        syncPreview();
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load branding';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function syncPreview() {
+      const name = document.getElementById('companyName').value || 'Your Company';
+      const tagline = document.getElementById('tagline').value || '';
+      const logo = document.getElementById('logoUrl').value;
+      const primary = document.getElementById('primaryHex').value || '#6B1D34';
+      const accent = document.getElementById('accentHex').value || '#D4A855';
+
+      document.getElementById('pvName').textContent = name;
+      document.getElementById('pvTagline').textContent = tagline;
+      document.getElementById('pvHeader').style.background = primary;
+      document.getElementById('pvBtn').style.background = primary;
+      const badge = document.getElementById('pvBadge');
+      badge.style.background = accent + '22';
+      badge.style.color = accent;
+
+      const wrap = document.getElementById('pvLogoWrap');
+      wrap.innerHTML = logo
+        ? `<img src="${esc(logo)}" alt="logo" class="h-9 w-auto max-w-[120px] rounded bg-white/10" onerror="this.style.display='none'">`
+        : `<div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold" style="background:rgba(255,255,255,.18)">${esc(name.charAt(0).toUpperCase())}</div>`;
+    }
+
+    async function save() {
+      const btn = document.getElementById('saveBtn');
+      const msg = document.getElementById('saveMsg');
+      btn.disabled = true; btn.textContent = 'Saving...';
+      msg.textContent = '';
+      const body = {
+        companyName: document.getElementById('companyName').value.trim(),
+        tagline: document.getElementById('tagline').value.trim(),
+        logoUrl: document.getElementById('logoUrl').value.trim(),
+        primaryColor: document.getElementById('primaryHex').value.trim(),
+        accentColor: document.getElementById('accentHex').value.trim(),
+        customDomain: document.getElementById('customDomain').value.trim().toLowerCase()
+      };
+      try {
+        const res = await fetch(`${API}/api/partners/my-branding`, { method: 'PUT', headers: AUTH, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to save');
+        msg.className = 'text-sm text-hunter-700'; msg.innerHTML = '<i class="fas fa-check"></i> Saved';
+      } catch (err) {
+        msg.className = 'text-sm text-red-600'; msg.textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Changes';
+        setTimeout(() => { msg.textContent = ''; }, 4000);
+      }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
