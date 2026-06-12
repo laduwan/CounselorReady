@@ -751,6 +751,29 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           break;
         }
 
+        // AI credit pack purchase
+        if (session.metadata?.type === 'ai_credits') {
+          const aiPartnerId = session.metadata.partnerId;
+          const aiHours = Number(session.metadata.hours);
+          if (aiPartnerId && aiHours > 0) {
+            const aiPartner = await Partner.findById(aiPartnerId);
+            if (aiPartner) {
+              // Guard against double-credit on Stripe retries
+              const alreadyCredited = aiPartner.aiUsage?.creditedSessions?.includes(session.id);
+              if (!alreadyCredited) {
+                const { addPurchasedHours } = await import('../utils/aiBudget.js');
+                addPurchasedHours(aiPartner, aiHours);
+                if (!aiPartner.aiUsage) aiPartner.aiUsage = {};
+                if (!aiPartner.aiUsage.creditedSessions) aiPartner.aiUsage.creditedSessions = [];
+                aiPartner.aiUsage.creditedSessions.push(session.id);
+                await aiPartner.save();
+                logger.info({ partnerId: aiPartnerId, hours: aiHours, sessionId: session.id, requestId: req.requestId }, 'AI credits added to partner');
+              }
+            }
+          }
+          break;
+        }
+
         // Live session seat purchase
         if (session.metadata?.type === 'live-session') {
           const { liveSessionId, userId: liveUserId } = session.metadata;

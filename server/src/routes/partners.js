@@ -19,6 +19,9 @@ import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import { protect, requireAdmin, requirePartnerAdmin, generateToken } from '../middleware/auth.js';
 import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage } from '../middleware/quotaEnforcement.js';
 import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
+import { canStart, chargeUsage, costCentsFromUsage, ensurePeriod, budgetSummary, AI_CREDIT_PACKS, MAX_CE_HOURS_PER_GENERATION } from '../utils/aiBudget.js';
+import { AI_BUILDER_DISCLAIMER, AI_BUILDER_DISCLAIMER_VERSION } from '../config/aiBuilderDisclaimer.js';
+import { generateCourseDraft } from '../services/courseDraftGenerator.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -1828,6 +1831,116 @@ router.get('/my/reports/completions', protect, requirePartnerAdmin, async (req, 
     }
 
     res.json({ completions: reportData, total: reportData.length });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner AI Course Builder ──
+const aiGenerateRateLimit = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, message: { error: 'Too many generation requests — please wait before trying again.' } });
+
+router.get('/my/ai/budget', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partner = await Partner.findOne({ _id: req.user.partnerId });
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+    ensurePeriod(partner);
+    await partner.save();
+    res.json({ budget: budgetSummary(partner), packs: AI_CREDIT_PACKS, disclaimer: AI_BUILDER_DISCLAIMER });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/my/ai/generate', protect, requirePartnerAdmin, aiGenerateRateLimit, async (req, res) => {
+  try {
+    const { topic, uploadedContent, ceHours, level, category, acknowledgedDisclaimerVersion } = req.body;
+
+    if (acknowledgedDisclaimerVersion !== AI_BUILDER_DISCLAIMER_VERSION) {
+      return res.status(428).json({ error: 'You must acknowledge the AI Course Builder disclaimer before generating.', disclaimer: AI_BUILDER_DISCLAIMER });
+    }
+    if (!topic && !uploadedContent) {
+      return res.status(400).json({ error: 'Either topic or uploadedContent is required' });
+    }
+    if (!ceHours || ceHours < 1 || ceHours > MAX_CE_HOURS_PER_GENERATION) {
+      return res.status(400).json({ error: `ceHours must be between 1 and ${MAX_CE_HOURS_PER_GENERATION}` });
+    }
+
+    const partner = await Partner.findOne({ _id: req.user.partnerId });
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    ensurePeriod(partner);
+    const gate = canStart(partner, ceHours);
+    if (!gate.ok) {
+      await partner.save();
+      return res.status(402).json({ error: gate.reason, budget: budgetSummary(partner), packs: AI_CREDIT_PACKS });
+    }
+
+    let course, usageTotals;
+    try {
+      ({ course, usageTotals } = await generateCourseDraft({ topic, uploadedContent, ceHours, level, category }));
+    } catch (genErr) {
+      console.error('Partner AI generation error:', genErr);
+      return res.status(502).json({ error: 'Generation failed — your allowance was not charged. Please try again.' });
+    }
+
+    const cents = costCentsFromUsage(usageTotals);
+    chargeUsage(partner, gate.bucket, cents, ceHours);
+
+    // Save as partner draft
+    const { Course: InteractiveCourseModel } = await import('../models/InteractiveCourse.js');
+    const draft = new InteractiveCourseModel({
+      ...course,
+      partnerId: partner._id,
+      status: 'draft',
+      createdBy: req.user._id
+    });
+    await draft.save();
+    await partner.save();
+
+    res.json({ course: draft, budget: budgetSummary(partner) });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/my/ai/credits/checkout', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment service unavailable' });
+
+    const { pack: packKey } = req.body;
+    const pack = AI_CREDIT_PACKS[packKey];
+    if (!pack) return res.status(400).json({ error: 'Invalid pack. Choose: small, medium, or large.' });
+
+    const partner = await Partner.findOne({ _id: req.user.partnerId });
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    // Create or retrieve Stripe customer
+    let customerId = partner.billing?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({ email: req.user.email, metadata: { partnerId: String(partner._id) } });
+      customerId = customer.id;
+      if (!partner.billing) partner.billing = {};
+      partner.billing.stripeCustomerId = customerId;
+      await partner.save();
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: pack.priceUsd * 100,
+          product_data: { name: `CounselorReady AI Credits — ${pack.name}` }
+        },
+        quantity: 1
+      }],
+      metadata: { type: 'ai_credits', partnerId: String(partner._id), hours: String(pack.hours) },
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-courses.html?credits=success`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-courses.html`
+    });
+
+    res.json({ url: session.url });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
