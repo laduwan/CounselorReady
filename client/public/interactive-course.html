@@ -2925,6 +2925,38 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   color: #C2410C;
 }
 
+/* ── Stage 5e-int: tappable alerts + acknowledge popup ── */
+.cr-alert-tap { cursor: pointer; }
+.cr-alert-tap:not(.cr-alert-acked) { animation: crAlertPulse 1.8s ease-in-out 3; }
+@keyframes crAlertPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(107, 29, 52, 0); }
+  50%      { box-shadow: 0 0 0 5px rgba(107, 29, 52, 0.18); }
+}
+.cr-alert-acked .cr-alert-ack-check::before { content: ' \2713'; font-weight: 800; }
+
+.cr-alert-popup-backdrop {
+  position: fixed; inset: 0; background: rgba(26, 32, 44, 0.55);
+  z-index: 9000; display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.cr-alert-popup {
+  background: #fff; border-radius: 12px; max-width: 420px; width: 100%;
+  padding: 22px 22px 18px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28);
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  border-top: 5px solid var(--cr-burgundy, #6B1D34);
+}
+.cr-alert-popup-head { margin-bottom: 12px; animation: none !important; cursor: default; }
+.cr-alert-popup-body {
+  font-size: 15px; line-height: 1.6;
+  color: var(--cr-text-body, #2D3748); margin: 0 0 18px;
+}
+.cr-alert-popup-ack {
+  display: block; width: 100%; padding: 12px; border: none; border-radius: 8px;
+  background: var(--cr-green, #4A7C59); color: #fff;
+  font-size: 15px; font-weight: 700; cursor: pointer; min-height: 44px;
+}
+.cr-alert-popup-ack:hover { filter: brightness(1.06); }
+
 
 /* ═══════════════════════════════════════════════════════════════
    8. PRINT — keep callouts intact across page breaks; suppress
@@ -5104,9 +5136,15 @@ function parseCalloutSyntax(html, blockCallouts) {
 
   // {{alert:type}} → inline alert badge (class-based; styled by CSS)
   out = out.replace(/\{\{alert:([^}]+)\}\}/g, function(_, type) {
-    const key = type.trim();
-    const validKey = ALERT_STYLES[key] ? key : 'ethics';
+    const parts = type.trim().split(':');
+    const validKey = ALERT_STYLES[parts[0]] ? parts[0] : 'ethics';
     const cfg = ALERT_STYLES[validKey];
+    const refId = (parts[1] || '').trim();
+    const def = refId ? lib[refId] : null;
+    if (def && def.body) {
+      const acked = (window.__crAckedAlerts && window.__crAckedAlerts.has(validKey + ':' + refId)) ? ' cr-alert-acked' : '';
+      return '<span class="cr-alert cr-alert-' + validKey + ' cr-alert-tap' + acked + '" role="button" tabindex="0" aria-haspopup="dialog" data-cr-alert="' + validKey + '" data-cr-alert-ref="' + esc(refId) + '" data-cr-alert-body="' + esc(def.body) + '">' + cfg.icon + ' ' + cfg.label + '<span class="cr-alert-ack-check"></span></span>';
+    }
     return '<span class="cr-alert cr-alert-' + validKey + '" role="button" tabindex="0">' + cfg.icon + ' ' + cfg.label + '</span>';
   });
 
@@ -8602,6 +8640,70 @@ function dismissNPS() {
     padding: 0 !important;
   }
 </style>
+<script>
+/* Stage 5e-int — tappable alert popup + acknowledge (completes March 23 design) */
+(function () {
+  var KEY = 'cr_acked_alerts';
+  var acked;
+  try { acked = new Set(JSON.parse(sessionStorage.getItem(KEY) || '[]')); }
+  catch (e) { acked = new Set(); }
+  window.__crAckedAlerts = acked;
+
+  function save() {
+    try { sessionStorage.setItem(KEY, JSON.stringify(Array.from(acked))); } catch (e) {}
+  }
+
+  function openPopup(badge) {
+    if (document.querySelector('.cr-alert-popup-backdrop')) return;
+    var type = badge.getAttribute('data-cr-alert') || 'ethics';
+    var refId = badge.getAttribute('data-cr-alert-ref') || '';
+    var body = badge.getAttribute('data-cr-alert-body') || '';
+
+    var backdrop = document.createElement('div');
+    backdrop.className = 'cr-alert-popup-backdrop';
+    backdrop.innerHTML =
+      '<div class="cr-alert-popup" role="dialog" aria-modal="true" aria-label="Important reminder">' +
+        '<span class="cr-alert cr-alert-' + type + ' cr-alert-popup-head"></span>' +
+        '<p class="cr-alert-popup-body"></p>' +
+        '<button type="button" class="cr-alert-popup-ack">I’ve read this</button>' +
+      '</div>';
+    backdrop.querySelector('.cr-alert-popup-head').textContent =
+      badge.textContent.replace(/\s*✓\s*$/, '');
+    backdrop.querySelector('.cr-alert-popup-body').textContent = body;
+    document.body.appendChild(backdrop);
+
+    var btn = backdrop.querySelector('.cr-alert-popup-ack');
+    btn.focus();
+    btn.addEventListener('click', function () {
+      var k = type + ':' + refId;
+      var first = !acked.has(k);
+      acked.add(k); save();
+      document.querySelectorAll('[data-cr-alert="' + type + '"][data-cr-alert-ref="' + refId + '"]')
+        .forEach(function (el) { el.classList.add('cr-alert-acked'); });
+      backdrop.remove();
+      badge.focus();
+      if (first && window.posthog) {
+        posthog.capture('alert_acknowledged', {
+          course_slug: (typeof crSlugOrId === 'function' ? crSlugOrId() : ''),
+          section_index: window.__crCurrentSectionIndex,
+          alert_type: type,
+          alert_ref: refId
+        });
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var badge = e.target.closest ? e.target.closest('[data-cr-alert]') : null;
+    if (badge) { e.preventDefault(); openPopup(badge); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var badge = e.target.closest ? e.target.closest('[data-cr-alert]') : null;
+    if (badge) { e.preventDefault(); openPopup(badge); }
+  });
+})();
+</script>
 <script src="cr-retrieval-popup.js" defer></script>
 </body>
 </html>
