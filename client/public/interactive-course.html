@@ -4057,7 +4057,11 @@ function loadCourse(data) {
   }
   
   course = data;
-  
+
+  // ── CE title page (overview) — first-entry masthead with Begin button.
+  // Only for DB-loaded courses that don't already carry an overview.
+  buildTitlePageOverview();
+
   // Build UI
   document.getElementById('crLoading').style.display = 'none';
   document.getElementById('crApp').style.display = 'grid';
@@ -7914,6 +7918,54 @@ function crSyncSection(sectionIndex) {
   }
 }
 
+// Synthesize a CE title page as section 0 for DB-loaded courses that lack one.
+// Mirrors the markdown-import overview, sourced from existing course fields.
+function buildTitlePageOverview() {
+  if (!course || !Array.isArray(course.sections) || !course.sections.length) return;
+  if (course.skipTitlePage) return;
+  if (course.sections.some(s => s && s._isOverview)) return; // already has one
+
+  const ceHours = course.ceHours || course.ceuHours || 0;
+  const mins = ceHours ? Math.round(ceHours * 60) : 0;
+  const objectives = Array.isArray(course.objectives) ? course.objectives : [];
+  const areas = Array.isArray(course.nbccContentAreas) ? course.nbccContentAreas : [];
+  const instructor = course.instructor || '';
+  const approvalNo = course.approvalNumber || '7760';
+  const approvalBody = course.approvingBody || 'NBCC';
+
+  let h = '';
+  h += '<div style="font-family:var(--cr-font-sans);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--cr-gold,#B8903A);font-weight:700;margin-bottom:10px">'
+     + 'Continuing Education' + (ceHours ? ' · ' + ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : '') : '') + '</div>';
+  if (instructor) {
+    h += '<p style="font-family:var(--cr-font-sans);font-size:13px;color:var(--cr-text-secondary);margin:0 0 18px">' + esc(instructor) + '</p>';
+  }
+  if (mins) {
+    h += '<div style="display:inline-block;background:var(--cr-navy-faded);border-radius:8px;padding:8px 12px;margin-bottom:18px">'
+       + '<span style="font-family:var(--cr-font-sans);font-size:12px;color:var(--cr-navy)"><strong>Estimated time:</strong> ~' + Math.round(mins / 60 * 10) / 10 + ' hr</span></div>';
+  }
+  if (objectives.length) {
+    h += '<h2>Learning Objectives</h2><ol style="padding-left:1.2em">';
+    objectives.forEach(o => h += '<li style="margin-bottom:6px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(o) : esc(o)) + '</li>');
+    h += '</ol>';
+  }
+  if (areas.length) {
+    h += '<h2>NBCC Content Areas</h2><p style="color:var(--cr-text-secondary)">' + areas.map(a => esc(typeof a === 'string' ? a : (a.name || a.area || ''))).filter(Boolean).join(' · ') + '</p>';
+  }
+  h += '<div style="margin-top:24px;padding:14px 16px;background:var(--cr-navy-faded);border-radius:var(--cr-radius);font-family:var(--cr-font-sans);font-size:12px;line-height:1.5;color:var(--cr-text-secondary)">'
+     + esc(approvalBody) + ' ACEP Provider #' + esc(approvalNo) + '. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of this program.</div>';
+  h += '<div style="text-align:center;margin-top:30px">'
+     + '<button class="cr-btn cr-btn-primary" style="font-size:1.1em;padding:14px 40px" data-action="goToSection" data-idx="1">Begin Course →</button></div>';
+
+  course.sections.unshift({
+    title: 'Course Overview',
+    _isOverview: true,
+    contentBlocks: [
+      { type: 'sectionDivider', title: course.title, sectionNumber: '', subtitle: 'Course Overview' },
+      { type: 'text', content: h }
+    ]
+  });
+}
+
 function restoreProgress() {
   if (!course) return;
   const section = loadState('section');
@@ -7922,9 +7974,15 @@ function restoreProgress() {
   
   if (completed) completedSections = new Set(completed);
   if (visited) visitedSections = new Set(visited);
-  if (section !== null && section < course.sections.length) {
-    currentSectionIndex = section;
-    visitedSections.add(section);
+  if (section !== null) {
+    // A title-page overview was unshifted at index 0 after progress was saved
+    // against pre-overview indices; shift saved section forward to match.
+    const hasOverview = course.sections[0] && course.sections[0]._isOverview;
+    let target = hasOverview ? section + 1 : section;
+    if (target < course.sections.length) {
+      currentSectionIndex = target;
+      visitedSections.add(target);
+    }
   }
 }
 
