@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Host Console - CounselorReady</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif;}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
+    .seg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;margin-bottom:6px;cursor:pointer;transition:background .1s;}
+    .seg-row.active{background:#F2F7F4;border-color:#4A7C59;}
+    .seg-row:hover:not(.active){background:#fafaf9;}
+    .seg-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+    .badge-lecture{background:#EDE9E3;color:#57534e;}
+    .badge-clip{background:#EDF2FF;color:#3B5FCC;}
+    .badge-discussion{background:#F0FDF4;color:#166534;}
+    .badge-breakout{background:#FFF7ED;color:#c2410c;}
+    .badge-break{background:#F9F5FF;color:#7e22ce;}
+    .transport-btn{padding:8px 18px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:14px;}
+    .btn-play{background:#4A7C59;color:#fff;}
+    .btn-play:hover{background:#3d6b4b;}
+    .btn-pause{background:#8B2542;color:#fff;}
+    .btn-pause:hover{background:#7a1d38;}
+    #seekBar{width:100%;accent-color:#284157;}
+  </style>
+</head>
+<body>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <div id="gate" class="text-center py-20" style="color:#284157;">Checking admin access…</div>
+
+    <div id="console" class="hidden">
+      <div class="mb-6 flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 id="sessionTitle" class="font-display text-3xl font-bold" style="color:#6B1D34;"></h1>
+          <p id="sessionMeta" class="text-sm mt-1" style="color:#284157;"></p>
+        </div>
+        <div class="flex gap-3 items-center">
+          <span id="attendeeCount" class="text-sm font-semibold" style="color:#284157;">– attendees</span>
+          <span id="elapsed" class="text-sm font-mono" style="color:#7a5c1e;"></span>
+        </div>
+      </div>
+
+      <div class="grid lg:grid-cols-5 gap-6">
+
+        <!-- Agenda -->
+        <div class="lg:col-span-2">
+          <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Agenda</h2>
+          <div id="agendaList"></div>
+          <p id="noAgenda" class="text-sm" style="color:#57534e;display:none;">No agenda configured for this session.</p>
+        </div>
+
+        <!-- Transport + Clip Player -->
+        <div class="lg:col-span-3">
+          <div id="clipPanel" class="hidden mb-4 bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Clip Transport</h2>
+            <p id="clipTitle" class="text-sm font-semibold mb-3" style="color:#284157;"></p>
+            <video id="hostClipPlayer" class="w-full rounded-lg mb-3" style="background:#000;max-height:240px;" controls playsinline></video>
+            <input type="range" id="seekBar" min="0" step="0.5" value="0">
+            <div class="flex gap-3 mt-3">
+              <button id="playBtn" class="transport-btn btn-play flex-1">▶ Play for everyone</button>
+              <button id="pauseBtn" class="transport-btn btn-pause flex-1">⏸ Pause for everyone</button>
+            </div>
+            <p class="text-xs mt-2" style="color:#57534e;">Your seek position is broadcast to attendees. Use the timeline to jump to a specific moment, then click Play.</p>
+          </div>
+
+          <!-- Now summary -->
+          <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Current segment</h2>
+            <div id="nowSummary" class="text-sm" style="color:#57534e;">No segment selected.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    const slug = new URLSearchParams(window.location.search).get('session');
+
+    let session = null;
+    let currentSegIdx = 0;
+    let sessionStartedAt = null;
+    let attendanceTimer = null;
+    let elapsedTimer = null;
+    let hostClipLoaded = null;
+
+    function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
+
+    async function init() {
+      if (!slug) return gateMsg('Missing session parameter. <a href="/live-sessions.html" class="underline" style="color:#4A7C59;">Browse sessions</a>.');
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+
+      try {
+        // Verify admin
+        const meRes = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const me = await meRes.json();
+        if (!meRes.ok || me.role !== 'admin') return gateMsg('Admin access required.');
+
+        // Load session
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) return gateMsg(data.error || 'Session not found.');
+        session = data.session;
+
+        document.getElementById('sessionTitle').textContent = session.title;
+        document.getElementById('sessionMeta').textContent =
+          new Date(session.scheduledStart).toLocaleString() + ' · ' +
+          (session.ceuHours || 0) + ' CE hrs · ' + session.status;
+
+        sessionStartedAt = new Date(session.scheduledStart);
+        startElapsedTimer();
+
+        renderAgenda();
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('console').classList.remove('hidden');
+
+        // Poll attendance count every 10s
+        pollAttendance();
+        attendanceTimer = setInterval(pollAttendance, 10000);
+
+        // Wire transport
+        document.getElementById('playBtn').addEventListener('click', broadcastPlay);
+        document.getElementById('pauseBtn').addEventListener('click', broadcastPause);
+        document.getElementById('seekBar').addEventListener('input', onSeekInput);
+
+      } catch (e) {
+        gateMsg('Could not load session. Please refresh.');
+      }
+    }
+
+    function renderAgenda() {
+      const list = document.getElementById('agendaList');
+      const noAgenda = document.getElementById('noAgenda');
+      if (!session.agenda || session.agenda.length === 0) {
+        noAgenda.style.display = '';
+        return;
+      }
+      list.innerHTML = '';
+      session.agenda.forEach((seg, idx) => {
+        const row = document.createElement('div');
+        row.className = 'seg-row' + (idx === 0 ? ' active' : '');
+        row.dataset.idx = idx;
+        row.innerHTML = `
+          <span class="seg-badge badge-${seg.type}">${seg.type}</span>
+          <span class="flex-1 text-sm font-medium" style="color:#284157;">${esc(seg.title || seg.type)}</span>
+          ${seg.durationMin ? `<span class="text-xs" style="color:#7a5c1e;">${seg.durationMin}m</span>` : ''}
+          <button class="text-xs font-semibold px-3 py-1 rounded" style="background:#284157;color:#fff;" onclick="advanceSegment(${idx},event)">▶ Go</button>`;
+        list.appendChild(row);
+      });
+      selectSegment(0);
+    }
+
+    async function advanceSegment(idx, e) {
+      e.stopPropagation();
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/segment`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segment: idx })
+        });
+        if (res.ok) {
+          currentSegIdx = idx;
+          selectSegment(idx);
+          showSegmentInClipPanel(idx);
+        }
+      } catch {}
+    }
+
+    function selectSegment(idx) {
+      document.querySelectorAll('.seg-row').forEach((r, i) => {
+        r.classList.toggle('active', i === idx);
+      });
+      const seg = session.agenda?.[idx];
+      const nowSummary = document.getElementById('nowSummary');
+      if (!seg) { nowSummary.textContent = 'No segment.'; return; }
+      nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
+    }
+
+    async function showSegmentInClipPanel(idx) {
+      const seg = session.agenda?.[idx];
+      const panel = document.getElementById('clipPanel');
+      const player = document.getElementById('hostClipPlayer');
+      const seekBar = document.getElementById('seekBar');
+
+      if (!seg || seg.type !== 'clip' || seg.clipIndex == null) {
+        panel.classList.add('hidden');
+        hostClipLoaded = null;
+        return;
+      }
+
+      panel.classList.remove('hidden');
+      document.getElementById('clipTitle').textContent = session.clips?.[seg.clipIndex]?.title || `Clip ${seg.clipIndex}`;
+
+      if (hostClipLoaded !== seg.clipIndex) {
+        hostClipLoaded = seg.clipIndex;
+        try {
+          const res = await fetch(
+            `${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/clips/${seg.clipIndex}/url`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          if (res.ok) {
+            const d = await res.json();
+            player.src = d.clipUrl;
+            seekBar.max = d.durationSec || 600;
+            seekBar.value = 0;
+          }
+        } catch {}
+      }
+
+      // Sync seek bar with host player time
+      player.addEventListener('timeupdate', () => {
+        seekBar.value = player.currentTime;
+      }, { passive: true });
+    }
+
+    async function broadcastPlay() {
+      const player = document.getElementById('hostClipPlayer');
+      await player.play().catch(() => {});
+      const seg = session.agenda?.[currentSegIdx];
+      if (seg?.clipIndex == null) return;
+      await broadcastPlayback(seg.clipIndex, true, player.currentTime);
+    }
+
+    async function broadcastPause() {
+      const player = document.getElementById('hostClipPlayer');
+      player.pause();
+      const seg = session.agenda?.[currentSegIdx];
+      if (seg?.clipIndex == null) return;
+      await broadcastPlayback(seg.clipIndex, false, player.currentTime);
+    }
+
+    function onSeekInput() {
+      const player = document.getElementById('hostClipPlayer');
+      player.currentTime = parseFloat(document.getElementById('seekBar').value);
+    }
+
+    async function broadcastPlayback(clipIndex, playing, positionSec) {
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/playback`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clipIndex, playing, positionSec })
+        });
+      } catch {}
+    }
+
+    async function pollAttendance() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/attendance`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          const live = d.rawAttendance?.filter(a => !a.leftAt).length ?? '–';
+          document.getElementById('attendeeCount').textContent = `${live} live`;
+        }
+      } catch {}
+    }
+
+    function startElapsedTimer() {
+      elapsedTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - sessionStartedAt.getTime()) / 1000);
+        if (elapsed < 0) { document.getElementById('elapsed').textContent = 'Not started'; return; }
+        const m = Math.floor(elapsed / 60), s = elapsed % 60;
+        document.getElementById('elapsed').textContent = `${m}:${s.toString().padStart(2,'0')} elapsed`;
+      }, 1000);
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+    init();
+  </script>
+</body>
+</html>

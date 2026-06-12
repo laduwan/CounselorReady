@@ -114,6 +114,37 @@ const liveSessionSchema = new mongoose.Schema({
   // Handouts — live-course only; hard-locked empty for supervision
   handouts: [handoutSchema],
 
+  // Watch-party clips (live-course only; hard-locked empty for supervision)
+  // 10-min ceiling enforced in pre-validate; URLs served via presigned endpoint only
+  clips: [{
+    title: { type: String, required: true },
+    s3Key: { type: String, required: true },
+    s3Bucket: String,
+    durationSec: { type: Number, required: true, min: 1, max: 600 }
+  }],
+
+  // Run-of-show agenda (live-course only; hard-locked empty for supervision)
+  agenda: [{
+    order: { type: Number, required: true },
+    type: { type: String, enum: ['lecture', 'clip', 'discussion', 'breakout', 'break'], required: true },
+    title: String,
+    durationMin: { type: Number, min: 1 },
+    prompt: String,
+    clipIndex: Number
+  }],
+
+  // Live sync state — host writes, attendees poll via GET /:id/live-state
+  liveState: {
+    currentSegment: { type: Number, default: 0 },
+    segmentStartedAt: Date,
+    playback: {
+      clipIndex: Number,
+      playing: { type: Boolean, default: false },
+      positionSec: { type: Number, default: 0 },
+      stateUpdatedAt: Date
+    }
+  },
+
   status: {
     type: String,
     enum: ['scheduled', 'live', 'completed', 'cancelled'],
@@ -134,7 +165,21 @@ liveSessionSchema.pre('validate', function (next) {
     if (this.handouts && this.handouts.length > 0) {
       return next(new Error('Handouts are not permitted on supervision sessions — Cloudinary has no BAA (HIPAA hard-lock).'));
     }
+    if (this.clips && this.clips.length > 0) {
+      return next(new Error('Watch-party clips are not permitted on supervision sessions (compliance hard-lock).'));
+    }
+    if (this.agenda && this.agenda.length > 0) {
+      return next(new Error('Agenda is not permitted on supervision sessions (compliance hard-lock).'));
+    }
     this.ceuHours = 0;
+  }
+  // Clip duration ceiling
+  if (this.clips) {
+    for (const clip of this.clips) {
+      if (clip.durationSec > 600) {
+        return next(new Error(`Clip "${clip.title}" exceeds the 10-minute ceiling (durationSec must be ≤ 600). CounselorReady shows clips only, not full films.`));
+      }
+    }
   }
   if (this.scheduledEnd <= this.scheduledStart) {
     return next(new Error('scheduledEnd must be after scheduledStart.'));
