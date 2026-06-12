@@ -293,6 +293,14 @@ router.post('/admin/commissions/settle', protect, requireAdmin, async (req, res)
       s + (String(e.distributorPartnerId) === String(partnerId) ? e.distributorAmount : e.ownerAmount), 0);
     const owedRounded = Math.round(owed * 100) / 100;
 
+    // Deterministic idempotency key for THIS exact batch of entries. A retry (e.g. Stripe
+    // succeeded but the DB write failed) recomputes the same pending set → same key → Stripe
+    // returns the original credit instead of issuing a second one. Concurrent settles for the
+    // same partner read the same set → same key → still one credit.
+    const batchIds = pending.map(e => String(e._id)).sort();
+    const batchHash = crypto.createHash('sha256').update(batchIds.join(',')).digest('hex').slice(0, 32);
+    const idemKey = `settle_${partnerId}_${batchHash}`;
+
     let payoutRef = reference || null;
 
     // Cheapest path: apply as account credit against their CounselorReady partner invoice
@@ -300,24 +308,27 @@ router.post('/admin/commissions/settle', protect, requireAdmin, async (req, res)
       const partner = await Partner.findById(partnerId);
       const customerId = partner?.billing?.stripeCustomerId;
       if (stripe && customerId) {
-        // Negative balance transaction = credit toward the customer's next invoice
+        // Negative balance transaction = credit toward the customer's next invoice.
+        // The idempotency key makes this safe to retry without double-crediting.
         const bt = await stripe.customers.createBalanceTransaction(customerId, {
           amount: -Math.round(owedRounded * 100),
           currency: 'usd',
           description: `Marketplace earnings credit (${pending.length} sale${pending.length !== 1 ? 's' : ''})`
-        });
+        }, { idempotencyKey: idemKey });
         payoutRef = bt.id;
       } else {
         payoutRef = payoutRef || 'manual-credit';
       }
     }
 
-    await CommissionLedger.updateMany(
-      { _id: { $in: pending.map(e => e._id) } },
+    // Only flip entries that are STILL pending, so a concurrent/retried settle can't re-process
+    // entries another call already settled. modifiedCount reflects what this call actually claimed.
+    const upd = await CommissionLedger.updateMany(
+      { _id: { $in: pending.map(e => e._id) }, status: 'pending' },
       { $set: { status: 'paid', paidAt: new Date(), settlementMethod: method, payoutRef } }
     );
 
-    res.json({ message: `Settled $${owedRounded.toFixed(2)} across ${pending.length} entr${pending.length !== 1 ? 'ies' : 'y'}`, settled: owedRounded, count: pending.length, method, payoutRef });
+    res.json({ message: `Settled $${owedRounded.toFixed(2)} across ${upd.modifiedCount} entr${upd.modifiedCount !== 1 ? 'ies' : 'y'}`, settled: owedRounded, count: upd.modifiedCount, method, payoutRef });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
