@@ -956,6 +956,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           } catch (emailErr) {
             logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Failed to send payment failure email');
           }
+        } else {
+          // [PARTNER] Partner subscription invoice failed → mark the partner past_due
+          const partner = await Partner.findOne({ 'billing.stripeCustomerId': customerId });
+          if (partner) {
+            await Partner.findByIdAndUpdate(partner._id, { 'billing.status': 'past_due' });
+            logger.info({ partnerId: partner._id, requestId: req.requestId, action: 'partner_payment_failed' }, 'Partner subscription payment failed');
+          }
         }
         break;
       }
@@ -984,6 +991,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
           if (wasRecovery) {
             await sendPaymentRecoveredEmail(user._id);
+          }
+        } else {
+          // [PARTNER] Partner subscription renewed/recovered → keep active + refresh period end
+          const partner = await Partner.findOne({ 'billing.stripeCustomerId': customerId });
+          if (partner) {
+            await Partner.findByIdAndUpdate(partner._id, {
+              'billing.status': 'active',
+              'billing.currentPeriodEnd': new Date((invoice.lines.data[0]?.period?.end || 0) * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000)
+            });
+            logger.info({ partnerId: partner._id, requestId: req.requestId, action: 'partner_invoice_paid' }, 'Partner subscription invoice paid');
           }
         }
         break;
