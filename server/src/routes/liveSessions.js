@@ -501,6 +501,60 @@ router.delete('/:id/clips/:clipIndex', protect, requireAdmin, async (req, res) =
   }
 });
 
+/* ════════════════════════ CATCH-UP ════════════════════════ */
+
+// POST /api/live-sessions/:id/catchup
+// Returns cached AI gap summaries for the requesting user's missed segments.
+// 403 for supervision sessions. {queued:true} if transcript not yet available.
+router.post('/:id/catchup', protect, async (req, res) => {
+  try {
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    if (session.sessionType === 'supervision') {
+      return res.status(403).json({ error: 'Catch-up is not available for supervision sessions.' });
+    }
+
+    if (!session.isRegistered(req.user._id)) {
+      return res.status(403).json({ error: 'You are not registered for this session.' });
+    }
+
+    // During a live session: transcript not available yet
+    if (session.status === 'live') {
+      return res.json({ queued: true, message: 'The session is still in progress. Your personalized catch-up will be available after the session ends.' });
+    }
+
+    // Transcript not yet available
+    if (!session.producer?.transcriptS3Key) {
+      return res.json({ queued: true, message: 'Your catch-up is being prepared. Check back shortly after the session ends.' });
+    }
+
+    // Return cached summaries for this user's gap segments
+    const { computeGaps } = await import('../services/sessionProducer.js');
+    const userId = req.user._id.toString();
+    const gaps = computeGaps(session, userId);
+
+    const result = gaps.map(gap => {
+      // Pull cached summary from the attendance segment
+      const seg = session.attendance.find(
+        a => a.user && a.user.toString() === userId &&
+             a.leftAt && Math.abs(a.leftAt.getTime() - gap.leftAt.getTime()) < 5000
+      );
+      return {
+        gapMin: gap.gapMin,
+        offsetSec: gap.offsetSec,
+        replayUrl: `${req.protocol}://${req.get('host')}/live-room.html?session=${session.slug}&replay=1&t=${gap.offsetSec}`,
+        summary: seg?.catchupSummary ? JSON.parse(seg.catchupSummary) : null
+      };
+    });
+
+    res.json({ gaps: result });
+  } catch (err) {
+    console.error('[live] catchup:', err.message);
+    res.status(500).json({ error: 'Failed to load catch-up' });
+  }
+});
+
 /* ── helpers ── */
 async function findByIdOrSlug(idOrSlug) {
   if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) {

@@ -21,7 +21,8 @@ const registrantSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   registeredAt: { type: Date, default: Date.now },
   paid: { type: Boolean, default: false },
-  stripeCheckoutSessionId: String
+  stripeCheckoutSessionId: String,
+  phoneOptIn: { type: Boolean, default: false }   // SMS consent for session logistics
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({
@@ -31,7 +32,9 @@ const attendanceSchema = new mongoose.Schema({
   wherebyParticipantId: String,
   joinedAt: { type: Date, required: true },
   leftAt: Date,
-  durationMin: { type: Number, default: 0 }
+  durationMin: { type: Number, default: 0 },
+  rejoinNudgeSentAt: Date,    // set when a drop-detection nudge fires; prevents duplicate sends
+  catchupSummary: String      // cached AI-generated gap summary (live-course only)
 }, { _id: true });
 
 const handoutSchema = new mongoose.Schema({
@@ -145,6 +148,21 @@ const liveSessionSchema = new mongoose.Schema({
     }
   },
 
+  // Scheduled breaks — excluded from the NBCC attendance denominator
+  breaks: [{
+    label: { type: String, default: 'Break' },
+    startsAt: { type: Date, required: true },
+    durationMin: { type: Number, required: true, min: 1, max: 120 },
+    resumeReminderSentAt: Date
+  }],
+
+  // Session producer state — written by sessionProducer.js / sessionProducerTick.js
+  producer: {
+    wrapUpSentAt: Date,
+    incidentBroadcastAt: Date,
+    transcriptS3Key: String   // set by transcription.finished webhook (live-course only)
+  },
+
   status: {
     type: String,
     enum: ['scheduled', 'live', 'completed', 'cancelled'],
@@ -196,7 +214,50 @@ liveSessionSchema.methods.scheduledDurationMin = function () {
   return Math.round((this.scheduledEnd - this.scheduledStart) / 60000);
 };
 
-/** Total verified minutes for a user across all join/leave segments. */
+/**
+ * Instructional minutes = scheduled duration minus all declared break minutes.
+ * This is the NBCC attendance denominator.
+ */
+liveSessionSchema.methods.instructionalMinutes = function () {
+  const breakMin = (this.breaks || []).reduce((s, b) => s + b.durationMin, 0);
+  return Math.max(1, this.scheduledDurationMin() - breakMin);
+};
+
+/**
+ * Compute overlap in minutes between a segment [segStart, segEnd] and a break window.
+ * Pure helper used by attendedMinutesAdjusted.
+ */
+export function breakOverlapMin(segStart, segEnd, breakStart, breakEnd) {
+  const overlapStart = Math.max(segStart, breakStart);
+  const overlapEnd = Math.min(segEnd, breakEnd);
+  if (overlapEnd <= overlapStart) return 0;
+  return (overlapEnd - overlapStart) / 60000;
+}
+
+/** Total verified instructional minutes for a user — break windows clipped out. */
+liveSessionSchema.methods.attendedMinutesAdjusted = function (userId) {
+  const segments = this.attendance.filter(
+    a => a.user && a.user.toString() === userId.toString() && a.joinedAt && a.leftAt
+  );
+  const breaks = (this.breaks || []).map(b => ({
+    start: b.startsAt.getTime(),
+    end: b.startsAt.getTime() + b.durationMin * 60000
+  }));
+
+  let total = 0;
+  for (const seg of segments) {
+    const segStart = seg.joinedAt.getTime();
+    const segEnd = seg.leftAt.getTime();
+    let rawMin = Math.max(0, (segEnd - segStart) / 60000);
+    for (const br of breaks) {
+      rawMin -= breakOverlapMin(segStart, segEnd, br.start, br.end);
+    }
+    total += Math.max(0, rawMin);
+  }
+  return Math.round(total);
+};
+
+/** Total verified minutes for a user across all join/leave segments (unadjusted). */
 liveSessionSchema.methods.attendedMinutes = function (userId) {
   return this.attendance
     .filter(a => a.user && a.user.toString() === userId.toString())
@@ -204,8 +265,8 @@ liveSessionSchema.methods.attendedMinutes = function (userId) {
 };
 
 liveSessionSchema.methods.meetsAttendanceThreshold = function (userId) {
-  const required = this.scheduledDurationMin() * (this.attendanceThresholdPct / 100);
-  return this.attendedMinutes(userId) >= required;
+  const required = this.instructionalMinutes() * (this.attendanceThresholdPct / 100);
+  return this.attendedMinutesAdjusted(userId) >= required;
 };
 
 /** Public-safe projection — strips room URLs and other server-only fields. */
