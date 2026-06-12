@@ -15,7 +15,7 @@ import { MARKETPLACE_AGREEMENT } from '../config/marketplaceAgreement.js';
 import { sendPartnerAgreementCopy } from '../services/partnerAgreementEmail.js';
 import User from '../models/User.js';
 import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
-import { protect, requireAdmin, requirePartnerAdmin } from '../middleware/auth.js';
+import { protect, requireAdmin, requirePartnerAdmin, generateToken } from '../middleware/auth.js';
 import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enforceBulkUploadFeature, getPartnerUsage } from '../middleware/quotaEnforcement.js';
 import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
 
@@ -25,6 +25,81 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const router = express.Router();
 
 // ── Public: look up partner by slug ──
+/**
+ * GET /api/partners/plans — public partner plan catalog (for the marketing/pricing page).
+ */
+router.get('/plans', (req, res) => {
+  res.json({ plans: PARTNER_PLANS });
+});
+
+/**
+ * POST /api/partners/signup — public self-serve partner signup. Creates the partner (on a free
+ * trial) and its first partner-admin user, and returns an auth token so they land logged in and can
+ * subscribe. They activate a paid plan from the billing page.
+ */
+router.post('/signup', async (req, res) => {
+  let createdPartnerId = null;
+  try {
+    const { companyName, subdomain, firstName, lastName, email, password } = req.body || {};
+    if (!companyName || !email || !password || !firstName || !subdomain) {
+      return res.status(400).json({ error: 'Company name, subdomain, your name, email, and password are required.' });
+    }
+    if (String(password).length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+
+    const sub = String(subdomain).trim().toLowerCase();
+    if (!/^[a-z0-9-]+$/.test(sub) || sub.length < 3 || sub.length > 40 || sub.startsWith('-') || sub.endsWith('-')) {
+      return res.status(400).json({ error: 'Subdomain must be 3\u201340 characters: lowercase letters, numbers, and hyphens (not starting or ending with a hyphen).' });
+    }
+    if (RESERVED_SUBDOMAINS.has(sub)) {
+      return res.status(400).json({ error: `"${sub}" is reserved. Please choose another.` });
+    }
+
+    const emailLc = String(email).trim().toLowerCase();
+    const [emailTaken, slugTaken] = await Promise.all([
+      User.findOne({ email: emailLc }).select('_id').lean(),
+      Partner.findOne({ $or: [{ slug: sub }, { 'branding.subdomain': sub }] }).select('_id').lean()
+    ]);
+    if (emailTaken) return res.status(409).json({ error: 'An account with that email already exists. Please log in instead.' });
+    if (slugTaken) return res.status(409).json({ error: `"${sub}" is already taken. Please choose another.` });
+
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+    const partner = await Partner.create({
+      name: companyName.trim(),
+      slug: sub,
+      branding: { companyName: companyName.trim(), subdomain: sub, primaryColor: '#6B1D34', accentColor: '#D4A855' },
+      contact: { email: emailLc },
+      billing: { plan: 'free', status: 'trial', trialEndsAt },
+      active: true
+    });
+    createdPartnerId = partner._id;
+
+    const user = await User.create({
+      email: emailLc,
+      passwordHash: password, // hashed by the User pre-save hook
+      profile: { firstName: firstName.trim(), lastName: (lastName || '').trim() },
+      role: 'partner_admin',
+      partnerId: partner._id,
+      emailVerified: true, // business partner admin; identity is confirmed at the billing step
+      subscription: { status: 'trial', plan: 'free', trialEndsAt }
+    });
+
+    const token = generateToken(user._id);
+    return res.status(201).json({
+      token,
+      partner: { slug: partner.slug, name: partner.name, address: `${sub}.${PRIMARY_DOMAIN}` },
+      next: '/partner-billing.html'
+    });
+  } catch (error) {
+    // Roll back an orphaned partner if user creation failed
+    if (createdPartnerId) { try { await Partner.deleteOne({ _id: createdPartnerId }); } catch { /* noop */ } }
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 router.get('/slug/:slug', async (req, res) => {
   try {
     const partner = await Partner.findOne({
