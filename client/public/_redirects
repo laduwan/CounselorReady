@@ -33,6 +33,10 @@
 /referrals           /referrals.html            200
 /organization        /organization.html         200
 /group-licenses      /group-licenses.html       200
+# ── Public partner marketing/signup landing ──
+/partner             /partner.html              200
+/partners            /partner.html              200
+/become-a-partner    /partner.html              200
 /partner-dashboard   /partner-dashboard.html    200
 # ── Partner portal sub-pages (slash paths used by dashboard links + backend redirects) ──
 /partner/users       /partner-users.html        200
