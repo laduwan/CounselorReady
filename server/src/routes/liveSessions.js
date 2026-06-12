@@ -338,6 +338,169 @@ router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) =
   }
 });
 
+/* ════════════════════════ WATCH PARTY — ATTENDEE ════════════════════════ */
+
+// GET /api/live-sessions/:id/live-state — lean poll endpoint (3s interval)
+router.get('/:id/live-state', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id)
+      .select('liveState agenda status scheduledStart scheduledEnd registrants')
+      .lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const isAdmin = req.user.role === 'admin';
+    const registered = session.registrants.some(
+      r => r.user && r.user.toString() === req.user._id.toString()
+    );
+    if (!isAdmin && !registered) {
+      return res.status(403).json({ error: 'Not registered for this session.' });
+    }
+
+    const seg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
+    res.json({
+      liveState: session.liveState,
+      currentSegment: seg,
+      status: session.status
+    });
+  } catch (err) {
+    console.error('[live] live-state:', err.message);
+    res.status(500).json({ error: 'Failed to load live state' });
+  }
+});
+
+// GET /api/live-sessions/:id/clips/:clipIndex/url — presigned S3 URL, 15-min expiry
+router.get('/:id/clips/:clipIndex/url', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id)
+      .select('clips registrants status scheduledStart scheduledEnd sessionType')
+      .lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.sessionType !== 'live-course') {
+      return res.status(403).json({ error: 'No clips on supervision sessions.' });
+    }
+
+    const isAdmin = req.user.role === 'admin';
+    const registered = session.registrants.some(
+      r => r.user && r.user.toString() === req.user._id.toString()
+    );
+    if (!isAdmin && !registered) {
+      return res.status(403).json({ error: 'Clips are available to registered attendees only.' });
+    }
+
+    // Session window check
+    if (!isAdmin) {
+      const now = Date.now();
+      const opens = new Date(session.scheduledStart).getTime() - JOIN_WINDOW_BEFORE_MIN * 60000;
+      const closes = new Date(session.scheduledEnd).getTime() + JOIN_WINDOW_AFTER_MIN * 60000;
+      if (now < opens || now > closes) {
+        return res.status(403).json({ error: 'Clips are only available during the session window.' });
+      }
+    }
+
+    const clipIndex = parseInt(req.params.clipIndex, 10);
+    const clip = session.clips?.[clipIndex];
+    if (!clip) return res.status(404).json({ error: 'Clip not found.' });
+
+    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
+    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
+    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
+    const url = await getSignedUrl(
+      s3,
+      new GetObjectCommand({
+        Bucket: clip.s3Bucket || process.env.AWS_S3_RECORDINGS_BUCKET,
+        Key: clip.s3Key
+      }),
+      { expiresIn: 900 } // 15 minutes
+    );
+
+    res.json({ clipUrl: url, title: clip.title, durationSec: clip.durationSec, expiresInSeconds: 900 });
+  } catch (err) {
+    console.error('[live] clip-url:', err.message);
+    res.status(500).json({ error: 'Failed to load clip URL' });
+  }
+});
+
+/* ════════════════════════ WATCH PARTY — HOST (admin) ════════════════════════ */
+
+// POST /api/live-sessions/:id/live-state/segment — host advances segment
+router.post('/:id/live-state/segment', protect, requireAdmin, async (req, res) => {
+  try {
+    const { segment } = req.body;
+    if (typeof segment !== 'number') {
+      return res.status(400).json({ error: 'segment must be a number.' });
+    }
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      currentSegment: segment,
+      segmentStartedAt: new Date()
+    };
+    session.markModified('liveState');
+    await session.save();
+
+    res.json({ liveState: session.liveState });
+  } catch (err) {
+    console.error('[live] segment:', err.message);
+    res.status(500).json({ error: 'Failed to update segment' });
+  }
+});
+
+// POST /api/live-sessions/:id/live-state/playback — host controls clip playback
+router.post('/:id/live-state/playback', protect, requireAdmin, async (req, res) => {
+  try {
+    const { clipIndex, playing, positionSec } = req.body;
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      playback: { clipIndex, playing: !!playing, positionSec: positionSec ?? 0, stateUpdatedAt: new Date() }
+    };
+    session.markModified('liveState');
+    await session.save();
+
+    res.json({ playback: session.liveState.playback });
+  } catch (err) {
+    console.error('[live] playback:', err.message);
+    res.status(500).json({ error: 'Failed to update playback state' });
+  }
+});
+
+// POST /api/live-sessions/:id/clips — add clip metadata
+router.post('/:id/clips', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const { title, s3Key, s3Bucket, durationSec } = req.body;
+    session.clips.push({ title, s3Key, s3Bucket, durationSec });
+    await session.save(); // pre-validate enforces supervision lock + 600s ceiling
+    res.status(201).json({ clips: session.clips, clipIndex: session.clips.length - 1 });
+  } catch (err) {
+    console.error('[live] add-clip:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// DELETE /api/live-sessions/:id/clips/:clipIndex — remove clip metadata
+router.delete('/:id/clips/:clipIndex', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const idx = parseInt(req.params.clipIndex, 10);
+    if (isNaN(idx) || idx < 0 || idx >= session.clips.length) {
+      return res.status(404).json({ error: 'Clip index out of range.' });
+    }
+    session.clips.splice(idx, 1);
+    await session.save();
+    res.json({ clips: session.clips });
+  } catch (err) {
+    console.error('[live] delete-clip:', err.message);
+    res.status(500).json({ error: 'Failed to delete clip' });
+  }
+});
+
 /* ── helpers ── */
 async function findByIdOrSlug(idOrSlug) {
   if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) {
