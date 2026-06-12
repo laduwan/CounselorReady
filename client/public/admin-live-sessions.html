@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Live Sessions - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    #createModal { display:none; }
+    #createModal.open { display:flex; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+        <nav class="flex items-center gap-1 ml-4">
+          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+          <a href="/live-sessions.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Live Sessions</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4"></i> Courses
+        </a>
+        <a href="/admin-live-sessions.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <i class="fas fa-video w-4 text-burgundy-600"></i> Live Sessions
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+      <!-- Header Row -->
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
+        <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+          <i class="fas fa-plus text-xs"></i> Create Live Session
+        </button>
+      </div>
+
+      <!-- Toast -->
+      <div id="toast" class="hidden fixed bottom-6 right-6 z-[100] px-5 py-3 rounded-xl text-white text-sm font-medium shadow-lg transition-all"></div>
+
+      <!-- Loading -->
+      <div id="loadingState" class="text-center py-16">
+        <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-forest-600">Loading sessions...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorState" class="hidden text-center py-16 bg-white rounded-xl border border-burgundy-100">
+        <i class="fas fa-exclamation-triangle text-3xl text-burgundy-300 mb-3"></i>
+        <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load sessions</p>
+        <button onclick="loadSessions()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
+      </div>
+
+      <!-- Sessions Table -->
+      <div id="mainContent" class="hidden">
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 border-b border-burgundy-100">
+              <tr>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Title</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Type</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Scheduled</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Status</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Registered</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">CEUs</th>
+                <th class="text-right px-4 py-3 font-semibold text-burgundy-800">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sessionsBody"></tbody>
+          </table>
+          <div id="emptyState" class="hidden text-center py-16 text-forest-500">
+            <i class="fas fa-video text-4xl text-burgundy-200 mb-3 block"></i>
+            No sessions yet. Create one to get started.
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ── Create Live Session Modal ── -->
+  <div id="createModal" class="fixed inset-0 z-[200] bg-black/50 items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
+        <button onclick="closeCreateModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <form id="createForm" onsubmit="submitCreate(event)" class="px-6 py-5 space-y-4">
+
+        <!-- Title -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Title <span class="text-red-500">*</span></label>
+          <input type="text" name="title" required
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
+            placeholder="e.g. Trauma-Informed Care: Live Workshop">
+        </div>
+
+        <!-- Slug -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug <span class="text-red-500">*</span></label>
+          <input type="text" name="slug" required pattern="[a-z0-9\-]+"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
+            placeholder="trauma-informed-care-live">
+          <p class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+        </div>
+
+        <!-- Session Type -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Session Type <span class="text-red-500">*</span></label>
+          <select name="sessionType" required id="sessionTypeSelect"
+            onchange="handleSessionTypeChange(this.value)"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+            <option value="live-course">Live CE Course</option>
+            <option value="supervision">Clinical Supervision</option>
+          </select>
+        </div>
+
+        <!-- Scheduled Start / End -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled Start <span class="text-red-500">*</span></label>
+            <input type="datetime-local" name="scheduledStart" required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled End <span class="text-red-500">*</span></label>
+            <input type="datetime-local" name="scheduledEnd" required
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+
+        <!-- CEU Hours (live-course only) -->
+        <div id="ceuHoursRow">
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">CEU Hours</label>
+          <input type="number" name="ceuHours" min="0" max="20" step="0.5" value="1"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+
+        <!-- Capacity & Price -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Capacity</label>
+            <input type="number" name="capacity" min="1" max="200" value="50"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
+            <input type="number" name="price" min="0" step="0.01" value="0"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            <p class="text-xs text-forest-500 mt-1">0 = free / subscription-included</p>
+          </div>
+        </div>
+
+        <!-- Attendance Threshold -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
+          <input type="number" name="attendanceThresholdPct" min="50" max="100" value="90"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          <p class="text-xs text-forest-500 mt-1">Minimum % of session duration to qualify for certificate (50–100).</p>
+        </div>
+
+        <!-- Recording Enabled (live-course only; hidden + forced off for supervision) -->
+        <div id="recordingRow">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="recordingEnabled" id="recordingEnabled"
+              class="w-4 h-4 accent-burgundy-700">
+            <span class="text-sm font-medium text-burgundy-800">Enable recording (replay available after session)</span>
+          </label>
+          <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
+        </div>
+
+        <!-- Published -->
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="isPublished" id="isPublished"
+              class="w-4 h-4 accent-burgundy-700">
+            <span class="text-sm font-medium text-burgundy-800">Publish immediately (visible in catalog)</span>
+          </label>
+        </div>
+
+        <!-- Form error -->
+        <div id="formError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+
+        <!-- Buttons -->
+        <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+          <button type="button" onclick="closeCreateModal()"
+            class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="submitBtn"
+            class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold flex items-center gap-2 transition-colors">
+            <i class="fas fa-video text-xs"></i>
+            <span id="submitLabel">Create Session</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/live-sessions';
+    let sessions = [];
+
+    /* ── Auth guard ── */
+    async function checkAuth() {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 8000);
+        const r = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal });
+        clearTimeout(tid);
+        if (!r.ok) { window.location.href = '/auth.html'; return; }
+        const d = await r.json();
+        if (d.user?.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
+        document.getElementById('adminEmail').textContent = d.user.email || 'Admin';
+        loadSessions();
+      } catch {
+        window.location.href = '/auth.html';
+      }
+    }
+
+    /* ── Load sessions ── */
+    async function loadSessions() {
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const r = await fetch(`${API}/admin/all`, { credentials: 'include', signal: controller.signal });
+        clearTimeout(tid);
+        if (!r.ok) throw new Error('Failed');
+        const d = await r.json();
+        sessions = d.sessions || [];
+        renderTable();
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('mainContent').classList.remove('hidden');
+      } catch {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('errorState').classList.remove('hidden');
+        document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
+      }
+    }
+
+    /* ── Render table ── */
+    function renderTable() {
+      const tbody = document.getElementById('sessionsBody');
+      const empty = document.getElementById('emptyState');
+      if (!sessions.length) {
+        tbody.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      tbody.innerHTML = sessions.map(s => {
+        const start = s.scheduledStart ? new Date(s.scheduledStart).toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' }) : '—';
+        const statusColor = {
+          scheduled: 'bg-blue-100 text-blue-700',
+          live: 'bg-green-100 text-green-700',
+          completed: 'bg-gray-100 text-gray-600',
+          cancelled: 'bg-red-100 text-red-700'
+        }[s.status] || 'bg-gray-100 text-gray-600';
+        const typeLabel = s.sessionType === 'supervision' ? 'Supervision' : 'Live CE';
+        const typeColor = s.sessionType === 'supervision' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
+        return `<tr class="border-b border-gray-100 hover:bg-stone-50 transition-colors">
+          <td class="px-4 py-3">
+            <div class="font-medium text-burgundy-900">${escHtml(s.title)}</div>
+            <div class="text-xs text-forest-500">${escHtml(s.slug)}</div>
+          </td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium ${typeColor}">${typeLabel}</span>
+          </td>
+          <td class="px-4 py-3 text-forest-700 text-xs">${start}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium ${statusColor}">${s.status || 'scheduled'}</span>
+            ${s.isPublished ? '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Published</span>' : '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Draft</span>'}
+          </td>
+          <td class="px-4 py-3 text-center text-forest-700">${(s.registrants || []).length}</td>
+          <td class="px-4 py-3 text-center text-forest-700">${s.ceuHours || '—'}</td>
+          <td class="px-4 py-3 text-right">
+            <div class="flex items-center justify-end gap-2">
+              <a href="/admin-live-sessions.html?attendance=${s._id}"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1"
+                onclick="viewAttendance(event,'${s._id}')">
+                <i class="fas fa-chart-bar text-xs"></i> Attendance
+              </a>
+              ${s.status === 'completed' ? `
+              <button onclick="issueCerts('${s._id}', this)"
+                class="px-2.5 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-certificate text-xs"></i> Issue Certs
+              </button>` : ''}
+              <button onclick="togglePublish('${s._id}', ${s.isPublished})"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs hover:bg-stone-50 transition-colors ${s.isPublished ? 'text-red-600' : 'text-green-700'}">
+                ${s.isPublished ? 'Unpublish' : 'Publish'}
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    /* ── Attendance view (inline panel) ── */
+    async function viewAttendance(evt, id) {
+      evt.preventDefault();
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const r = await fetch(`${API}/${id}/attendance`, { credentials: 'include', signal: controller.signal });
+        clearTimeout(tid);
+        if (!r.ok) throw new Error('Forbidden or error');
+        const d = await r.json();
+        const rows = (d.report || []).map(a =>
+          `<tr class="border-b border-gray-100">
+            <td class="px-3 py-2">${escHtml(a.user?.email || '—')}</td>
+            <td class="px-3 py-2 text-center">${a.attendedMinutes ?? 0} min</td>
+            <td class="px-3 py-2 text-center">${a.attendancePct ?? 0}%</td>
+            <td class="px-3 py-2 text-center">${a.qualifies ? '<span class="text-green-600 font-medium">Yes</span>' : '<span class="text-red-500">No</span>'}</td>
+          </tr>`
+        ).join('');
+        showModal(`
+          <div class="p-6">
+            <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(d.session?.title || 'Attendance')} — Attendance Report</h3>
+            <p class="text-xs text-forest-500 mb-4">Threshold: ${d.session?.thresholdPct}% of ${d.session?.scheduledMin} min</p>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-stone-50"><tr>
+                  <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email</th>
+                  <th class="px-3 py-2 font-semibold text-burgundy-800">Attended</th>
+                  <th class="px-3 py-2 font-semibold text-burgundy-800">%</th>
+                  <th class="px-3 py-2 font-semibold text-burgundy-800">Qualifies</th>
+                </tr></thead>
+                <tbody>${rows || '<tr><td colspan="4" class="text-center py-6 text-forest-500">No attendance data yet.</td></tr>'}</tbody>
+              </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+              <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
+            </div>
+          </div>`);
+      } catch (e) {
+        showToast('Failed to load attendance: ' + e.message, '#c0392b');
+      }
+    }
+
+    /* ── Issue certificates ── */
+    async function issueCerts(id, btn) {
+      if (!confirm('Issue certificates to all qualifying attendees for this session?')) return;
+      btn.disabled = true;
+      btn.textContent = 'Issuing…';
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 30000);
+        const r = await fetch(`${API}/${id}/issue-certificates`, {
+          method: 'POST',
+          credentials: 'include',
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed');
+        showToast(`Issued ${d.issued ?? 0} certificate(s). ${d.skipped ?? 0} already had one.`, '#284157');
+        btn.textContent = 'Done';
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+        btn.disabled = false;
+        btn.textContent = 'Issue Certs';
+      }
+    }
+
+    /* ── Toggle publish ── */
+    async function togglePublish(id, currentlyPublished) {
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const r = await fetch(`${API}/${id}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isPublished: !currentlyPublished }),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        if (!r.ok) { const d = await r.json(); throw new Error(d.error || 'Failed'); }
+        showToast(currentlyPublished ? 'Session unpublished.' : 'Session published!', '#284157');
+        loadSessions();
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    /* ── Create modal ── */
+    function openCreateModal() {
+      document.getElementById('createForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('submitLabel').textContent = 'Create Session';
+      document.getElementById('submitBtn').disabled = false;
+      handleSessionTypeChange('live-course');
+      document.getElementById('createModal').classList.add('open');
+    }
+
+    function closeCreateModal() {
+      document.getElementById('createModal').classList.remove('open');
+    }
+
+    function handleSessionTypeChange(type) {
+      const isSupervision = type === 'supervision';
+      const recRow = document.getElementById('recordingRow');
+      const recChk = document.getElementById('recordingEnabled');
+      const ceuRow = document.getElementById('ceuHoursRow');
+      // supervision: hide recording row, force checkbox off, hide CEU hours
+      recRow.classList.toggle('hidden', isSupervision);
+      if (isSupervision) {
+        recChk.checked = false;
+        recChk.disabled = true;
+        ceuRow.classList.add('hidden');
+      } else {
+        recChk.disabled = false;
+        ceuRow.classList.remove('hidden');
+      }
+    }
+
+    async function submitCreate(evt) {
+      evt.preventDefault();
+      const form = evt.target;
+      const btn = document.getElementById('submitBtn');
+      const lbl = document.getElementById('submitLabel');
+      const errEl = document.getElementById('formError');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      lbl.textContent = 'Creating…';
+
+      const fd = new FormData(form);
+      const payload = {
+        title: fd.get('title'),
+        slug: fd.get('slug'),
+        sessionType: fd.get('sessionType'),
+        scheduledStart: new Date(fd.get('scheduledStart')).toISOString(),
+        scheduledEnd: new Date(fd.get('scheduledEnd')).toISOString(),
+        ceuHours: parseFloat(fd.get('ceuHours') || '0'),
+        capacity: parseInt(fd.get('capacity') || '50', 10),
+        price: parseFloat(fd.get('price') || '0'),
+        attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
+        recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
+        isPublished: !!fd.get('isPublished')
+      };
+
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(API, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Creation failed');
+        closeCreateModal();
+        showToast('Session created and Whereby room provisioned!', '#284157');
+        loadSessions();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        lbl.textContent = 'Create Session';
+      }
+    }
+
+    /* ── Info modal (for attendance report) ── */
+    function showModal(html) {
+      let m = document.getElementById('infoModal');
+      if (!m) {
+        m = document.createElement('div');
+        m.id = 'infoModal';
+        m.className = 'fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4';
+        document.body.appendChild(m);
+      }
+      m.innerHTML = `<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">${html}</div>`;
+      m.style.display = 'flex';
+    }
+
+    function closeInfoModal() {
+      const m = document.getElementById('infoModal');
+      if (m) m.style.display = 'none';
+    }
+
+    /* ── Toast ── */
+    function showToast(msg, bg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.backgroundColor = bg || '#284157';
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 4000);
+    }
+
+    /* ── Escape HTML ── */
+    function escHtml(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    /* Close modals on backdrop click */
+    document.getElementById('createModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('createModal')) closeCreateModal();
+    });
+
+    checkAuth();
+  </script>
+</body>
+</html>
