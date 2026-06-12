@@ -37,6 +37,7 @@
 /partner             /partner.html              200
 /partners            /partner.html              200
 /become-a-partner    /partner.html              200
+/legal/partner-marketplace-agreement   /legal/partner-marketplace-agreement.html   200
 /partner-dashboard   /partner-dashboard.html    200
 # ── Partner portal sub-pages (slash paths used by dashboard links + backend redirects) ──
 /partner/users       /partner-users.html        200

@@ -38,6 +38,7 @@
 
   // ── POLICY LINKS (footer) ────────────────────────────────
   const policyLinks = [
+    { label: 'Become a Partner', href: '/partner' },
     { label: 'Privacy', href: '/privacy.html' },
     { label: 'Terms', href: '/terms.html' },
     { label: 'Refunds', href: '/refund-policy.html' },

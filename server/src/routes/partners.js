@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 import dns from 'dns/promises';
@@ -37,7 +38,19 @@ router.get('/plans', (req, res) => {
  * trial) and its first partner-admin user, and returns an auth token so they land logged in and can
  * subscribe. They activate a paid plan from the billing page.
  */
-router.post('/signup', async (req, res) => {
+/**
+ * Rate limiter for the public self-serve signup endpoint: caps account-creation attempts per IP to
+ * blunt abuse/spam without affecting legitimate single signups.
+ */
+const signupLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many signup attempts. Please wait a few minutes and try again.' }
+});
+
+router.post('/signup', signupLimiter, async (req, res) => {
   let createdPartnerId = null;
   try {
     const { companyName, subdomain, firstName, lastName, email, password } = req.body || {};

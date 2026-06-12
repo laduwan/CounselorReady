@@ -308,6 +308,7 @@
   </div>
 
   <script src="https://js.stripe.com/v3/"></script>
+  <script src="/js/stripe-config.js"></script>
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     let stripe = null;
@@ -545,9 +546,11 @@
     }
 
     function initStripe() {
-      // Initialize Stripe - replace with your publishable key
-      if (typeof Stripe !== 'undefined') {
-        stripe = Stripe('pk_test_placeholder'); // Replace with actual key
+      const pk = window.STRIPE_PUBLISHABLE_KEY || '';
+      if (typeof Stripe !== 'undefined' && pk) {
+        stripe = Stripe(pk);
+      } else if (!pk) {
+        console.warn('Stripe publishable key not set — add it in /js/stripe-config.js');
       }
     }
 
