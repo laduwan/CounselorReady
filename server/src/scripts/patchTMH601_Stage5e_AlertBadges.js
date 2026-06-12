@@ -166,14 +166,14 @@ async function run() {
     let inserted = 0, already = 0, missed = 0, changed = false;
 
     for (const ins of INSERTIONS) {
-      const exists = sections.some(s => (s.blocks || []).some(b =>
+      const exists = sections.some(s => (s.contentBlocks || []).some(b =>
         typeof b.content === 'string' && b.content.includes(markerFor(ins.id))));
       if (exists) { already++; console.log(`   ⏭  ${ins.label} — already present`); continue; }
 
       let placed = false;
       for (let si = 0; si < sections.length && !placed; si++) {
         const sec = sections[si];
-        const blocks = sec.blocks || [];
+        const blocks = sec.contentBlocks || [];
         for (let bi = 0; bi < blocks.length && !placed; bi++) {
           const b = blocks[bi];
           if (b.type !== 'text' || typeof b.content !== 'string') continue;
