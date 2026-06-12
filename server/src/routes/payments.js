@@ -13,6 +13,7 @@ import { protect } from '../middleware/auth.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
+import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
 import twilio from 'twilio';
 import logger from '../utils/logger.js';
 
@@ -694,6 +695,31 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
           logger.info({ userId: purchaseUserId, slug, requestId: req.requestId, action: 'course_purchase_recorded' }, 'Course purchase recorded');
 
+          // [MARKETPLACE] Record syndication commission (15/85 split) if this sale qualifies.
+          // Fire-and-forget; the helper never throws, but we guard anyway so it can never
+          // affect the purchase outcome.
+          (async () => {
+            try {
+              const [synCourse, synBuyer] = await Promise.all([
+                mongoose.connection.db.collection('interactivecourses')
+                  .findOne({ _id: new mongoose.Types.ObjectId(courseId) }),
+                User.findById(purchaseUserId).select('_id partnerId').lean()
+              ]);
+              const entry = await recordSyndicationCommission({
+                course: synCourse,
+                buyer: synBuyer,
+                grossAmount: (session.amount_total || 0) / 100,
+                saleId: session.id,
+                paymentIntentId: session.payment_intent
+              });
+              if (entry) {
+                logger.info({ userId: purchaseUserId, slug, ledgerId: entry._id?.toString(), category: entry.accountingCategory, requestId: req.requestId, action: 'syndication_commission_recorded' }, '[MARKETPLACE] syndication commission recorded');
+              }
+            } catch (err) {
+              logger.error({ err, userId: purchaseUserId, requestId: req.requestId }, '[MARKETPLACE] syndication commission record failed');
+            }
+          })();
+
           const buyer = await User.findById(purchaseUserId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
             courseId,
@@ -765,6 +791,42 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               }
             })
             .catch(err => logger.error({ err, userId, requestId: req.requestId }, '[REWARDS] referral paid (sub) failed'));
+        }
+        break;
+      }
+      
+      case 'charge.refunded': {
+        // [MARKETPLACE] Reduce/void the matching commission on refund (partial-aware);
+        // flag clawback if already paid out.
+        const charge = event.data.object;
+        const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+        if (pi) {
+          try {
+            const adj = await applyRefundToCommission(pi, (charge.amount_refunded || 0) / 100, (charge.amount || 0) / 100);
+            if (adj) {
+              logger.info({ paymentIntent: pi, ledgerId: adj._id?.toString(), status: adj.status, clawbackRequired: adj.clawbackRequired, clawbackAmount: adj.clawbackAmount, requestId: req.requestId, action: 'syndication_commission_refunded' }, '[MARKETPLACE] syndication commission adjusted on refund');
+            }
+          } catch (err) {
+            logger.error({ err, paymentIntent: pi, requestId: req.requestId }, '[MARKETPLACE] syndication commission refund-adjust failed');
+          }
+        }
+        break;
+      }
+      
+      case 'charge.dispute.created': {
+        // [MARKETPLACE] A chargeback reverses the full charge — void the commission and flag
+        // clawback if it was already paid out.
+        const dispute = event.data.object;
+        const pi = typeof dispute.payment_intent === 'string' ? dispute.payment_intent : dispute.payment_intent?.id;
+        if (pi) {
+          try {
+            const voided = await voidSyndicationCommissionByPaymentIntent(pi);
+            if (voided) {
+              logger.info({ paymentIntent: pi, ledgerId: voided._id?.toString(), clawbackRequired: voided.clawbackRequired, clawbackAmount: voided.clawbackAmount, requestId: req.requestId, action: 'syndication_commission_disputed' }, '[MARKETPLACE] syndication commission voided on dispute/chargeback');
+            }
+          } catch (err) {
+            logger.error({ err, paymentIntent: pi, requestId: req.requestId }, '[MARKETPLACE] syndication commission dispute-void failed');
+          }
         }
         break;
       }

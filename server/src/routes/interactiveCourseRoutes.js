@@ -11,6 +11,7 @@ import { Course, CourseProgress, ContentInteraction } from '../models/Interactiv
 import Certificate from '../models/Certificate.js';
 import Evaluation from '../models/Evaluation.js';
 import User from '../models/User.js';
+import Partner from '../models/Partner.js';
 import UserCredential from '../models/UserCredential.js';
 import Gamification from '../models/Gamification.js';
 import { protect, requireAdmin, optionalAuth } from '../middleware/auth.js';
@@ -241,17 +242,47 @@ router.get('/', async (req, res) => {
       ];
     }
 
+    // Marketplace scoping: the public catalog shows platform-owned courses plus partner
+    // courses ONLY from partners who opted into the marketplace (syndication.listInMarketplace).
+    // Non-listed partner courses are excluded so they never leak into the main catalog.
+    const listedPartners = await Partner.find({ 'syndication.listInMarketplace': true, active: true })
+      .select('name slug branding.companyName branding.primaryColor')
+      .lean();
+    const listedIds = listedPartners.map(p => p._id);
+    const partnerMap = Object.fromEntries(listedPartners.map(p => [String(p._id), p]));
+    query.$and = (query.$and || []).concat([{
+      $or: [
+        { partnerId: null },
+        { partnerId: { $exists: false } },
+        { partnerId: { $in: listedIds } }
+      ]
+    }]);
+
     const courses = await Course.find(query)
-      .select('title slug status courseCode description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber')
+      .select('title slug status courseCode description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber partnerId')
       .sort({ publishedAt: -1 })
       .skip((page - 1) * limit)
-      .limit(parseInt(limit));
+      .limit(parseInt(limit))
+      .lean();
 
     const total = await Course.countDocuments(query);
 
+    // Attach lightweight brand attribution to marketplace partner courses
+    const data = courses.map(c => {
+      if (c.partnerId && partnerMap[String(c.partnerId)]) {
+        const p = partnerMap[String(c.partnerId)];
+        c.marketplacePartner = {
+          name: p.branding?.companyName || p.name,
+          slug: p.slug,
+          color: p.branding?.primaryColor || '#6B1D34'
+        };
+      }
+      return c;
+    });
+
     res.json({
       success: true,
-      data: courses,
+      data,
       pagination: {
         page: parseInt(page),
         limit: parseInt(limit),

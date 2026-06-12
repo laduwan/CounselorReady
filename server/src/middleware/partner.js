@@ -31,7 +31,14 @@ export async function detectPartner(req, res, next) {
       if (host && host !== PRIMARY_DOMAIN && host !== `www.${PRIMARY_DOMAIN}`) {
         // Check if it's a subdomain of the primary domain
         if (host.endsWith(`.${PRIMARY_DOMAIN}`)) {
-          slug = host.replace(`.${PRIMARY_DOMAIN}`, '');
+          const sub = host.replace(`.${PRIMARY_DOMAIN}`, '');
+          // Match the personalized vanity subdomain first, then fall back to the slug.
+          const partner = await Partner.findOne({
+            active: true,
+            $or: [{ 'branding.subdomain': sub }, { slug: sub }]
+          }).select('-createdBy -__v').lean();
+          if (partner) { req.partner = partner; return next(); }
+          slug = sub;
         } else {
           // Custom domain — look up partner by domain field
           const partner = await Partner.findOne({
