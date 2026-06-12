@@ -65,6 +65,20 @@ router.get('/mine', protect, async (req, res) => {
   }
 });
 
+// GET /api/live-sessions/admin/all — full session list for admin dashboard
+router.get('/admin/all', protect, requireAdmin, async (req, res) => {
+  try {
+    const sessions = await LiveSession.find({})
+      .sort({ scheduledStart: -1 })
+      .limit(200)
+      .lean();
+    res.json({ sessions });
+  } catch (err) {
+    console.error('[live] admin/all:', err.message);
+    res.status(500).json({ error: 'Failed to load sessions' });
+  }
+});
+
 // GET /api/live-sessions/:id — public-safe detail (by id or slug)
 router.get('/:id', async (req, res) => {
   try {
