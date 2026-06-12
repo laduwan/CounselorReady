@@ -1052,15 +1052,16 @@ router.get('/my/billing', protect, requirePartnerAdmin, async (req, res) => {
     const courseCount = await InteractiveCourse.countDocuments({ partnerId });
     const userCount = await User.countDocuments({ partnerId });
     const currentPlan = partner.billing?.plan || 'free';
+    const currentLimits = getPlanLimits(currentPlan); // free-safe (PARTNER_PLANS has no 'free' key)
 
     res.json({
       billing: partner.billing || { plan: 'free', status: 'trial' },
       plans: PARTNER_PLANS,
       usage: {
         courses: courseCount,
-        maxCourses: PARTNER_PLANS[currentPlan].maxCourses,
+        maxCourses: currentLimits.maxCourses,
         users: userCount,
-        maxUsers: PARTNER_PLANS[currentPlan].maxUsers
+        maxUsers: currentLimits.maxUsers
       }
     });
   } catch (error) {
