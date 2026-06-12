@@ -10,11 +10,11 @@
  */
 
 export const PLAN_LIMITS = {
-  free:         { maxCourses: 0,   maxUsers: 0,    customDomain: false, bulkUpload: false },
-  starter:      { maxCourses: 10,  maxUsers: 100,  customDomain: false, bulkUpload: false },
-  growth:       { maxCourses: 50,  maxUsers: 500,  customDomain: false, bulkUpload: true },
-  professional: { maxCourses: 200, maxUsers: 5000, customDomain: true,  bulkUpload: true },
-  enterprise:   { maxCourses: -1,  maxUsers: -1,   customDomain: true,  bulkUpload: true },
+  free:         { maxCourses: 0,   maxUsers: 0,    customDomain: false, bulkUpload: false, aiBudgetCents: 0 },
+  starter:      { maxCourses: 10,  maxUsers: 100,  customDomain: false, bulkUpload: false, aiBudgetCents: 1000 },   // $10/mo
+  growth:       { maxCourses: 50,  maxUsers: 500,  customDomain: false, bulkUpload: true,  aiBudgetCents: 2000 },   // $20/mo
+  professional: { maxCourses: 200, maxUsers: 5000, customDomain: true,  bulkUpload: true,  aiBudgetCents: 7500 },   // $75/mo
+  enterprise:   { maxCourses: -1,  maxUsers: -1,   customDomain: true,  bulkUpload: true,  aiBudgetCents: 15000 },  // $150/mo
 };
 
 export const PARTNER_PLANS = {
@@ -29,4 +29,12 @@ export const PARTNER_PLANS = {
  */
 export function getPlanLimits(plan) {
   return PLAN_LIMITS[plan] || PLAN_LIMITS.free;
+}
+
+/**
+ * Monthly complimentary AI-generation budget (in cents) for a plan. This is a hard ceiling on the
+ * Anthropic API cost we absorb per partner per period; metered against ACTUAL generation cost.
+ */
+export function getAiBudgetCents(plan) {
+  return getPlanLimits(plan).aiBudgetCents || 0;
 }
