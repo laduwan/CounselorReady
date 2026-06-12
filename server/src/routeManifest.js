@@ -81,6 +81,8 @@ import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
+import liveSessionRoutes from './routes/liveSessions.js';
+import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -163,6 +165,8 @@ export const ROUTE_MANIFEST = [
   ['/api/admin/video-audit',      videoAuditRoutes,          'Video Link Audit'],
   ['/api/orgs',                  orgRoutes,                 'Practice Compliance — Orgs/Roster/Tracks/Assignments'],
   ['/api',                       complianceRoutes,          'Practice Compliance — Credentials/Policies/Supervision/Audit Binder'],
+  ['/api/live-sessions',         liveSessionRoutes,         'Live Sessions (Whereby)'],
+  ['/api/webhooks/whereby',      webhooksWherebyRoutes,     'Whereby attendance + recording webhook'],
 ];
 
 /**

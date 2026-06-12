@@ -751,6 +751,23 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           break;
         }
 
+        // Live session seat purchase
+        if (session.metadata?.type === 'live-session') {
+          const { liveSessionId, userId: liveUserId } = session.metadata;
+          const LiveSession = (await import('../models/LiveSession.js')).default;
+          const live = await LiveSession.findById(liveSessionId);
+          if (live && !live.isRegistered(liveUserId)) {
+            live.registrants.push({
+              user: liveUserId,
+              paid: true,
+              stripeCheckoutSessionId: session.id
+            });
+            await live.save();
+            logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+          }
+          break;
+        }
+
         // Handle subscription purchase
         if (userId && plan) {
           await User.findByIdAndUpdate(userId, {

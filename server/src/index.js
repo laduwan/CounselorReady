@@ -83,6 +83,8 @@ import securityRoutes from './routes/security.js';
 import adminUsersRoutes from './routes/adminUsers.js';
 import adminRewardsRoutes from './routes/adminRewards.js';
 import supervisionRoutes from './routes/supervision.js';
+import liveSessionRoutes from './routes/liveSessions.js';
+import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
 import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
 import groupLicensesRoutes from './routes/groupLicenses.js';
@@ -158,6 +160,7 @@ app.use(cors({
 
 app.use('/api/payments/webhook', express.raw({ type: 'application/json' }));
 app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }));
+app.use('/api/webhooks/whereby', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -282,6 +285,8 @@ app.use('/api/security', securityRoutes);
 app.use('/api/admin', adminUsersRoutes);
 app.use('/api/admin/rewards', adminRewardsRoutes);
 app.use('/api/supervision', supervisionRoutes);
+app.use('/api/live-sessions', liveSessionRoutes);
+app.use('/api/webhooks/whereby', webhooksWherebyRoutes);
 app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
 app.use('/api/group-licenses', groupLicensesRoutes);
