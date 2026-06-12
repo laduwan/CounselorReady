@@ -112,6 +112,7 @@ import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
+import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
@@ -435,6 +436,14 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Certificate self-heal cron scheduled (every 6 hours)');
+
+  // Session producer tick — every minute (drop detection, break reminders, wrap-up dispatch)
+  cron.schedule('* * * * *', () => {
+    runSessionProducerTick().catch(err =>
+      console.error('Session producer tick error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  logger.info('Session producer tick cron scheduled (every minute)');
 
   // Video link audit — every Monday at 3 AM ET
   cron.schedule('0 3 * * 1', () => {

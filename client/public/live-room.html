@@ -74,8 +74,10 @@
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const token = localStorage.getItem('token');
-    const slug = new URLSearchParams(window.location.search).get('session');
-    const wantReplay = new URLSearchParams(window.location.search).get('replay') === '1';
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('session');
+    const wantReplay = params.get('replay') === '1';
+    const seekTo = params.get('t') ? parseFloat(params.get('t')) : null;
 
     function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
 
@@ -108,7 +110,10 @@
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('room').classList.remove('hidden');
         loadHandouts(data.session);
-        if (data.session.sessionType === 'live-course') startSyncLoop(data.session._id);
+        if (data.session.sessionType === 'live-course') {
+          startSyncLoop(data.session._id);
+          loadCatchupBanner(data.session);
+        }
       } catch {
         gateMsg('Connection problem. Please refresh.');
       }
@@ -128,12 +133,73 @@
 
         const video = document.getElementById('replayVideo');
         video.src = data.replayUrl;
+        if (seekTo != null) {
+          video.addEventListener('loadedmetadata', () => { video.currentTime = seekTo; }, { once: true });
+        }
         video.classList.remove('hidden');
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('room').classList.remove('hidden');
+        // Show rejoin banner if user has prior gaps this session (live-course only)
+        if (detail.session?.sessionType === 'live-course') loadCatchupBanner(detail.session);
       } catch {
         gateMsg('Could not load the replay. Please refresh.');
       }
+    }
+
+    async function loadCatchupBanner(session) {
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/catchup`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.queued || !data.gaps || data.gaps.length === 0) return;
+
+        // Check if any gap ≥ 3 min
+        const meaningful = data.gaps.filter(g => g.gapMin >= 3);
+        if (meaningful.length === 0) return;
+
+        const totalMin = meaningful.reduce((s, g) => s + g.gapMin, 0);
+        const banner = document.createElement('div');
+        banner.id = 'catchupBanner';
+        banner.style.cssText = 'background:#FBF6EC;border:1px solid #EFE0C2;border-radius:10px;padding:14px 16px;margin-top:12px;';
+        banner.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span style="font-size:14px;color:#7a5c1e;">You were away ~${totalMin} min during this session.</span>
+          <button id="catchupBtn" style="background:#6B1D34;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;">View Recap</button>
+        </div>
+        <div id="catchupContent" style="display:none;margin-top:12px;"></div>`;
+        document.getElementById('mainCol').after(banner);
+
+        document.getElementById('catchupBtn').addEventListener('click', () => {
+          const content = document.getElementById('catchupContent');
+          const btn = document.getElementById('catchupBtn');
+          if (content.style.display === 'none') {
+            content.style.display = 'block';
+            btn.textContent = 'Hide Recap';
+            renderCatchup(content, meaningful);
+          } else {
+            content.style.display = 'none';
+            btn.textContent = 'View Recap';
+          }
+        });
+      } catch { /* non-fatal */ }
+    }
+
+    function renderCatchup(container, gaps) {
+      let html = '';
+      for (const gap of gaps) {
+        html += `<div style="margin-bottom:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #EDE9E3;">
+          <p style="font-size:13px;color:#57534e;margin:0 0 6px;">~${gap.gapMin} min gap</p>`;
+        if (gap.summary && gap.summary.length > 0) {
+          html += `<ul style="margin:0 0 6px;padding-left:18px;font-size:14px;color:#284157;">`;
+          for (const b of gap.summary) html += `<li>${esc(b)}</li>`;
+          html += `</ul>`;
+        }
+        html += `<a href="${gap.replayUrl}" style="font-size:13px;color:#4A7C59;">▶ Jump to this segment</a></div>`;
+      }
+      container.innerHTML = html;
     }
 
     function showSession(s) {

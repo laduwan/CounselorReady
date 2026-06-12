@@ -26,6 +26,12 @@ import express from 'express';
 import crypto from 'crypto';
 import LiveSession from '../models/LiveSession.js';
 import User from '../models/User.js';
+import {
+  onClientLeft,
+  onSessionEnded,
+  onRecordingFinished,
+  onTranscriptionFinished
+} from '../services/sessionProducer.js';
 
 const router = express.Router();
 const TOLERANCE_SECONDS = 5 * 60;
@@ -120,6 +126,7 @@ async function handleEvent(event) {
         segment.leftAt = leftAt;
         segment.durationMin = Math.max(0, Math.round((leftAt - segment.joinedAt) / 60000));
         await session.save();
+        onClientLeft(session, segment); // drop detection deferred to cron tick
       }
       break;
     }
@@ -136,6 +143,7 @@ async function handleEvent(event) {
       }
       if (session.status === 'live') { session.status = 'completed'; dirty = true; }
       if (dirty) await session.save();
+      onSessionEnded(session); // wrap-up deferred to cron tick
       break;
     }
 
@@ -154,6 +162,13 @@ async function handleEvent(event) {
         replayEnabled: false // admin flips this on after review
       });
       await session.save();
+      await onRecordingFinished(session);
+      break;
+    }
+
+    case 'transcription.finished': {
+      const s3Key = data.key || data.s3Key || data.fileName || '';
+      await onTranscriptionFinished(session, s3Key);
       break;
     }
 
