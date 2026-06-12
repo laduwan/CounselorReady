@@ -28,6 +28,8 @@ const STATIC_PAGES = [
   ['/blog',                    'weekly',  '0.6'],
   ['/about',                   'monthly', '0.5'],
   ['/subscription',            'monthly', '0.7'],
+  ['/partner',                 'monthly', '0.7'],
+  ['/legal/partner-marketplace-agreement', 'yearly', '0.2'],
   ['/register',                'monthly', '0.6'],
   ['/ada-accommodations',      'yearly',  '0.2'],
   ['/non-discrimination',      'yearly',  '0.2'],
