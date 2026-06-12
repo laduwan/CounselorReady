@@ -79,6 +79,15 @@ const partnerSchema = new mongoose.Schema({
     currentPeriodEnd: { type: Date }
   },
 
+  // AI Course Builder usage (metered against actual Anthropic cost)
+  aiUsage: {
+    freeUsedCents: { type: Number, default: 0 },      // spent against the monthly tier budget this period
+    purchasedHours: { type: Number, default: 0 },    // course-hours from purchased credit packs (rolls over)
+    periodResetAt: { type: Date },                    // when freeUsedCents resets to 0
+    lifetimeCents: { type: Number, default: 0 },      // total ever generated (reporting)
+    creditedSessions: [{ type: String }]              // Stripe checkout session IDs already credited (dedup)
+  },
+
   // Email template customization
   emailTemplates: {
     welcome: {
