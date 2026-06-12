@@ -52,8 +52,8 @@ const INSERTIONS = [
   {
     id: 's3-baa-legal', badge: 'legal',
     label: '§3 legal — no BAA = HIPAA violation',
-    sectionTitleMatch: /HIPAA/i,
-    anchor: /\b(without a (signed |executed )?(BAA|business associate agreement)|no (BAA|business associate agreement))\b/i,
+    sectionTitleMatch: /HIPAA|Regulatory|Foundations/i,
+    anchor: /Business Associate Agreement Requirement|\bexecute a (Business Associate Agreement|BAA)\b/i,
     body: 'Using any platform to transmit or store client information without a signed BAA is itself a HIPAA violation — even if no breach ever occurs. Encryption does not substitute for the agreement.',
   },
   {
@@ -68,21 +68,21 @@ const INSERTIONS = [
     label: '§5 mandatory — state-specific scope of practice',
     sectionTitleMatch: /Informed Consent|Clinical Documentation/i,
     anchor: /\bscope of practice\b/i,
-    body: 'Scope of practice is defined by the state where the CLIENT is located at the time of service. Verify that state\u2019s rules before each new client engagement — your home state\u2019s rules do not travel with you.',
+    body: 'Scope of practice is defined by the state where the CLIENT is located at the time of service. Verify that state’s rules before each new client engagement — your home state’s rules do not travel with you.',
   },
   {
     id: 's7-supervisor', badge: 'supervisor',
     label: '§7 supervisor — consult with supervisor',
-    sectionTitleMatch: /./,
-    anchor: /\bconsult(ation)? with (a |your )?(clinical )?supervis/i,
+    sectionTitleMatch: /Crisis|Special Populations|./,
+    anchor: /Consult immediately with a colleague, your supervisor|consult(ing)? with a colleague or supervisor/i,
     body: 'Pre-licensed clinicians must involve their supervisor in this decision — and document the consultation: who, when, and what was decided.',
   },
   {
     id: 's9-911-donot', badge: 'donot',
-    label: '§9 donot — 911 routes to the caller\u2019s location',
+    label: '§9 donot — 911 routes to the caller’s location',
     sectionTitleMatch: /Crisis/i,
-    anchor: /\b911\b[^.]{0,120}(caller|your location|clinician\u2019s|clinician's|dispatch)/i,
-    body: 'Do NOT assume 911 reaches the client. Dialed from your office, 911 routes to YOUR location — not theirs. Verify the client\u2019s physical address and local emergency number at the start of every session.',
+    anchor: /\b911\b[^.]{0,120}(caller|your location|clinician’s|clinician's|dispatch)/i,
+    body: 'Do NOT assume 911 reaches the client. Dialed from your office, 911 routes to YOUR location — not theirs. Verify the client’s physical address and local emergency number at the start of every session.',
   },
   {
     id: 's9-contemporaneous-doc', badge: 'document',
@@ -97,13 +97,6 @@ const INSERTIONS = [
     sectionTitleMatch: /Ethic|Boundar|Social Media|Professional/i,
     anchor: /\bdual relationship/i,
     body: 'The ACA Code of Ethics requires evaluating any dual relationship for potential harm BEFORE entering it. Online visibility makes inadvertent dual relationships easier to stumble into — and harder to defend.',
-  },
-  {
-    id: 's10-reporting-mandatory', badge: 'mandatory',
-    label: '§10 mandatory — mandatory reporting',
-    sectionTitleMatch: /Ethic|Boundar|Professional/i,
-    anchor: /\bmandat(ed|ory) report/i,
-    body: 'Mandated reporting duties apply fully in telehealth and are governed by the law of the state where the client is located. Know that state\u2019s threshold and reporting channel before the first session.',
   },
   {
     id: 's11-uap-legal', badge: 'legal',
