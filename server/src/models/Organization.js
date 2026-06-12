@@ -8,10 +8,18 @@ import mongoose from 'mongoose';
 const seatSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   email: { type: String, required: true, lowercase: true },
-  role: { type: String, enum: ['member', 'manager', 'owner'], default: 'member' },
+  role: { type: String, enum: ['member', 'manager', 'owner', 'admin', 'clinician', 'associate', 'staff', 'supervisor'], default: 'member' },
   invitedAt: { type: Date, default: Date.now },
   joinedAt: { type: Date },
-  status: { type: String, enum: ['invited', 'active', 'removed'], default: 'invited' }
+  status: { type: String, enum: ['invited', 'active', 'removed', 'suspended', 'offboarded'], default: 'invited' },
+  // ── Practice Compliance module additions (additive; existing seats unaffected) ──
+  employmentType: { type: String, enum: ['w2', '1099', 'intern', 'volunteer', 'contractor', null], default: null },
+  title: { type: String, trim: true },       // free text: "LPC", "LMSW Associate", "Office Manager"
+  hireDate: { type: Date },
+  offboardedAt: { type: Date },
+  inviteToken: { type: String },             // email invite flow
+  // GA DBHDD §1 agency: block direct contact until orientation track complete
+  directContactCleared: { type: Boolean, default: false }
 }, { _id: true });
 
 const organizationSchema = new mongoose.Schema({
@@ -55,7 +63,13 @@ const organizationSchema = new mongoose.Schema({
     requireCourseApproval: { type: Boolean, default: false },
     sharedCredentialTracking: { type: Boolean, default: true },
     complianceAlerts: { type: Boolean, default: true },
-    allowSelfEnroll: { type: Boolean, default: true }
+    allowSelfEnroll: { type: Boolean, default: true },
+    // ── Practice Compliance module additions (additive) ──
+    // Which compliance layer this org operates under. Drives which global tracks apply.
+    segment: { type: String, enum: ['private_practice', 'dbhdd_agency'], default: 'private_practice' },
+    statesOfOperation: [{ type: String, uppercase: true }], // drives state-mandate suggestions
+    timezone: { type: String, default: 'America/New_York' },
+    alertEmails: [{ type: String, lowercase: true }]        // extra recipients for expiry/overdue digests
   }
 }, {
   timestamps: true

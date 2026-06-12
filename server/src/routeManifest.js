@@ -79,6 +79,8 @@ import organizationsRoutes from './routes/organizations.js';
 import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
+import orgRoutes from './routes/orgRoutes.js';
+import complianceRoutes from './routes/complianceRoutes.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -159,6 +161,8 @@ export const ROUTE_MANIFEST = [
   ['/api/audit-kit',             auditKitRoutes,            'Audit Kit'],
   ['/api/uploads',               uploadsRoutes,             'Uploads'],
   ['/api/admin/video-audit',      videoAuditRoutes,          'Video Link Audit'],
+  ['/api/orgs',                  orgRoutes,                 'Practice Compliance — Orgs/Roster/Tracks/Assignments'],
+  ['/api',                       complianceRoutes,          'Practice Compliance — Credentials/Policies/Supervision/Audit Binder'],
 ];
 
 /**

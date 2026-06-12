@@ -95,6 +95,8 @@ import organizationsRoutes from './routes/organizations.js';
 import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
+import orgRoutes from './routes/orgRoutes.js';
+import complianceRoutes from './routes/complianceRoutes.js';
 import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -108,6 +110,7 @@ import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
+import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
 
@@ -287,6 +290,8 @@ app.use('/api/organizations', organizationsRoutes);
 app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/admin/video-audit', videoAuditRoutes);
+app.use('/api/orgs', orgRoutes);
+app.use('/api', complianceRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
@@ -432,6 +437,14 @@ const startServer = async () => {
       .catch(err => console.error('[VideoAudit] Weekly cron error:', err.message));
   }, { timezone: 'America/New_York' });
   logger.info('Video link audit cron scheduled (Mondays 3 AM ET)');
+
+  // Practice Compliance daily job — cert→assignment reconciliation, overdue
+  // flips, due/expiry alerts, annual recurrence, GA STR recoupment alerts —
+  // daily at 7 AM ET.
+  cron.schedule('0 7 * * *', () => {
+    runComplianceDailyJob().catch(err => console.error('Compliance daily job error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Practice Compliance daily job cron scheduled (daily 7 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
