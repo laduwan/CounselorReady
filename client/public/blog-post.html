@@ -12,6 +12,8 @@
   <meta property="og:description" id="og-desc" content="">
   <meta property="og:type" content="article">
   <meta property="og:url" id="og-url" content="">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <link rel="canonical" id="canonical-url" href="https://counselorready.com/blog-post.html">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -155,6 +157,7 @@
         document.getElementById('og-title').content = post.metaTitle || post.title;
         document.getElementById('og-desc').content = post.metaDescription || post.excerpt || '';
         document.getElementById('og-url').content = `https://counselorready.com/blog-post.html?slug=${post.slug}`;
+        document.getElementById('canonical-url').href = `https://counselorready.com/blog-post.html?slug=${post.slug}`;
 
         // Inject JSON-LD for Article schema
         const jsonLd = document.createElement('script');
