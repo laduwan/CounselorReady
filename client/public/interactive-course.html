@@ -8538,7 +8538,7 @@ function dismissNPS() {
           });
         }
         if (refsData.length > 0) tabR.style.display = 'block';
-        if (resData.length > 0) tabS.style.display = 'block';
+        tabS.style.display = 'block'; // required drawer — always visible; panel shows empty state when course has no resources
       })
       .catch(function() {});
   }
