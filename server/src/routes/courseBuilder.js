@@ -9,6 +9,8 @@
 
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
+import multer from 'multer';
+import mammoth from 'mammoth';
 import { protect } from '../middleware/auth.js';
 import { countCourseWords, requiredWordsFor } from '../utils/courseWordCount.js';
 
@@ -1166,6 +1168,215 @@ router.get('/:id', protect, adminOnly, async (req, res) => {
   } catch (error) {
     console.error('Load course error:', error);
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// OUTLINE IMPORT — /parse-outline + /import-docx
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Helper: convert author text → outline JSON via Anthropic ─────────────────
+// Preserves the author's section titles, ordering, and topics verbatim.
+async function parseOutlineText(text, { ceHours = 3, category = 'Clinical Practice', level = 'Intermediate' } = {}) {
+  const contentSections = ceHours * 2;
+  const wordsPerSection = Math.round((ceHours * 6000) / contentSections);
+
+  const prompt = `Convert this author's course outline into the EXACT outline JSON structure below.
+Preserve their section titles, ordering, and topics EXACTLY as written.
+Do NOT invent content — only structure what they wrote.
+If objectives are present, keep them; if not, leave objectives:[].
+
+Author's outline:
+"""
+${text}
+"""
+
+Return ONLY valid JSON with EXACTLY this structure:
+{
+  "title": "Course title from the outline",
+  "description": "Course description if present, else empty string",
+  "objectives": ["objective 1", "objective 2"],
+  "sections": [
+    {
+      "title": "Section title verbatim",
+      "order": 1,
+      "topics": ["topic1", "topic2"],
+      "estimatedWords": ${wordsPerSection},
+      "kcCount": 2
+    }
+  ]
+}
+
+Rules:
+- Use the author's section titles verbatim
+- If no explicit conclusion section exists, add one as the last section with kcCount:0
+- Content sections: kcCount 2, conclusion: kcCount 0
+- Return ONLY valid JSON, no markdown`;
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4096,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const raw = response.content[0].text;
+  const match = raw.match(/\{[\s\S]*\}/);
+  const outline = JSON.parse(match ? match[0] : raw);
+  outline.ceHours = ceHours;
+  outline.category = category;
+  outline.level = level;
+  return outline;
+}
+
+// ── Helper: build section shells from outline (mode 2) ────────────────────────
+// Returns a course object with empty contentBlocks — author fills content.
+function buildShellsFromOutline(outline) {
+  return {
+    title:          outline.title || 'Imported Course',
+    slug:           slugify(outline.title || 'imported-course'),
+    description:    outline.description || '',
+    ceHours:        outline.ceHours || 3,
+    ceuHours:       outline.ceHours || 3,
+    category:       outline.category || 'Clinical Practice',
+    level:          outline.level || 'Intermediate',
+    objectives:     outline.objectives || [],
+    deliveryMethod: 'online',
+    accessType:     'subscription',
+    status:         'draft',
+    isPublished:    false,
+    sections: (outline.sections || []).map((sec, i) => ({
+      title:         sec.title,
+      order:         i + 1,
+      contentBlocks: [],
+    })),
+    assessment: { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 },
+    references: [],
+  };
+}
+
+// ── Helper: map docx prose → sections + text blocks (mode 3 — verbatim) ─────
+// Never rewrites author prose. Maps headings → section titles, body → text.content.
+// BLOCK_FIELD_REFERENCE.md: text block prose field = 'content' (not textContent).
+function buildCourseFromDocxProse(extractedText, { ceHours = 3, category = 'Clinical Practice', level = 'Intermediate', title: courseTitle } = {}) {
+  const lines = extractedText.split('\n').map(l => l.trim()).filter(Boolean);
+
+  const sections = [];
+  let current = null;
+
+  for (const line of lines) {
+    // Detect headings: ALL CAPS, or short (<80 chars) non-sentence lines, or section/chapter/module prefix
+    const isHeading = (
+      line.length < 80 &&
+      !line.endsWith('.') &&
+      !line.endsWith(',') &&
+      (line === line.toUpperCase() || /^(section|chapter|module|part|\d+\.)\s/i.test(line))
+    );
+
+    if (isHeading) {
+      if (current) sections.push(current);
+      current = { title: line, paragraphs: [] };
+    } else if (!current) {
+      current = { title: courseTitle || 'Section 1', paragraphs: [line] };
+    } else {
+      current.paragraphs.push(line);
+    }
+  }
+  if (current) sections.push(current);
+
+  // Fallback: no heading structure found — treat all as one section
+  if (sections.length === 0 || (sections.length === 1 && sections[0].paragraphs.length === 0 && lines.length > 0)) {
+    sections.length = 0;
+    sections.push({ title: courseTitle || 'Course Content', paragraphs: lines });
+  }
+
+  return {
+    title:          courseTitle || sections[0]?.title || 'Imported Course',
+    slug:           slugify(courseTitle || sections[0]?.title || 'imported-course'),
+    description:    '',
+    ceHours,
+    ceuHours:       ceHours,
+    category,
+    level,
+    objectives:     [],
+    deliveryMethod: 'online',
+    accessType:     'subscription',
+    status:         'draft',
+    isPublished:    false,
+    sections: sections.map((sec, i) => ({
+      title: sec.title,
+      order: i + 1,
+      contentBlocks: sec.paragraphs.length > 0
+        ? [{
+            type:    'text',
+            // text block canonical field from BLOCK_FIELD_REFERENCE.md
+            content: sec.paragraphs.map(p => `<p>${p}</p>`).join('\n'),
+          }]
+        : [],
+    })),
+    assessment: { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 },
+    references: [],
+  };
+}
+
+// ── Multer instance for docx uploads ─────────────────────────────────────────
+const docxUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.originalname?.endsWith('.docx')
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only .docx files are accepted'));
+    }
+  },
+});
+
+// ── POST /parse-outline — paste path, modes 1 & 2 ────────────────────────────
+router.post('/parse-outline', protect, adminOnly, async (req, res) => {
+  try {
+    const { text, ceHours = 3, category = 'Clinical Practice', level = 'Intermediate' } = req.body;
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'text is required' });
+    }
+    const outline = await parseOutlineText(text.trim(), {
+      ceHours: Number(ceHours) || 3,
+      category,
+      level,
+    });
+    res.json(outline);
+  } catch (error) {
+    console.error('parse-outline error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── POST /import-docx — file path, all modes ─────────────────────────────────
+router.post('/import-docx', protect, adminOnly, docxUpload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No .docx file uploaded (field name: file)' });
+    }
+    const { mode = 'outline', ceHours = 3, category = 'Clinical Practice', level = 'Intermediate', title } = req.body;
+    const ceH = Number(ceHours) || 3;
+
+    const { value: extractedText } = await mammoth.extractRawText({ buffer: req.file.buffer });
+
+    if (mode === 'convert') {
+      // Mode 3: preserve author prose verbatim — map to sections + text blocks
+      const course = buildCourseFromDocxProse(extractedText, { ceHours: ceH, category, level, title });
+      return res.json({ mode: 'convert', course });
+    }
+
+    // Modes 'outline' / 'shells': parse extracted text → outline JSON for OutlineEditor
+    const outline = await parseOutlineText(extractedText, { ceHours: ceH, category, level });
+    res.json({ mode, outline });
+
+  } catch (error) {
+    console.error('import-docx error:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -101,7 +101,7 @@ function GeneratingProgress({ progress, currentTask }) {
 
 // ─── Outline editor ───────────────────────────────────────────────────────
 
-function OutlineEditor({ outline, onOutlineChange, onGenerate, onBack, generating }) {
+function OutlineEditor({ outline, onOutlineChange, onGenerate, onBack, generating, actionLabel }) {
   const updateSection = (i, changes) => {
     const sections = [...outline.sections];
     sections[i] = { ...sections[i], ...changes };
@@ -278,7 +278,7 @@ function OutlineEditor({ outline, onOutlineChange, onGenerate, onBack, generatin
           onClick={onGenerate}
           disabled={generating}
         >
-          {generating ? "Generating..." : "✨ Generate Full Course"}
+          {generating ? "Working..." : (actionLabel || "✨ Generate Full Course")}
         </button>
       </div>
     </div>
@@ -292,6 +292,16 @@ export default function AIAssistantTab() {
 
   const [step, setStep] = useState(0); // 0=params, 1=outline, 2=generating, 3=done
   const [error, setError] = useState(null);
+
+  // Entry mode: 'generate' (existing) | 'import' (new)
+  const [entryMode, setEntryMode] = useState("generate");
+
+  // Import-specific state
+  const [importMode, setImportMode]   = useState("full"); // 'full' | 'shells' | 'convert'
+  const [importText, setImportText]   = useState("");
+  const [importFile, setImportFile]   = useState(null);
+  const [importLoading, setImportLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   // Params
   const [topic, setTopic]               = useState("");
@@ -349,6 +359,120 @@ export default function AIAssistantTab() {
     } finally {
       setGeneratingOutline(false);
     }
+  };
+
+  // ── Import: submit paste or file → outline or course ─────────────────────
+
+  const handleImportSubmit = async () => {
+    setError(null);
+    setImportLoading(true);
+    try {
+      let result;
+
+      if (importFile) {
+        // File path → /import-docx
+        const fd = new FormData();
+        fd.append("file", importFile);
+        fd.append("mode", importMode);
+        fd.append("ceHours", ceHours);
+        fd.append("category", category);
+        fd.append("level", level);
+        if (title.trim()) fd.append("title", title.trim());
+
+        const res = await fetch(`${API_BASE}/course-builder/import-docx`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: fd,
+        });
+        if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || `HTTP ${res.status}`); }
+        result = await res.json();
+      } else if (importText.trim()) {
+        // Paste path → /parse-outline (modes full & shells) or treat as convert text
+        if (importMode === "convert") {
+          // Convert mode from paste: segment inline without AI
+          const lines = importText.split("\n").map(l => l.trim()).filter(Boolean);
+          const sections = [];
+          let cur = null;
+          for (const line of lines) {
+            const isH = line.length < 80 && !line.endsWith(".") && !line.endsWith(",") &&
+              (line === line.toUpperCase() || /^(section|chapter|module|part|\d+\.)\s/i.test(line));
+            if (isH) { if (cur) sections.push(cur); cur = { title: line, paragraphs: [] }; }
+            else if (!cur) { cur = { title: title.trim() || "Section 1", paragraphs: [line] }; }
+            else { cur.paragraphs.push(line); }
+          }
+          if (cur) sections.push(cur);
+          if (!sections.length) sections.push({ title: title.trim() || "Course Content", paragraphs: lines });
+
+          const course = {
+            title:       title.trim() || sections[0]?.title || "Imported Course",
+            description: "", ceHours, ceuHours: ceHours, category, level,
+            objectives: [], deliveryMethod: "online", accessType: "subscription",
+            status: "draft", isPublished: false,
+            sections: sections.map((s, i) => ({
+              title: s.title, order: i + 1,
+              contentBlocks: s.paragraphs.length
+                ? [{ type: "text", content: s.paragraphs.map(p => `<p>${p}</p>`).join("\n") }]
+                : [],
+            })),
+            assessment: { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 },
+            references: [],
+          };
+          result = { mode: "convert", course };
+        } else {
+          const res = await fetch(`${API_BASE}/course-builder/parse-outline`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+            body: JSON.stringify({ text: importText.trim(), ceHours, category, level }),
+          });
+          if (!res.ok) { const b = await res.json().catch(() => ({})); throw new Error(b.error || `HTTP ${res.status}`); }
+          const outline = await res.json();
+          result = { mode: importMode, outline };
+        }
+      } else {
+        throw new Error("Paste an outline or upload a .docx file.");
+      }
+
+      if (result.mode === "convert") {
+        // Mode 3: load directly into builder — no generate step
+        dispatch({ type: "LOAD_COURSE", courseData: result.course });
+        setStep(3);
+      } else if (result.mode === "shells") {
+        // Mode 2: show OutlineEditor for review; Build Shells dispatches LOAD_COURSE
+        setOutline(result.outline);
+        setStep(1);
+      } else {
+        // Mode 1 (full): show OutlineEditor → user triggers /generate
+        setOutline(result.outline);
+        setStep(1);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setImportLoading(false);
+    }
+  };
+
+  // ── Shells mode: build empty-block course from reviewed outline → LOAD_COURSE
+  const handleBuildShells = () => {
+    if (!outline) return;
+    const course = {
+      title:       outline.title || "Imported Course",
+      description: outline.description || "",
+      ceHours:     outline.ceHours || ceHours,
+      ceuHours:    outline.ceHours || ceHours,
+      category:    outline.category || category,
+      level:       outline.level || level,
+      objectives:  outline.objectives || [],
+      deliveryMethod: "online", accessType: "subscription",
+      status: "draft", isPublished: false,
+      sections: (outline.sections || []).map((sec, i) => ({
+        title: sec.title, order: i + 1, contentBlocks: [],
+      })),
+      assessment: { questions: [], passThreshold: 0.80, passingScore: 80, maxAttempts: 3 },
+      references: [],
+    };
+    dispatch({ type: "LOAD_COURSE", courseData: course });
+    setStep(3);
   };
 
   // ── Step 2: Generate full course ─────────────────────────────────────────
@@ -423,6 +547,9 @@ export default function AIAssistantTab() {
     setCurrentTask("");
     setError(null);
     setGeneratingCourse(false);
+    setImportText("");
+    setImportFile(null);
+    setImportMode("full");
   };
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -441,6 +568,135 @@ export default function AIAssistantTab() {
       {/* ── Step 0: Parameters ── */}
       {step === 0 && (
         <div>
+          {/* Entry mode toggle */}
+          <div style={{ display: "flex", gap: 0, marginBottom: 18, borderRadius: 9, overflow: "hidden", border: `1px solid ${C.border}` }}>
+            {[
+              { key: "generate", label: "✨ Generate from topic" },
+              { key: "import",   label: "📄 Import my outline" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setEntryMode(key)}
+                style={{
+                  flex: 1, padding: "10px 16px", border: "none", cursor: "pointer",
+                  fontSize: 13, fontWeight: 600,
+                  background: entryMode === key ? C.burgundy : C.stone,
+                  color: entryMode === key ? "#fff" : C.textMuted,
+                  transition: "all 0.15s",
+                }}
+              >{label}</button>
+            ))}
+          </div>
+
+          {/* ── Import mode UI ── */}
+          {entryMode === "import" && (
+            <div style={S.card}>
+              <div style={S.cardHeader}>
+                <span style={{ fontWeight: 700, fontSize: 15, color: C.navy }}>Import Your Outline</span>
+                <span style={S.badge(C.hunterGreen)}>NBCC ACEP #7760</span>
+              </div>
+              <div style={S.cardBody}>
+                {/* Mode selector */}
+                <div style={{ marginBottom: 16 }}>
+                  <label style={S.label}>What do you want to do with your outline?</label>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {[
+                      { value: "full",    label: "Build full course",      desc: "AI writes prose from your structure (fastest path to a complete course)" },
+                      { value: "shells",  label: "Section shells only",    desc: "Create titled sections with empty content — you write the prose" },
+                      { value: "convert", label: "Convert finished docx",  desc: "Your docx already contains the course text — map it verbatim to sections (no AI rewrite)" },
+                    ].map(opt => (
+                      <label key={opt.value} style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", padding: "10px 12px", borderRadius: 8, border: `1.5px solid ${importMode === opt.value ? C.burgundy : C.border}`, background: importMode === opt.value ? C.burgundy + "08" : "#fff" }}>
+                        <input
+                          type="radio" name="importMode" value={opt.value}
+                          checked={importMode === opt.value}
+                          onChange={() => setImportMode(opt.value)}
+                          style={{ marginTop: 2, accentColor: C.burgundy }}
+                        />
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{opt.label}</div>
+                          <div style={{ fontSize: 12, color: C.textMuted }}>{opt.desc}</div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CE Hours / Category / Level */}
+                <div style={{ ...S.grid3, marginBottom: 14 }}>
+                  <div>
+                    <label style={S.label}>CE Hours</label>
+                    <select style={S.input} value={ceHours} onChange={e => setCeHours(Number(e.target.value))}>
+                      {CE_HOURS_OPTIONS.map(h => <option key={h} value={h}>{h} CE Hour{h > 1 ? "s" : ""}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Category</label>
+                    <select style={S.input} value={category} onChange={e => setCategory(e.target.value)}>
+                      {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={S.label}>Level</label>
+                    <select style={S.input} value={level} onChange={e => setLevel(e.target.value)}>
+                      {["Introductory", "Intermediate", "Advanced"].map(l => <option key={l}>{l}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Paste textarea */}
+                <div style={{ marginBottom: 12 }}>
+                  <label style={S.label}>
+                    {importMode === "convert" ? "Paste full course text (or upload .docx below)" : "Paste your outline here"}
+                  </label>
+                  <textarea
+                    style={{ ...S.textarea, minHeight: 160 }}
+                    placeholder={importMode === "convert"
+                      ? "Paste the complete course prose. Section headings should appear on their own lines (all caps or short lines). Paragraphs follow each heading."
+                      : "Paste your outline — section titles, topics, objectives. The AI will preserve your structure exactly."}
+                    value={importText}
+                    onChange={e => setImportText(e.target.value)}
+                  />
+                </div>
+
+                {/* File picker */}
+                <div style={{ marginBottom: 20 }}>
+                  <label style={S.label}>{importText.trim() ? "Or upload a .docx (overrides paste above)" : "Upload a .docx file"}</label>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <input
+                      ref={fileInputRef} type="file" accept=".docx"
+                      style={{ display: "none" }}
+                      onChange={e => setImportFile(e.target.files?.[0] || null)}
+                    />
+                    <button
+                      style={{ ...S.btn(C.borderLight, C.navy, false), fontSize: 13 }}
+                      onClick={() => fileInputRef.current?.click()}
+                    >📎 Choose .docx</button>
+                    {importFile && (
+                      <span style={{ fontSize: 13, color: C.hunterGreen, display: "flex", alignItems: "center", gap: 6 }}>
+                        ✓ {importFile.name}
+                        <button onClick={() => { setImportFile(null); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: C.textMuted, fontSize: 14 }}>✕</button>
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  style={S.btn(C.burgundy, "#fff", importLoading || (!importText.trim() && !importFile))}
+                  onClick={handleImportSubmit}
+                  disabled={importLoading || (!importText.trim() && !importFile)}
+                >
+                  {importLoading
+                    ? <><span style={{ display: "inline-block", animation: "spin 1s linear infinite" }}>⟳</span> Processing...</>
+                    : importMode === "convert" ? "Import & Load →" : "Parse Outline →"}
+                </button>
+                <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+              </div>
+            </div>
+          )}
+
+          {/* ── Generate from topic (existing UI) ── */}
+          {entryMode === "generate" && (
           <div style={S.card}>
             <div style={S.cardHeader}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -555,6 +811,7 @@ export default function AIAssistantTab() {
               <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </div>
           </div>
+          )} {/* end entryMode === "generate" */}
         </div>
       )}
 
@@ -563,9 +820,10 @@ export default function AIAssistantTab() {
         <OutlineEditor
           outline={outline}
           onOutlineChange={setOutline}
-          onGenerate={handleGenerateCourse}
+          onGenerate={importMode === "shells" ? handleBuildShells : handleGenerateCourse}
           onBack={() => setStep(0)}
           generating={generatingCourse}
+          actionLabel={importMode === "shells" ? "🗂 Build Shells →" : "✨ Generate Full Course"}
         />
       )}
 
