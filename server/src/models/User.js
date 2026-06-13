@@ -87,6 +87,7 @@ const userSchema = new mongoose.Schema({
   freeCoursesThisMonth: { type: Number, default: 0, min: 0 },
   freeCoursesResetMonth: { type: String, default: '' }, // format: "2026-04"
   freeCoursesUsedThisMonth: { type: Number, default: 0 },
+  trialCoursesUsed: { type: Number, default: 0 }, // lifetime no-card trial courses used (cap 2)
   freeLimitEmailSentThisMonth: { type: Boolean, default: false },
 
   // Subscription
