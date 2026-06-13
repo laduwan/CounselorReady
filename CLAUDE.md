@@ -376,3 +376,41 @@ Creating or refactoring such scripts is allowed; running them is not. If you fin
 ## Activity Tracking Wiring — Always Use logActivity
 
 When adding new user-facing endpoints (purchases, signups, tool usage, content generation, etc.), the corresponding activity event MUST be logged via `logActivity()` from `activityTrackingService.js`. Never call `UserActivity.create()` directly, and never write a one-off `Resend.emails.send()` for admin notifications. The central service handles persistence, admin feed, and email alerts uniformly.
+
+## Technical Manual Governance (MANDATORY — applies to every session)
+
+The repo's technical knowledge lives in a three-tier system designed so that no
+single chat session needs to hold all prior corrections. Follow these rules in
+EVERY session, without exception:
+
+### TIER 1 — Generated facts (`BLOCK_FIELD_REFERENCE.md` and any future generated refs)
+- These files are produced by scripts in `server/src/scripts/` (e.g.
+  `generateBlockFieldReference.js`). They are the authoritative field-name source.
+- **Before writing or editing any course block, seed, or builder media code, READ
+  `BLOCK_FIELD_REFERENCE.md`.** It reflects the actual viewer render functions and
+  overrides GOLD_STANDARD_SPEC.md and any other doc on field names.
+- **After ANY change to a block render function in `interactive-course.html` or to
+  block fields in `InteractiveCourse.js`, regenerate the reference:**
+  `node server/src/scripts/generateBlockFieldReference.js`
+  and include the regenerated file in the same PR. Do NOT hand-edit it.
+
+### TIER 2 — Human-owned governance (in `TECH_MANUAL.md`, the section so marked)
+- **Never modify, rewrite, summarize, condense, reorder, or "improve" Tier 2.**
+  It contains Ke's rulings (architecture, compliance, roadmap), not observations.
+- If code appears to contradict a Tier 2 ruling, **FLAG it to Ke in your PR summary.
+  Do NOT edit the manual to match the code.** Rulings outrank code; a contradiction
+  means either the code is wrong or the ruling needs Ke's explicit update.
+
+### TIER 3 — Discovery log (in `TECH_MANUAL.md`, append-only)
+- When a session uncovers something architectural (a gotcha, a field mismatch, a
+  non-obvious constraint), **APPEND a dated entry** at the bottom of the Tier 3 log:
+  `### YYYY-MM-DD — short title` + 1–3 sentences.
+- **Never rewrite, delete, or reorder existing Tier 3 entries.** Append only.
+- Do not promote entries to Tier 1/2 yourself — that is Ke's call.
+
+### Enforcement checklist for PRs that touch blocks, seeds, the builder, or the viewer
+- [ ] Read `BLOCK_FIELD_REFERENCE.md` before coding
+- [ ] Regenerated it if render fns or schema fields changed (file included in PR)
+- [ ] Did not touch Tier 2; flagged any code/ruling contradiction instead
+- [ ] Appended a Tier 3 entry if a new gotcha/constraint was discovered
+- [ ] Verified with raw `grep`/`wc`/`git diff --stat` (CC self-reports are not trusted)
