@@ -343,6 +343,10 @@
           <td class="px-4 py-3 text-center text-forest-700">${s.ceuHours || '—'}</td>
           <td class="px-4 py-3 text-right">
             <div class="flex items-center justify-end gap-2">
+              <a href="/live-host.html?session=${encodeURIComponent(s.slug)}"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1" style="background:#6B1D34;color:#fff;">
+                <i class="fas fa-video text-xs"></i> Host Console
+              </a>
               <a href="/admin-live-sessions.html?attendance=${s._id}"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1"
                 onclick="viewAttendance(event,'${s._id}')">
