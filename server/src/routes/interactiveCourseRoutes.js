@@ -594,20 +594,8 @@ router.post('/:id/assessment', protect, async (req, res) => {
     });
 
     if (!progress) {
-      // Auto-create progress if not exists
-      progress = new CourseProgress({
-        userId: req.user._id,
-        courseId: course._id,
-        sectionProgress: course.sections.map((section, index) => ({
-          sectionId: section._id,
-          sectionIndex: index,
-          viewedBlocks: [],
-          completedBlocks: [],
-          quizAttempts: [],
-          status: 'completed' // Mark as completed since they're taking assessment
-        })),
-        assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
-      });
+      return res.status(403).json({ success: false, code: 'NOT_ENROLLED',
+        error: 'You must enroll in this course before taking the assessment.' });
     }
 
     // Check attempts remaining
