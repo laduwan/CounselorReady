@@ -38,7 +38,7 @@
     <div id="gate" class="text-center py-20" style="color:#284157;">Checking admin access…</div>
 
     <div id="console" class="hidden">
-      <div class="mb-6 flex items-start justify-between flex-wrap gap-4">
+      <div class="mb-4 flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 id="sessionTitle" class="font-display text-3xl font-bold" style="color:#6B1D34;"></h1>
           <p id="sessionMeta" class="text-sm mt-1" style="color:#284157;"></p>
@@ -49,16 +49,36 @@
         </div>
       </div>
 
-      <div class="grid lg:grid-cols-5 gap-6">
+      <!-- Video room + agenda side by side -->
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+
+        <!-- Whereby host room embed -->
+        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:400px;">
+          <div id="roomGate" class="flex items-center justify-center" style="min-height:400px;">
+            <div class="text-center px-6">
+              <div class="text-4xl mb-4">📹</div>
+              <button onclick="joinRoom()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:#6B1D34;color:#fff;">
+                Enter Video Room
+              </button>
+              <p class="mt-3 text-xs" style="color:#8a7a7b;">Host room opens here — no Whereby site visit needed.</p>
+            </div>
+          </div>
+          <iframe id="roomFrame" class="hidden w-full" style="height:400px;border:0;"
+                  allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
+        </div>
 
         <!-- Agenda -->
-        <div class="lg:col-span-2">
+        <div>
           <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Agenda</h2>
           <div id="agendaList"></div>
           <p id="noAgenda" class="text-sm" style="color:#57534e;display:none;">No agenda configured for this session.</p>
         </div>
 
-        <!-- Transport + Clip Player -->
+      </div>
+
+      <!-- Clip Transport + Now summary -->
+      <div class="grid lg:grid-cols-5 gap-6">
+
         <div class="lg:col-span-3">
           <div id="clipPanel" class="hidden mb-4 bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Clip Transport</h2>
@@ -79,6 +99,8 @@
           </div>
         </div>
 
+        <div class="lg:col-span-2"></div>
+
       </div>
     </div>
   </main>
@@ -96,6 +118,31 @@
     let hostClipLoaded = null;
 
     function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
+
+    async function joinRoom() {
+      try {
+        const btn = document.querySelector('#roomGate button');
+        if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; }
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/join`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (btn) { btn.disabled = false; btn.textContent = 'Enter Video Room'; }
+          alert(data.error || 'Could not join room.');
+          return;
+        }
+        const frame = document.getElementById('roomFrame');
+        // Append Whereby embed params to minimise Whereby chrome
+        const sep = data.roomUrl.includes('?') ? '&' : '?';
+        frame.src = data.roomUrl + sep + 'minimal=on&lang=en&skipMediaPermissionPrompt=on';
+        frame.classList.remove('hidden');
+        document.getElementById('roomGate').classList.add('hidden');
+      } catch (e) {
+        alert('Could not connect to room. Please refresh and try again.');
+      }
+    }
 
     async function init() {
       if (!slug) return gateMsg('Missing session parameter. <a href="/live-sessions.html" class="underline" style="color:#4A7C59;">Browse sessions</a>.');
