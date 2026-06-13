@@ -107,3 +107,6 @@ shows nothing). Captured permanently in Tier 1 `BLOCK_FIELD_REFERENCE.md`. Viewe
 also supports `sectionDivider` banner images and ~7 block types the builder doesn't expose.
 
 <!-- APPEND NEW ENTRIES BELOW THIS LINE -->
+
+### 2026-06-13 — Payment bypass via POST /:id/assessment (FIXED)
+Assessment endpoint auto-created completed enrollments with no access check; free users could certify on paid courses without paying. Added hasPaidOrFreeAccess + freeTierDecision gate matching /enroll and /progress. Lesson: EVERY route that can create a CourseProgress must run the access gate — there are 3 such paths.
