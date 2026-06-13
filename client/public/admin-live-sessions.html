@@ -273,13 +273,13 @@
         const tid = setTimeout(() => controller.abort(), 8000);
         const r = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal });
         clearTimeout(tid);
-        if (!r.ok) { window.location.href = '/auth.html'; return; }
+        if (!r.ok) { window.location.href = '/login.html'; return; }
         const d = await r.json();
         if (d.user?.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
         document.getElementById('adminEmail').textContent = d.user.email || 'Admin';
         loadSessions();
       } catch {
-        window.location.href = '/auth.html';
+        window.location.href = '/login.html';
       }
     }
 
