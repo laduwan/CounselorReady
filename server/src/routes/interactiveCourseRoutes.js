@@ -38,6 +38,7 @@ async function findCourseByIdOrSlug(param) {
 // ── CONTENT GATING ──────────────────────────────────────────
 const FREE_COURSES_PER_MONTH = 4;   // free plan: 4 courses/month
 const FREE_MAX_COURSE_HOURS  = 1;   // free plan covers 1-CE-hour courses only
+const TRIAL_COURSES_TOTAL    = 2;   // no-card trial: 2 one-CE courses, lifetime
 
 /**
  * Strip sensitive content from course for preview/unauthenticated users.
@@ -81,16 +82,30 @@ function effectiveFreeCoursesUsed(user) {
   return user.freeCoursesUsedThisMonth ?? 0;
 }
 
+function hasCardOnFile(user) {
+  return !!user?.subscription?.stripeCustomerId;
+}
+
 // Free-tier eligibility for a PAID course. Read-only (does NOT consume a slot).
 function freeTierDecision(user, course) {
   const courseHours = course.ceHours || course.ceuHours || 1;
   if (courseHours > FREE_MAX_COURSE_HOURS) {
     return { allowed: false, code: 'OVER_FREE_HOUR_LIMIT',
-      message: 'Free plan covers 1-hour courses only. Subscribe or purchase this course to enroll.' };
+      message: 'Free access covers 1 CE-hour courses only. Purchase this course or upgrade to enroll.' };
   }
+  const status = user?.subscription?.status || 'free';
+  // No-card trial: 2 one-CE courses, lifetime (tracked on trialCoursesUsed)
+  if (status === 'trial' && !hasCardOnFile(user)) {
+    if ((user.trialCoursesUsed ?? 0) >= TRIAL_COURSES_TOTAL) {
+      return { allowed: false, code: 'TRIAL_LIMIT',
+        message: `Your free trial includes ${TRIAL_COURSES_TOTAL} one-hour courses. Add a card for 4 free courses every month, or purchase this course.` };
+    }
+    return { allowed: true, code: 'TRIAL_OK' };
+  }
+  // free plan OR card-on-file: 4 one-CE courses per month
   if (effectiveFreeCoursesUsed(user) >= FREE_COURSES_PER_MONTH) {
     return { allowed: false, code: 'MONTHLY_LIMIT',
-      message: `You've used your ${FREE_COURSES_PER_MONTH} free courses this month. Subscribe for unlimited access.` };
+      message: `You've used your ${FREE_COURSES_PER_MONTH} free courses this month. Purchase this course or upgrade for unlimited access.` };
   }
   return { allowed: true, code: 'FREE_OK' };
 }
@@ -105,11 +120,18 @@ function hasPaidOrFreeAccess(user, course) {
   if (purchased) return true;
   const status = user.subscription?.status || 'free';
   const plan   = user.subscription?.plan   || 'free';
-  return ['active','trial','lifetime'].includes(status) && plan !== 'free';
+  // trial is NOT unlimited — it routes through freeTierDecision (2-course / 1-hr caps)
+  return ['active','lifetime'].includes(status) && plan !== 'free';
 }
 
 // Atomically persist consumption of one monthly free slot (month-aware).
 async function consumeFreeSlot(user) {
+  const status = user?.subscription?.status || 'free';
+  // No-card trial consumes a lifetime trial slot, NOT a monthly slot
+  if (status === 'trial' && !hasCardOnFile(user)) {
+    return User.updateOne({ _id: user._id },
+      { $inc: { trialCoursesUsed: 1 } });
+  }
   const month = currentMonthKey();
   const sameMonth = user.freeCoursesResetMonth === month;
   const newCount = (sameMonth ? (user.freeCoursesUsedThisMonth ?? 0) : 0) + 1;
