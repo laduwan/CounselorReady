@@ -594,24 +594,8 @@ router.post('/:id/assessment', protect, async (req, res) => {
     });
 
     if (!progress) {
-      // No enrollment record — gate before creating anything.
-      // Submitting an assessment without prior enrollment is illegitimate:
-      // it would fabricate completed sections the user never worked through.
-      const paid = hasPaidOrFreeAccess(req.user, course);
-      const freeDecision = paid ? { allowed: true } : freeTierDecision(req.user, course);
-      if (!paid && !freeDecision.allowed) {
-        return res.status(403).json({
-          success: false,
-          error: 'Enrollment required',
-          code: freeDecision.code,
-          message: freeDecision.message
-        });
-      }
-      return res.status(403).json({
-        success: false,
-        error: 'You must enroll in this course before taking the assessment.',
-        code: 'NOT_ENROLLED'
-      });
+      return res.status(403).json({ success: false, code: 'NOT_ENROLLED',
+        error: 'You must enroll in this course before taking the assessment.' });
     }
 
     // Check attempts remaining
