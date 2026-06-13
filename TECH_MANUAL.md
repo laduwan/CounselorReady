@@ -111,5 +111,8 @@ also supports `sectionDivider` banner images and ~7 block types the builder does
 ### 2026-06-13 — Payment bypass via POST /:id/assessment (FIXED)
 Assessment endpoint auto-created completed enrollments with no access check; free users could certify on paid courses without paying. Added hasPaidOrFreeAccess + freeTierDecision gate matching /enroll and /progress. Lesson: EVERY route that can create a CourseProgress must run the access gate — there are 3 such paths.
 
+### 2026-06-13 — Outline import added (paste + docx, 3 modes)
+AI Assistant tab now accepts an existing outline by paste or .docx upload instead of only generating from a topic. Modes: full-generate / shells-only / docx-convert. All feed the existing outline→generate→LOAD_COURSE pipeline; convert mode preserves prose verbatim. Endpoints: POST /course-builder/parse-outline, /import-docx.
+
 ### 2026-06-13 — Trial gate over-granted (FIXED); seat-timer still broken
 hasPaidOrFreeAccess listed 'trial' as unlimited, bypassing the 1-CE-hour cap and course count. A no-card trial user took 10 CE hours free. Policy enforced now: no-card trial = 2 one-CE courses lifetime (trialCoursesUsed); card-on-file = 4 one-CE/month. Distinguish via subscription.stripeCustomerId. SEPARATE open issue: totalTimeSpent reads 0 platform-wide (front-end not posting timeSpent) — contact-hour evidence gap, cert-issuance chain (assessment+evaluation+attestation) itself is sound. Lesson: every CourseProgress-creating route (3 of them) must run the shared gate; fixing the shared fns fixed all three.
