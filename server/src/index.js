@@ -113,6 +113,7 @@ import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
+import { runBlogAutoGen } from './jobs/blogAutoGen.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
@@ -459,6 +460,14 @@ const startServer = async () => {
     runComplianceDailyJob().catch(err => console.error('Compliance daily job error:', err.message));
   }, { timezone: 'America/New_York' });
   logger.info('Practice Compliance daily job cron scheduled (daily 7 AM ET)');
+
+  // Blog auto-generation — picks next topic from queue, generates a draft via
+  // Claude, saves status='draft' for admin review. NEVER auto-publishes.
+  // Review and publish at /admin-blog.html. Runs Tuesdays 6 AM ET.
+  cron.schedule('0 6 * * 2', () => {
+    runBlogAutoGen().catch(err => console.error('[BlogAutoGen] Cron error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Blog auto-generation cron scheduled (Tuesdays 6 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
