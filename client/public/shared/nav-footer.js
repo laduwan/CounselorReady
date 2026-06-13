@@ -20,6 +20,7 @@
   const tabs = [
     { label: 'Dashboard', href: '/dashboard.html' },
     { label: 'Courses', href: '/courses.html' },
+    { label: 'Live Sessions', href: '/live-sessions.html' },
     { label: 'Credentials', href: '/credentials.html' },
     { label: 'CE Certificates', href: '/credentials.html#certifications' },
     { label: 'Blog', href: '/blog.html' },
