@@ -22,6 +22,7 @@ import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
 import { canStart, chargeUsage, costCentsFromUsage, ensurePeriod, budgetSummary, AI_CREDIT_PACKS, MAX_CE_HOURS_PER_GENERATION } from '../utils/aiBudget.js';
 import { AI_BUILDER_DISCLAIMER, AI_BUILDER_DISCLAIMER_VERSION } from '../config/aiBuilderDisclaimer.js';
 import { generateCourseDraft } from '../services/courseDraftGenerator.js';
+import { reviewFeeForCourse } from '../config/courseReview.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -888,6 +889,65 @@ router.delete('/my/courses/:courseId', protect, requirePartnerAdmin, async (req,
     res.json({ message: 'Course deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// ══════════════════════════════════════════════
+// COURSE ACEP REVIEW
+// ══════════════════════════════════════════════
+
+// ── Partner admin: get review status for a course ──
+router.get('/my/courses/:id/review', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    const partnerId = req.partnerId || req.user.partnerId;
+    const course = await InteractiveCourse.findOne({ _id: req.params.id, partnerId }).lean();
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+    res.json({
+      reviewStatus: course.reviewStatus || 'none',
+      accredited:   course.accredited   || false,
+      reviewFeeCents: course.reviewFeeCents || 0,
+      reviewNotes:  course.reviewNotes  || null,
+      reviewedAt:   course.reviewedAt   || null,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Partner admin: create Stripe checkout for ACEP review fee ──
+router.post('/my/courses/:id/review/checkout', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment service unavailable' });
+    const partnerId = req.partnerId || req.user.partnerId;
+    const course = await InteractiveCourse.findOne({ _id: req.params.id, partnerId });
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    const status = course.reviewStatus || 'none';
+    if (['requested', 'in_review', 'approved'].includes(status)) {
+      return res.status(409).json({ error: `Cannot start review — current status: ${status}` });
+    }
+
+    const feeCents = reviewFeeForCourse(course);
+    const origin = req.headers.origin || `https://${process.env.PRIMARY_DOMAIN || 'counselorready.com'}`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: feeCents,
+          product_data: { name: `ACEP Compliance Review — ${course.title}` },
+        },
+        quantity: 1,
+      }],
+      metadata: { type: 'course_review', courseId: String(course._id), partnerId: String(partnerId) },
+      success_url: `${origin}/partner-courses.html?review=paid`,
+      cancel_url:  `${origin}/partner-courses.html`,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

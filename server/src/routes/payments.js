@@ -14,6 +14,7 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import twilio from 'twilio';
 import logger from '../utils/logger.js';
 
@@ -769,6 +770,23 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 await aiPartner.save();
                 logger.info({ partnerId: aiPartnerId, hours: aiHours, sessionId: session.id, requestId: req.requestId }, 'AI credits added to partner');
               }
+            }
+          }
+          break;
+        }
+
+        // Partner course ACEP review fee payment
+        if (session.metadata?.type === 'course_review') {
+          const reviewCourseId = session.metadata.courseId;
+          if (reviewCourseId) {
+            const reviewCourse = await InteractiveCourse.findById(reviewCourseId);
+            if (reviewCourse && reviewCourse.reviewStatus === 'none') {
+              reviewCourse.reviewStatus      = 'requested';
+              reviewCourse.reviewPaidAt      = new Date();
+              reviewCourse.reviewRequestedAt = new Date();
+              reviewCourse.reviewFeeCents    = session.amount_total ?? reviewCourse.reviewFeeCents;
+              await reviewCourse.save();
+              logger.info({ courseId: reviewCourseId, sessionId: session.id, requestId: req.requestId }, 'Course review fee paid');
             }
           }
           break;

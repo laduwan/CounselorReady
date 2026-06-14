@@ -203,6 +203,19 @@
         </div>
       </div>
 
+      <!-- My Courses — review status list -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-semibold text-stone-800">My Courses</h2>
+          <button onclick="loadMyCourses()" class="text-xs px-3 py-1.5 border border-stone-300 rounded-lg hover:bg-stone-50">
+            <i class="fas fa-sync-alt mr-1"></i>Refresh
+          </button>
+        </div>
+        <div id="coursesLoading" class="text-center py-6 text-stone-400 text-sm">Loading…</div>
+        <div id="coursesList" class="hidden space-y-3"></div>
+        <p id="coursesEmpty" class="hidden text-center py-6 text-stone-400 text-sm">No courses yet. Generate your first draft above.</p>
+      </div>
+
       <!-- Credit packs modal backdrop -->
       <div id="packModal" class="hidden fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4">
         <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full p-6">
@@ -455,6 +468,89 @@
     });
 
     init();
+
+    // ── My Courses / ACEP review status ──────────────────────────────────────
+    const REVIEW_STATUS_LABELS = {
+      none:      { label: 'No Review',  cls: 'bg-stone-100 text-stone-600' },
+      requested: { label: 'Requested',  cls: 'bg-blue-100 text-blue-700' },
+      in_review: { label: 'In Review',  cls: 'bg-yellow-100 text-yellow-700' },
+      approved:  { label: 'Accredited', cls: 'bg-green-100 text-green-700' },
+      rejected:  { label: 'Rejected',   cls: 'bg-red-100 text-red-700' },
+    };
+
+    async function loadMyCourses() {
+      document.getElementById('coursesLoading').classList.remove('hidden');
+      document.getElementById('coursesList').classList.add('hidden');
+      document.getElementById('coursesEmpty').classList.add('hidden');
+      try {
+        const res = await apiFetch('/api/partners/my/courses');
+        if (!res.ok) throw new Error(await res.text());
+        const { courses } = await res.json();
+        document.getElementById('coursesLoading').classList.add('hidden');
+        if (!courses || courses.length === 0) {
+          document.getElementById('coursesEmpty').classList.remove('hidden');
+          return;
+        }
+        const list = document.getElementById('coursesList');
+        list.innerHTML = '';
+        courses.forEach(course => {
+          const rs = course.reviewStatus || 'none';
+          const info = REVIEW_STATUS_LABELS[rs] || REVIEW_STATUS_LABELS.none;
+          const feeCents = course.reviewFeeCents || 0;
+          const feeDisplay = feeCents ? `($${(feeCents/100).toFixed(2)} paid)` : '';
+          let acepAction = '';
+          if (rs === 'none' || rs === 'rejected') {
+            acepAction = `<button onclick="requestReview('${course._id}')"
+              class="text-xs px-3 py-1.5 border border-burgundy-700 text-burgundy-700 rounded-lg hover:bg-burgundy-50 whitespace-nowrap">
+              Request ACEP Review
+            </button>`;
+          }
+          if (rs === 'rejected' && course.reviewNotes) {
+            acepAction += `<p class="text-xs text-red-600 mt-1"><strong>Reason:</strong> ${course.reviewNotes}</p>`;
+          }
+          const div = document.createElement('div');
+          div.className = 'flex flex-wrap items-center gap-3 p-4 border border-stone-100 rounded-xl hover:bg-stone-50';
+          div.innerHTML = `
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-stone-800 truncate">${course.title || 'Untitled'}</p>
+              <p class="text-xs text-stone-500">${course.ceuHours || course.credits || 0} CE hr(s) &bull; ${course.status || 'draft'}</p>
+            </div>
+            <span class="inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${info.cls}">${info.label} ${rs === 'approved' ? '<i class="fas fa-check ml-0.5"></i>' : ''} ${feeDisplay}</span>
+            <div class="text-right">${acepAction}</div>
+          `;
+          list.appendChild(div);
+        });
+        list.classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('coursesLoading').innerHTML = `<p class="text-red-500 text-sm">${err.message}</p>`;
+      }
+    }
+
+    async function requestReview(courseId) {
+      try {
+        const res = await apiFetch(`/api/partners/my/courses/${courseId}/review/checkout`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          window.location.href = data.url;
+        } else {
+          alert(data.error || 'Failed to start checkout');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    window.loadMyCourses = loadMyCourses;
+    window.requestReview = requestReview;
+
+    // Load courses once content is visible
+    const origInit = init;
+    const _origShow = show;
+    function show(id) {
+      _origShow(id);
+      if (id === 'content') loadMyCourses();
+    }
+
   })();
   </script>
 
