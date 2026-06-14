@@ -1,0 +1,49 @@
+diff --git a/client/public/partner-dashboard.html b/client/public/partner-dashboard.html
+index 31f1b0ff..e21591b0 100644
+--- a/client/public/partner-dashboard.html
++++ b/client/public/partner-dashboard.html
+@@ -88,7 +88,7 @@
+           <i class="fas fa-book text-burgundy-800 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Manage Courses</p>
+         </a>
+-        <a href="/partner/users" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
++        <a href="/partner-users.html" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+           <i class="fas fa-user-plus text-hunter-500 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Manage Users</p>
+         </a>
+@@ -96,11 +96,11 @@
+           <i class="fas fa-upload text-blue-600 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Bulk Upload</p>
+         </a>
+-        <a href="/partner/billing" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
++        <a href="/partner-billing.html" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+           <i class="fas fa-credit-card text-amber-600 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Billing</p>
+         </a>
+-        <a href="/partner/reports" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
++        <a href="/partner-reports.html" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+           <i class="fas fa-download text-purple-600 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Reports</p>
+         </a>
+@@ -108,18 +108,18 @@
+           <i class="fas fa-envelope text-red-600 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Email Templates</p>
+         </a>
+-        <a href="/partner/marketplace" class="bg-white rounded-xl border border-honey-300 p-3 text-center hover:shadow-md transition-shadow">
++        <a href="/partner-marketplace.html" class="bg-white rounded-xl border border-honey-300 p-3 text-center hover:shadow-md transition-shadow">
+           <i class="fas fa-store text-honey-600 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Marketplace</p>
+         </a>
+-        <a href="/partner/earnings" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
++        <a href="/partner-earnings.html" class="bg-white rounded-xl border border-gray-200 p-3 text-center hover:shadow-md transition-shadow">
+           <i class="fas fa-coins text-hunter-500 text-lg mb-1"></i>
+           <p class="text-xs font-medium text-stone-700">Earnings</p>
+         </a>
+       </div>
+ 
+       <!-- Marketing additive: syndication promo -->
+-      <a href="/partner/marketplace" class="block bg-white rounded-xl border border-honey-300 p-4 hover:shadow-md transition-shadow" style="background:#fffdf7">
++      <a href="/partner-marketplace.html" class="block bg-white rounded-xl border border-honey-300 p-4 hover:shadow-md transition-shadow" style="background:#fffdf7">
+         <div class="flex items-center gap-4">
+           <div class="w-10 h-10 rounded-full flex items-center justify-center flex-none" style="background:#fef3c7">
+             <i class="fas fa-bullhorn text-honey-600"></i>
