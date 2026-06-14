@@ -55,9 +55,9 @@ router.get('/subscription', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
     
     let paymentMethod = null;
-    if (user.stripeCustomerId && stripe) {
+    if (user.subscription?.stripeCustomerId && stripe) {
       try {
-        const customer = await stripe.customers.retrieve(user.stripeCustomerId);
+        const customer = await stripe.customers.retrieve(user.subscription.stripeCustomerId);
         if (customer.invoice_settings?.default_payment_method) {
           const pm = await stripe.paymentMethods.retrieve(
             customer.invoice_settings.default_payment_method
@@ -95,16 +95,16 @@ router.get('/invoices', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeCustomerId) {
+    if (!user.subscription?.stripeCustomerId) {
       return res.json({ invoices: [] });
     }
-    
+
     // Get invoices from Stripe
     const invoices = await stripe.invoices.list({
-      customer: user.stripeCustomerId,
+      customer: user.subscription.stripeCustomerId,
       limit: 20
     });
-    
+
     const formattedInvoices = invoices.data.map(inv => ({
       id: inv.id,
       date: new Date(inv.created * 1000),
@@ -140,7 +140,7 @@ router.post('/create-checkout-session', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
     
     // Create or get Stripe customer
-    let customerId = user.stripeCustomerId;
+    let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -150,9 +150,9 @@ router.post('/create-checkout-session', protect, async (req, res) => {
         }
       });
       customerId = customer.id;
-      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
     }
-    
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
@@ -214,7 +214,7 @@ router.post('/create-subscription', protect, async (req, res) => {
     }
     
     // Create or get Stripe customer
-    let customerId = user.stripeCustomerId;
+    let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -224,7 +224,7 @@ router.post('/create-subscription', protect, async (req, res) => {
         }
       });
       customerId = customer.id;
-      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
     }
     
     // Attach payment method to customer
@@ -303,7 +303,7 @@ router.post('/create-subscription', protect, async (req, res) => {
     if (paymentIntent.status === 'succeeded') {
       // Update user subscription
       await User.findByIdAndUpdate(user._id, {
-        stripeSubscriptionId: subscription.id,
+        'subscription.stripeSubscriptionId': subscription.id,
         'subscription.plan': plan,
         'subscription.status': 'active',
         'subscription.priceId': priceId,
@@ -346,12 +346,12 @@ router.post('/create-portal-session', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeCustomerId) {
+    if (!user.subscription?.stripeCustomerId) {
       return res.status(400).json({ error: 'No subscription found' });
     }
-    
+
     const session = await stripe.billingPortal.sessions.create({
-      customer: user.stripeCustomerId,
+      customer: user.subscription.stripeCustomerId,
       return_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/subscription.html`
     });
     
@@ -374,19 +374,19 @@ router.post('/change-plan', protect, async (req, res) => {
     const { plan } = req.body;
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeSubscriptionId) {
+    if (!user.subscription?.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No active subscription to change' });
     }
-    
+
     if (!PRICE_IDS[plan]) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
-    
+
     // Get current subscription
-    const subscription = await stripe.subscriptions.retrieve(user.stripeSubscriptionId);
-    
+    const subscription = await stripe.subscriptions.retrieve(user.subscription.stripeSubscriptionId);
+
     // Update subscription with new price
-    const updatedSubscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    const updatedSubscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
       items: [{
         id: subscription.items.data[0].id,
         price: PRICE_IDS[plan]
@@ -427,20 +427,20 @@ router.post('/cancel-subscription', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeSubscriptionId) {
+    if (!user.subscription?.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No active subscription to cancel' });
     }
-    
+
     // Cancel at period end (user keeps access until billing period ends)
-    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    const subscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
       cancel_at_period_end: true
     });
-    
+
     await User.findByIdAndUpdate(user._id, {
       'subscription.cancelAtPeriodEnd': true
     });
-    
-    res.json({ 
+
+    res.json({
       message: 'Subscription will be canceled at the end of the billing period',
       cancelAt: new Date(subscription.current_period_end * 1000)
     });
@@ -457,16 +457,16 @@ router.post('/cancel', protect, async (req, res) => {
   if (!stripe) {
     return res.status(503).json({ error: 'Payment system not configured' });
   }
-  
+
   try {
     const user = await User.findById(req.user._id);
-    
-    if (!user.stripeSubscriptionId) {
+
+    if (!user.subscription?.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No active subscription to cancel' });
     }
-    
+
     // Cancel at period end (user keeps access until billing period ends)
-    const subscription = await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    const subscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
       cancel_at_period_end: true
     });
     
@@ -495,12 +495,12 @@ router.post('/reactivate', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeSubscriptionId) {
+    if (!user.subscription?.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No subscription to reactivate' });
     }
-    
+
     // Remove cancellation
-    await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
       cancel_at_period_end: false
     });
     
@@ -526,15 +526,15 @@ router.get('/billing-history', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     
-    if (!user.stripeCustomerId) {
+    if (!user.subscription?.stripeCustomerId) {
       return res.json({ invoices: [] });
     }
-    
+
     const invoices = await stripe.invoices.list({
-      customer: user.stripeCustomerId,
+      customer: user.subscription.stripeCustomerId,
       limit: 20
     });
-    
+
     const formattedInvoices = invoices.data.map(inv => ({
       id: inv.id,
       number: inv.number,
@@ -587,7 +587,7 @@ router.post('/create-course-checkout', protect, async (req, res) => {
     const user = await User.findById(req.user._id);
 
     // Create or get Stripe customer
-    let customerId = user.stripeCustomerId;
+    let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -597,7 +597,7 @@ router.post('/create-course-checkout', protect, async (req, res) => {
         }
       });
       customerId = customer.id;
-      await User.findByIdAndUpdate(user._id, { stripeCustomerId: customerId });
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -812,7 +812,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         // Handle subscription purchase
         if (userId && plan) {
           await User.findByIdAndUpdate(userId, {
-            stripeSubscriptionId: session.subscription,
+            'subscription.stripeSubscriptionId': session.subscription,
             'subscription.plan': plan,
             'subscription.status': 'active',
             'subscription.currentPeriodStart': new Date(),
@@ -962,7 +962,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           await User.findByIdAndUpdate(userId, {
             'subscription.plan': 'free',
             'subscription.status': 'canceled',
-            stripeSubscriptionId: null
+            'subscription.stripeSubscriptionId': null
           });
           logActivity(ACTIVITY_TYPES.SUBSCRIPTION_CANCELED, {
             plan: canceledPlan
@@ -992,7 +992,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const invoice = event.data.object;
         const customerId = invoice.customer;
         
-        const user = await User.findOne({ stripeCustomerId: customerId });
+        const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
         if (user) {
           await User.findByIdAndUpdate(user._id, {
             'subscription.status': 'past_due',
@@ -1029,7 +1029,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const invoice = event.data.object;
         const customerId = invoice.customer;
 
-        const user = await User.findOne({ stripeCustomerId: customerId });
+        const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
         if (user) {
           const wasRecovery = user.subscription?.status === 'past_due';
           const updateFields = {
@@ -1210,7 +1210,7 @@ router.post('/purchase-course', protect, async (req, res) => {
       return res.status(400).json({ error: 'You already own this course' });
     }
 
-    let customerId = user.stripeCustomerId;
+    let customerId = user.subscription?.stripeCustomerId;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
@@ -1218,7 +1218,7 @@ router.post('/purchase-course', protect, async (req, res) => {
         metadata: { userId: user._id.toString() }
       });
       customerId = customer.id;
-      user.stripeCustomerId = customerId;
+      user.subscription.stripeCustomerId = customerId;
       await user.save();
     }
 
