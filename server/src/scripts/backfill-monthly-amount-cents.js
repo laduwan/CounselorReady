@@ -29,7 +29,7 @@ const User = mongoose.model('User', new mongoose.Schema({}, { strict: false }), 
 
 // Fetch all active/past_due users with a Stripe customer ID
 const query = {
-  stripeCustomerId: { $exists: true, $ne: null },
+  'subscription.stripeCustomerId': { $exists: true, $ne: null },
   'subscription.status': { $in: ['active', 'past_due'] },
   'subscription.plan': { $ne: 'free' }
 };
@@ -41,7 +41,7 @@ if (!FORCE) {
   ];
 }
 
-const users = await User.find(query).select('email stripeCustomerId subscription.plan subscription.monthlyAmountCents').lean();
+const users = await User.find(query).select('email subscription.stripeCustomerId subscription.plan subscription.monthlyAmountCents').lean();
 console.log(`Found ${users.length} user(s) to backfill${FORCE ? ' (--force mode)' : ''}\n`);
 
 const stats = { updated: 0, skipped: 0, errors: 0, zeroDollar: 0 };
@@ -50,7 +50,7 @@ for (const user of users) {
   try {
     // Get most recent paid invoice
     const invoices = await stripe.invoices.list({
-      customer: user.stripeCustomerId,
+      customer: user.subscription?.stripeCustomerId,
       status: 'paid',
       limit: 1
     });
