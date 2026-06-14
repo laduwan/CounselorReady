@@ -458,6 +458,23 @@ const CourseSchema = new mongoose.Schema({
   deliveryMethod: String,
   approvingBody: String,
   approvalNumber: String,
+
+  // --- Paid ACEP review / accreditation (partner courses) ---
+  reviewStatus: {
+    type: String,
+    enum: ['none', 'requested', 'in_review', 'approved', 'rejected'],
+    default: 'none',
+    index: true
+  },
+  accredited:        { type: Boolean, default: false }, // true ONLY after approval → drives ACEP cert
+  reviewFeeCents:    { type: Number, default: 0 },
+  reviewPaidAt:      Date,
+  reviewRequestedAt: Date,
+  reviewedAt:        Date,
+  reviewedBy:        String,   // admin user id/email
+  reviewNotes:       String,   // rejection reason / reviewer notes
+  reviewAudit:       { type: mongoose.Schema.Types.Mixed }, // stored auditCourse() report
+
   instructor: String,
   isPublished: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },

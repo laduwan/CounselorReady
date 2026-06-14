@@ -279,7 +279,7 @@
             localStorage.setItem('user', JSON.stringify(data.user));
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get('redirect');
-            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : '/dashboard.html';
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : ((data.user && data.user.role === 'partner_admin') ? '/partner-dashboard.html' : '/dashboard.html');
           } else {
             // Show error
             showError(data.error || data.message || 'Invalid email or password.');
@@ -322,7 +322,7 @@
             localStorage.setItem('user', JSON.stringify(data.user));
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get('redirect');
-            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : '/dashboard.html';
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : ((data.user && data.user.role === 'partner_admin') ? '/partner-dashboard.html' : '/dashboard.html');
             return;
           }
           showError(data.error || 'Invalid code. Please try again.');
