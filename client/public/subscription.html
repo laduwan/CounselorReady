@@ -206,11 +206,9 @@
         </div>
 
       </div>
-
       <div class="mt-4 flex justify-center">
         <button onclick="selectPlan('test1')" class="w-full py-2 mt-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors font-semibold" id="test1Btn">Test $1 Checkout</button>
       </div>
-
     </section>
 
     <!-- Payment Method -->
@@ -369,8 +367,8 @@
       window.history.replaceState({}, '', window.location.pathname);
     }
 
-      await
-    await loadSubscription();
+      await loadUser();
+      await loadSubscription();
       await loadBillingHistory();
       initStripe();
     }
