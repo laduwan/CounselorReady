@@ -206,6 +206,11 @@
         </div>
 
       </div>
+
+      <div class="mt-4 flex justify-center">
+        <button onclick="selectPlan('test1')" class="w-full py-2 mt-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors font-semibold" id="test1Btn">Test $1 Checkout</button>
+      </div>
+
     </section>
 
     <!-- Payment Method -->
@@ -332,7 +337,8 @@
       free: { name: 'Free', price: 0, interval: 'month', priceId: null, maxCourseHours: 4, maxStates: 1, consultsPerQuarter: 0 },
       starter: { name: 'Starter', price: 19.99, interval: 'month', priceId: 'price_starter_monthly', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       professional: { name: 'Professional', price: 29.99, interval: 'month', priceId: 'price_professional_monthly', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
-      vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_vip_monthly', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 }
+      vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_vip_monthly', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 },
+      test1: { name: 'Test $1', price: 1, interval: 'month', priceId: 'price_REPLACE_ME', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 }
     };
 
     // Initialize
