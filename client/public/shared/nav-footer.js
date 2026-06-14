@@ -25,6 +25,7 @@
     { label: 'CE Certificates', href: '/credentials.html#certifications' },
     { label: 'Blog', href: '/blog.html' },
     { label: 'Messages', href: '/messages.html' },
+    { label: 'My Organization', href: '/organization.html' },
   ];
 
   // Secondary links shown in mobile menu below divider
@@ -35,6 +36,7 @@
     { label: 'Referrals', href: '/referrals.html' },
     { label: 'Partner Portal', href: '/partner-dashboard.html' },
     { label: 'Legacy Vault', href: '/legacy-vault.html' },
+    { label: 'My Compliance', href: '/my-compliance.html' },
   ];
 
   // ── POLICY LINKS (footer) ────────────────────────────────
@@ -80,6 +82,7 @@
       <div style="border-top:1px solid #F1EFE9;margin:6px 0;padding-top:6px">
         ${secondary}
       </div>
+      <a href="/team-compliance.html" id="teamCompMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Team Compliance</a>
       <a href="/admin.html" id="adminMob" class="hidden px-4 py-2.5 rounded-lg text-sm font-semibold" style="color:#6B1D34;background:#FDF5F7">Admin Panel</a>`;
   }
 
@@ -106,6 +109,10 @@
           <svg width="14" height="14" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
           Admin
         </a>
+        <a href="/team-compliance.html" id="teamCompBadge" class="hidden items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full" style="color:#6B1D34;background:#FDF5F7;border:1px solid #6B1D34;text-decoration:none">
+          <svg width="14" height="14" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Team
+        </a>
         <div class="relative">
           <button onclick="toggleCRDropdown('notif')" class="p-2 rounded-lg hover:bg-stone-100 transition-colors relative">
             <svg width="20" height="20" class="w-5 h-5" style="color:#78716c" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -127,6 +134,7 @@
           <div class="dd" id="userDd" style="width:210px;right:0">
             <div style="padding:10px 16px;border-bottom:1px solid #F1EFE9"><p style="font-size:13px;font-weight:600;color:#44403c;margin:0" id="menuName">User</p><p style="font-size:11px;color:#78716c;margin:2px 0 0" id="menuEmail"></p><span id="menuPlan" style="display:inline-block;margin-top:4px;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600;background:#FDF5F7;color:#6B1D34"></span></div>
             <a href="/admin.html" id="menuAdminLink" style="display:none;color:#6B1D34"><svg width="16" height="16" class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg> Admin Panel</a>
+            <a href="/team-compliance.html" id="menuTeamCompLink" style="display:none;color:#6B1D34"><svg width="16" height="16" class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Team Compliance</a>
             <a href="/settings.html"><svg width="16" height="16" class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
             <a href="/messages.html"><svg width="16" height="16" class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
             <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="crLogout();return false" style="color:#DC2626"><svg width="16" height="16" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
@@ -280,6 +288,24 @@
           const ml = document.getElementById('menuAdminLink');
           if (ml) ml.style.display = 'flex';
         }
+
+        // Team Compliance: reveal for org owners/admins (same display:none + role-check pattern)
+        const userEmail = u.email || '';
+        fetch(`${API}/api/organizations/mine`, { headers: { Authorization: `Bearer ${T}` } })
+          .then(r => r.ok ? r.json() : [])
+          .then(orgs => {
+            const isOrgAdmin = orgs.some(o =>
+              (o.seats || []).some(s => s.email === userEmail && ['owner', 'admin'].includes(s.role))
+            );
+            if (isOrgAdmin) {
+              document.getElementById('teamCompBadge')?.classList.remove('hidden');
+              document.getElementById('teamCompBadge')?.classList.add('flex');
+              document.getElementById('teamCompMob')?.classList.remove('hidden');
+              const tl = document.getElementById('menuTeamCompLink');
+              if (tl) tl.style.display = 'flex';
+            }
+          })
+          .catch(() => {});
 
         localStorage.setItem('user', JSON.stringify(u));
       })
