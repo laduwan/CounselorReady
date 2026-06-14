@@ -39,6 +39,33 @@
   .banner { background:#f9e6e6; border:1px solid #e7bcbc; color:var(--red); border-radius:10px; padding:12px 16px; margin-bottom:16px; font-weight:600; display:none; }
   .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
   .seg { font-size:12px; background:#eef1f4; color:var(--navy); padding:3px 10px; border-radius:999px; }
+  /* ── modals ── */
+  .modal-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:100; align-items:center; justify-content:center; }
+  .modal-ov.open { display:flex; }
+  .modal { background:#fff; border-radius:14px; padding:24px; max-width:640px; width:calc(100% - 32px); max-height:90vh; overflow-y:auto; }
+  .modal h3 { margin:0 0 16px; font-size:17px; }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; }
+  .form-grid.one { grid-template-columns:1fr; }
+  .form-field label { display:block; font-size:12px; font-weight:600; color:#7a8591; text-transform:uppercase; letter-spacing:.03em; margin-bottom:4px; }
+  .form-field input, .form-field select, .form-field textarea { width:100%; padding:8px 10px; border:1px solid #cbd2d9; border-radius:8px; font:inherit; font-size:14px; box-sizing:border-box; }
+  .form-field textarea { resize:vertical; min-height:64px; }
+  .modal-foot { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+  /* ── track items ── */
+  .items-list { border:1px solid #e6e2dc; border-radius:8px; overflow:hidden; margin-bottom:8px; }
+  .item-row { display:grid; grid-template-columns:1fr 90px 90px 32px; gap:6px; padding:7px 10px; border-bottom:1px solid #eee; align-items:center; font-size:13px; }
+  .item-row:last-child { border-bottom:none; }
+  .item-row input, .item-row select { padding:5px 7px; border:1px solid #cbd2d9; border-radius:6px; font:inherit; font-size:13px; }
+  /* ── progress bar ── */
+  .pb-wrap { background:#e6e2dc; border-radius:99px; height:7px; overflow:hidden; display:inline-block; width:60px; vertical-align:middle; }
+  .pb { background:var(--green); height:100%; border-radius:99px; }
+  .pb.warn { background:var(--amber); }
+  .pb.risk { background:var(--red); }
+  /* ── credential vault ── */
+  .exp-ok { color:var(--green); font-weight:700; }
+  .exp-warn { color:var(--amber); font-weight:700; }
+  .exp-bad { color:var(--red); font-weight:700; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; background:#e7f4ec; color:var(--green); }
+  .tag.unverified { background:#f3eef7; color:#6b4f8a; }
 </style>
 </head>
 <body>
@@ -85,7 +112,10 @@
     </div>
 
     <div class="card">
-      <h2>Training tracks</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+        <h2 style="margin:0;">Training tracks</h2>
+        <button id="newTrackBtn" class="btn" style="display:none;" onclick="openTrackModal()">+ New Track</button>
+      </div>
       <p class="muted">Assign a track to apply its required trainings to matching members. Recurring items auto-renew on completion.</p>
       <table id="tracks">
         <thead><tr><th>Track</th><th>Segment</th><th>Applies to</th><th>Items</th><th></th></tr></thead>
@@ -97,6 +127,154 @@
       <h2>State-mandate suggestions</h2>
       <div id="suggestions" class="muted">—</div>
     </div>
+
+    <!-- ── Assignments drill-down (admin-rendered) ── -->
+    <div id="assignmentsCard" class="card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h2 style="margin:0;">Assignments</h2>
+        <div class="row">
+          <select id="assignFilter" onchange="renderAssignments()" style="font-size:13px;padding:5px 8px;">
+            <option value="">All statuses</option>
+            <option value="assigned">Assigned</option>
+            <option value="in_progress">In Progress</option>
+            <option value="overdue">Overdue</option>
+            <option value="completed">Completed</option>
+            <option value="waived">Waived</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="assignTable">
+          <thead><tr><th>Member</th><th>Course</th><th>Status</th><th>Due</th><th>Recoup risk</th><th id="assignActionsHead" style="display:none;"></th></tr></thead>
+          <tbody id="assignBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Credential vault ── -->
+    <div id="credCard" class="card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <h2 style="margin:0;">Credential Vault</h2>
+        <button id="addCredBtn" class="btn" style="display:none;" onclick="openCredModal()">+ Add Credential</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <table id="credTable">
+          <thead><tr><th>Member</th><th>Type</th><th>Label</th><th>Identifier</th><th>Expires</th><th>Level</th><th>Verified</th><th id="credActionsHead" style="display:none;"></th></tr></thead>
+          <tbody id="credBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- end #main -->
+</div><!-- end .wrap -->
+
+<!-- ══════════════════ TRACK BUILDER MODAL ══════════════════ -->
+<div id="trackModal" class="modal-ov" onclick="if(event.target===this)closeTrackModal()">
+  <div class="modal">
+    <h3 id="trackModalTitle">New Training Track</h3>
+    <input type="hidden" id="trackEditId">
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Track Name *</label>
+        <input type="text" id="tName" placeholder="e.g. Clinical Orientation">
+      </div>
+      <div class="form-field">
+        <label>Segment</label>
+        <select id="tSegment">
+          <option value="private_practice">Private Practice</option>
+          <option value="dbhdd_agency">DBHDD / DCH Agency</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Applies To Roles (comma-separated)</label>
+        <input type="text" id="tRoles" placeholder="clinician, associate, supervisor">
+      </div>
+      <div class="form-field">
+        <label>Manual Version / Policy Ref</label>
+        <input type="text" id="tManual" placeholder="Policy v2.1">
+      </div>
+      <div class="form-field">
+        <label>Annual Hours Target</label>
+        <input type="number" id="tAnnualHrs" value="0" min="0">
+      </div>
+      <div class="form-field">
+        <label>STR Hours Target</label>
+        <input type="number" id="tStrHrs" value="0" min="0">
+      </div>
+    </div>
+    <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:#7a8591;text-transform:uppercase;letter-spacing:.03em;">Track Items</div>
+    <div class="items-list" id="trackItemsList"></div>
+    <button class="btn ghost" onclick="addTrackItem()" style="font-size:13px;padding:6px 12px;margin-bottom:12px;">+ Add Item</button>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeTrackModal()">Cancel</button>
+      <button class="btn" onclick="submitTrack()">Save Track</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ CREDENTIAL MODAL ══════════════════ -->
+<div id="credModal" class="modal-ov" onclick="if(event.target===this)closeCredModal()">
+  <div class="modal">
+    <h3>Add Credential</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Member Seat</label>
+        <select id="cSeatId"></select>
+      </div>
+      <div class="form-field">
+        <label>Type</label>
+        <select id="cType">
+          <option value="license">License</option>
+          <option value="certification">Certification</option>
+          <option value="cpr">CPR</option>
+          <option value="ceu">CEU</option>
+          <option value="training">Training</option>
+          <option value="background_check">Background Check</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Label / Description</label>
+        <input type="text" id="cLabel" placeholder="e.g. LPC License GA">
+      </div>
+      <div class="form-field">
+        <label>Identifier / Number</label>
+        <input type="text" id="cIdentifier" placeholder="e.g. LPC-12345">
+      </div>
+      <div class="form-field">
+        <label>CPR Level</label>
+        <select id="cLevel">
+          <option value="">— N/A —</option>
+          <option value="bls">BLS / Healthcare Provider</option>
+          <option value="professional_rescuer">Professional Rescuer</option>
+          <option value="lay">Lay Responder</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>State</label>
+        <input type="text" id="cState" placeholder="GA" maxlength="2">
+      </div>
+      <div class="form-field">
+        <label>Issued Date</label>
+        <input type="date" id="cIssuedAt">
+      </div>
+      <div class="form-field">
+        <label>Expiration Date</label>
+        <input type="date" id="cExpiresAt">
+      </div>
+      <div class="form-field">
+        <label>Issuing Body</label>
+        <input type="text" id="cIssuingBody" placeholder="e.g. Georgia LPC Board">
+      </div>
+      <div class="form-field">
+        <label>File (PDF / image, max 25 MB)</label>
+        <input type="file" id="cFile" accept=".pdf,image/*">
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" onclick="closeCredModal()">Cancel</button>
+      <button class="btn" onclick="submitCred()">Save Credential</button>
+    </div>
   </div>
 </div>
 
@@ -104,6 +282,13 @@
 const API = location.hostname==='localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
 const token = localStorage.getItem('token');
 let currentOrgId = null;
+let currentOrgIsAdmin = false;
+let currentUserEmail = '';
+let allAssignments = [];
+let allCredentials = [];
+let currentMembers = [];
+
+try { const p = JSON.parse(atob(token.split('.')[1])); currentUserEmail = p.email||''; } catch(e){}
 
 function authHeaders(extra) { return Object.assign({ 'Authorization': 'Bearer ' + token }, extra||{}); }
 async function api(path, opts) {
@@ -115,6 +300,14 @@ async function api(path, opts) {
   } finally { clearTimeout(t); }
 }
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmtDate = d => d ? new Date(d).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—';
+function expiryClass(d) {
+  if (!d) return '';
+  const days = Math.ceil((new Date(d) - Date.now()) / 86400000);
+  if (days <= 0) return 'exp-bad';
+  if (days <= 30) return 'exp-warn';
+  return 'exp-ok';
+}
 
 async function init() {
   if (!token) { document.getElementById('needAuth').style.display='block'; return; }
@@ -130,11 +323,27 @@ async function init() {
 
 async function loadOrg(orgId) {
   currentOrgId = orgId;
-  const [data, tracks, suggestions] = await Promise.all([
+  const [data, tracks, suggestions, assignments, credentials] = await Promise.all([
     api('/api/orgs/'+orgId+'/members'),
     api('/api/orgs/'+orgId+'/tracks').catch(()=>[]),
-    api('/api/orgs/'+orgId+'/suggestions').catch(()=>({states:[],tracks:[]}))
+    api('/api/orgs/'+orgId+'/suggestions').catch(()=>({states:[],tracks:[]})),
+    api('/api/orgs/'+orgId+'/assignments').catch(()=>[]),
+    api('/api/orgs/'+orgId+'/credentials').catch(()=>[])
   ]);
+
+  allAssignments = assignments;
+  allCredentials = credentials;
+  currentMembers = data.members || [];
+
+  const myMember = currentMembers.find(m => m.email === currentUserEmail);
+  currentOrgIsAdmin = myMember && ['owner','admin','manager'].includes(myMember.role);
+
+  // Show/hide admin-only UI
+  if (document.getElementById('newTrackBtn')) document.getElementById('newTrackBtn').style.display = currentOrgIsAdmin ? 'inline-block' : 'none';
+  if (document.getElementById('addCredBtn')) document.getElementById('addCredBtn').style.display = currentOrgIsAdmin ? 'inline-block' : 'none';
+  if (document.getElementById('assignActionsHead')) document.getElementById('assignActionsHead').style.display = currentOrgIsAdmin ? '' : 'none';
+  if (document.getElementById('credActionsHead')) document.getElementById('credActionsHead').style.display = currentOrgIsAdmin ? '' : 'none';
+
   const isAgency = data.organization.settings && data.organization.settings.segment === 'dbhdd_agency';
   document.getElementById('segBadge').textContent = isAgency ? 'DBHDD/DCH Agency' : 'Private Practice';
 
@@ -148,39 +357,255 @@ async function loadOrg(orgId) {
   if (r.recoupmentExposure > 0) { banner.style.display='block'; banner.textContent = `⚠ BILLING AT RISK — ${r.recoupmentExposure} member(s) have overdue Standard Training Requirement items. Services billed past the grace period are subject to recoupment.`; }
   else banner.style.display='none';
 
-  // matrix
-  document.querySelector('#matrix tbody').innerHTML = data.members.map(m => `
-    <tr>
+  // matrix — extended with GA agency progress bars
+  document.querySelector('#matrix tbody').innerHTML = data.members.map(m => {
+    const annHrs = m.annualHours || 0;
+    const annTarget = isAgency ? 16 : 0;
+    const annPct = annTarget ? Math.min(100, Math.round((annHrs/annTarget)*100)) : 0;
+    const annBarClass = annPct >= 100 ? 'pb' : annPct >= 60 ? 'pb warn' : 'pb risk';
+    const annualCell = isAgency
+      ? `${annHrs}/16 <span class="pb-wrap"><span class="${annBarClass}" style="width:${annPct}%"></span></span>`
+      : (annHrs || 0);
+    return `<tr>
       <td><strong>${esc(m.name)}</strong><div class="muted">${esc(m.email)}</div></td>
       <td>${esc(m.role)}${m.title?`<div class="muted">${esc(m.title)}</div>`:''}</td>
       <td><span class="pill ${m.status}">${m.status.replace('_',' ')}</span></td>
       <td>${m.completed}/${m.totalAssignments}</td>
       <td>${m.overdue>0?`<span class="risk">${m.overdue}</span>`:'0'}</td>
       <td>${m.credentials}${m.expiredCredentials>0?` <span class="risk">(${m.expiredCredentials} expired)</span>`:''}</td>
-      <td>${isAgency ? (m.annualHours+'/16') : (m.annualHours||0)}</td>
+      <td>${annualCell}</td>
       <td>${m.recoupmentRisk?'<span class="risk">RECOUPMENT</span>':''}${!m.directContactCleared && isAgency?'<span class="muted"> · pre-contact</span>':''}</td>
-    </tr>`).join('') || '<tr><td colspan="8" class="muted">No members yet.</td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="8" class="muted">No members yet.</td></tr>';
 
-  // next expiration (soonest expiring among at-risk members is approximated via overall)
   document.getElementById('nextExp').textContent = r.atRisk>0 || r.nonCompliant>0 ? 'review at-risk members below' : 'all current';
 
-  // tracks
-  document.querySelector('#tracks tbody').innerHTML = tracks.map(t => `
-    <tr>
+  // tracks — with Edit button for org-owned tracks
+  document.querySelector('#tracks tbody').innerHTML = tracks.map(t => {
+    const isOrgTrack = t.orgId && t.orgId === currentOrgId;
+    const editBtn = currentOrgIsAdmin && isOrgTrack ? `<button class="btn ghost" onclick="editTrack('${t._id}')" style="margin-right:4px;">Edit</button>` : '';
+    return `<tr>
       <td><strong>${esc(t.name)}</strong>${t.manualVersion?`<div class="muted">${esc(t.manualVersion)}</div>`:''}</td>
       <td><span class="seg">${esc((t.segment||'').replace('_',' '))}</span></td>
       <td>${esc((t.appliesToRoles||[]).join(', ')||'—')}</td>
       <td>${(t.items||[]).length}</td>
-      <td><button class="btn ghost" onclick="assignTrack('${t._id}','${esc(t.name).replace(/'/g,'')}')">Assign</button></td>
-    </tr>`).join('') || '<tr><td colspan="5" class="muted">No tracks available.</td></tr>';
+      <td>${editBtn}<button class="btn ghost" onclick="assignTrack('${t._id}','${esc(t.name).replace(/'/g,'')}')">Assign</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" class="muted">No tracks available.</td></tr>';
 
   // suggestions
   const sug = suggestions || {};
   document.getElementById('suggestions').innerHTML = (sug.states&&sug.states.length)
     ? sug.states.map(s=>`<div><strong>${esc(s.name)}</strong>: ${esc(s.notes)}</div>`).join('') + `<div style="margin-top:8px;">Suggested tracks: ${esc((sug.tracks||[]).join(', ')||'—')}</div>`
     : 'Set your states of operation in org settings to see suggestions.';
+
+  // show new sections
+  document.getElementById('assignmentsCard').style.display = 'block';
+  document.getElementById('credCard').style.display = 'block';
+  renderAssignments();
+  renderCredentials();
+
+  // populate seat picker in cred modal
+  const seatSel = document.getElementById('cSeatId');
+  if (seatSel) {
+    seatSel.innerHTML = data.members.map(m =>
+      `<option value="${m.seatId}">${esc(m.name||m.email)}</option>`
+    ).join('');
+  }
 }
 
+// ── Assignments ──────────────────────────────────────────────────────────────
+function renderAssignments() {
+  const filter = document.getElementById('assignFilter').value;
+  const rows = filter ? allAssignments.filter(a => a.status === filter) : allAssignments;
+  const memberMap = Object.fromEntries(currentMembers.map(m => [String(m.userId||''), m.name||m.email]));
+  document.getElementById('assignBody').innerHTML = rows.length ? rows.map(a => {
+    const name = memberMap[String(a.userId||'')] || '—';
+    const dueClass = a.status==='overdue' ? 'risk' : '';
+    const waiveBtn = currentOrgIsAdmin && a.status !== 'waived' && a.status !== 'completed'
+      ? `<button class="btn ghost" style="font-size:12px;padding:4px 8px;" onclick="waiveAssignment('${a._id}')">Waive</button>` : '';
+    return `<tr>
+      <td>${esc(name)}</td>
+      <td>${esc(a.courseCode||a.title||'—')}</td>
+      <td><span class="pill ${a.status}">${(a.status||'').replace('_',' ')}</span></td>
+      <td class="${dueClass}">${fmtDate(a.dueDate)}</td>
+      <td>${a.recoupmentRisk?'<span class="risk">YES</span>':'—'}</td>
+      ${currentOrgIsAdmin ? `<td>${waiveBtn}</td>` : ''}
+    </tr>`;
+  }).join('') : `<tr><td colspan="${currentOrgIsAdmin?6:5}" class="muted">No assignments found.</td></tr>`;
+}
+
+async function waiveAssignment(id) {
+  const reason = prompt('Waiver reason (optional):') ?? null;
+  if (reason === null) return; // cancelled
+  try {
+    await api('/api/orgs/'+currentOrgId+'/assignments/'+id, { method:'PATCH', body: JSON.stringify({ waive:true, waivedReason: reason||'' }) });
+    allAssignments = await api('/api/orgs/'+currentOrgId+'/assignments').catch(()=>allAssignments);
+    renderAssignments();
+  } catch(e) { alert('Waive failed: ' + e.message); }
+}
+
+// ── Credential vault ─────────────────────────────────────────────────────────
+function renderCredentials() {
+  const memberMap = Object.fromEntries(currentMembers.map(m => [String(m.seatId||''), m.name||m.email]));
+  document.getElementById('credBody').innerHTML = allCredentials.length ? allCredentials.map(c => {
+    const name = memberMap[String(c.seatId||'')] || '—';
+    const ec = expiryClass(c.expiresAt);
+    const verBadge = c.verifiedAt
+      ? `<span class="tag">✓ Verified</span>`
+      : `<span class="tag unverified">Unverified</span>`;
+    const actions = currentOrgIsAdmin ? `
+      ${!c.verifiedAt ? `<button class="btn ghost" style="font-size:12px;padding:3px 8px;" onclick="verifyCred('${c._id}')">Verify</button>` : ''}
+      <button class="btn ghost" style="font-size:12px;padding:3px 8px;color:var(--red);border-color:var(--red);" onclick="deleteCred('${c._id}')">Delete</button>` : '';
+    return `<tr>
+      <td>${esc(name)}</td>
+      <td>${esc(c.type||'—')}</td>
+      <td>${esc(c.label||'—')}</td>
+      <td>${esc(c.identifier||'—')}</td>
+      <td class="${ec}">${fmtDate(c.expiresAt)}</td>
+      <td>${esc(c.level||'—')}</td>
+      <td>${verBadge}</td>
+      ${currentOrgIsAdmin ? `<td style="white-space:nowrap;">${actions}</td>` : ''}
+    </tr>`;
+  }).join('') : `<tr><td colspan="${currentOrgIsAdmin?8:7}" class="muted">No credentials on file.</td></tr>`;
+}
+
+function openCredModal() { document.getElementById('credModal').classList.add('open'); }
+function closeCredModal() { document.getElementById('credModal').classList.remove('open'); }
+
+async function submitCred() {
+  const fd = new FormData();
+  fd.append('seatId', document.getElementById('cSeatId').value);
+  fd.append('type', document.getElementById('cType').value);
+  fd.append('label', document.getElementById('cLabel').value);
+  fd.append('identifier', document.getElementById('cIdentifier').value);
+  const level = document.getElementById('cLevel').value;
+  if (level) fd.append('level', level);
+  const state = document.getElementById('cState').value.toUpperCase();
+  if (state) fd.append('state', state);
+  const issuedAt = document.getElementById('cIssuedAt').value;
+  if (issuedAt) fd.append('issuedAt', issuedAt);
+  const expiresAt = document.getElementById('cExpiresAt').value;
+  if (expiresAt) fd.append('expiresAt', expiresAt);
+  const issuingBody = document.getElementById('cIssuingBody').value;
+  if (issuingBody) fd.append('issuingBody', issuingBody);
+  const file = document.getElementById('cFile').files[0];
+  if (file) fd.append('file', file);
+
+  try {
+    const ctrl = new AbortController(); const t = setTimeout(()=>ctrl.abort(), 30000);
+    const res = await fetch(API+'/api/orgs/'+currentOrgId+'/credentials', {
+      method:'POST', headers:{ 'Authorization':'Bearer '+token }, body:fd, signal:ctrl.signal
+    });
+    clearTimeout(t);
+    if (!res.ok) throw new Error((await res.json().catch(()=>({}))).error || 'Upload failed');
+    allCredentials = await api('/api/orgs/'+currentOrgId+'/credentials').catch(()=>allCredentials);
+    renderCredentials();
+    closeCredModal();
+    // reset form
+    ['cLabel','cIdentifier','cState','cIssuedAt','cExpiresAt','cIssuingBody','cFile'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    document.getElementById('cType').value='license';
+    document.getElementById('cLevel').value='';
+  } catch(e) { alert('Save failed: '+e.message); }
+}
+
+async function verifyCred(id) {
+  try {
+    await api('/api/orgs/'+currentOrgId+'/credentials/'+id, { method:'PATCH', body: JSON.stringify({ verify:true }) });
+    allCredentials = await api('/api/orgs/'+currentOrgId+'/credentials').catch(()=>allCredentials);
+    renderCredentials();
+  } catch(e) { alert('Verify failed: '+e.message); }
+}
+
+async function deleteCred(id) {
+  if (!confirm('Delete this credential? This cannot be undone.')) return;
+  try {
+    await api('/api/orgs/'+currentOrgId+'/credentials/'+id, { method:'DELETE' });
+    allCredentials = await api('/api/orgs/'+currentOrgId+'/credentials').catch(()=>allCredentials);
+    renderCredentials();
+  } catch(e) { alert('Delete failed: '+e.message); }
+}
+
+// ── Track builder ─────────────────────────────────────────────────────────────
+let trackItems = [];
+
+function openTrackModal(prefill) {
+  trackItems = prefill ? (prefill.items||[]).map(i=>({...i})) : [];
+  document.getElementById('trackEditId').value = prefill ? (prefill._id||'') : '';
+  document.getElementById('trackModalTitle').textContent = prefill ? 'Edit Track' : 'New Training Track';
+  document.getElementById('tName').value = prefill ? (prefill.name||'') : '';
+  document.getElementById('tSegment').value = prefill ? (prefill.segment||'private_practice') : 'private_practice';
+  document.getElementById('tRoles').value = prefill ? (prefill.appliesToRoles||[]).join(', ') : '';
+  document.getElementById('tManual').value = prefill ? (prefill.manualVersion||'') : '';
+  document.getElementById('tAnnualHrs').value = prefill ? (prefill.annualHoursTarget||0) : 0;
+  document.getElementById('tStrHrs').value = prefill ? (prefill.strHoursTarget||0) : 0;
+  renderTrackItems();
+  document.getElementById('trackModal').classList.add('open');
+}
+
+function closeTrackModal() { document.getElementById('trackModal').classList.remove('open'); }
+
+function renderTrackItems() {
+  document.getElementById('trackItemsList').innerHTML = trackItems.length
+    ? trackItems.map((item, i) => `
+      <div class="item-row">
+        <input type="text" value="${esc(item.courseCode||item.title||'')}" placeholder="Course code or title" oninput="trackItems[${i}].courseCode=this.value">
+        <input type="number" value="${item.dueDays||30}" min="1" placeholder="Days" oninput="trackItems[${i}].dueDays=+this.value" title="Due in N days">
+        <select oninput="trackItems[${i}].recurrence=this.value" title="Recurrence">
+          <option value="once"${(item.recurrence||'once')==='once'?' selected':''}>Once</option>
+          <option value="annual"${item.recurrence==='annual'?' selected':''}>Annual</option>
+          <option value="biennial"${item.recurrence==='biennial'?' selected':''}>Biennial</option>
+        </select>
+        <button onclick="removeTrackItem(${i})" style="background:none;border:none;cursor:pointer;color:#a3302f;font-size:15px;padding:0;">✕</button>
+      </div>`)
+      .join('')
+    : '<div style="padding:12px;font-size:13px;color:#7a8591;text-align:center;">No items yet. Add items above.</div>';
+}
+
+function addTrackItem() {
+  trackItems.push({ courseCode:'', dueDays:30, recurrence:'once' });
+  renderTrackItems();
+}
+
+function removeTrackItem(i) {
+  trackItems.splice(i, 1);
+  renderTrackItems();
+}
+
+async function editTrack(trackId) {
+  try {
+    const tracks = await api('/api/orgs/'+currentOrgId+'/tracks');
+    const t = tracks.find(tr => tr._id === trackId);
+    if (t) openTrackModal(t);
+  } catch(e) { alert('Could not load track: '+e.message); }
+}
+
+async function submitTrack() {
+  const name = document.getElementById('tName').value.trim();
+  if (!name) { alert('Track name is required.'); return; }
+  const rolesRaw = document.getElementById('tRoles').value;
+  const body = {
+    name,
+    segment: document.getElementById('tSegment').value,
+    appliesToRoles: rolesRaw.split(',').map(s=>s.trim()).filter(Boolean),
+    items: trackItems.map(({courseCode, dueDays, recurrence}) => ({courseCode: courseCode.trim(), dueDays, recurrence})).filter(i=>i.courseCode),
+    manualVersion: document.getElementById('tManual').value.trim() || null,
+    annualHoursTarget: +document.getElementById('tAnnualHrs').value || 0,
+    strHoursTarget: +document.getElementById('tStrHrs').value || 0
+  };
+  const editId = document.getElementById('trackEditId').value;
+  try {
+    if (editId) {
+      await api('/api/orgs/'+currentOrgId+'/tracks/'+editId, { method:'PATCH', body: JSON.stringify(body) });
+    } else {
+      await api('/api/orgs/'+currentOrgId+'/tracks', { method:'POST', body: JSON.stringify(body) });
+    }
+    closeTrackModal();
+    loadOrg(currentOrgId);
+  } catch(e) { alert('Save failed: '+e.message); }
+}
+
+// ── Assign track ──────────────────────────────────────────────────────────────
 async function assignTrack(trackId, name) {
   if (!confirm('Assign "'+name+'" to all matching active members?')) return;
   try {
@@ -190,6 +615,7 @@ async function assignTrack(trackId, name) {
   } catch (e) { alert('Assign failed: ' + e.message); }
 }
 
+// ── Audit binder ──────────────────────────────────────────────────────────────
 document.getElementById('binderBtn').onclick = async () => {
   if (!currentOrgId) return;
   try {
