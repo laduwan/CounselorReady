@@ -263,20 +263,23 @@
   </div>
 
   <script>
-    const API = '/api/live-sessions';
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const API = API_URL + '/api/live-sessions';
+    const token = localStorage.getItem('token');
     let sessions = [];
 
     /* ── Auth guard ── */
     async function checkAuth() {
+      if (!token) { window.location.href = '/login.html'; return; }
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 8000);
-        const r = await fetch('/api/auth/me', { credentials: 'include', signal: controller.signal });
+        const r = await fetch(API_URL + '/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
         clearTimeout(tid);
         if (!r.ok) { window.location.href = '/login.html'; return; }
         const d = await r.json();
-        if (d.user?.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
-        document.getElementById('adminEmail').textContent = d.user.email || 'Admin';
+        if ((d.user || d)?.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
+        document.getElementById('adminEmail').textContent = (d.user || d).email || 'Admin';
         loadSessions();
       } catch {
         window.location.href = '/login.html';
@@ -291,7 +294,7 @@
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/admin/all`, { credentials: 'include', signal: controller.signal });
+        const r = await fetch(`${API}/admin/all`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
         clearTimeout(tid);
         if (!r.ok) throw new Error('Failed');
         const d = await r.json();
@@ -373,7 +376,7 @@
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/${id}/attendance`, { credentials: 'include', signal: controller.signal });
+        const r = await fetch(`${API}/${id}/attendance`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
         clearTimeout(tid);
         if (!r.ok) throw new Error('Forbidden or error');
         const d = await r.json();
@@ -419,7 +422,7 @@
         const tid = setTimeout(() => controller.abort(), 30000);
         const r = await fetch(`${API}/${id}/issue-certificates`, {
           method: 'POST',
-          credentials: 'include',
+          headers: { 'Authorization': 'Bearer ' + token },
           signal: controller.signal
         });
         clearTimeout(tid);
@@ -441,8 +444,7 @@
         const tid = setTimeout(() => controller.abort(), 10000);
         const r = await fetch(`${API}/${id}`, {
           method: 'PATCH',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ isPublished: !currentlyPublished }),
           signal: controller.signal
         });
@@ -516,8 +518,7 @@
         const tid = setTimeout(() => controller.abort(), 15000);
         const r = await fetch(API, {
           method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           signal: controller.signal
         });
