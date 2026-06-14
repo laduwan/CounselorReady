@@ -10,4 +10,4 @@
  * Leave it blank to disable client-side Stripe.js on pages that use it (the partner billing flow
  * uses Stripe's hosted Checkout and does NOT need this).
  */
-window.STRIPE_PUBLISHABLE_KEY = '';
+window.STRIPE_PUBLISHABLE_KEY = 'pk_live_51Shx97BV8IIVTFOI1tokM61QTtWbkmZgdwwVw6fQPa3ULXOI9LXpAABFKqeDysvfnxHrvNCo5pASeCXOxxHirCsD00ci1eGSOO';
