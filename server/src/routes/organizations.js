@@ -89,9 +89,12 @@ router.put('/:id', async (req, res) => {
       return res.status(403).json({ error: 'Only owners and managers can update the organization' });
     }
 
-    const allowed = ['name', 'type', 'address', 'phone', 'website', 'npiNumber', 'settings', 'billingEmail'];
+    const allowed = ['name', 'type', 'address', 'phone', 'website', 'npiNumber', 'billingEmail'];
     for (const key of allowed) {
       if (req.body[key] !== undefined) org[key] = req.body[key];
+    }
+    if (req.body.settings !== undefined) {
+      org.settings = { ...(org.settings?.toObject?.() ?? org.settings ?? {}), ...req.body.settings };
     }
     await org.save();
     res.json(org);
