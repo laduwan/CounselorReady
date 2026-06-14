@@ -793,12 +793,12 @@ router.post('/promo', protect, async (req, res) => {
 
     // Check if user has an active Stripe subscription
     const user = await User.findById(req.user._id);
-    if (!user || !user.stripeSubscriptionId) {
+    if (!user || !user.subscription?.stripeSubscriptionId) {
       return res.status(400).json({ error: 'No active subscription found. Use this code when subscribing.' });
     }
 
     // Apply the coupon to the existing subscription
-    await stripe.subscriptions.update(user.stripeSubscriptionId, {
+    await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
       coupon: coupon.id
     });
 
