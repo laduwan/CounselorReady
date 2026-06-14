@@ -631,8 +631,10 @@
         }
       };
       try {
-        const res = await fetch(API + '/api/orgs/' + selectedOrg._id, {
-          method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body)
+        const currentSettings = (selectedOrg.settings && typeof selectedOrg.settings.toObject === 'function' ? selectedOrg.settings.toObject() : selectedOrg.settings) || {};
+        const mergedBody = { settings: { ...currentSettings, ...body.settings } };
+        const res = await fetch(API + '/api/organizations/' + selectedOrg._id, {
+          method: 'PUT', headers: authHeaders(), body: JSON.stringify(mergedBody)
         });
         if (!res.ok) { const err = await res.json().catch(()=>({})); throw new Error(err.error || 'Failed to save settings'); }
         const updated = await res.json();
