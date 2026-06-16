@@ -87,11 +87,14 @@ router.get('/:id/serve', protect, async (req, res) => {
     
     logger.info({ publicId, ext, requestId: req.requestId }, 'Extracted Cloudinary public_id');
 
+    // Platform certs were uploaded as resource_type:'raw', user-scanned certs as 'image'
+    const resType = certificate.source === 'platform' ? 'raw' : 'image';
+
     // Use Cloudinary's private_download_url API - this generates an authenticated
     // API-based download URL that bypasses CDN delivery restrictions
     try {
       const downloadUrl = cloudinary.utils.private_download_url(publicId, ext, {
-        resource_type: 'image',
+        resource_type: resType,
         type: 'upload',
         expires_at: Math.floor(Date.now() / 1000) + 3600
       });
@@ -126,7 +129,7 @@ router.get('/:id/serve', protect, async (req, res) => {
       const toSign = `public_id=${publicId}&timestamp=${timestamp}${apiSecret}`;
       const signature = crypto.createHash('sha1').update(toSign).digest('hex');
       
-      const apiDownloadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/image/download?` +
+      const apiDownloadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/${resType}/download?` +
         `public_id=${encodeURIComponent(publicId)}&` +
         `timestamp=${timestamp}&` +
         `api_key=${apiKey}&` +
@@ -153,7 +156,7 @@ router.get('/:id/serve', protect, async (req, res) => {
     try {
       const signedUrl = cloudinary.url(publicId, {
         sign_url: true,
-        resource_type: 'image',
+        resource_type: resType,
         format: ext,
         secure: true,
         type: 'upload'
@@ -509,7 +512,8 @@ router.delete('/:id', protect, async (req, res) => {
     // Optionally delete from Cloudinary
     if (certificate.fileKey) {
       try {
-        await cloudinary.uploader.destroy(certificate.fileKey, { resource_type: 'image' });
+        const delResType = certificate.source === 'platform' ? 'raw' : 'image';
+        await cloudinary.uploader.destroy(certificate.fileKey, { resource_type: delResType });
         logger.info({ fileKey: certificate.fileKey, requestId: req.requestId }, 'Deleted file from Cloudinary');
       } catch (cloudinaryError) {
         logger.error({ err: cloudinaryError, fileKey: certificate.fileKey, requestId: req.requestId }, 'Failed to delete from Cloudinary');
