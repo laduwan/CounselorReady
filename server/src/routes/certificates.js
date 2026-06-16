@@ -87,8 +87,26 @@ router.get('/:id/serve', protect, async (req, res) => {
     
     logger.info({ publicId, ext, requestId: req.requestId }, 'Extracted Cloudinary public_id');
 
-    // Platform certs were uploaded as resource_type:'raw', user-scanned certs as 'image'
-    const resType = certificate.source === 'platform' ? 'raw' : 'image';
+    // Detect resource type from the Cloudinary URL path (most reliable)
+    // Platform certs: /raw/upload/..., user-scanned certs: /image/upload/...
+    const resType = certificate.fileUrl.includes('/raw/upload') ? 'raw' : 'image';
+    const altResType = resType === 'raw' ? 'image' : 'raw';
+
+    logger.info({ resType, fileUrl: certificate.fileUrl.substring(0, 80), requestId: req.requestId }, 'Detected Cloudinary resource type');
+
+    // Strategy 0: Try the stored fileUrl directly (works when unsigned delivery is allowed)
+    try {
+      const directRes = await fetch(certificate.fileUrl);
+      if (directRes.ok) {
+        const arrayBuffer = await directRes.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+        logger.info({ size: fileBuffer.length, requestId: req.requestId }, 'Direct fileUrl fetch worked');
+        return sendFile(res, fileBuffer, certificate, ext);
+      }
+      logger.info({ status: directRes.status, requestId: req.requestId }, 'Direct fileUrl fetch returned non-OK');
+    } catch (directErr) {
+      logger.info({ err: directErr, requestId: req.requestId }, 'Direct fileUrl fetch failed');
+    }
 
     // Use Cloudinary's private_download_url API - this generates an authenticated
     // API-based download URL that bypasses CDN delivery restrictions
@@ -175,6 +193,26 @@ router.get('/:id/serve', protect, async (req, res) => {
       logger.info({ err: signErr, requestId: req.requestId }, 'Signed URL failed');
     }
 
+    // Strategy 4: Retry with opposite resource type (handles legacy mismatches)
+    try {
+      logger.info({ altResType, requestId: req.requestId }, 'Retrying with alternate resource type');
+      const altUrl = cloudinary.utils.private_download_url(publicId, ext, {
+        resource_type: altResType,
+        type: 'upload',
+        expires_at: Math.floor(Date.now() / 1000) + 3600
+      });
+      const altRes = await fetch(altUrl);
+      if (altRes.ok) {
+        const arrayBuffer = await altRes.arrayBuffer();
+        const fileBuffer = Buffer.from(arrayBuffer);
+        logger.info({ size: fileBuffer.length, altResType, requestId: req.requestId }, 'Alternate resource type worked');
+        return sendFile(res, fileBuffer, certificate, ext);
+      }
+      logger.info({ status: altRes.status, requestId: req.requestId }, 'Alternate resource type also failed');
+    } catch (altErr) {
+      logger.info({ err: altErr, requestId: req.requestId }, 'Alternate resource type error');
+    }
+
     // All strategies exhausted
     logger.error({ certificateId: id, requestId: req.requestId }, 'All Cloudinary access methods failed. Check Cloudinary security settings.');
     logger.error({ certificateId: id, requestId: req.requestId }, 'Go to Cloudinary Dashboard → Settings → Security → Disable "Restrict unsigned delivery"');
@@ -224,7 +262,32 @@ function sendFile(res, fileBuffer, certificate, ext) {
 router.get('/my', protect, async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } })
-      .sort({ completionDate: -1 });
+      .sort({ completionDate: -1 })
+      .lean();
+
+    // Enrich certs with missing title/category from linked course
+    const needsEnrich = certificates.filter(c => c.courseId && (!c.title || c.title === 'Certificate' || c.category === 'General'));
+    if (needsEnrich.length) {
+      const courseIds = [...new Set(needsEnrich.map(c => c.courseId.toString()))];
+      const [legacyCourses, interactiveCourses] = await Promise.all([
+        Course.find({ _id: { $in: courseIds } }).select('title categories ceHours acepNumber').lean(),
+        InteractiveCourse.find({ _id: { $in: courseIds } }).select('title categories ceHours acepNumber').lean()
+      ]);
+      const courseMap = {};
+      for (const c of [...legacyCourses, ...interactiveCourses]) {
+        courseMap[c._id.toString()] = c;
+      }
+      for (const cert of certificates) {
+        if (!cert.courseId) continue;
+        const course = courseMap[cert.courseId.toString()];
+        if (!course) continue;
+        if (!cert.title || cert.title === 'Certificate') cert.title = course.title;
+        if (cert.category === 'General' && course.categories?.[0]) cert.category = course.categories[0];
+        if (!cert.nbccApproved && course.acepNumber) cert.nbccApproved = true;
+        if (!cert.acepNumber && course.acepNumber) cert.acepNumber = course.acepNumber;
+      }
+    }
+
     res.json({ certificates });
   } catch (error) {
     logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get my certificates error');
@@ -236,7 +299,31 @@ router.get('/my', protect, async (req, res) => {
 router.get('/', protect, async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Enrich certs that have incomplete data by looking up the linked course
+    const needsEnrich = certificates.filter(c => c.courseId && (!c.title || c.title === 'Certificate' || c.category === 'General'));
+    if (needsEnrich.length) {
+      const courseIds = [...new Set(needsEnrich.map(c => c.courseId.toString()))];
+      const [legacyCourses, interactiveCourses] = await Promise.all([
+        Course.find({ _id: { $in: courseIds } }).select('title categories ceHours acepNumber').lean(),
+        InteractiveCourse.find({ _id: { $in: courseIds } }).select('title categories ceHours acepNumber').lean()
+      ]);
+      const courseMap = {};
+      for (const c of [...legacyCourses, ...interactiveCourses]) {
+        courseMap[c._id.toString()] = c;
+      }
+      for (const cert of certificates) {
+        if (!cert.courseId) continue;
+        const course = courseMap[cert.courseId.toString()];
+        if (!course) continue;
+        if (!cert.title || cert.title === 'Certificate') cert.title = course.title;
+        if (cert.category === 'General' && course.categories?.[0]) cert.category = course.categories[0];
+        if (!cert.nbccApproved && course.acepNumber) cert.nbccApproved = true;
+        if (!cert.acepNumber && course.acepNumber) cert.acepNumber = course.acepNumber;
+      }
+    }
     
     logger.info({ userId: req.user._id, count: certificates.length, requestId: req.requestId }, 'Retrieved certificates');
     res.json({ certificates });
