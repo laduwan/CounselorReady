@@ -115,6 +115,7 @@
         });
       }
     }, 800);
+    if (window.crFeatureFlags?.isPartnerUser && !window.crFeatureFlags?.clinicalTools) { document.querySelectorAll('[data-feature="clinicalTools"], a[href*="/tools"]').forEach(el => el.closest('.tool-card, .feature-card, li, .card') ? el.closest('.tool-card, .feature-card, li, .card').style.display = 'none' : el.style.display = 'none'); }
     // Welcome message (user data loaded by shared nav-footer.js)
     setTimeout(()=>{try{const u=JSON.parse(localStorage.getItem('user')||'{}');const f=u.profile?.firstName||u.firstName||'';if(f){const el=document.getElementById('welcomeMsg');if(el)el.textContent='Welcome back, '+f+'!';}}catch(e){}},600);
     async function loadStats(){try{
