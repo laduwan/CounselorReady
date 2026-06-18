@@ -21,6 +21,7 @@ import Attestation from '../models/Attestation.js';
 import OrgSupervisionLog from '../models/OrgSupervisionLog.js';
 import Assignment from '../models/Assignment.js';
 import { protect } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { requireOrgRole, ORG_ADMIN_ROLES } from '../middleware/requireOrgRole.js';
 import { uploadFile } from '../utils/r2Storage.js';
 import { generateAuditBinder } from '../services/auditBinderService.js';
@@ -40,7 +41,7 @@ function seatForUser(org, userId) {
 }
 
 // ════════════════════════ CREDENTIAL VAULT ════════════════════════
-router.get('/orgs/:orgId/credentials', protect, requireOrgRole(), async (req, res) => {
+router.get('/orgs/:orgId/credentials', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const filter = { orgId: req.org._id };
     if (!ORG_ADMIN_ROLES.includes(req.orgRole) && req.user.role !== 'admin') {
@@ -55,7 +56,7 @@ router.get('/orgs/:orgId/credentials', protect, requireOrgRole(), async (req, re
   }
 });
 
-router.post('/orgs/:orgId/credentials', protect, requireOrgRole(...ORG_ADMIN_ROLES), upload.single('file'), async (req, res) => {
+router.post('/orgs/:orgId/credentials', protect, requireAddon('complianceTracking'), requireOrgRole(...ORG_ADMIN_ROLES), upload.single('file'), async (req, res) => {
   try {
     const b = req.body || {};
     let fileUrl = b.fileUrl;
@@ -94,7 +95,7 @@ router.post('/orgs/:orgId/credentials', protect, requireOrgRole(...ORG_ADMIN_ROL
   }
 });
 
-router.patch('/orgs/:orgId/credentials/:credId', protect, requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
+router.patch('/orgs/:orgId/credentials/:credId', protect, requireAddon('complianceTracking'), requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
   try {
     const cred = await OrgCredential.findOne({ _id: req.params.credId, orgId: req.org._id });
     if (!cred) return res.status(404).json({ error: 'Credential not found' });
@@ -111,7 +112,7 @@ router.patch('/orgs/:orgId/credentials/:credId', protect, requireOrgRole(...ORG_
   }
 });
 
-router.delete('/orgs/:orgId/credentials/:credId', protect, requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
+router.delete('/orgs/:orgId/credentials/:credId', protect, requireAddon('complianceTracking'), requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
   try {
     const out = await OrgCredential.deleteOne({ _id: req.params.credId, orgId: req.org._id });
     if (!out.deletedCount) return res.status(404).json({ error: 'Credential not found' });
@@ -122,7 +123,7 @@ router.delete('/orgs/:orgId/credentials/:credId', protect, requireOrgRole(...ORG
 });
 
 // ════════════════════════ POLICY DOCS + ATTESTATION ════════════════════════
-router.get('/orgs/:orgId/policies', protect, requireOrgRole(), async (req, res) => {
+router.get('/orgs/:orgId/policies', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const policies = await PolicyDoc.find({ orgId: req.org._id, active: true }).sort({ createdAt: -1 }).lean();
     // Annotate whether the requesting member has attested to the current version.
@@ -134,7 +135,7 @@ router.get('/orgs/:orgId/policies', protect, requireOrgRole(), async (req, res) 
   }
 });
 
-router.post('/orgs/:orgId/policies', protect, requireOrgRole(...ORG_ADMIN_ROLES), upload.single('file'), async (req, res) => {
+router.post('/orgs/:orgId/policies', protect, requireAddon('complianceTracking'), requireOrgRole(...ORG_ADMIN_ROLES), upload.single('file'), async (req, res) => {
   try {
     const b = req.body || {};
     if (!b.title) return res.status(400).json({ error: 'Policy title is required' });
@@ -161,7 +162,7 @@ router.post('/orgs/:orgId/policies', protect, requireOrgRole(...ORG_ADMIN_ROLES)
   }
 });
 
-router.post('/orgs/:orgId/policies/:policyId/attest', protect, requireOrgRole(), async (req, res) => {
+router.post('/orgs/:orgId/policies/:policyId/attest', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const policy = await PolicyDoc.findOne({ _id: req.params.policyId, orgId: req.org._id });
     if (!policy) return res.status(404).json({ error: 'Policy not found' });
@@ -190,7 +191,7 @@ router.post('/orgs/:orgId/policies/:policyId/attest', protect, requireOrgRole(),
 });
 
 // ════════════════════════ SUPERVISION (dual sign-off) ════════════════════════
-router.get('/orgs/:orgId/supervision', protect, requireOrgRole(), async (req, res) => {
+router.get('/orgs/:orgId/supervision', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const filter = { orgId: req.org._id };
     if (!ORG_ADMIN_ROLES.includes(req.orgRole) && req.user.role !== 'admin') {
@@ -206,7 +207,7 @@ router.get('/orgs/:orgId/supervision', protect, requireOrgRole(), async (req, re
   }
 });
 
-router.post('/orgs/:orgId/supervision', protect, requireOrgRole(), async (req, res) => {
+router.post('/orgs/:orgId/supervision', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const b = req.body || {};
     const superviseeSeat = b.superviseeSeatId ? req.org.seats.id(b.superviseeSeatId) : seatForUser(req.org, req.user._id);
@@ -231,7 +232,7 @@ router.post('/orgs/:orgId/supervision', protect, requireOrgRole(), async (req, r
   }
 });
 
-router.patch('/orgs/:orgId/supervision/:id/sign', protect, requireOrgRole(), async (req, res) => {
+router.patch('/orgs/:orgId/supervision/:id/sign', protect, requireAddon('complianceTracking'), requireOrgRole(), async (req, res) => {
   try {
     const log = await OrgSupervisionLog.findOne({ _id: req.params.id, orgId: req.org._id });
     if (!log) return res.status(404).json({ error: 'Supervision log not found' });
@@ -248,7 +249,7 @@ router.patch('/orgs/:orgId/supervision/:id/sign', protect, requireOrgRole(), asy
 });
 
 // ════════════════════════ AUDIT BINDER (ZIP) ════════════════════════
-router.get('/orgs/:orgId/audit-binder', protect, requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
+router.get('/orgs/:orgId/audit-binder', protect, requireAddon('complianceTracking'), requireOrgRole(...ORG_ADMIN_ROLES), async (req, res) => {
   try {
     const { buffer, filename } = await generateAuditBinder(req.org);
     res.setHeader('Content-Type', 'application/zip');
@@ -261,7 +262,7 @@ router.get('/orgs/:orgId/audit-binder', protect, requireOrgRole(...ORG_ADMIN_ROL
 });
 
 // ════════════════════════ MEMBER SELF-VIEW (across orgs) ════════════════════════
-router.get('/me/compliance', protect, async (req, res) => {
+router.get('/me/compliance', protect, requireAddon('complianceTracking'), async (req, res) => {
   try {
     const orgs = await Organization.find({ 'seats.userId': req.user._id, 'seats.status': 'active' })
       .select('name settings seats').lean();
