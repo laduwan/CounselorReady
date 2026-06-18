@@ -75,6 +75,26 @@ export const requirePartnerAdmin = async (req, res, next) => {
   }
   if (req.user.role === 'partner_admin' && req.user.partnerId) {
     req.partnerId = req.user.partnerId;
+
+    // Enforce billing status — block access for inactive/canceled partners
+    try {
+      const Partner = (await import('../models/Partner.js')).default;
+      const partner = await Partner.findById(req.user.partnerId).select('billing').lean();
+      const billingStatus = partner?.billing?.status;
+      if (billingStatus === 'inactive' || billingStatus === 'canceled') {
+        return res.status(402).json({
+          error: 'Subscription inactive',
+          code: 'BILLING_INACTIVE',
+          billingStatus,
+          message: 'Your organization\'s subscription has lapsed. Please contact your administrator to reactivate.',
+          upgradeUrl: '/partner-billing.html'
+        });
+      }
+    } catch (err) {
+      // Fail-open: billing check error should not lock out partner admins
+      console.error('[requirePartnerAdmin] billing check error:', err.message);
+    }
+
     return next();
   }
   return res.status(403).json({ error: 'Partner admin access required' });
