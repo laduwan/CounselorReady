@@ -589,8 +589,10 @@ router.get('/my/syndication', protect, requirePartnerAdmin, async (req, res) => 
     if (!partner) return res.status(404).json({ error: 'Partner not found' });
 
     const syn = partner.syndication || {};
+    // Always return false — import program removed June 2026
+    if (partner.syndication) partner.syndication.importPlatformCourses = false;
     const rate = syn.distributorRate ?? 0.15;
-    const anyOn = !!(syn.importPlatformCourses || syn.listInMarketplace);
+    const anyOn = !!(syn.listInMarketplace);
     const accepted = syn.agreedVersion === MARKETPLACE_AGREEMENT.version;
 
     const [platformCount, myPublished] = await Promise.all([
@@ -634,6 +636,14 @@ router.put('/my/syndication', protect, requirePartnerAdmin, async (req, res) => 
     const partnerId = req.partnerId || req.user.partnerId;
     const partner = await Partner.findById(partnerId);
     if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    // Import Platform Courses program removed June 2026
+    if (req.body.importPlatformCourses === true) {
+      return res.status(400).json({
+        error: 'The "Import Platform Courses" program is no longer available. Partners can list their own courses in the CounselorReady marketplace instead.',
+        code: 'IMPORT_DISABLED'
+      });
+    }
 
     const { importPlatformCourses, listInMarketplace, acceptedVersion } = req.body;
     if (!partner.syndication) partner.syndication = {};
@@ -742,13 +752,8 @@ router.get('/my/library', protect, requirePartnerAdmin, async (req, res) => {
       .select('title slug ceHours status price accessType pricingTier description')
       .sort({ createdAt: -1 }).lean();
 
-    let syndicated = [];
-    if (partner.syndication?.importPlatformCourses) {
-      syndicated = await InteractiveCourse.find({
-        $or: [{ partnerId: null }, { partnerId: { $exists: false } }],
-        status: 'published'
-      }).select('title slug ceHours price accessType pricingTier description').sort({ title: 1 }).lean();
-    }
+    // Import program removed June 2026 — syndicated always returns empty
+    const syndicated = [];
 
     res.json({
       own: own.map(c => ({ ...c, source: 'own' })),

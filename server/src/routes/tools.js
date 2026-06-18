@@ -154,6 +154,21 @@ router.get('/note-limit', optionalAuth, (req, res) => {
 // ═══════════════════════════════════════════
 router.post('/generate-note', optionalAuth, async (req, res) => {
   try {
+    // Partner feature gate — clinical tools require add-on
+    if (req.user?.partnerId) {
+      const Partner = (await import('../models/Partner.js')).default;
+      const partner = await Partner.findById(req.user.partnerId).select('premiumAddons').lean();
+      if (!partner?.premiumAddons?.clinicalTools?.enabled) {
+        return res.status(403).json({
+          error: 'Feature not available',
+          code: 'ADDON_REQUIRED',
+          addon: 'clinicalTools',
+          message: 'Clinical tools require a premium add-on.',
+          upgradeUrl: '/partner-billing.html#addons'
+        });
+      }
+    }
+
     // 1. Determine tier and rate limit
     const tier = getUserTier(req.user);
     const identifier = req.user ? `user:${req.user.id}` : `ip:${req.ip}`;

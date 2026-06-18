@@ -107,6 +107,15 @@
   <script>
     const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
     const T=localStorage.getItem('token');if(!T)location.href='/login.html';
+    // Hide Clinical Tools card for partner users without clinicalTools feature
+    setTimeout(function() {
+      if (window.crFeatureFlags && window.crFeatureFlags.isPartnerUser && !window.crFeatureFlags.clinicalTools) {
+        document.querySelectorAll('a[href="/tools/index.html"]').forEach(function(el) {
+          el.style.display = 'none';
+        });
+      }
+    }, 800);
+    if (window.crFeatureFlags?.isPartnerUser && !window.crFeatureFlags?.clinicalTools) { document.querySelectorAll('[data-feature="clinicalTools"], a[href*="/tools"]').forEach(el => el.closest('.tool-card, .feature-card, li, .card') ? el.closest('.tool-card, .feature-card, li, .card').style.display = 'none' : el.style.display = 'none'); }
     // Welcome message (user data loaded by shared nav-footer.js)
     setTimeout(()=>{try{const u=JSON.parse(localStorage.getItem('user')||'{}');const f=u.profile?.firstName||u.firstName||'';if(f){const el=document.getElementById('welcomeMsg');if(el)el.textContent='Welcome back, '+f+'!';}}catch(e){}},600);
     async function loadStats(){try{

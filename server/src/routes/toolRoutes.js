@@ -15,6 +15,21 @@ const router = express.Router();
 // ═══════════════════════════════════════════════════════════════════════════════
 router.post('/:tool/verify-license', async (req, res) => {
   try {
+    // Partner feature gate — clinical tools require add-on
+    if (req.user?.partnerId) {
+      const Partner = (await import('../models/Partner.js')).default;
+      const partner = await Partner.findById(req.user.partnerId).select('premiumAddons').lean();
+      if (!partner?.premiumAddons?.clinicalTools?.enabled) {
+        return res.status(403).json({
+          error: 'Feature not available',
+          code: 'ADDON_REQUIRED',
+          addon: 'clinicalTools',
+          message: 'Clinical tools require a premium add-on.',
+          upgradeUrl: '/partner-billing.html#addons'
+        });
+      }
+    }
+
     const { tool } = req.params;
     const {
       name, licenseNumber, licenseState, credentialType, email,
@@ -129,6 +144,21 @@ router.post('/:tool/verify-license', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 router.post('/:tool/track', async (req, res) => {
   try {
+    // Partner feature gate — clinical tools require add-on
+    if (req.user?.partnerId) {
+      const Partner = (await import('../models/Partner.js')).default;
+      const partner = await Partner.findById(req.user.partnerId).select('premiumAddons').lean();
+      if (!partner?.premiumAddons?.clinicalTools?.enabled) {
+        return res.status(403).json({
+          error: 'Feature not available',
+          code: 'ADDON_REQUIRED',
+          addon: 'clinicalTools',
+          message: 'Clinical tools require a premium add-on.',
+          upgradeUrl: '/partner-billing.html#addons'
+        });
+      }
+    }
+
     const { tool } = req.params;
     const { event, licenseNumber, email, timestamp, ...extraData } = req.body;
 
