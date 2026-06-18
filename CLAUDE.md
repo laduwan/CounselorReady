@@ -414,3 +414,22 @@ EVERY session, without exception:
 - [ ] Did not touch Tier 2; flagged any code/ruling contradiction instead
 - [ ] Appended a Tier 3 entry if a new gotcha/constraint was discovered
 - [ ] Verified with raw `grep`/`wc`/`git diff --stat` (CC self-reports are not trusted)
+
+---
+
+## Batch Course Generation (Autonomous Pipeline)
+
+When the user says anything like "generate courses", "batch courses", "new course batch",
+"write me [N] courses on [topic]", or gives a topic + CE hours + count:
+
+1. **Read `docs/BATCH_COURSE_GEN.md`** — this is the full autonomous pipeline spec
+2. **Ask exactly 3 questions** (skip any already answered):
+   - Subject area or topic?
+   - CE hours per course?
+   - How many courses?
+3. **Generate all courses without stopping for confirmation between them**
+4. Each seed file goes in `server/src/scripts/`, includes self-validation, refuses to save on CRITICAL errors
+5. Print summary table when done
+
+Do NOT ask for approval between courses. Do NOT stop to show outlines. Generate → validate → next.
+The user wants hands-off batch production, not a review cycle.
