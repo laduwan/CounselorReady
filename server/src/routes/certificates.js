@@ -10,6 +10,7 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import Certificate from '../models/Certificate.js';
 import { protect } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
@@ -47,7 +48,7 @@ cloudinary.config({
 
 // ✅ FIXED: Certificate serving using Cloudinary private download API
 // Bypasses "Restrict unsigned delivery" / "Strict transformations" settings
-router.get('/:id/serve', protect, async (req, res) => {
+router.get('/:id/serve', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -259,7 +260,7 @@ function sendFile(res, fileBuffer, certificate, ext) {
 }
 
 // GET /api/certificates/my - Get current user's certificates (used by dashboard)
-router.get('/my', protect, async (req, res) => {
+router.get('/my', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } })
       .sort({ completionDate: -1 })
@@ -296,7 +297,7 @@ router.get('/my', protect, async (req, res) => {
 });
 
 // GET /api/certificates - Get all certificates for authenticated user
-router.get('/', protect, async (req, res) => {
+router.get('/', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id })
       .sort({ createdAt: -1 })
@@ -334,7 +335,7 @@ router.get('/', protect, async (req, res) => {
 });
 
 // POST /api/certificates/upload - Upload new certificate
-router.post('/upload', protect, upload.single('certificate'), async (req, res) => {
+router.post('/upload', protect, requireAddon('certTracking'), upload.single('certificate'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -431,7 +432,7 @@ router.post('/upload', protect, upload.single('certificate'), async (req, res) =
 });
 
 // POST /api/certificates/generate/:courseId - Generate certificate for completed course
-router.post('/generate/:courseId', protect, async (req, res) => {
+router.post('/generate/:courseId', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const { courseId } = req.params;
     if (!mongoose.Types.ObjectId.isValid(courseId)) {
@@ -577,7 +578,7 @@ router.post('/generate/:courseId', protect, async (req, res) => {
 });
 
 // DELETE /api/certificates/:id - Delete certificate
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -615,7 +616,7 @@ router.delete('/:id', protect, async (req, res) => {
 });
 
 // GET /api/certificates/download-all - Download all certificates as ZIP
-router.get('/download-all', protect, async (req, res) => {
+router.get('/download-all', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const certificates = await Certificate.find({ userId: req.user._id, isRevoked: { $ne: true } });
     if (!certificates.length) {
@@ -677,7 +678,7 @@ router.get('/download-all', protect, async (req, res) => {
 });
 
 // GET /api/certificates/transcript - Generate CE transcript PDF
-router.get('/transcript', protect, async (req, res) => {
+router.get('/transcript', protect, requireAddon('certTracking'), async (req, res) => {
   try {
     const userId = req.user._id;
     const { credential, startDate, endDate } = req.query;

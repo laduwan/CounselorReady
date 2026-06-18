@@ -38,3 +38,37 @@ export function getPlanLimits(plan) {
 export function getAiBudgetCents(plan) {
   return getPlanLimits(plan).aiBudgetCents || 0;
 }
+
+/**
+ * Premium add-on definitions. These are CR-proprietary features
+ * that partners can unlock for an additional monthly fee.
+ * Every enabled add-on displays a "Powered by CounselorReady™" badge.
+ */
+export const PREMIUM_ADDONS = {
+  certTracking: {
+    name: 'Certificate Tracking',
+    description: 'Issue and track CE certificates for your users',
+    monthlyPriceCents: 2500,  // $25/mo
+    poweredBy: true
+  },
+  credentialManagement: {
+    name: 'Credential Management',
+    description: 'License and credential tracking for your team',
+    monthlyPriceCents: 2000,  // $20/mo
+    poweredBy: true
+  },
+  complianceTracking: {
+    name: 'Compliance Tracking',
+    description: 'State and board compliance tracking and reporting',
+    monthlyPriceCents: 2500,  // $25/mo
+    poweredBy: true
+  },
+  clinicalTools: {
+    name: 'Clinical Tools Suite',
+    description: 'Treatment plans, safety plans, note writer, and more',
+    monthlyPriceCents: 3000,  // $30/mo
+    poweredBy: true
+  }
+};
+
+export const PREMIUM_BUNDLE_PRICE_CENTS = 10000; // $100/mo for all 4 (no discount)

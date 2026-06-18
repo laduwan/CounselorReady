@@ -196,4 +196,69 @@ export async function runDailyNotificationCheck() {
   return stats;
 }
 
-export default { runDailyNotificationCheck };
+/**
+ * Check partner trial expirations and send notifications.
+ * - 7 days before trialEndsAt: warning email
+ * - 1 day before: urgent warning
+ * - Day of/after: mark status 'inactive' and notify
+ */
+export async function checkPartnerTrialExpiration() {
+  const Partner = (await import('../models/Partner.js')).default;
+  const { logActivity, ACTIVITY_TYPES } = await import('../services/activityTrackingService.js');
+  const now = new Date();
+  const in7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const in1Day  = new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000);
+  const stats = { checked: 0, warned7: 0, warned1: 0, expired: 0, errors: 0 };
+
+  try {
+    const trials = await Partner.find({ 'billing.status': 'trial', 'billing.trialEndsAt': { $exists: true } })
+      .select('_id name email billing');
+
+    for (const partner of trials) {
+      stats.checked++;
+      try {
+        const trialEnd = new Date(partner.billing.trialEndsAt);
+
+        if (trialEnd <= now) {
+          // Trial has expired — mark inactive
+          await Partner.findByIdAndUpdate(partner._id, { 'billing.status': 'inactive' });
+          await logActivity(ACTIVITY_TYPES.PARTNER_UPDATED, {
+            event: 'trial_expired',
+            partnerId: partner._id,
+            partnerName: partner.name
+          }, { userEmail: partner.email }).catch(() => {});
+          stats.expired++;
+        } else if (trialEnd <= in1Day) {
+          // 1-day warning
+          await logActivity(ACTIVITY_TYPES.PARTNER_UPDATED, {
+            event: 'trial_ending_1day',
+            partnerId: partner._id,
+            partnerName: partner.name,
+            trialEndsAt: trialEnd.toISOString()
+          }, { userEmail: partner.email }).catch(() => {});
+          stats.warned1++;
+        } else if (trialEnd <= in7Days) {
+          // 7-day warning
+          await logActivity(ACTIVITY_TYPES.PARTNER_UPDATED, {
+            event: 'trial_ending_7days',
+            partnerId: partner._id,
+            partnerName: partner.name,
+            trialEndsAt: trialEnd.toISOString()
+          }, { userEmail: partner.email }).catch(() => {});
+          stats.warned7++;
+        }
+      } catch (err) {
+        stats.errors++;
+        console.error(`[PartnerTrialCheck] Error processing partner ${partner._id}:`, err.message);
+      }
+    }
+
+    console.log(`[PartnerTrialCheck] Complete. Checked: ${stats.checked}, Expired: ${stats.expired}, Warned1: ${stats.warned1}, Warned7: ${stats.warned7}, Errors: ${stats.errors}`);
+  } catch (err) {
+    console.error('[PartnerTrialCheck] Fatal error:', err.message);
+  }
+
+  return stats;
+}
+
+export default { runDailyNotificationCheck, checkPartnerTrialExpiration };

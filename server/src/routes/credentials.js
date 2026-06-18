@@ -12,6 +12,7 @@ import UserCredential from '../models/UserCredential.js';
 import CredentialTemplate from '../models/CredentialTemplate.js';
 import Certificate from '../models/Certificate.js';
 import { protect, requireSubscription } from '../middleware/auth.js';
+import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { syncCredentialToCalendar, removeEventFromCalendar } from '../services/googleCalendarService.js';
 import User from '../models/User.js';
 
@@ -83,7 +84,7 @@ function determineCredentialType(credentialType, code) {
 // @route   GET /api/credentials
 // @desc    Get user's credentials
 // @access  Private
-router.get('/', protect, async (req, res) => {
+router.get('/', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const credentials = await UserCredential.find({ userId: req.user._id })
       .sort({ expirationDate: 1 });
@@ -121,7 +122,7 @@ router.get('/', protect, async (req, res) => {
 // @route   POST /api/credentials
 // @desc    Add a credential
 // @access  Private (Pro required for more than 1)
-router.post('/', protect, async (req, res) => {
+router.post('/', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const {
       templateId,
@@ -223,7 +224,7 @@ router.post('/', protect, async (req, res) => {
 // @route   GET /api/credentials/consult-status
 // @desc    Get consultation status for current user
 // @access  Private
-router.get('/consult-status', protect, async (req, res) => {
+router.get('/consult-status', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const canBook = req.user.canBookConsultation();
     const history = req.user.consultations || [];
@@ -250,7 +251,7 @@ router.get('/consult-status', protect, async (req, res) => {
 // @route   POST /api/credentials/sync
 // @desc    Recalculate CE hours from linked certificates AND platform certificates
 // @access  Private
-router.post('/sync', protect, async (req, res) => {
+router.post('/sync', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -414,7 +415,7 @@ router.post('/sync', protect, async (req, res) => {
 // @route   POST /api/credentials/recalculate
 // @desc    Force recalculate all credential progress from ceuLogs (data repair)
 // @access  Private
-router.post('/recalculate', protect, async (req, res) => {
+router.post('/recalculate', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -463,7 +464,7 @@ router.post('/recalculate', protect, async (req, res) => {
 // @route   GET /api/credentials/board-alerts
 // @desc    Board rules for user's credentials with change highlighting
 // @access  Private
-router.get('/board-alerts', protect, async (req, res) => {
+router.get('/board-alerts', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     // Real state licensing board URLs for counseling professions
     const boardUrls = {
@@ -639,7 +640,7 @@ router.get('/templates/state/:state', async (req, res) => {
 // @route   GET /api/credentials/dashboard
 // @desc    Get credential dashboard summary
 // @access  Private
-router.get('/user/dashboard', protect, async (req, res) => {
+router.get('/user/dashboard', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const credentials = await UserCredential.find({ userId: req.user._id })
       .sort({ expirationDate: 1 });
@@ -702,7 +703,7 @@ router.get('/user/dashboard', protect, async (req, res) => {
 // @route   POST /api/credentials/book-consult
 // @desc    Book a VIP consultation (1 per quarter)
 // @access  Private (VIP only)
-router.post('/book-consult', protect, async (req, res) => {
+router.post('/book-consult', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const { topic } = req.body;
     
@@ -736,7 +737,7 @@ router.post('/book-consult', protect, async (req, res) => {
 // @route   GET /api/credentials/:id
 // @desc    Get single credential
 // @access  Private
-router.get('/:id', protect, async (req, res) => {
+router.get('/:id', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -762,7 +763,7 @@ router.get('/:id', protect, async (req, res) => {
 // @route   PUT /api/credentials/:id
 // @desc    Update credential
 // @access  Private
-router.put('/:id', protect, async (req, res) => {
+router.put('/:id', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -815,7 +816,7 @@ router.put('/:id', protect, async (req, res) => {
 // @route   DELETE /api/credentials/:id
 // @desc    Delete credential
 // @access  Private
-router.delete('/:id', protect, async (req, res) => {
+router.delete('/:id', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -849,7 +850,7 @@ router.delete('/:id', protect, async (req, res) => {
 // @route   POST /api/credentials/:id/log-ceu
 // @desc    Log CEU hours to a credential
 // @access  Private
-router.post('/:id/log-ceu', protect, async (req, res) => {
+router.post('/:id/log-ceu', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -921,7 +922,7 @@ const upload = multer({
 // @route   POST /api/credentials/:id/upload
 // @desc    Upload document for a credential
 // @access  Private
-router.post('/:id/upload', protect, upload.single('document'), async (req, res) => {
+router.post('/:id/upload', protect, requireAddon('credentialManagement'), upload.single('document'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -958,7 +959,7 @@ router.post('/:id/upload', protect, upload.single('document'), async (req, res) 
 // @route   DELETE /api/credentials/:id/document
 // @desc    Delete document from credential
 // @access  Private
-router.delete('/:id/document', protect, async (req, res) => {
+router.delete('/:id/document', protect, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
