@@ -100,6 +100,7 @@ import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
+import medTrackerRoutes from './routes/medTracker.js';
 import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -301,6 +302,7 @@ app.use('/api/uploads', uploadsRoutes);
 app.use('/api/admin/video-audit', videoAuditRoutes);
 app.use('/api/orgs', orgRoutes);
 app.use('/api', complianceRoutes);
+app.use('/api/med-tracker', medTrackerRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
 
