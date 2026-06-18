@@ -694,4 +694,15 @@ router.put('/update-notifications', protect, async (req, res) => {
   }
 });
 
+// Feature flags for frontend (nav gating, page access)
+router.get('/features', protect, async (req, res) => {
+  try {
+    const { getPartnerFeatureFlags } = await import('../middleware/partnerFeatureGate.js');
+    const features = await getPartnerFeatureFlags(req.user.partnerId || null);
+    res.json({ features });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to load feature flags' });
+  }
+});
+
 export default router;

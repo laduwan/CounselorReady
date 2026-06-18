@@ -247,6 +247,41 @@
   const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
   const T = localStorage.getItem('token');
 
+  // Fetch feature flags for partner gating
+  let featureFlags = null;
+  if (T) {
+    fetch(`${API}/api/auth/features`, { headers: { Authorization: `Bearer ${T}` } })
+      .then(r => { if (r.ok) return r.json(); })
+      .then(d => {
+        if (d && d.features) {
+          featureFlags = d.features;
+          window.crFeatureFlags = featureFlags;
+          // Hide nav links based on partner feature flags
+          if (featureFlags.isPartnerUser) {
+            if (!featureFlags.certTracking) {
+              document.querySelectorAll('a[href="/credentials.html#certifications"]').forEach(el => el.style.display = 'none');
+            }
+            if (!featureFlags.credentialManagement) {
+              document.querySelectorAll('a[href="/credentials.html"]').forEach(el => el.style.display = 'none');
+            }
+            if (!featureFlags.complianceTracking) {
+              document.querySelectorAll('a[href="/my-compliance.html"], a[href="/team-compliance.html"]').forEach(el => el.style.display = 'none');
+              const tcb = document.getElementById('teamCompBadge');
+              if (tcb) tcb.style.display = 'none';
+              const tcm = document.getElementById('teamCompMob');
+              if (tcm) tcm.style.display = 'none';
+              const tcl = document.getElementById('menuTeamCompLink');
+              if (tcl) tcl.style.display = 'none';
+            }
+            if (!featureFlags.clinicalTools) {
+              document.querySelectorAll('a[href^="/tools/"]').forEach(el => el.style.display = 'none');
+            }
+          }
+        }
+      })
+      .catch(() => {});
+  }
+
   if (T) {
     fetch(`${API}/api/auth/me`, { headers: { Authorization: `Bearer ${T}` } })
       .then(r => {

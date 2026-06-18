@@ -110,6 +110,7 @@ const partnerSchema = new mongoose.Schema({
   syndication: {
     // Partner opts to add CounselorReady's published catalog to their branded library.
     // On those sales the partner (distributor) keeps `distributorRate`, CR keeps the rest.
+    // DEPRECATED — import program removed June 2026. Field retained for historical data only.
     importPlatformCourses: { type: Boolean, default: false },
     // Partner opts to list their own published courses in the CounselorReady marketplace.
     // On those sales CounselorReady (distributor) keeps `distributorRate`, the partner keeps the rest.
@@ -134,6 +135,30 @@ const partnerSchema = new mongoose.Schema({
         listInMarketplace: { type: Boolean }
       }
     }]
+  },
+
+  // Premium feature add-ons (paid separately, always branded "Powered by CounselorReady™")
+  premiumAddons: {
+    certTracking: {
+      enabled: { type: Boolean, default: false },
+      enabledAt: { type: Date },
+      stripeItemId: { type: String }
+    },
+    credentialManagement: {
+      enabled: { type: Boolean, default: false },
+      enabledAt: { type: Date },
+      stripeItemId: { type: String }
+    },
+    complianceTracking: {
+      enabled: { type: Boolean, default: false },
+      enabledAt: { type: Date },
+      stripeItemId: { type: String }
+    },
+    clinicalTools: {
+      enabled: { type: Boolean, default: false },
+      enabledAt: { type: Date },
+      stripeItemId: { type: String }
+    }
   },
 
   // Admin who created this partner

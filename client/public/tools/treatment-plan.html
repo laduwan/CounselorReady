@@ -79,6 +79,53 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 <script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb",{api_host:"https://us.i.posthog.com",autocapture:false});</script>
 </head>
 <body>
+<script>
+(async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const main = document.querySelector('main');
+          if (main) main.innerHTML = `
+            <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+              <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+              <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+              <p style="color:#4A7C59;margin-bottom:24px;">
+                This feature requires the Clinical Tools Suite add-on.
+                Contact your organization administrator to enable it.
+              </p>
+              <a href="/partner-billing.html#addons"
+                 style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+                View Add-ons
+              </a>
+            </div>
+          `;
+        });
+        return;
+      }
+      if (features && features.isPartnerUser && features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const badge = document.createElement('div');
+          badge.id = 'cr-powered-badge';
+          badge.innerHTML = `
+            <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+              <span style="font-weight:700;">Powered by</span>
+              <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+            </div>
+          `;
+          document.body.appendChild(badge);
+        });
+      }
+    }
+  } catch (e) { /* fail-open */ }
+})();
+</script>
 <div class="hdr">
 <div class="hdr-top">
 <span class="logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></span>
