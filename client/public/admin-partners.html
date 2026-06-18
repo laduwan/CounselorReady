@@ -452,7 +452,7 @@
         : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">Inactive</span>';
       const created = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '--';
 
-      return `<tr class="hover:bg-forest-50/50">
+      return `<tr class="hover:bg-forest-50/50 cursor-pointer" onclick="openDrawer('${p._id}')">
         <td class="px-6 py-4">
           <div class="flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background:${color}">
@@ -470,7 +470,7 @@
         <td class="px-6 py-4 text-sm text-forest-700">${p.userCount || 0}</td>
         <td class="px-6 py-4 text-sm text-forest-500">${created}</td>
         <td class="px-6 py-4 text-right">
-          <div class="flex items-center justify-end gap-1">
+          <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()">
             <button onclick="viewUsers('${p._id}')" title="View users" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-users text-sm"></i></button>
             <button onclick="viewCourses('${p._id}')" title="View courses" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-book text-sm"></i></button>
             <button onclick="openSetAdmin('${p._id}', '${esc(p.name)}')" title="Set partner admin" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-user-plus text-sm"></i></button>
@@ -722,5 +722,567 @@
 </script>
 
   <div id="cr-footer"></div>
+
+  <!-- ── Partner Detail Drawer ── -->
+  <!-- Backdrop -->
+  <div id="drawerBackdrop" onclick="closeDrawer()" class="hidden fixed inset-0 bg-black/40 z-40 transition-opacity"></div>
+
+  <!-- Drawer panel -->
+  <div id="partnerDrawer" class="fixed top-0 right-0 h-full w-full max-w-3xl bg-stone-50 z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col" style="border-left:1px solid #d1d5c0;">
+
+    <!-- Drawer Header -->
+    <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <div>
+        <h2 class="font-display text-xl font-bold" id="drawerPartnerName">Partner Detail</h2>
+        <p class="text-burgundy-200 text-sm mt-0.5" id="drawerPartnerSlug"></p>
+      </div>
+      <button onclick="closeDrawer()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10"><i class="fas fa-times text-lg"></i></button>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="bg-white border-b border-forest-200 flex-shrink-0">
+      <div class="flex overflow-x-auto">
+        <button onclick="switchTab('overview')" id="tab-overview" class="drawer-tab active px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-burgundy-700 text-burgundy-800">
+          <i class="fas fa-info-circle mr-1.5"></i>Overview
+        </button>
+        <button onclick="switchTab('users-courses')" id="tab-users-courses" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-users mr-1.5"></i>Users &amp; Courses
+        </button>
+        <button onclick="switchTab('health')" id="tab-health" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-heartbeat mr-1.5"></i>Health
+        </button>
+        <button onclick="switchTab('audit-log')" id="tab-audit-log" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-history mr-1.5"></i>Audit Log
+        </button>
+        <button onclick="switchTab('notes-actions')" id="tab-notes-actions" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-sticky-note mr-1.5"></i>Notes &amp; Actions
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+
+      <!-- Tab: Overview -->
+      <div id="panel-overview" class="drawer-panel">
+        <div id="overviewContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Users & Courses -->
+      <div id="panel-users-courses" class="drawer-panel hidden">
+        <div id="usersCourseContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Health -->
+      <div id="panel-health" class="drawer-panel hidden">
+        <div id="healthContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Audit Log -->
+      <div id="panel-audit-log" class="drawer-panel hidden">
+        <div id="auditLogContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Notes & Actions -->
+      <div id="panel-notes-actions" class="drawer-panel hidden">
+        <div id="notesActionsContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ── Drawer State ──
+  let drawerPartnerId = null;
+  const drawerTabsLoaded = {};
+
+  function openDrawer(partnerId) {
+    drawerPartnerId = partnerId;
+    // reset loaded state
+    Object.keys(drawerTabsLoaded).forEach(k => delete drawerTabsLoaded[k]);
+
+    const p = partners.find(x => x._id === partnerId);
+    if (p) {
+      document.getElementById('drawerPartnerName').textContent = p.name;
+      document.getElementById('drawerPartnerSlug').textContent = '/' + p.slug;
+    }
+
+    // Reset to Overview tab
+    switchTab('overview');
+
+    document.getElementById('drawerBackdrop').classList.remove('hidden');
+    document.getElementById('partnerDrawer').style.transform = 'translateX(0)';
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawerBackdrop').classList.add('hidden');
+    document.getElementById('partnerDrawer').style.transform = 'translateX(100%)';
+    drawerPartnerId = null;
+  }
+
+  function switchTab(tabId) {
+    // Update tab button styles
+    document.querySelectorAll('.drawer-tab').forEach(btn => {
+      btn.classList.remove('active', 'border-burgundy-700', 'text-burgundy-800');
+      btn.classList.add('border-transparent', 'text-forest-600');
+    });
+    const activeBtn = document.getElementById('tab-' + tabId);
+    if (activeBtn) {
+      activeBtn.classList.add('active', 'border-burgundy-700', 'text-burgundy-800');
+      activeBtn.classList.remove('border-transparent', 'text-forest-600');
+    }
+
+    // Show/hide panels
+    document.querySelectorAll('.drawer-panel').forEach(panel => panel.classList.add('hidden'));
+    const activePanel = document.getElementById('panel-' + tabId);
+    if (activePanel) activePanel.classList.remove('hidden');
+
+    // Lazy-load tab data on first open
+    if (!drawerTabsLoaded[tabId] && drawerPartnerId) {
+      drawerTabsLoaded[tabId] = true;
+      switch (tabId) {
+        case 'overview':      loadDrawerOverview(); break;
+        case 'users-courses': loadDrawerUsersCourses(); break;
+        case 'health':        loadDrawerHealth(); break;
+        case 'audit-log':     loadDrawerAuditLog(); break;
+        case 'notes-actions': loadDrawerNotesActions(); break;
+      }
+    }
+  }
+
+  // ── Tab 1: Overview ──
+  async function loadDrawerOverview() {
+    const el = document.getElementById('overviewContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const [detailData, statsData] = await Promise.all([
+        apiFetch('/api/partners/' + drawerPartnerId),
+        apiFetch('/api/partners/' + drawerPartnerId + '/stats')
+      ]);
+      const p = detailData.partner || detailData;
+      const stats = statsData.stats || statsData;
+
+      const addons = p.premiumAddons || {};
+      const addonList = [
+        { key: 'certTracking', label: 'Cert Tracking' },
+        { key: 'credentialManagement', label: 'Credential Mgmt' },
+        { key: 'complianceTracking', label: 'Compliance Tracking' },
+        { key: 'clinicalTools', label: 'Clinical Tools' }
+      ];
+
+      el.innerHTML = `
+        <div class="space-y-5">
+          <!-- Identity Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Identity &amp; Plan</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><p class="text-forest-500 text-xs mb-0.5">Name</p><p class="font-medium text-burgundy-900">${escHtml(p.name)}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Slug</p><p class="font-mono text-forest-700">/${escHtml(p.slug)}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Plan</p><p class="capitalize font-medium text-hunter-700">${p.defaultPlan || 'free'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Status</p><p>${p.active ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>' : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">Inactive</span>'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Created</p><p class="text-forest-700">${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '--'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Custom Domain</p><p class="font-mono text-forest-700 text-xs">${escHtml(p.branding?.customDomain || '--')}</p></div>
+            </div>
+          </div>
+
+          <!-- Branding Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Branding</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><p class="text-forest-500 text-xs mb-0.5">Display Name</p><p class="text-forest-700">${escHtml(p.branding?.companyName || '--')}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Tagline</p><p class="text-forest-700">${escHtml(p.branding?.tagline || '--')}</p></div>
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded border border-forest-200 flex-shrink-0" style="background:${escHtml(p.branding?.primaryColor || '#6B1D34')}"></div>
+                <div><p class="text-forest-500 text-xs mb-0.5">Brand Color</p><p class="font-mono text-xs text-forest-700">${escHtml(p.branding?.primaryColor || '#6B1D34')}</p></div>
+              </div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Contact Email</p><p class="text-forest-700 text-xs">${escHtml(p.contact?.email || '--')}</p></div>
+            </div>
+          </div>
+
+          <!-- Stats Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Metrics</h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalUsers ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Total Users</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalCourses ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Courses</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalEnrollments ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Enrollments</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.revenue != null ? '$' + Number(stats.revenue).toLocaleString() : '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Revenue</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3 col-span-2">
+                <p class="text-xl font-bold text-burgundy-900">${stats.completionRate != null ? Math.round(stats.completionRate) + '%' : '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Completion Rate</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Premium Addons Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Premium Add-ons</h3>
+            <div class="grid grid-cols-2 gap-3">
+              ${addonList.map(a => `
+                <div class="flex items-center gap-2 text-sm">
+                  <i class="fas fa-${addons[a.key] ? 'check-circle text-green-500' : 'times-circle text-stone-300'} w-4"></i>
+                  <span class="${addons[a.key] ? 'text-forest-700 font-medium' : 'text-stone-400'}">${a.label}</span>
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 2: Users & Courses ──
+  async function loadDrawerUsersCourses() {
+    const el = document.getElementById('usersCourseContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const [usersData, coursesData] = await Promise.all([
+        apiFetch('/api/partners/' + drawerPartnerId + '/users'),
+        apiFetch('/api/partners/' + drawerPartnerId + '/courses')
+      ]);
+      const users = usersData.users || [];
+      const courses = coursesData.courses || [];
+
+      el.innerHTML = `
+        <div class="space-y-6">
+          <!-- Users Table -->
+          <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+            <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+              <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Users (${users.length})</h3>
+            </div>
+            ${users.length === 0 ? '<p class="text-center text-forest-400 py-8 text-sm">No users yet</p>' : `
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-forest-100">
+                  <tr>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Name</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Email</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Role</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Last Active</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Courses</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-forest-50">
+                  ${users.map(u => `<tr class="hover:bg-forest-50/50">
+                    <td class="px-4 py-3 font-medium text-burgundy-900">${escHtml((u.profile?.firstName || '') + ' ' + (u.profile?.lastName || '')).trim() || '--'}</td>
+                    <td class="px-4 py-3 text-forest-600 text-xs">${escHtml(u.email)}</td>
+                    <td class="px-4 py-3 capitalize text-forest-600">${escHtml(u.role || 'user')}</td>
+                    <td class="px-4 py-3 text-forest-400 text-xs">${u.lastActive ? new Date(u.lastActive).toLocaleDateString() : '--'}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${u.enrolledCoursesCount ?? u.courseCount ?? '--'}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>`}
+          </div>
+
+          <!-- Courses Table -->
+          <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+            <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+              <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Courses (${courses.length})</h3>
+            </div>
+            ${courses.length === 0 ? '<p class="text-center text-forest-400 py-8 text-sm">No courses yet</p>' : `
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-forest-100">
+                  <tr>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Title</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Status</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Enrollments</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Completion</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">CE hrs</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-forest-50">
+                  ${courses.map(c => `<tr class="hover:bg-forest-50/50">
+                    <td class="px-4 py-3 font-medium text-burgundy-900 max-w-[180px] truncate">${escHtml(c.title)}</td>
+                    <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${escHtml(c.status || 'draft')}</span></td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.enrollments ?? '--'}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.completionRate != null ? Math.round(c.completionRate) + '%' : (c.completions != null ? c.completions : '--')}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.ceHours ?? '--'}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>`}
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 3: Health ──
+  async function loadDrawerHealth() {
+    const el = document.getElementById('healthContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/health');
+      const health = data.health || data;
+
+      const indicators = [
+        { key: 'billingCurrent', label: 'Billing Current', icon: 'fa-credit-card' },
+        { key: 'domainActive', label: 'Domain Active', icon: 'fa-globe' },
+        { key: 'coursesPublished', label: 'Courses Published', icon: 'fa-book' },
+        { key: 'userActivity', label: 'User Activity', icon: 'fa-users' }
+      ];
+
+      const statusIcon = (val) => {
+        if (val === true || val === 'ok' || val === 'healthy') return '<i class="fas fa-check-circle text-green-500 text-lg"></i>';
+        if (val === false || val === 'error' || val === 'critical') return '<i class="fas fa-times-circle text-red-500 text-lg"></i>';
+        return '<i class="fas fa-exclamation-circle text-amber-500 text-lg"></i>';
+      };
+
+      const statusLabel = (val) => {
+        if (val === true || val === 'ok' || val === 'healthy') return '<span class="text-xs font-medium text-green-600">Healthy</span>';
+        if (val === false || val === 'error' || val === 'critical') return '<span class="text-xs font-medium text-red-600">Issue</span>';
+        if (val == null) return '<span class="text-xs text-stone-400">Unknown</span>';
+        return `<span class="text-xs font-medium text-amber-600">${escHtml(String(val))}</span>`;
+      };
+
+      el.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Health Indicators</h3>
+            <div class="grid grid-cols-2 gap-4">
+              ${indicators.map(ind => `
+                <div class="flex items-center gap-3 p-4 rounded-lg bg-stone-50 border border-forest-100">
+                  <div class="w-8 h-8 flex items-center justify-center">${statusIcon(health[ind.key])}</div>
+                  <div>
+                    <p class="text-sm font-medium text-forest-700"><i class="fas ${ind.icon} text-forest-400 mr-1.5"></i>${ind.label}</p>
+                    ${statusLabel(health[ind.key])}
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>
+          ${Object.keys(health).filter(k => !indicators.map(i => i.key).includes(k)).length > 0 ? `
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Additional Status</h3>
+            <div class="space-y-2">
+              ${Object.entries(health).filter(([k]) => !indicators.map(i => i.key).includes(k)).map(([k, v]) => `
+                <div class="flex items-center justify-between py-2 border-b border-forest-50 last:border-0 text-sm">
+                  <span class="text-forest-600 capitalize">${escHtml(k.replace(/([A-Z])/g, ' $1').trim())}</span>
+                  <span class="font-medium text-burgundy-800">${escHtml(String(v))}</span>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 4: Audit Log ──
+  async function loadDrawerAuditLog() {
+    const el = document.getElementById('auditLogContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/audit-log');
+      const logs = data.logs || data.auditLog || data.entries || [];
+
+      if (logs.length === 0) {
+        el.innerHTML = '<p class="text-center text-forest-400 py-8 text-sm">No audit entries yet</p>';
+        return;
+      }
+
+      el.innerHTML = `
+        <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+          <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+            <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Activity (${logs.length} entries)</h3>
+          </div>
+          <div class="divide-y divide-forest-50">
+            ${logs.map(entry => `
+              <div class="px-5 py-4 hover:bg-forest-50/40">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-burgundy-900">${escHtml(entry.action || entry.event || entry.type || 'Action')}</p>
+                    ${entry.actor || entry.performedBy ? `<p class="text-xs text-forest-500 mt-0.5">by ${escHtml(entry.actor || entry.performedBy)}</p>` : ''}
+                    ${entry.details ? `<p class="text-xs text-forest-400 mt-1">${escHtml(typeof entry.details === 'object' ? JSON.stringify(entry.details) : entry.details)}</p>` : ''}
+                  </div>
+                  <p class="text-xs text-stone-400 whitespace-nowrap flex-shrink-0">${entry.timestamp || entry.createdAt ? new Date(entry.timestamp || entry.createdAt).toLocaleString() : '--'}</p>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 5: Notes & Actions ──
+  async function loadDrawerNotesActions() {
+    const el = document.getElementById('notesActionsContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  function renderNotesActions(notes) {
+    const el = document.getElementById('notesActionsContent');
+    el.innerHTML = `
+      <div class="space-y-5">
+        <!-- Notes -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Admin Notes (${notes.length})</h3>
+          <div id="notesList" class="space-y-3 mb-4">
+            ${notes.length === 0 ? '<p class="text-forest-400 text-sm text-center py-3">No notes yet</p>' :
+              notes.map(n => `
+                <div class="bg-stone-50 border border-forest-100 rounded-lg p-3" data-note-id="${escHtml(n._id)}">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="text-sm text-forest-700 flex-1">${escHtml(n.text || n.content || n.note || '')}</p>
+                    <button onclick="deleteNote('${escHtml(n._id)}')" class="text-stone-300 hover:text-red-400 flex-shrink-0 p-0.5 rounded"><i class="fas fa-trash text-xs"></i></button>
+                  </div>
+                  <p class="text-xs text-stone-400 mt-1.5">${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''} ${n.createdBy ? '· ' + escHtml(n.createdBy) : ''}</p>
+                </div>`).join('')}
+          </div>
+          <!-- Add Note Form -->
+          <div class="border-t border-forest-100 pt-4">
+            <textarea id="newNoteText" rows="3" placeholder="Add a note…" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500 resize-none"></textarea>
+            <div class="flex justify-end mt-2">
+              <button onclick="addNote()" class="px-4 py-1.5 text-sm text-white bg-burgundy-800 hover:bg-burgundy-900 rounded-lg font-medium">Add Note</button>
+            </div>
+            <p id="noteMsg" class="hidden text-xs mt-1 rounded p-1"></p>
+          </div>
+        </div>
+
+        <!-- Send Notification -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Send Notification</h3>
+          <textarea id="notifyMessage" rows="3" placeholder="Notification message to send to partner…" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 resize-none mb-2"></textarea>
+          <button onclick="sendNotification()" class="px-4 py-1.5 text-sm text-white bg-hunter-700 hover:bg-hunter-800 rounded-lg font-medium"><i class="fas fa-paper-plane mr-1.5"></i>Send Notification</button>
+          <p id="notifyMsg" class="hidden text-xs mt-2 rounded p-1"></p>
+        </div>
+
+        <!-- Quick-Fix Actions -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Quick Actions</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-stone-50 border border-forest-100">
+              <div>
+                <p class="text-sm font-medium text-forest-700">Reset Domain</p>
+                <p class="text-xs text-forest-400">Clear and reset the partner's custom domain</p>
+              </div>
+              <button onclick="quickFix('reset-domain')" class="px-3 py-1.5 text-xs text-white bg-burgundy-700 hover:bg-burgundy-800 rounded-lg font-medium flex-shrink-0">Reset</button>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-stone-50 border border-forest-100">
+              <div>
+                <p class="text-sm font-medium text-forest-700">Resend Welcome Email</p>
+                <p class="text-xs text-forest-400">Resend the partner onboarding welcome email</p>
+              </div>
+              <button onclick="quickFix('resend-welcome')" class="px-3 py-1.5 text-xs text-white bg-hunter-700 hover:bg-hunter-800 rounded-lg font-medium flex-shrink-0">Resend</button>
+            </div>
+            <div class="flex items-start justify-between p-3 rounded-lg bg-stone-50 border border-forest-100 gap-4">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-forest-700">Fix Billing Status</p>
+                <p class="text-xs text-forest-400 mb-2">Force-set billing status on this partner</p>
+                <select id="billingStatusSelect" class="w-full px-2 py-1.5 border border-forest-200 rounded-lg text-xs focus:ring-2 focus:ring-hunter-500">
+                  <option value="current">Current</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <button onclick="quickFix('billing-status')" class="px-3 py-1.5 text-xs text-white bg-burgundy-700 hover:bg-burgundy-800 rounded-lg font-medium flex-shrink-0 mt-7">Apply</button>
+            </div>
+          </div>
+          <p id="quickFixMsg" class="hidden text-xs mt-3 rounded p-1.5"></p>
+        </div>
+      </div>`;
+  }
+
+  async function addNote() {
+    const text = document.getElementById('newNoteText').value.trim();
+    const msgEl = document.getElementById('noteMsg');
+    if (!text) return;
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notes', {
+        method: 'POST', body: JSON.stringify({ text })
+      });
+      document.getElementById('newNoteText').value = '';
+      // Reload notes
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-1 rounded p-1 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  async function deleteNote(noteId) {
+    if (!confirm('Delete this note?')) return;
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notes/' + noteId, { method: 'DELETE' });
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function sendNotification() {
+    const message = document.getElementById('notifyMessage').value.trim();
+    const msgEl = document.getElementById('notifyMsg');
+    if (!message) { msgEl.textContent = 'Enter a message first'; msgEl.className = 'text-xs mt-2 rounded p-1 text-amber-600 bg-amber-50'; msgEl.classList.remove('hidden'); return; }
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notify', {
+        method: 'POST', body: JSON.stringify({ message })
+      });
+      document.getElementById('notifyMessage').value = '';
+      msgEl.textContent = 'Notification sent successfully';
+      msgEl.className = 'text-xs mt-2 rounded p-1 text-green-600 bg-green-50';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 3000);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-2 rounded p-1 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  async function quickFix(action) {
+    const msgEl = document.getElementById('quickFixMsg');
+    if (!confirm(`Run quick-fix: ${action}?`)) return;
+    try {
+      const payload = action === 'billing-status'
+        ? { status: document.getElementById('billingStatusSelect').value }
+        : {};
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/quick-fix/' + action, {
+        method: 'POST', body: JSON.stringify(payload)
+      });
+      msgEl.textContent = data.message || 'Done';
+      msgEl.className = 'text-xs mt-3 rounded p-1.5 text-green-700 bg-green-50';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 4000);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-3 rounded p-1.5 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  function escHtml(s) {
+    return (s || '').toString()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+</script>
+
 </body>
 </html>
