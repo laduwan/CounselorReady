@@ -92,24 +92,11 @@
 
     <!-- Filters & Search -->
     <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Search -->
         <div class="md:col-span-2">
           <label for="search" class="block text-sm font-medium text-forest-700 mb-2">Search Courses</label>
-          <input type="text" id="search" placeholder="Search by title or topic..." onkeyup="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
-        </div>
-
-        <!-- Filter by CEU Category -->
-        <div>
-          <label for="filterCategory" class="block text-sm font-medium text-forest-700 mb-2">CE Category</label>
-          <select id="filterCategory" onchange="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
-            <option value="">All Categories</option>
-            <option value="ethics">Ethics</option>
-            <option value="core">Core</option>
-            <option value="related">Related</option>
-            <option value="supervision">Supervision</option>
-            <option value="telehealth">Telehealth</option>
-          </select>
+          <input type="text" id="search" placeholder='Search by topic, body, or hours &mdash; e.g. &quot;3 hour GSCSW ethics&quot;' onkeyup="filterCourses()" class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
         </div>
 
         <!-- Filter by Access Type -->
@@ -122,6 +109,10 @@
           </select>
         </div>
       </div>
+
+      <!-- Quick filters: shortcuts that type into the search box above -->
+      <div id="quickFilters" class="flex flex-wrap items-center gap-2 mt-4"></div>
+      <p id="resultCount" class="text-sm text-forest-500 mt-3"></p>
     </div>
 
     <!-- Course Grid -->
@@ -301,34 +292,188 @@
       container.innerHTML = html;
     }
 
-    function filterCourses() {
-      const search = document.getElementById('search').value.toLowerCase();
-      const category = document.getElementById('filterCategory').value;
-      const access = document.getElementById('filterAccess').value;
-      
-      let filtered = allCourses.filter(course => {
-        // Search filter
-        const matchesSearch = !search || 
-          course.title.toLowerCase().includes(search) ||
-          course.description.toLowerCase().includes(search);
-        
-        // Category filter
-        const matchesCategory = !category || 
-          course.ceuCategories?.some(cat => cat.category.toLowerCase() === category);
-        
-        // Access filter
-        let matchesAccess = true;
-        if (access === 'free') {
-          matchesAccess = course.accessType === 'free';
-        } else if (access === 'enrolled') {
-          matchesAccess = course.enrollment?.enrolled;
-        }
-        
-        return matchesSearch && matchesCategory && matchesAccess;
+    // ── Smart course search ────────────────────────────────────────────
+    // ONE search box understands free text, approving body, and CE hours.
+    // The chips below the box are just shortcuts that type into the box,
+    // so there is never more than one way to search.
+
+    // alias typed by the user -> lowercased canonical body string
+    const BODY_ALIASES = {
+      nbcc:'nbcc', acep:'acep', gscsw:'gscsw',
+      lpca:'lpcaga', lpcaga:'lpcaga', 'lpca-ga':'lpcaga',
+      apa:'apa', aswb:'aswb', aca:'aca', nasw:'nasw', aamft:'aamft'
+    };
+
+    // labels shown as tappable chips (each just types into the box)
+    const QUICK_FILTERS = ['Ethics', 'Trauma', 'Crisis', 'Supervision', '3 CE', 'NBCC'];
+
+    // one lowercase blob of every searchable field, cached per course
+    function courseHaystack(course) {
+      const areas = (course.nbccContentAreas || course.contentAreas || [])
+        .map(a => (typeof a === 'string' ? a : (a && (a.text || a.name)) || ''));
+      const hourLabels = [], bodyText = [];
+      (course.approvals || []).forEach(a => {
+        if (!a) return;
+        (a.hourBreakdown || []).forEach(h => h && h.label && hourLabels.push(h.label));
+        if (a.body) bodyText.push(a.body);
+        if (a.providerName) bodyText.push(a.providerName);
       });
-      
-      renderCourses(filtered);
+      const parts = [
+        course.title, course.subtitle, course.description,
+        course.courseCode, course.code, course.slug,
+        course.presenter && course.presenter.name, course.presenterName,
+        course.author, course.instructor,
+        (course.categories || []).join(' '),
+        (course.ceuCategories || []).map(c => c && c.category).join(' '),
+        areas.join(' '),
+        hourLabels.join(' '),
+        bodyText.join(' '),
+        course.approvalBody, course.approvingBody, course.ceProvider,
+        (course.tags || []).join(' '),
+        course.deliveryFormat || course.format,
+        course.marketplacePartner && course.marketplacePartner.name
+      ];
+      return parts.filter(Boolean).join(' ').toLowerCase();
     }
+
+    // every approving-body string for a course, lowercased
+    function courseBodies(course) {
+      const out = [];
+      (course.approvals || []).forEach(a => {
+        if (a && a.body) out.push(String(a.body).toLowerCase());
+        if (a && a.providerName) out.push(String(a.providerName).toLowerCase());
+      });
+      ['approvalBody', 'approvingBody', 'ceProvider'].forEach(f => {
+        if (course[f]) out.push(String(course[f]).toLowerCase());
+      });
+      return out;
+    }
+
+    function courseHours(course) {
+      const n = Number(course.ceHours != null ? course.ceHours : course.ceuHours);
+      return isNaN(n) ? null : n;
+    }
+
+    // turn the raw box text into { hours, bodies, tokens }
+    function parseQuery(raw) {
+      let q = (raw || '').toLowerCase();
+      const hours = [];
+      // "3 ce" / "2 hour" / "3-hr" / "1 credit" / "3ce" -> exact CE-hours filter
+      q = q.replace(/(\d+(?:\.\d+)?)[\s-]*(?:ce|ceu|hrs?|hours?|credits?)\b/g, function (m, n) {
+        hours.push(Number(n));
+        return ' ';
+      });
+      const bodies = [], tokens = [];
+      q.split(/\s+/).filter(Boolean).forEach(function (tok) {
+        if (BODY_ALIASES[tok]) bodies.push(BODY_ALIASES[tok]);
+        else tokens.push(tok);
+      });
+      return { hours: hours, bodies: bodies, tokens: tokens };
+    }
+
+    // free-text score: every token must appear (AND); title/prefix rank higher
+    function scoreTokens(course, tokens) {
+      const title = (course.title || '').toLowerCase();
+      const hay = course._hay || (course._hay = courseHaystack(course));
+      let score = 0;
+      for (let i = 0; i < tokens.length; i++) {
+        const t = tokens[i];
+        if (!hay.includes(t)) return -1;
+        score += title.includes(t) ? 10 : 1;
+        if (title.startsWith(t)) score += 5;
+      }
+      return score;
+    }
+
+    let _filterTimer = null;
+    function filterCourses() {
+      clearTimeout(_filterTimer);
+      _filterTimer = setTimeout(applyCourseFilters, 120);
+    }
+
+    function applyCourseFilters() {
+      const raw = (document.getElementById('search').value || '').trim();
+      const q = parseQuery(raw);
+      const access = document.getElementById('filterAccess').value;
+
+      let results = allCourses.filter(function (course) {
+        // Access — about the user, not the course
+        if (access === 'free' && course.accessType !== 'free') return false;
+        if (access === 'enrolled' && !(course.enrollment && course.enrollment.enrolled)) return false;
+
+        // CE hours (exact)
+        if (q.hours.length) {
+          const ch = courseHours(course);
+          if (ch === null || q.hours.indexOf(ch) === -1) return false;
+        }
+
+        // Approving body
+        if (q.bodies.length) {
+          const cb = courseBodies(course);
+          const ok = q.bodies.every(function (b) { return cb.some(function (x) { return x.includes(b); }); });
+          if (!ok) return false;
+        }
+
+        // Free text
+        if (q.tokens.length) {
+          const sc = scoreTokens(course, q.tokens);
+          course._score = sc;
+          return sc >= 0;
+        }
+        course._score = 0;
+        return true;
+      });
+
+      if (q.tokens.length) results.sort(function (a, b) { return (b._score || 0) - (a._score || 0); });
+
+      renderCourses(results);
+      updateResultCount(results.length);
+      refreshChips();
+    }
+
+    function updateResultCount(n) {
+      const el = document.getElementById('resultCount');
+      if (el) el.textContent = n + (n === 1 ? ' course' : ' courses');
+    }
+
+    // ── Quick-filter chips: shortcuts that edit the one search box ───────
+    function renderQuickFilters() {
+      const wrap = document.getElementById('quickFilters');
+      if (!wrap) return;
+      wrap.innerHTML = QUICK_FILTERS.map(function (term) {
+        const t = term.toLowerCase();
+        return '<button type="button" data-term="' + t + '" onclick="toggleChip(\'' + t + '\')" ' +
+          'class="cr-chip px-3 py-1.5 rounded-full text-xs font-medium border border-forest-200 ' +
+          'text-forest-700 bg-white hover:bg-forest-50 transition-colors">' + term + '</button>';
+      }).join('');
+      refreshChips();
+    }
+
+    function toggleChip(term) {
+      const box = document.getElementById('search');
+      let v = ' ' + box.value.toLowerCase() + ' ';
+      const phrase = ' ' + term + ' ';
+      if (v.indexOf(phrase) !== -1) v = v.replace(phrase, ' ');   // remove
+      else v = v + term + ' ';                                    // add
+      box.value = v.replace(/\s+/g, ' ').trim();
+      applyCourseFilters();
+      box.focus();
+    }
+
+    function refreshChips() {
+      const v = ' ' + (document.getElementById('search').value || '').toLowerCase() + ' ';
+      document.querySelectorAll('#quickFilters .cr-chip').forEach(function (btn) {
+        const active = v.indexOf(' ' + btn.dataset.term + ' ') !== -1;
+        btn.classList.toggle('bg-burgundy-700', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('border-burgundy-700', active);
+        btn.classList.toggle('bg-white', !active);
+        btn.classList.toggle('border-forest-200', !active);
+        btn.classList.toggle('text-forest-700', !active);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', renderQuickFilters);
 
     async function enrollCourse(courseId) {
       const token = localStorage.getItem('token');
