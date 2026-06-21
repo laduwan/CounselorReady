@@ -445,11 +445,70 @@ router.get('/admin/overview', protect, async (req, res) => {
     if (startDate) dateFilter.$gte = startDate;
     if (endDate) dateFilter.$lte = endDate;
     
-    // NPS Score from platform surveys
-    const npsData = await PlatformSurvey.calculateNPS(startDate, endDate);
+const round1 = (v) => (v ? Math.round(v * 10) / 10 : 0);
+
+    // ── Metrics derived from the `evaluations` collection (real rating data) ──
+    const evalMatch = {
+      isDeleted: { $ne: true },
+      status: { $in: ['submitted', 'completed', 'reviewed'] }
+    };
+    if (startDate || endDate) {
+      evalMatch.createdAt = {};
+      if (startDate) evalMatch.createdAt.$gte = startDate;
+      if (endDate) evalMatch.createdAt.$lte = endDate;
+    }
+
+    const evalGlobalAgg = await Evaluation.aggregate([
+      { $match: evalMatch },
+      { $group: {
+        _id: null,
+        count: { $sum: 1 },
+        avgOverall: { $avg: '$overallRating' },
+        avgContentQuality: { $avg: '$ratings.contentQuality' },
+        avgRelevance: { $avg: '$ratings.relevance' },
+        avgPresentation: { $avg: '$ratings.presentation' },
+        avgEngagement: { $avg: '$ratings.engagement' },
+        avgLearningObjectives: { $avg: '$ratings.learningObjectives' },
+        promoters: { $sum: { $cond: [{ $gte: ['$overallRating', 4] }, 1, 0] } },
+        passives: { $sum: { $cond: [{ $eq: ['$overallRating', 3] }, 1, 0] } },
+        detractors: { $sum: { $cond: [{ $and: [{ $gte: ['$overallRating', 1] }, { $lte: ['$overallRating', 2] }] }, 1, 0] } }
+      } }
+    ]);
+    const g = evalGlobalAgg[0] || {};
+
+    // NPS approximated from the 1-5 overall rating (>=4 promoter, 3 passive, <=2 detractor)
+    const npsTotal = (g.promoters || 0) + (g.passives || 0) + (g.detractors || 0);
+    const npsValue = npsTotal > 0
+      ? Math.round((((g.promoters || 0) - (g.detractors || 0)) / npsTotal) * 100)
+      : 0;
+    const npsData = {
+      nps: npsValue,
+      score: npsValue,
+      promoters: g.promoters || 0,
+      passives: g.passives || 0,
+      detractors: g.detractors || 0,
+      total: npsTotal
+    };
+
+    const satisfactionData = {
+      avgSatisfaction: round1(g.avgOverall),
+      avgContentQuality: round1(g.avgContentQuality),
+      avgRelevance: round1(g.avgRelevance),
+      avgPresentation: round1(g.avgPresentation),
+      avgEngagement: round1(g.avgEngagement),
+      avgLearningObjectives: round1(g.avgLearningObjectives),
+      count: g.count || 0
+    };
+
+    // Per-course average rating, for the Top Courses table
+    const evalByCourseAgg = await Evaluation.aggregate([
+      { $match: evalMatch },
+      { $group: { _id: '$course', avg: { $avg: '$overallRating' }, count: { $sum: 1 } } }
+    ]);
+    const ratingByCourse = new Map(
+      evalByCourseAgg.map(r => [String(r._id), { avg: round1(r.avg), count: r.count }])
+    );
     
-    // Satisfaction averages from platform surveys
-    const satisfactionData = await PlatformSurvey.getSatisfactionAverages(startDate, endDate);
     
     // Date window applied per-metric via $cond — NOT as a top-level $match.
     // Ensures in-progress enrollments still count toward totalEnrollments
@@ -504,19 +563,6 @@ router.get('/admin/overview', protect, async (req, res) => {
     // Get total courses count
     const totalCourses = await Course.countDocuments({ status: 'published' });
     
-    // Get course ratings from Course.ratings array
-    const ratingStats = await Course.aggregate([
-      { $match: { status: 'published', 'ratings.0': { $exists: true } } },
-      { $unwind: '$ratings' },
-      {
-        $group: {
-          _id: null,
-          totalRatings: { $sum: 1 },
-          avgRating: { $avg: '$ratings.rating' }
-        }
-      }
-    ]);
-    
     // Combine course stats (legacy + interactive)
     const combinedEnrollments = (progressStats[0]?.totalEnrollments || 0) + (interactiveProgressStats[0]?.totalEnrollments || 0);
     const combinedCompletions = (progressStats[0]?.totalCompletions || 0) + (interactiveProgressStats[0]?.totalCompletions || 0);
@@ -527,8 +573,8 @@ router.get('/admin/overview', protect, async (req, res) => {
       totalEnrollments: combinedEnrollments,
       totalCompletions: combinedCompletions,
       totalEvaluations: combinedEvaluations,
-      avgRating: ratingStats[0]?.avgRating ? Math.round(ratingStats[0].avgRating * 10) / 10 : 0,
-      totalRatings: ratingStats[0]?.totalRatings || 0,
+      avgRating: round1(g.avgOverall),
+      totalRatings: g.count || 0,
       avgCompletionRate: combinedEnrollments > 0
         ? Math.round((combinedCompletions / combinedEnrollments) * 100)
         : 0
@@ -591,16 +637,26 @@ router.get('/admin/overview', protect, async (req, res) => {
 
     const allTopByEnrollment = [...topByEnrollment, ...topByEnrollmentInteractive]
       .sort((a, b) => b.analytics.enrollments - a.analytics.enrollments)
-      .slice(0, 5);
+      .slice(0, 5)
+      .map(c => {
+        const r = ratingByCourse.get(String(c._id));
+        return { ...c, analytics: { ...c.analytics, avgRating: r ? r.avg : 0, totalRatings: r ? r.count : 0 } };
+      });
 
-    // Top courses by rating
-    const topByRating = await Course.find({ 
-      status: 'published',
-      'ratings.0': { $exists: true }
-    })
-      .select('title analytics.avgRating analytics.totalRatings ratings')
-      .sort({ 'analytics.avgRating': -1 })
-      .limit(5);
+    // Top courses by rating (from evaluations; titles from both course collections)
+    const topByRatingRaw = await Evaluation.aggregate([
+      { $match: evalMatch },
+      { $group: { _id: '$course', avgRating: { $avg: '$overallRating' }, totalRatings: { $sum: 1 } } },
+      { $sort: { avgRating: -1 } },
+      { $limit: 5 },
+      { $lookup: { from: 'interactivecourses', localField: '_id', foreignField: '_id', as: 'ic' } },
+      { $lookup: { from: 'courses', localField: '_id', foreignField: '_id', as: 'lc' } }
+    ]);
+    const topByRating = topByRatingRaw.map(r => ({
+      _id: r._id,
+      title: (r.ic[0] && r.ic[0].title) || (r.lc[0] && r.lc[0].title) || 'Unknown',
+      analytics: { avgRating: round1(r.avgRating), totalRatings: r.totalRatings }
+    }));
     
     // Recent feedback from platform surveys
     const recentFeedback = await PlatformSurvey.find({
