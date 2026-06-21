@@ -801,12 +801,11 @@
     
     function renderSatisfactionBreakdown(sat) {
       const categories = [
-        { key: 'avgCourseQuality', label: 'Course Quality' },
-        { key: 'avgEaseOfUse', label: 'Ease of Use' },
-        { key: 'avgValueForMoney', label: 'Value for Money' },
-        { key: 'avgCustomerSupport', label: 'Customer Support' },
-        { key: 'avgCeTracking', label: 'CE Tracking' },
-        { key: 'avgCertificateProcess', label: 'Certificate Process' }
+        { key: 'avgContentQuality', label: 'Content Quality' },
+        { key: 'avgRelevance', label: 'Relevance' },
+        { key: 'avgPresentation', label: 'Presentation' },
+        { key: 'avgEngagement', label: 'Engagement' },
+        { key: 'avgLearningObjectives', label: 'Learning Objectives' }
       ];
       
       const html = categories.map(cat => {
