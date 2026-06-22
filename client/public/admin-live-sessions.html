@@ -262,6 +262,50 @@
     </div>
   </div>
 
+  <!-- ── Breaks Modal ── -->
+  <div id="breaksModal" class="hidden fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <div>
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900">Scheduled Breaks</h2>
+          <p id="brksSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeBreaksModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <div class="overflow-x-auto border border-gray-100 rounded-lg mb-3">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Label</th>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Starts at</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Min</th>
+                <th class="px-3 py-2 w-8"></th>
+              </tr>
+            </thead>
+            <tbody id="brksTbody"></tbody>
+          </table>
+        </div>
+        <p id="brksEmpty" class="hidden text-center py-3 text-forest-500 text-sm">No breaks declared yet.</p>
+        <div id="brksErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
+        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+          <button id="brksAddBtn" type="button" onclick="addBreakRow()"
+            class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1">
+            <i class="fas fa-plus text-xs"></i> Add break
+          </button>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="closeBreaksModal()"
+              class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+            <button id="brksSubmitBtn" type="button" onclick="saveBreaks()"
+              class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save Breaks</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const API = API_URL + '/api/live-sessions';
@@ -578,117 +622,135 @@
     });
 
     /* ── Manage breaks (writes LiveSession.breaks[] that the producer reads) ── */
-    let breaksDraft = [];
-    let breaksSessionId = null;
+    let _breaksSessionId = null;
 
     function openBreaksModal(id) {
-      breaksSessionId = id;
+      _breaksSessionId = id;
       const s = sessions.find(x => x._id === id);
-      breaksDraft = ((s && s.breaks) || []).map(b => Object.assign(
-        { label: b.label || 'Break', startsAt: b.startsAt, durationMin: b.durationMin },
-        b.resumeReminderSentAt ? { resumeReminderSentAt: b.resumeReminderSentAt } : {}
-      ));
-      renderBreaksModal();
+      const readonly = s && (s.status === 'completed' || s.status === 'cancelled');
+
+      document.getElementById('brksSubtitle').textContent =
+        (s ? s.title + ' — ' : '') +
+        'break minutes excluded from NBCC attendance denominator; attendees get a resume reminder ~3 min before each break ends.' +
+        (readonly ? ' (read-only: session is ' + s.status + ')' : '');
+
+      const tbody = document.getElementById('brksTbody');
+      tbody.innerHTML = '';
+      ((s && s.breaks) || []).forEach(b => _appendBreakRow(tbody, b, readonly));
+      _refreshBrksEmpty();
+
+      document.getElementById('brksAddBtn').classList.toggle('hidden', !!readonly);
+      document.getElementById('brksSubmitBtn').classList.toggle('hidden', !!readonly);
+      document.getElementById('brksErr').classList.add('hidden');
+      document.getElementById('breaksModal').classList.remove('hidden');
     }
 
-    function renderBreaksModal() {
-      const s = sessions.find(x => x._id === breaksSessionId) || {};
-      const rows = breaksDraft.length ? breaksDraft.map((b, i) => `
-        <tr class="border-b border-gray-100">
-          <td class="px-3 py-2">${escHtml(b.label)}</td>
-          <td class="px-3 py-2 text-xs">${b.startsAt ? new Date(b.startsAt).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }) : '—'}</td>
-          <td class="px-3 py-2 text-center">${b.durationMin} min</td>
-          <td class="px-3 py-2 text-right">
-            <button onclick="removeBreakDraft(${i})" class="text-red-500 hover:text-red-700 text-xs" title="Remove"><i class="fas fa-trash"></i></button>
-          </td>
-        </tr>`).join('') : '<tr><td colspan="4" class="text-center py-5 text-forest-500 text-sm">No breaks declared yet.</td></tr>';
-
-      showModal(`
-        <div class="p-6">
-          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">Scheduled Breaks</h3>
-          <p class="text-xs text-forest-500 mb-4">${escHtml(s.title || '')} &mdash; break minutes are excluded from the NBCC attendance denominator, and attendees get an automatic resume reminder ~3 min before each break ends.</p>
-          <div class="overflow-x-auto border border-gray-100 rounded-lg mb-4">
-            <table class="w-full text-sm">
-              <thead class="bg-stone-50"><tr>
-                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Label</th>
-                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Starts</th>
-                <th class="px-3 py-2 font-semibold text-burgundy-800">Duration</th>
-                <th class="px-3 py-2"></th>
-              </tr></thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-          <div class="grid grid-cols-12 gap-2 items-end bg-stone-50 rounded-lg p-3 mb-3">
-            <div class="col-span-4">
-              <label class="block text-xs font-medium text-burgundy-800 mb-1">Label</label>
-              <input id="brkLabel" type="text" value="Break" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            </div>
-            <div class="col-span-5">
-              <label class="block text-xs font-medium text-burgundy-800 mb-1">Starts at <span class="text-red-500">*</span></label>
-              <input id="brkStart" type="datetime-local" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            </div>
-            <div class="col-span-2">
-              <label class="block text-xs font-medium text-burgundy-800 mb-1">Min <span class="text-red-500">*</span></label>
-              <input id="brkDur" type="number" min="1" max="120" value="10" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            </div>
-            <div class="col-span-1">
-              <button onclick="addBreakDraft()" class="w-full px-2 py-1.5 rounded-lg bg-forest-700 hover:bg-forest-800 text-white text-sm font-semibold" title="Add break">+</button>
-            </div>
-          </div>
-          <div id="brkErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
-          <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-            <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
-            <button onclick="saveBreaks(this)" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save Breaks</button>
-          </div>
-        </div>`);
+    function closeBreaksModal() {
+      document.getElementById('breaksModal').classList.add('hidden');
     }
 
-    function showBrkErr(msg) {
-      const err = document.getElementById('brkErr');
-      err.textContent = msg; err.classList.remove('hidden');
+    function _toDatetimeLocal(isoStr) {
+      if (!isoStr) return '';
+      const d = new Date(isoStr);
+      const p = n => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+             'T' + p(d.getHours()) + ':' + p(d.getMinutes());
     }
 
-    function addBreakDraft() {
-      const label = (document.getElementById('brkLabel').value || 'Break').trim();
-      const startVal = document.getElementById('brkStart').value;
-      const dur = parseInt(document.getElementById('brkDur').value, 10);
-      document.getElementById('brkErr').classList.add('hidden');
-      if (!startVal) return showBrkErr('Start time is required.');
-      if (!dur || dur < 1 || dur > 120) return showBrkErr('Duration must be between 1 and 120 minutes.');
-      breaksDraft.push({ label: label || 'Break', startsAt: new Date(startVal).toISOString(), durationMin: dur });
-      breaksDraft.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
-      renderBreaksModal();
+    function _appendBreakRow(tbody, b, readonly) {
+      const tr = document.createElement('tr');
+      tr.className = 'border-b border-gray-100';
+      if (b && b.resumeReminderSentAt) tr.dataset.resumeReminderSentAt = b.resumeReminderSentAt;
+      const dis = readonly ? ' disabled' : '';
+      const cls = 'w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500' +
+                  (readonly ? ' bg-stone-100 cursor-not-allowed' : '');
+      tr.innerHTML =
+        '<td class="px-2 py-2"><input type="text" placeholder="Break" value="' + escHtml(b ? (b.label || 'Break') : '') + '" class="' + cls + '"' + dis + '></td>' +
+        '<td class="px-2 py-2"><input type="datetime-local" value="' + escHtml(_toDatetimeLocal(b && b.startsAt)) + '" class="' + cls + '"' + dis + '></td>' +
+        '<td class="px-2 py-2 w-20"><input type="number" min="1" max="120" placeholder="10" value="' + escHtml(b ? String(b.durationMin || '') : '') + '" class="' + cls + ' text-center"' + dis + '></td>' +
+        '<td class="px-2 py-2 text-right">' + (!readonly ? '<button type="button" onclick="removeBreakRow(this)" class="text-red-500 hover:text-red-700 text-xs" title="Remove"><i class="fas fa-trash"></i></button>' : '') + '</td>';
+      tbody.appendChild(tr);
     }
 
-    function removeBreakDraft(i) {
-      breaksDraft.splice(i, 1);
-      renderBreaksModal();
+    function addBreakRow() {
+      const tbody = document.getElementById('brksTbody');
+      _appendBreakRow(tbody, null, false);
+      _refreshBrksEmpty();
+      const rows = tbody.querySelectorAll('tr');
+      if (rows.length) rows[rows.length - 1].querySelector('input').focus();
     }
 
-    async function saveBreaks(btn) {
-      btn.disabled = true; btn.textContent = 'Saving…';
+    function removeBreakRow(btn) {
+      btn.closest('tr').remove();
+      _refreshBrksEmpty();
+    }
+
+    function _refreshBrksEmpty() {
+      const empty = document.getElementById('brksEmpty');
+      const count = document.getElementById('brksTbody').querySelectorAll('tr').length;
+      empty.classList.toggle('hidden', count > 0);
+    }
+
+    async function saveBreaks() {
+      const tbody = document.getElementById('brksTbody');
+      const errEl = document.getElementById('brksErr');
+      const submitBtn = document.getElementById('brksSubmitBtn');
+      errEl.classList.add('hidden');
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const breaks = [];
+      for (let i = 0; i < rows.length; i++) {
+        const inputs = rows[i].querySelectorAll('input');
+        const label = (inputs[0].value || 'Break').trim();
+        const startVal = inputs[1].value;
+        const dur = parseInt(inputs[2].value, 10);
+        if (!startVal) {
+          errEl.textContent = 'Row ' + (i + 1) + ': Start time is required.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        if (!dur || dur < 1 || dur > 120) {
+          errEl.textContent = 'Row ' + (i + 1) + ': Duration must be 1–120 minutes.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        const b = { label: label || 'Break', startsAt: new Date(startVal).toISOString(), durationMin: dur };
+        if (rows[i].dataset.resumeReminderSentAt) b.resumeReminderSentAt = rows[i].dataset.resumeReminderSentAt;
+        breaks.push(b);
+      }
+      breaks.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving…';
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/${breaksSessionId}`, {
+        const r = await fetch(`${API}/${_breaksSessionId}`, {
           method: 'PATCH',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ breaks: breaksDraft }),
+          body: JSON.stringify({ breaks }),
           signal: controller.signal
         });
         clearTimeout(tid);
         const d = await r.json();
         if (!r.ok) throw new Error(d.error || 'Failed');
-        const s = sessions.find(x => x._id === breaksSessionId);
-        if (s) s.breaks = (d.session && d.session.breaks) || breaksDraft;
-        closeInfoModal();
-        showToast(`Saved ${breaksDraft.length} break(s).`, '#284157');
+        const s = sessions.find(x => x._id === _breaksSessionId);
+        if (s) s.breaks = (d.session && d.session.breaks) || breaks;
+        closeBreaksModal();
+        showToast('Saved ' + breaks.length + ' break(s).', '#284157');
         renderTable();
       } catch (e) {
-        showBrkErr('Error: ' + e.message);
-        btn.disabled = false; btn.textContent = 'Save Breaks';
+        errEl.textContent = 'Error: ' + e.message;
+        errEl.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Breaks';
       }
     }
+
+    /* Close breaks modal on backdrop click */
+    document.getElementById('breaksModal').addEventListener('click', function(e) {
+      if (e.target === document.getElementById('breaksModal')) closeBreaksModal();
+    });
 
     checkAuth();
   </script>
