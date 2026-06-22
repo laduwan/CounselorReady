@@ -114,6 +114,7 @@ import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
+import { runTranscriptionTick } from './jobs/transcriptionTick.js';
 import { runBlogAutoGen } from './jobs/blogAutoGen.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
@@ -447,6 +448,14 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Session producer tick cron scheduled (every minute)');
+
+  // Self-hosted transcription tick — every 5 minutes (AWS Transcribe start/poll for catch-up)
+  cron.schedule('*/5 * * * *', () => {
+    runTranscriptionTick().catch(err =>
+      console.error('Transcription tick error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  logger.info('Transcription tick cron scheduled (every 5 minutes)');
 
   // Video link audit — every Monday at 3 AM ET
   cron.schedule('0 3 * * 1', () => {

@@ -317,6 +317,43 @@ export async function onTranscriptionFinished(session, s3Key) {
   session.producer = session.producer || {};
   session.producer.transcriptS3Key = s3Key;
   await session.save();
+
+  // Catch-up follow-up: only meaningful once the wrap-up email already went out
+  // (the wrap-up itself includes summaries when a transcript was present at that
+  // time). If wrap-up ran before transcription completed, fill the gaps now and
+  // send a concise "your catch-up summary is ready" follow-up. Idempotent via
+  // producer.catchupFollowupSentAt. Mirrors onRecordingFinished's replay follow-up.
+  if (!session.producer.wrapUpSentAt || session.producer.catchupFollowupSentAt) return;
+
+  const registrantIds = session.registrants.map(r => r.user);
+  const users = await User.find({ _id: { $in: registrantIds } }).select('email profile');
+  for (const user of users) {
+    const userId = user._id.toString();
+    const attended = session.attendance.some(
+      a => a.user && a.user.toString() === userId && a.joinedAt
+    );
+    if (!attended) continue;
+
+    const gaps = computeGaps(session, userId);
+    if (gaps.length === 0) continue;
+
+    await populateCatchupSummaries(session, userId, gaps);
+
+    const firstName = user.profile?.firstName || 'there';
+    await sendEmail({
+      to: user.email,
+      subject: `Your catch-up summary is ready: ${session.title}`,
+      html: emailShell(`
+        <p>Hi ${esc(firstName)},</p>
+        <p>Your personalized catch-up summary for <strong>${esc(session.title)}</strong> is ready.</p>
+        ${catchupBlockHtml(gaps, session)}
+        <p style="font-size:13px;color:#57534e;">Catch-up content does not count toward CE credit.</p>
+      `)
+    });
+  }
+
+  session.producer.catchupFollowupSentAt = new Date();
+  await session.save();
 }
 
 // ─── Wrap-up pipeline ─────────────────────────────────────────────────────────

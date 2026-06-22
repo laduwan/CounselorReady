@@ -160,7 +160,11 @@ const liveSessionSchema = new mongoose.Schema({
   producer: {
     wrapUpSentAt: Date,
     incidentBroadcastAt: Date,
-    transcriptS3Key: String   // set by transcription.finished webhook (live-course only)
+    transcriptS3Key: String,   // set by transcription.finished webhook (live-course only)
+    // Self-hosted transcription (AWS Transcribe) state — written by transcriptionService.js
+    transcribeJobName: String,
+    transcribeStatus: { type: String, enum: ['none', 'in_progress', 'completed', 'failed'], default: 'none' },
+    catchupFollowupSentAt: Date
   },
 
   status: {
