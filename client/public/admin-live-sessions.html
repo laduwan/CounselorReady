@@ -306,11 +306,33 @@
     </div>
   </div>
 
+  <!-- ── Run of Show Modal (clips + agenda) ── -->
+  <div id="runOfShowModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 id="rosTitle" class="font-display text-2xl font-semibold text-burgundy-900">Run of Show</h2>
+        <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5 space-y-6">
+        <div id="rosClipsSection"></div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosAgendaSection"></div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const API = API_URL + '/api/live-sessions';
     const token = localStorage.getItem('token');
     let sessions = [];
+
+    /* Run-of-show working state */
+    let rosSession = null;
+    let rosAgenda = [];
+    const AGENDA_TYPES = ['lecture','clip','discussion','breakout','break'];
 
     /* ── Auth guard ── */
     async function checkAuth() {
@@ -403,6 +425,11 @@
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-mug-hot text-xs"></i> Breaks${(s.breaks && s.breaks.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.breaks.length}</span>` : ''}
               </button>
+              ${s.sessionType === 'live-course' ? `
+              <button onclick="openRunOfShowModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-list-ol text-xs"></i> Run of Show
+              </button>` : ''}
               ${s.status === 'completed' ? `
               <button onclick="issueCerts('${s._id}', this)"
                 class="px-2.5 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
@@ -616,9 +643,282 @@
       return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    /* ── Run of Show: clips + agenda ── */
+    function rosReadOnly() {
+      return !!rosSession && (rosSession.status === 'completed' || rosSession.status === 'cancelled');
+    }
+
+    function openRunOfShowModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) { showToast('Session not found.', '#c0392b'); return; }
+      // Compliance: agenda/clips are live-course only (supervision is forbidden server-side).
+      if (s.sessionType !== 'live-course') {
+        showToast('Run of show is only available for live CE courses.', '#c0392b');
+        return;
+      }
+      rosSession = s;
+      rosAgenda = (s.agenda || []).map(a => ({
+        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
+        title: a.title || '',
+        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
+        prompt: a.prompt || '',
+        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
+      }));
+      renderRunOfShow();
+      document.getElementById('runOfShowModal').style.display = 'flex';
+    }
+
+    function closeRunOfShowModal() {
+      document.getElementById('runOfShowModal').style.display = 'none';
+      rosSession = null;
+      rosAgenda = [];
+    }
+
+    function renderRunOfShow() {
+      document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
+      renderRosClips();
+      renderRosAgenda();
+    }
+
+    function renderRosClips() {
+      const clips = rosSession.clips || [];
+      const ro = rosReadOnly();
+      const list = clips.length
+        ? clips.map((c, i) => `
+          <div class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg">
+            <div class="text-sm text-forest-700">
+              <span class="font-medium text-burgundy-900">${escHtml(c.title)}</span>
+              · ${Number(c.durationSec) || 0}s · clipIndex ${i}
+            </div>
+            ${ro ? '' : `<button onclick="removeClip('${rosSession._id}', ${i})" title="Remove clip"
+              class="text-forest-400 hover:text-red-600 transition-colors"><i class="fas fa-times"></i></button>`}
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No clips registered yet.</p>';
+
+      const addRow = ro ? '' : `
+        <div class="grid grid-cols-12 gap-2 mt-3">
+          <input id="rosClipTitle" type="text" placeholder="Title"
+            class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <input id="rosClipKey" type="text" placeholder="s3Key"
+            class="col-span-4 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <input id="rosClipBucket" type="text" placeholder="s3Bucket (optional)"
+            class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <input id="rosClipDur" type="number" min="1" max="600" placeholder="sec"
+            class="col-span-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <button onclick="addClip('${rosSession._id}')"
+            class="col-span-1 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold transition-colors">Add</button>
+        </div>
+        <p class="text-xs text-forest-500 mt-1">Registers an existing S3 object by key (no file upload here). Duration must be 1–600 seconds.</p>`;
+
+      document.getElementById('rosClipsSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Clips</h3>
+        <div class="space-y-2">${list}</div>
+        ${addRow}`;
+    }
+
+    async function addClip(id) {
+      if (rosReadOnly()) return;
+      const title = document.getElementById('rosClipTitle').value.trim();
+      const s3Key = document.getElementById('rosClipKey').value.trim();
+      const s3Bucket = document.getElementById('rosClipBucket').value.trim();
+      const durationSec = parseInt(document.getElementById('rosClipDur').value, 10);
+      if (!title || !s3Key) { showToast('Clip title and s3Key are required.', '#c0392b'); return; }
+      if (!Number.isFinite(durationSec) || durationSec < 1 || durationSec > 600) {
+        showToast('Clip duration must be between 1 and 600 seconds.', '#c0392b'); return;
+      }
+      const body = { title, s3Key, durationSec };
+      if (s3Bucket) body.s3Bucket = s3Bucket;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API}/${id}/clips`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to add clip');
+        rosSession.clips = d.clips || [];
+        renderRosClips();
+        renderRosAgenda();
+        showToast('Clip registered.', '#284157');
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    async function removeClip(id, idx) {
+      if (rosReadOnly()) return;
+      if (!confirm('Remove this clip? Agenda rows referencing it may need re-selecting.')) return;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API}/${id}/clips/${idx}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to remove clip');
+        rosSession.clips = d.clips || [];
+        syncAgendaFromDom();
+        renderRosClips();
+        renderRosAgenda();
+        showToast('Clip removed.', '#284157');
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    function renderRosAgenda() {
+      const ro = rosReadOnly();
+      const clips = rosSession.clips || [];
+      const rows = rosAgenda.map((a, i) => {
+        const typeOpts = AGENDA_TYPES.map(t =>
+          `<option value="${t}" ${a.type === t ? 'selected' : ''}>${t}</option>`).join('');
+        let clipCell = '';
+        if (a.type === 'clip') {
+          if (!clips.length) {
+            clipCell = `<div class="text-xs text-burgundy-700 bg-burgundy-50 rounded px-2 py-1">Add a clip in the Clips section first.</div>`;
+          } else {
+            const opts = ['<option value="">— select clip —</option>'].concat(
+              clips.map((c, ci) => `<option value="${ci}" ${String(a.clipIndex) === String(ci) ? 'selected' : ''}>${escHtml(c.title)} (${Number(c.durationSec) || 0}s)</option>`)
+            ).join('');
+            clipCell = `<div>
+              <label class="block text-xs text-forest-600 mb-1">Clip</label>
+              <select id="ros_clip_${i}" ${ro ? 'disabled' : ''}
+                class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${opts}</select>
+            </div>`;
+          }
+        }
+        return `<div class="border border-burgundy-100 rounded-lg p-3 space-y-2 bg-stone-50">
+          <div class="grid grid-cols-12 gap-2 items-center">
+            <select id="ros_type_${i}" onchange="onAgendaTypeChange(${i}, this.value)" ${ro ? 'disabled' : ''}
+              class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${typeOpts}</select>
+            <input id="ros_title_${i}" type="text" value="${escHtml(a.title)}" placeholder="Title" ${ro ? 'disabled' : ''}
+              class="col-span-5 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+            <input id="ros_dur_${i}" type="number" min="1" value="${a.durationMin === '' ? '' : escHtml(a.durationMin)}" placeholder="min" ${ro ? 'disabled' : ''}
+              class="col-span-2 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+            <div class="col-span-2 flex items-center justify-end gap-1">
+              ${ro ? '' : `
+              <button onclick="moveAgendaRow(${i},-1)" title="Move up" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-up"></i></button>
+              <button onclick="moveAgendaRow(${i},1)" title="Move down" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-down"></i></button>
+              <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
+            </div>
+          </div>
+          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional)" ${ro ? 'disabled' : ''}
+            class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          ${clipCell}
+        </div>`;
+      }).join('');
+
+      const controls = ro
+        ? `<p class="text-xs text-forest-500">This session is ${escHtml(rosSession.status)} — agenda is read-only.</p>`
+        : `<div class="flex items-center justify-between">
+            <button onclick="addAgendaRow()" class="px-3 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
+              <i class="fas fa-plus text-xs"></i> Add row
+            </button>
+            <button onclick="saveAgenda('${rosSession._id}')" class="px-4 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold transition-colors flex items-center gap-2">
+              <i class="fas fa-save text-xs"></i> Save agenda
+            </button>
+          </div>`;
+
+      document.getElementById('rosAgendaSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Agenda / Run of Show</h3>
+        <div class="space-y-2 mb-3">${rows || '<p class="text-sm text-forest-500">No agenda rows yet.</p>'}</div>
+        ${controls}`;
+    }
+
+    function syncAgendaFromDom() {
+      rosAgenda.forEach((a, i) => {
+        const tEl = document.getElementById('ros_type_' + i);
+        const tiEl = document.getElementById('ros_title_' + i);
+        const dEl = document.getElementById('ros_dur_' + i);
+        const pEl = document.getElementById('ros_prompt_' + i);
+        const cEl = document.getElementById('ros_clip_' + i);
+        if (tEl) a.type = tEl.value;
+        if (tiEl) a.title = tiEl.value;
+        if (dEl) a.durationMin = dEl.value;
+        if (pEl) a.prompt = pEl.value;
+        if (cEl) a.clipIndex = cEl.value;
+        else if (a.type !== 'clip') a.clipIndex = '';
+      });
+    }
+
+    function onAgendaTypeChange(i, val) {
+      syncAgendaFromDom();
+      rosAgenda[i].type = val;
+      if (val !== 'clip') rosAgenda[i].clipIndex = '';
+      renderRosAgenda();
+    }
+
+    function addAgendaRow() {
+      syncAgendaFromDom();
+      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', clipIndex: '' });
+      renderRosAgenda();
+    }
+
+    function moveAgendaRow(i, dir) {
+      syncAgendaFromDom();
+      const j = i + dir;
+      if (j < 0 || j >= rosAgenda.length) return;
+      const tmp = rosAgenda[i];
+      rosAgenda[i] = rosAgenda[j];
+      rosAgenda[j] = tmp;
+      renderRosAgenda();
+    }
+
+    function removeAgendaRow(i) {
+      syncAgendaFromDom();
+      rosAgenda.splice(i, 1);
+      renderRosAgenda();
+    }
+
+    async function saveAgenda(id) {
+      if (rosReadOnly()) return;
+      syncAgendaFromDom();
+      const clipsLen = (rosSession.clips || []).length;
+      const agenda = rosAgenda.map((a, idx) => {
+        const row = { order: idx, type: a.type, title: (a.title || '').trim() };
+        const dur = parseInt(a.durationMin, 10);
+        if (a.durationMin !== '' && Number.isFinite(dur) && dur >= 1) row.durationMin = dur;
+        if ((a.prompt || '').trim()) row.prompt = a.prompt.trim();
+        if (a.type === 'clip' && a.clipIndex !== '' && a.clipIndex != null) {
+          const ci = parseInt(a.clipIndex, 10);
+          if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
+        }
+        return row;
+      });
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        // Persist the run-of-show agenda via PATCH /:id (the route strips
+        // whereby/attendance/registrants/recordings and re-validates the rest).
+        const r = await fetch(`${API}/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agenda }),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to save agenda');
+        rosSession.agenda = (d.session && d.session.agenda) ? d.session.agenda : agenda;
+        showToast('Agenda saved.', '#284157');
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
     /* Close modals on backdrop click */
     document.getElementById('createModal').addEventListener('click', e => {
       if (e.target === document.getElementById('createModal')) closeCreateModal();
+    });
+    document.getElementById('runOfShowModal').addEventListener('click', e => {
+      if (e.target === document.getElementById('runOfShowModal')) closeRunOfShowModal();
     });
 
     /* ── Manage breaks (writes LiveSession.breaks[] that the producer reads) ── */
