@@ -52,6 +52,24 @@ const S = {
     background: "none", border: "none", cursor: "pointer",
     color: C.burgundy, fontSize: 14, lineHeight: 1, padding: 0,
   },
+  approvalCard: {
+    border: `1px solid ${C.border}`, borderRadius: 8, padding: 16,
+    marginBottom: 12, background: C.stone,
+  },
+  smallBtn: {
+    padding: "6px 12px", borderRadius: 6, border: "none",
+    background: C.hunterGreen, color: "#fff", fontSize: 12,
+    fontWeight: 600, cursor: "pointer",
+  },
+  ghostBtn: {
+    padding: "6px 12px", borderRadius: 6, border: `1px solid ${C.border}`,
+    background: "#fff", color: C.burgundy, fontSize: 12,
+    fontWeight: 600, cursor: "pointer",
+  },
+  hourRow: {
+    display: "grid", gridTemplateColumns: "1fr 110px 32px", gap: 8,
+    alignItems: "center", marginBottom: 8,
+  },
   addRow: { display: "flex", gap: 8, marginTop: 8 },
   addInput: {
     flex: 1, padding: "8px 12px", borderRadius: 7,
@@ -79,6 +97,24 @@ function TagList({ items, onRemove }) {
     </div>
   );
 }
+
+// Approving-body enum (mirrors InteractiveCourse.approvals[].body)
+const APPROVAL_BODIES = [
+  "NBCC", "ACEP", "LPCAGA", "GSCSW", "ACA",
+  "NASW", "APA", "ASWB", "AAMFT", "State Board", "Other",
+];
+
+// Delivery format enum (mirrors InteractiveCourse.approvals[].deliveryFormat)
+const DELIVERY_FORMATS = [
+  { value: "asynchronous",        label: "Asynchronous" },
+  { value: "live-webinar",        label: "Live Webinar" },
+  { value: "multi-live-workshop", label: "Multi-Session Live Workshop" },
+  { value: "in-person-single",    label: "In-Person" },
+  { value: "in-person-conference",label: "In-Person Conference" },
+];
+
+// Approval status enum (mirrors InteractiveCourse.approvals[].status)
+const APPROVAL_STATUSES = ["approved", "pending", "expired", "not-applied"];
 
 function AddItemRow({ placeholder, onAdd }) {
   const [value, setValue] = useState("");
@@ -125,6 +161,37 @@ export default function MetadataTab() {
   }
 
   const targetWordCount = (state.ceHours || 0) * 6000;
+
+  // ── Approvals authoring (round-trips to InteractiveCourse.approvals[]) ──
+  const approvals = state.approvals || [];
+
+  function setApprovals(next) {
+    setMeta("approvals", next);
+  }
+  function addApproval() {
+    setApprovals([
+      ...approvals,
+      { body: "Other", providerNumber: "", providerName: "", status: "approved", deliveryFormat: "asynchronous", hourBreakdown: [] },
+    ]);
+  }
+  function removeApproval(i) {
+    setApprovals(approvals.filter((_, idx) => idx !== i));
+  }
+  function updateApproval(i, patch) {
+    setApprovals(approvals.map((a, idx) => (idx === i ? { ...a, ...patch } : a)));
+  }
+  function addHourRow(i) {
+    const hb = approvals[i].hourBreakdown || [];
+    updateApproval(i, { hourBreakdown: [...hb, { label: "", hours: 0 }] });
+  }
+  function updateHourRow(i, hi, patch) {
+    const hb = (approvals[i].hourBreakdown || []).map((h, idx) => (idx === hi ? { ...h, ...patch } : h));
+    updateApproval(i, { hourBreakdown: hb });
+  }
+  function removeHourRow(i, hi) {
+    const hb = (approvals[i].hourBreakdown || []).filter((_, idx) => idx !== hi);
+    updateApproval(i, { hourBreakdown: hb });
+  }
 
   return (
     <div style={{ maxWidth: 820, margin: "0 auto" }}>
@@ -286,6 +353,107 @@ export default function MetadataTab() {
           </div>
         </div>
         <p style={S.hint}>Provider info is set at the platform level and cannot be changed per course.</p>
+      </div>
+
+      {/* ── Approvals (per-body approval letters) ── */}
+      <div style={S.section}>
+        <div style={S.sectionTitle}>Approvals</div>
+        <p style={{ ...S.hint, marginTop: 0, marginBottom: 16 }}>
+          Add one row per approving body. Partner-owned courses issue certificates
+          under these approvals (their own provider numbers) — not the platform&apos;s NBCC #7760.
+        </p>
+
+        {approvals.length === 0 && (
+          <p style={{ fontSize: 13, color: C.textMuted, marginBottom: 12 }}>No approvals added yet.</p>
+        )}
+
+        {approvals.map((appr, i) => (
+          <div key={i} style={S.approvalCard}>
+            <div style={S.row3}>
+              <div>
+                <label style={S.label}>Approving Body</label>
+                <select
+                  style={S.select}
+                  value={appr.body || "Other"}
+                  onChange={e => updateApproval(i, { body: e.target.value })}
+                >
+                  {APPROVAL_BODIES.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={S.label}>Status</label>
+                <select
+                  style={S.select}
+                  value={appr.status || "approved"}
+                  onChange={e => updateApproval(i, { status: e.target.value })}
+                >
+                  {APPROVAL_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label style={S.label}>Delivery Format</label>
+                <select
+                  style={S.select}
+                  value={appr.deliveryFormat || "asynchronous"}
+                  onChange={e => updateApproval(i, { deliveryFormat: e.target.value })}
+                >
+                  {DELIVERY_FORMATS.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div style={S.row2}>
+              <div>
+                <label style={S.label}>Provider Number</label>
+                <input
+                  style={S.input}
+                  value={appr.providerNumber || ""}
+                  onChange={e => updateApproval(i, { providerNumber: e.target.value })}
+                  placeholder="e.g. 1234 or A-0426-564"
+                />
+              </div>
+              <div>
+                <label style={S.label}>Provider Name</label>
+                <input
+                  style={S.input}
+                  value={appr.providerName || ""}
+                  onChange={e => updateApproval(i, { providerName: e.target.value })}
+                  placeholder="e.g. American Psychological Association"
+                />
+              </div>
+            </div>
+
+            <label style={S.label}>Hour Breakdown</label>
+            {(appr.hourBreakdown || []).map((h, hi) => (
+              <div key={hi} style={S.hourRow}>
+                <input
+                  style={S.input}
+                  value={h.label || ""}
+                  onChange={e => updateHourRow(i, hi, { label: e.target.value })}
+                  placeholder="e.g. ethics"
+                />
+                <input
+                  type="number" min="0" step="0.5"
+                  style={S.input}
+                  value={h.hours ?? 0}
+                  onChange={e => updateHourRow(i, hi, { hours: Number(e.target.value) })}
+                  placeholder="Hours"
+                />
+                <button
+                  style={S.tagRemove}
+                  onClick={() => removeHourRow(i, hi)}
+                  aria-label="Remove hour row"
+                >×</button>
+              </div>
+            ))}
+            <div style={S.addRow}>
+              <button style={S.smallBtn} onClick={() => addHourRow(i)}>+ Hour Type</button>
+              <button style={S.ghostBtn} onClick={() => removeApproval(i)}>Remove Approval</button>
+            </div>
+          </div>
+        ))}
+
+        <button style={S.addBtn} onClick={addApproval}>+ Add Approval</button>
       </div>
 
     </div>
