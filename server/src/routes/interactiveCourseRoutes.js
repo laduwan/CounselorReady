@@ -39,6 +39,7 @@ async function findCourseByIdOrSlug(param) {
 const FREE_COURSES_PER_MONTH = 4;   // free plan: 4 courses/month
 const FREE_MAX_COURSE_HOURS  = 1;   // free plan covers 1-CE-hour courses only
 const TRIAL_COURSES_TOTAL    = 2;   // no-card trial: 2 one-CE courses, lifetime
+const BASIC_MAX_COURSE_HOURS = 3;   // basic plan: unlimited courses up to 3 CE hours
 
 /**
  * Strip sensitive content from course for preview/unauthenticated users.
@@ -110,6 +111,18 @@ function freeTierDecision(user, course) {
   return { allowed: true, code: 'FREE_OK' };
 }
 
+// True if an active PAID plan covers THIS course. Accounts for the basic-tier
+// hour cap: basic gets unlimited courses up to BASIC_MAX_COURSE_HOURS CE hours;
+// all other paid plans (starter/professional/vip) are unlimited. free → false.
+function planCoversCourse(plan, course) {
+  if (plan === 'free') return false;
+  if (plan === 'basic') {
+    const hrs = course.ceHours || course.ceuHours || 1;
+    return hrs <= BASIC_MAX_COURSE_HOURS;
+  }
+  return true;
+}
+
 // True if user already has paid/admin/free-course access (no slot needed).
 function hasPaidOrFreeAccess(user, course) {
   if (!user) return false;
@@ -121,7 +134,7 @@ function hasPaidOrFreeAccess(user, course) {
   const status = user.subscription?.status || 'free';
   const plan   = user.subscription?.plan   || 'free';
   // trial is NOT unlimited — it routes through freeTierDecision (2-course / 1-hr caps)
-  return ['active','lifetime'].includes(status) && plan !== 'free';
+  return ['active','lifetime'].includes(status) && planCoversCourse(plan, course);
 }
 
 // Atomically persist consumption of one monthly free slot (month-aware).
@@ -171,7 +184,7 @@ async function gateContent(courseObj, user) {
   const subStatus = user.subscription?.status || 'free';
   const isActiveSub = ['active', 'trial', 'lifetime'].includes(subStatus);
 
-  if (isActiveSub && subPlan !== 'free') return courseObj;
+  if (isActiveSub && planCoversCourse(subPlan, courseObj)) return courseObj;
 
   // Free-tier user on a paid course: full content ONLY if already enrolled.
   // Enrollment (POST /enroll or first GET /progress) is the single chokepoint that
@@ -497,7 +510,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
 
     if (isAdmin || isFree || hasPurchased) {
       accessGranted = true;
-    } else if (isActiveSub && subPlan !== 'free') {
+    } else if (isActiveSub && planCoversCourse(subPlan, course)) {
       accessGranted = true;
     } else {
       const decision = freeTierDecision(user, course);
