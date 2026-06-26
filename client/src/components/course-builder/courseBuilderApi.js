@@ -41,6 +41,9 @@ async function handleResponse(res) {
  */
 export async function saveCourse(state) {
   const payload = buildSavePayload(state, false);
+  // approvals[] must survive the round-trip — make it explicit so the per-body
+  // approval data is never silently dropped on save (partner cert path depends on it).
+  if (Array.isArray(state.approvals)) payload.approvals = state.approvals;
   const res = await fetch(`${API_BASE}/course-builder/save`, {
     method: "POST",
     headers: authHeaders(),
@@ -58,6 +61,8 @@ export async function saveCourse(state) {
  */
 export async function publishCourse(state) {
   const payload = buildSavePayload(state, true);
+  // approvals[] must survive the round-trip — see saveCourse note above.
+  if (Array.isArray(state.approvals)) payload.approvals = state.approvals;
   const res = await fetch(`${API_BASE}/course-builder/publish`, {
     method: "POST",
     headers: authHeaders(),

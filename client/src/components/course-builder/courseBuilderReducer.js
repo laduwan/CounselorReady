@@ -27,6 +27,12 @@ export const INITIAL_STATE = {
   objectives: [],
   targetAudience: [],
 
+  // Multi-approval-body authoring (partner courses issue under their own body).
+  // Each entry: { body, providerNumber, providerName, status, deliveryFormat,
+  //               hourBreakdown: [{ label, hours }] }. Edited in MetadataTab and
+  // round-tripped to InteractiveCourse.approvals[] via the save payload.
+  approvals: [],
+
   // ACEP — hardcoded per platform spec
   instructor:     ACEP_PROVIDER.name,
   approvingBody:  ACEP_PROVIDER.approvalBody,
