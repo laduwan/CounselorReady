@@ -69,7 +69,7 @@
     <section class="mb-8">
       <h2 class="text-xl font-semibold text-burgundy-900 mb-6 text-center">Choose Your Plan</h2>
       
-      <div class="grid md:grid-cols-4 gap-6">
+      <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
         
         <!-- Free Plan -->
         <div class="bg-white rounded-xl border border-hunter-200 shadow-sm p-6">
@@ -100,6 +100,38 @@
           </ul>
           <button onclick="selectPlan('free')" class="w-full py-2 border border-hunter-300 text-hunter-700 rounded-lg hover:bg-hunter-50 transition-colors font-medium" id="freeBtn">
             Current Plan
+          </button>
+        </div>
+
+        <!-- Basic Plan -->
+        <div class="bg-white rounded-xl border border-hunter-300 shadow-sm p-6">
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Basic</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$15</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Unlimited 1–3 hr CE courses</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Full credential tracking
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> AI certificate scanning
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Digital certificates
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> 4+ hour &amp; certification courses
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> Multi-state tracking
+            </li>
+          </ul>
+          <button onclick="selectPlan('basic')" class="w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold" id="basicBtn">
+            Upgrade Now
           </button>
         </div>
 
@@ -333,6 +365,7 @@
     // Plan pricing - 4-tier model
     const PLANS = {
       free: { name: 'Free', price: 0, interval: 'month', priceId: null, maxCourseHours: 4, maxStates: 1, consultsPerQuarter: 0 },
+      basic: { name: 'Basic', price: 15, interval: 'month', priceId: 'price_1TmXydBV8IIVTFOINugDavAD', maxCourseHours: 3, maxStates: 1, consultsPerQuarter: 0 },
       starter: { name: 'Starter', price: 19.99, interval: 'month', priceId: 'price_1TiMorBV8IIVTFOIosEIoMCn', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       professional: { name: 'Professional', price: 29.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIoxYzFOcd', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIxdJ5FQ0q', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 },
@@ -477,6 +510,7 @@
 
     function updatePlanButtons(currentPlan) {
       const freeBtn = document.getElementById('freeBtn');
+      const basicBtn = document.getElementById('basicBtn');
       const starterBtn = document.getElementById('starterBtn');
       const proBtn = document.getElementById('proBtn');
       const vipBtn = document.getElementById('vipBtn');
@@ -498,8 +532,12 @@
       freeBtn.textContent = currentPlan === 'free' ? 'Current Plan' : 'Downgrade';
       freeBtn.disabled = currentPlan === 'free';
       
+      // Basic
+      setButton(basicBtn, currentPlan === 'basic', 'Upgrade Now',
+        'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold');
+
       // Starter
-      setButton(starterBtn, currentPlan === 'starter', 'Upgrade Now', 
+      setButton(starterBtn, currentPlan === 'starter', 'Upgrade Now',
         'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold');
       
       // Professional
