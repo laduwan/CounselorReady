@@ -12,8 +12,10 @@ import Certificate from '../models/Certificate.js';
 import { protect } from '../middleware/auth.js';
 import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { generateCertificate, generateCertificateNumber } from '../utils/certificate.js';
+import { generatePartnerCertificate, buildPartnerApprovalBlock } from '../utils/partnerCertificate.js';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
+import Partner from '../models/Partner.js';
 import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import logger from '../utils/logger.js';
@@ -442,11 +444,25 @@ router.post('/generate/:courseId', protect, requireAddon('certTracking'), async 
 
     logger.info({ courseId, userId, requestId: req.requestId }, 'Certificate generation request');
 
+    // Get course and verify completion (try both legacy and interactive models)
+    let course = await Course.findById(courseId);
+    if (!course) {
+      course = await InteractiveCourse.findById(courseId);
+    }
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+
+    // Partner-owned courses issue under the partner path (source:'partner');
+    // platform courses under 'platform'. Dedup on the matching source so the
+    // two paths never collide.
+    const certSource = course.partnerId ? 'partner' : 'platform';
+
     // Check if certificate already exists
     const existingCert = await Certificate.findOne({
       userId,
       courseId,
-      source: 'platform'
+      source: certSource
     });
 
     if (existingCert) {
@@ -455,15 +471,6 @@ router.post('/generate/:courseId', protect, requireAddon('certTracking'), async 
         error: 'Certificate already exists for this course',
         certificate: existingCert
       });
-    }
-
-    // Get course and verify completion (try both legacy and interactive models)
-    let course = await Course.findById(courseId);
-    if (!course) {
-      course = await InteractiveCourse.findById(courseId);
-    }
-    if (!course) {
-      return res.status(404).json({ success: false, error: 'Course not found' });
     }
 
     const progress = await CourseProgress.findOne({ userId, courseId });
@@ -488,6 +495,101 @@ router.post('/generate/:courseId', protect, requireAddon('certTracking'), async 
     // Generate certificate number and verification code
     const certNumber = await generateCertificateNumber();
     const verificationCode = certNumber.replace('CR-', '').toLowerCase();
+
+    // ── PARTNER-OWNED COURSE → separate cert path (never #7760) ──
+    // Branches on course ownership. Partner courses issue under their OWN
+    // approving body (from course.approvals[]); the platform #7760 path below
+    // is left untouched.
+    if (course.partnerId) {
+      const partner = await Partner.findById(course.partnerId).lean();
+      const selectedBody = user?.profile?.preferredApprovalBody || null;
+      const block = buildPartnerApprovalBlock(
+        course.approvals, selectedBody, course.ceHours || course.ceuHours || 0
+      );
+
+      const pdfBuffer = await generatePartnerCertificate({
+        holderName,
+        courseName: course.title,
+        completionDate: progress.completedAt || new Date(),
+        ceHours: course.ceHours || course.ceuHours || 0,
+        certificateNumber: certNumber,
+        verificationCode,
+        partnerName: partner?.branding?.companyName || partner?.name || 'Provider',
+        primaryColor: partner?.branding?.primaryColor || '#6B1D34',
+        accentColor: partner?.branding?.accentColor || '#D4A855',
+        logoUrl: partner?.branding?.logoUrl || null,
+        approvalRows: block.rows,
+        completionOnly: !!block.completionOnly,
+      });
+
+      // Upload to Cloudinary (mirror the platform upload)
+      const uploadResult = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          {
+            folder: `certificates/${userId}`,
+            resource_type: 'raw',
+            public_id: `cert_${certNumber.replace(/[^a-zA-Z0-9]/g, '_')}`,
+            format: 'pdf'
+          },
+          (error, result) => error ? reject(error) : resolve(result)
+        );
+        stream.end(pdfBuffer);
+      });
+
+      // Which approval (if any) backed this certificate — drives the stored
+      // approving-body metadata. Never default to NBCC/#7760 for partners.
+      const matched = Array.isArray(course.approvals)
+        ? course.approvals.find(a => a.body === selectedBody) || course.approvals.find(a => a.status === 'approved')
+        : null;
+
+      const certificate = await Certificate.create({
+        userId,
+        courseId,
+        title: course.title,
+        provider: partner?.branding?.companyName || partner?.name || 'Provider',
+        completionDate: progress.completedAt || new Date(),
+        ceHours: course.ceHours || course.ceuHours || 0,
+        category: course.categories?.[0] || 'General',
+        nbccApproved: matched?.body === 'NBCC',
+        approvingBody: matched?.body || null,
+        approvalNumber: matched?.providerNumber || null,
+        acepNumber: null,
+        certificateNumber: certNumber,
+        fileUrl: uploadResult.secure_url,
+        fileKey: uploadResult.public_id,
+        cloudinaryPublicId: uploadResult.public_id,
+        source: 'partner',
+        verificationCode,
+        verificationUrl: `https://counselorready.com/verify/${verificationCode}`
+      });
+
+      // Update progress with certificate reference
+      progress.certificateId = certificate._id;
+      progress.certificateIssuedAt = new Date();
+      progress.status = 'certified';
+      await progress.save();
+
+      // Notify admin of certificate generation
+      logActivity(ACTIVITY_TYPES.CERTIFICATE_GENERATED, {
+        courseName: course.title,
+        certificateNumber: certNumber,
+        ceHours: course.ceHours || course.ceuHours || 0
+      }, {
+        userId,
+        userName: holderName,
+        userEmail: user?.email || ''
+      }).catch(() => {});
+
+      return res.json({
+        success: true,
+        certificate: {
+          id: certificate._id,
+          certificateNumber: certNumber,
+          fileUrl: uploadResult.secure_url,
+          verificationCode
+        }
+      });
+    }
 
     // Build customization from course settings
     const customization = course.settings?.certificateCustomization || {};

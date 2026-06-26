@@ -155,7 +155,7 @@ const certificateSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['upload', 'platform', 'import'],
+    enum: ['upload', 'platform', 'import', 'partner'],
     default: 'upload'
   },
   // CE Broker integration
