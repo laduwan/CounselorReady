@@ -439,8 +439,9 @@ router.put('/my-branding', protect, requirePartnerAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Partner not found' });
     }
 
-    const { logoUrl, primaryColor, companyName, tagline, colorScheme, accentColor, customDomain } = req.body;
+    const { logoUrl, certFooter, primaryColor, companyName, tagline, colorScheme, accentColor, customDomain } = req.body;
     if (logoUrl !== undefined) partner.branding.logoUrl = logoUrl;
+    if (certFooter !== undefined) partner.branding.certFooter = certFooter;
     if (primaryColor !== undefined) partner.branding.primaryColor = primaryColor;
     if (companyName !== undefined) partner.branding.companyName = companyName;
     if (tagline !== undefined) partner.branding.tagline = tagline;

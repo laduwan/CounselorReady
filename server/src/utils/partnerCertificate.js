@@ -158,8 +158,11 @@ export async function generatePartnerCertificate(data) {
     year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // Fetch the partner logo (if any) up front — image embedding is synchronous.
-  const logoBuffer = await fetchLogoBuffer(data.logoUrl);
+  // Resolve the partner logo (if any) up front — image embedding is synchronous.
+  // Prefer a pre-fetched/uploaded buffer; fall back to fetching the URL.
+  const logoBuffer = (data.logoBuffer && Buffer.isBuffer(data.logoBuffer))
+    ? data.logoBuffer
+    : await fetchLogoBuffer(data.logoUrl);
 
   return new Promise((resolve, reject) => {
     try {
@@ -200,23 +203,25 @@ export async function generatePartnerCertificate(data) {
       drawDiamond(doc, dCorner,     H - dCorner, diamondSize, accentColor);
       drawDiamond(doc, W - dCorner, H - dCorner, diamondSize, accentColor);
 
-      // 4. Partner logo watermark — centered behind body content at low opacity
+      // 4/5. HEADER — partner logo (if present) + partner name.
+      // A real header logo (letterhead mark), not a watermark. When a logo is
+      // present the partner name tucks beneath it at a smaller size; otherwise
+      // the name carries the header on its own.
       if (logoBuffer) {
-        const wmSize = 220;
+        const logoW = 170, logoH = 34;
         try {
-          doc.opacity(0.10)
-             .image(logoBuffer, (W - wmSize) / 2, (H - wmSize) / 2 - 10, {
-               fit: [wmSize, wmSize], align: 'center', valign: 'center'
-             })
-             .opacity(1);
-        } catch { /* bad image data — skip watermark */ }
+          doc.image(logoBuffer, (W - logoW) / 2, 40, {
+            fit: [logoW, logoH], align: 'center', valign: 'center'
+          });
+        } catch { /* bad image data — skip logo */ }
+        doc.font('Times-BoldItalic').fontSize(13).fillColor(HUNTER_GREEN)
+           .text(partnerName, 0, 76, { align: 'center', width: W });
+      } else {
+        doc.font('Times-BoldItalic').fontSize(22).fillColor(HUNTER_GREEN)
+           .text(partnerName, 0, 58, { align: 'center', width: W });
       }
 
-      // 5. HEADER — partner name (HUNTER GREEN bold-italic)
-      doc.font('Times-BoldItalic').fontSize(22).fillColor(HUNTER_GREEN)
-         .text(partnerName, 0, 58, { align: 'center', width: W });
-
-      // Ornamental rule under the partner name (no NBCC credential line)
+      // Ornamental rule under the header (no NBCC credential line)
       drawOrnamentalRule(doc, cx, 92, 180, accentColor);
 
       // 6. HEADLINE
@@ -259,6 +264,24 @@ export async function generatePartnerCertificate(data) {
       cursor += 18;
       doc.font('Helvetica-Oblique').fontSize(9).fillColor(primaryColor)
          .text(deliveryLabel, 0, cursor, { align: 'center', width: W });
+
+      // 9b. LEARNING OBJECTIVES — ACEP-style; suppressed on completion-only certs
+      // (no CE claim → no objectives). Mirrors the platform cert's objectives block.
+      const objectives = Array.isArray(data.objectives) ? data.objectives.slice(0, 5) : [];
+      if (!completionOnly && objectives.length) {
+        let objY = doc.y + 24;
+        doc.font('Times-Italic').fontSize(13).fillColor(HUNTER_GREEN)
+           .text('Learning Objectives', 0, objY, { align: 'center', width: W });
+        objY = doc.y + 8;
+        const objW = W - 260;
+        const objX = (W - objW) / 2;
+        doc.font('Helvetica').fontSize(9).fillColor(TEXT_GRAY);
+        objectives.forEach((o) => {
+          const txt = `•  ${String(o).trim()}`;
+          doc.text(txt, objX, objY, { width: objW, align: 'left', lineGap: 1 });
+          objY = doc.y + 4;
+        });
+      }
 
       // ─── BOTTOM ROW — approval block (LEFT) | serial bar (CENTER) ───
       const bottomY = H - 188;
@@ -315,38 +338,30 @@ export async function generatePartnerCertificate(data) {
              width: apprW, align: 'center'
            });
       } else {
-        approvalRows.forEach((appr) => {
-          const body = String(appr.body || '').trim();
-          const code = String(appr.code || '').trim();
-          const hrs  = Number(appr.hours) || 0;
-          const cat  = String(appr.category || '').trim();
-          if (!body) return;
+        // Compact, fixed-height summary (body · code / total hours / category mix)
+        // so a multi-category breakdown never grows into the footer band.
+        const first = approvalRows[0] || {};
+        const body  = String(first.body || '').trim();
+        const code  = String(first.code || '').trim();
+        const totalHrs = approvalRows.reduce((s, r) => s + (Number(r.hours) || 0), 0);
+        const catParts = approvalRows
+          .filter(r => r.category)
+          .map(r => `${Number(r.hours) || 0} ${r.category}`);
 
-          // Body + code header line
+        if (body) {
           doc.font('Helvetica-Bold').fontSize(8.5).fillColor(NAVY)
-             .text(code ? `${body}  ·  ${code}` : body, apprX, apprCursor, {
-               width: apprW, align: 'center'
-             });
-          apprCursor += 11;
-
-          if (hrs) {
-            doc.font('Helvetica-Bold').fontSize(9).fillColor(primaryColor)
-               .text(`${hrs} CE Hour${hrs !== 1 ? 's' : ''}`, apprX, apprCursor, {
-                 width: apprW, align: 'center'
-               });
-            apprCursor += 12;
-          }
-
-          if (cat) {
-            doc.font('Helvetica-Oblique').fontSize(8).fillColor(TEXT_GRAY)
-               .text(cat, apprX, apprCursor, {
-                 width: apprW, align: 'center', lineBreak: true
-               });
-            apprCursor = doc.y + 6;
-          } else {
-            apprCursor += 4;
-          }
-        });
+             .text(code ? `${body}  ·  ${code}` : body, apprX, apprCursor, { width: apprW, align: 'center' });
+          apprCursor += 12;
+        }
+        if (totalHrs) {
+          doc.font('Helvetica-Bold').fontSize(9).fillColor(primaryColor)
+             .text(`${totalHrs} CE Hour${totalHrs !== 1 ? 's' : ''}`, apprX, apprCursor, { width: apprW, align: 'center' });
+          apprCursor += 12;
+        }
+        if (catParts.length) {
+          doc.font('Helvetica-Oblique').fontSize(8).fillColor(TEXT_GRAY)
+             .text(catParts.join('  ·  '), apprX, apprCursor, { width: apprW, align: 'center' });
+        }
       }
 
       // ── RIGHT COLUMN: issued-by (partner) ──
@@ -364,10 +379,15 @@ export async function generatePartnerCertificate(data) {
       doc.font('Times-Italic').fontSize(9).fillColor(MUTED_GRAY)
          .text('Approved Provider', sigColX, bottomY + 70, { width: sigColW, align: 'center' });
 
-      // 14. Powered-by line — replaces the platform's NBCC disclaimer entirely.
-      const poweredY = H - 66;
-      doc.font('Helvetica').fontSize(7).fillColor(MUTED_GRAY)
-         .text(POWERED_BY, 60, poweredY, { width: W - 120, align: 'center' });
+      // 13b. Partner custom footer (license disclaimer / address / contact /
+      // board-approval statement) — partner-set, above the verify line.
+      const certFooter = String(data.certFooter || '').trim();
+      if (certFooter) {
+        doc.font('Helvetica').fontSize(7.5).fillColor(TEXT_GRAY)
+           .text(certFooter, 80, H - 80, { width: W - 160, align: 'center', lineGap: 1 });
+      }
+
+      // 14. White-label: no "Powered by CounselorReady" line on partner certs.
 
       // 15. Verify URL — bottom center, inside cert frame
       doc.font('Helvetica-Bold').fontSize(7).fillColor(NAVY)

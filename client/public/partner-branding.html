@@ -76,6 +76,11 @@
             <input id="logoUrl" class="fld" placeholder="https://.../logo.png" oninput="syncPreview()">
             <p class="text-xs text-stone-400 mt-1">Paste a hosted image URL (PNG/SVG). Recommended height ~48px.</p>
           </div>
+          <div>
+            <label class="lbl" for="certFooter">Certificate footer</label>
+            <textarea id="certFooter" class="fld" rows="2" placeholder="Business name, address, license disclaimer…"></textarea>
+            <p class="text-xs text-stone-400 mt-1">Shown at the bottom of your certificates — e.g. business name, address, license disclaimer. Keep to ~2 lines.</p>
+          </div>
         </div>
 
         <div class="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
@@ -222,6 +227,7 @@
         document.getElementById('companyName').value = b.companyName || partner.name || '';
         document.getElementById('tagline').value = b.tagline || '';
         document.getElementById('logoUrl').value = b.logoUrl || '';
+        document.getElementById('certFooter').value = b.certFooter || '';
         document.getElementById('primaryColor').value = b.primaryColor || '#6B1D34';
         document.getElementById('primaryHex').value = b.primaryColor || '#6B1D34';
         document.getElementById('accentColor').value = b.accentColor || '#D4A855';
@@ -283,6 +289,7 @@
         companyName: document.getElementById('companyName').value.trim(),
         tagline: document.getElementById('tagline').value.trim(),
         logoUrl: document.getElementById('logoUrl').value.trim(),
+        certFooter: document.getElementById('certFooter').value.trim(),
         primaryColor: document.getElementById('primaryHex').value.trim(),
         accentColor: document.getElementById('accentHex').value.trim(),
         customDomain: document.getElementById('customDomain').value.trim().toLowerCase()
