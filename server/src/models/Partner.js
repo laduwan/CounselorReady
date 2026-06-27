@@ -24,6 +24,9 @@ const partnerSchema = new mongoose.Schema({
   // Branding
   branding: {
     logoUrl: { type: String },
+    // Partner-set certificate footer (license disclaimer / address / contact /
+    // board-approval statement). Rendered above the verify line on partner certs.
+    certFooter: { type: String },
     primaryColor: { type: String, default: '#6B1D34' },
     companyName: { type: String },
     tagline: { type: String },

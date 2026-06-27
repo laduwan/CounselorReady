@@ -518,6 +518,8 @@ router.post('/generate/:courseId', protect, requireAddon('certTracking'), async 
         primaryColor: partner?.branding?.primaryColor || '#6B1D34',
         accentColor: partner?.branding?.accentColor || '#D4A855',
         logoUrl: partner?.branding?.logoUrl || null,
+        objectives: course.objectives,
+        certFooter: partner?.branding?.certFooter,
         approvalRows: block.rows,
         completionOnly: !!block.completionOnly,
       });
