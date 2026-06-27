@@ -61,7 +61,11 @@ const liveSessionSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   presenter: {
     name: { type: String, default: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH' },
-    credentials: String
+    credentials: String,
+    // Camera-off avatar (passed to Whereby as avatarUrl). Set via env so the URL
+    // is changeable without a code deploy. Whereby requires an https, square
+    // png/jpg (<=64x64) Cloudinary URL with NO query params.
+    photoUrl: { type: String, default: process.env.LIVE_PRESENTER_AVATAR_URL || '' }
   },
 
   sessionType: {
