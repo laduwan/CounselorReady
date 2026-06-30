@@ -26,16 +26,16 @@ To customize: edit this file before triggering. Swap titles, change CE hours, re
 
 | # | Status | Code | Title | CE | Category |
 |---|--------|------|-------|---:|----------|
-| 1 | [ ] | CR-ETH-501 | Navigating Dual Relationships in Rural and Small Community Practice | 3 | ethics |
-| 2 | [ ] | CR-ETH-502 | Ethical Use of Technology in Clinical Practice | 2 | ethics |
-| 3 | [ ] | CR-ETH-503 | Mandated Reporting: Gray Areas and Clinical Decision-Making | 3 | ethics |
-| 4 | [ ] | CR-CRS-301 | Suicide Safety Planning: From Assessment to Lethal Means Counseling | 3 | clinical |
-| 5 | [ ] | CR-CRS-302 | Crisis De-Escalation Techniques for Outpatient Clinicians | 2 | clinical |
-| 6 | [ ] | CR-CRS-303 | Threat Assessment in Clinical Settings: Duty to Warn and Protect | 3 | ethics |
-| 7 | [ ] | CR-TRM-501 | Complex PTSD: Diagnosis, Case Conceptualization, and Treatment | 3 | clinical |
-| 8 | [ ] | CR-TRM-502 | Vicarious Trauma and Compassion Fatigue in Clinical Practice | 2 | clinical |
-| 9 | [ ] | CR-TRM-503 | Trauma-Informed Assessment: Beyond the ACE Score | 2 | clinical |
-| 10 | [ ] | CR-TRM-504 | EMDR Fundamentals for the Curious Clinician | 2 | clinical |
+| 1 | [G] | CR-ETH-501 | Navigating Dual Relationships in Rural and Small Community Practice | 3 | ethics |
+| 2 | [G] | CR-ETH-502 | Ethical Use of Technology in Clinical Practice | 2 | ethics |
+| 3 | [G] | CR-ETH-503 | Mandated Reporting: Gray Areas and Clinical Decision-Making | 3 | ethics |
+| 4 | [G] | CR-CRS-301 | Suicide Safety Planning: From Assessment to Lethal Means Counseling | 3 | clinical |
+| 5 | [G] | CR-CRS-302 | Crisis De-Escalation Techniques for Outpatient Clinicians | 2 | clinical |
+| 6 | [G] | CR-CRS-303 | Threat Assessment in Clinical Settings: Duty to Warn and Protect | 3 | ethics |
+| 7 | [G] | CR-TRM-501 | Complex PTSD: Diagnosis, Case Conceptualization, and Treatment | 3 | clinical |
+| 8 | [G] | CR-TRM-502 | Vicarious Trauma and Compassion Fatigue in Clinical Practice | 2 | clinical |
+| 9 | [G] | CR-TRM-503 | Trauma-Informed Assessment: Beyond the ACE Score | 2 | clinical |
+| 10 | [G] | CR-TRM-504 | EMDR Fundamentals for the Curious Clinician | 2 | clinical |
 
 **Week 1 total: 25 CE**
 
