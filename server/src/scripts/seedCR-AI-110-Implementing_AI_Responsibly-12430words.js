@@ -632,10 +632,11 @@ function validate(course){
   if(course.maxAttempts!==3) errors.push('maxAttempts≠3');
   if((course.references||[]).length<15) errors.push(`Refs: ${(course.references||[]).length}<15`);
   else console.log(`✅ Refs: ${course.references.length}`);
-  return{errors,warnings};
+  return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings}=validate(COURSE);
+  const{errors,warnings,total}=validate(COURSE);
+  COURSE.wordCount=total;
   warnings.forEach(w=>console.warn('⚠️',w));
   if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
   if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
