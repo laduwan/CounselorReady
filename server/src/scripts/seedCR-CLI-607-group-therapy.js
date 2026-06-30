@@ -372,17 +372,89 @@ const COURSE = {
         {
           type: 'text',
           content: `<h2>Core Facilitation Skills</h2>
-<p>Effective group facilitation requires a specific skill set distinct from individual therapy. Many skilled individual therapists initially struggle in group because their habitual responses — forming a dyadic relationship, providing extensive individual reflection — work against the group's development.</p>
-<p><strong>Activating member-to-member interaction:</strong> The leader's primary facilitation goal in process groups is to increase direct member-to-member interaction rather than channeling everything through themselves. Techniques:</p>
+<p>Effective group facilitation requires a specific skill set distinct from individual therapy. Many skilled individual therapists initially struggle in group because their habitual responses — forming a dyadic relationship, providing extensive individual reflection, moving sequentially from person to person — work against the group's development. Group facilitation requires learning to think simultaneously about multiple relationships, the group-as-a-whole, and the individual member — all while attending to process rather than just content.</p>
+
+<h3>Activating Member-to-Member Interaction</h3>
+<p>The leader's primary facilitation goal in process groups is to increase direct member-to-member interaction rather than channeling everything through themselves. When all communication routes through the leader, the group functions as a collection of dyadic individual therapy relationships with an audience — which loses most of what makes group distinctive. The social microcosm, the interpersonal learning, the therapeutic factors of cohesiveness and altruism — all depend on genuine member-to-member engagement.</p>
+<p>Techniques for activating member-to-member interaction:</p>
 <ul>
-<li>"Who in the group can respond to what Sarah just shared?"</li>
-<li>"Does anyone have a reaction to what just happened between Marcus and Diane?"</li>
-<li>[Silence] — allowing members to take up space rather than filling silence with leader commentary</li>
+<li>"Who in the group can respond to what Sarah just shared?" — invites the group rather than providing leader response</li>
+<li>"Does anyone have a reaction to what just happened between Marcus and Diane?" — opens a dyadic exchange to the full group</li>
+<li>"Before I say anything, I'm curious what the group is experiencing right now." — deliberately delays leader commentary to create space for members</li>
+<li>Looking at the group (not at the speaking member) while someone is talking — signaling with your body that others are expected to respond</li>
+<li>Sitting with silence rather than filling it — allowing members to take up space</li>
 </ul>
-<p><strong>Process commentary:</strong> Group process refers to the how of what's happening — the relational and emotional dynamics beneath the content. "We've been talking for 20 minutes about jobs and it feels like we're all working very hard to stay on safe ground. I wonder what's here that feels unsafe to approach?" Process commentary invites the group to look at itself — which is often where the richest work happens.</p>
-<p><strong>Protecting members while maintaining safety:</strong> A member who is being piled on by the group, or who is being shamed, needs the leader to intervene. "Wait — I want to slow down here. I'm noticing several people coming at Marcus from the same direction. Let's check in with Marcus about how he's experiencing this."</p>
-<p><strong>Managing self-disclosure:</strong> Leader self-disclosure in group is a calibrated tool, not a norm. Transparent sharing of immediate reactions ("I notice I'm feeling something protective when this topic comes up — I wonder if others are too") can be powerful. Personal narrative disclosure is rarely appropriate.</p>
-<p><strong>Linking:</strong> Explicitly connecting themes across members and across sessions. "What just happened between you and Diane reminds me of what you described with your sister last week." Linking builds cohesion, deepens meaning, and helps members see their patterns across contexts.</p>`
+<p>The leader who monitors the flow of communication will notice when too much is flowing through them and deliberately reroute it. "You keep looking at me when you talk about this — I'm wondering if you're checking to see if it's okay, or if you actually want to know what David thinks."</p>
+
+<h3>Process Commentary</h3>
+<p>Group process refers to the HOW of what's happening — the relational and emotional dynamics beneath the content. "We've been talking for 20 minutes about jobs and it feels like we're all working very hard to stay on safe ground. I wonder what's here that feels unsafe to approach?" Process commentary invites the group to look at itself — which is often where the richest work happens.</p>
+<p>Process commentary operates at multiple levels:</p>
+<ul>
+<li><strong>Individual process:</strong> "I notice that every time the conversation gets close to your feelings about your mother, you shift to talking about someone else. What happens for you when that topic gets close?"</li>
+<li><strong>Dyadic process:</strong> "Something interesting happened between you and Marcus just now. You laughed, but your body went still. What was that?"</li>
+<li><strong>Group-as-a-whole process:</strong> "I notice the group is very quiet today. We're usually further along than this by now. I wonder what's in the room that we haven't approached yet."</li>
+<li><strong>Here-and-now immediacy:</strong> "What's happening right now, between all of us, in this room? I want to stay with this rather than moving to problem-solving."</li>
+</ul>
+<p>The skill of process commentary develops with practice and supervision. Common errors: using process commentary prematurely (before the group is cohesive enough to use it), making it too intellectual or abstract, or using it as an intervention to avoid the very discomfort you're naming. The best process commentary is specific, curious, and offered tentatively: "I wonder if..." rather than "What's happening is..."</p>
+
+<h3>Here-and-Now Facilitation</h3>
+<p>Perhaps the most transformative facilitation skill is the consistent redirection to the here-and-now — what is happening in this room, between these people, right now — rather than extended discussion of outside events. Yalom called this the "social microcosm" principle: clients bring their interpersonal worlds into the group, and the most powerful therapeutic work happens when that world is made visible and examined in real time.</p>
+<p>Techniques for here-and-now facilitation:</p>
+<ul>
+<li><strong>Immediacy statements:</strong> "I'm more curious about what you're experiencing right now, with us, than what happened at work." "What does it feel like to say that, here, with all of us listening?"</li>
+<li><strong>Connecting outside events to in-group patterns:</strong> "You described your boss as someone who never listens. I'm wondering — when do you feel unheard in this room?"</li>
+<li><strong>Using here-and-now as exposure:</strong> For clients with social anxiety, the group room itself is an exposure situation. "What's the thing you're most afraid will happen if you say what you're actually thinking right now?"</li>
+<li><strong>Process observations:</strong> "We've been talking about relationships for 40 minutes. I notice we're in one right now — is there anything about how we're relating to each other that connects to what you're describing?"</li>
+</ul>
+
+<h3>Linking</h3>
+<p>Linking is the facilitation technique of explicitly connecting themes, patterns, or experiences across members and across sessions. It is one of the most powerful tools for building group cohesion and helping members see their patterns in new ways.</p>
+<p>Types of linking:</p>
+<ul>
+<li><strong>Cross-member linking:</strong> "What you just described, Marcus — the feeling that you have to figure it all out alone or no one will respect you — I want to check in with others. Does anyone else recognize that?"</li>
+<li><strong>Across-session linking:</strong> "This feels like what happened in Week 4, when the group got very quiet after Diane shared something painful. I'm noticing something similar now."</li>
+<li><strong>Linking to outside life:</strong> "What just happened between you and Marcus reminds you of what you described last week with your brother. Is that a pattern you're recognizing?"</li>
+<li><strong>Universal theme linking:</strong> "I want to pause and name something: several people today have said some version of 'I don't want to be a burden.' That theme is alive in this group. What does it mean for all of you?"</li>
+</ul>
+
+<h3>Drawing Out and Cutting Off</h3>
+<p><strong>Drawing out</strong> refers to inviting quieter, more reserved, or more anxious members into participation without putting them on the spot. It is the opposite of calling on someone who is not ready — it is creating an opening rather than demanding entry.</p>
+<ul>
+<li>"James, you've been listening very carefully. I'm not putting you on the spot, but I'm curious whether any of this connects to your experience — if you'd like to share."</li>
+<li>"I notice we haven't heard from everyone yet. I want to make sure there's space for others before we move on."</li>
+<li>Direct invitations paired with explicit permission to pass: "Would you like to add anything? And it's completely okay if not."</li>
+</ul>
+<p><strong>Cutting off</strong> is the necessary companion to drawing out: gently interrupting a member who is using excessive airtime in ways that are blocking others' participation. Cutting off must be done with care — the member being interrupted typically has an anxiety-driven relationship with talking (the monopolizer) and needs the intervention to be respectful, not shaming.</p>
+<ul>
+<li>"I want to stop you here, James — not because what you're saying isn't important, but because I want to make sure there's room for the group to respond. Let's open this up."</li>
+<li>"I notice we're about 15 minutes into your situation and I'm aware we haven't checked in with others yet. Can we pause here?"</li>
+<li>After cutting off, the leader can address the process: "I'm curious what it's like for you when I interrupt. What happens inside you?"</li>
+</ul>
+
+<h3>Universality Interventions</h3>
+<p>Universality interventions are deliberate facilitation moves designed to surface the shared experience beneath individual disclosures, reducing isolation and building cohesion. They are most powerful in early stages but remain important throughout the group's life.</p>
+<ul>
+<li>"Before we respond to what Maria shared, I want to take a temperature check — who else has experienced something like this?"</li>
+<li>"I notice several people nodding when you said that. Can we hear from some of the people who were nodding?"</li>
+<li>"Would anyone else be willing to share a time when you felt that same way — that you were fundamentally different from everyone around you?"</li>
+</ul>
+
+<h3>Managing Leader Self-Disclosure</h3>
+<p>Leader self-disclosure in group is a calibrated tool, not a norm. The leader's job is not to be an authentic peer — it is to be a consistent, non-anxious facilitator whose primary disclosures serve the group's therapeutic needs, not the leader's own processing.</p>
+<p>Two types of leader disclosure that can serve therapeutic purposes:</p>
+<ul>
+<li><strong>Transparent immediate reactions:</strong> "I notice I'm feeling something like protectiveness right now as we talk about this — I wonder if others are feeling that too." This invites the group to examine a shared emotional experience, not to comfort the leader.</li>
+<li><strong>Process transparency:</strong> "I'm going to be honest about what I'm tracking right now. I notice we've been avoiding something — I'm not sure exactly what, but I can feel the group working hard not to go somewhere. Does anyone know what that is?"</li>
+</ul>
+<p>Personal narrative self-disclosure — sharing one's own life experiences to create connection — is rarely appropriate in group therapy and carries significant risk of burdening the group with the leader's material, creating a dual relationship, and distracting from member-centered work.</p>
+
+<h3>Protecting Members and Maintaining Safety</h3>
+<p>A member who is being piled on by the group, or who is being shamed, needs the leader to intervene immediately and directly. Safety is not just the physical absence of harm — it is the psychological experience of being able to take risks without being abandoned, humiliated, or destroyed by the experience. When a member does not feel safe, they will not take risks, and without risk, no therapeutic work occurs.</p>
+<ul>
+<li>"Wait — I want to slow down here. I'm noticing several people coming at Marcus from the same direction. Let's check in with Marcus about how he's experiencing this before we continue."</li>
+<li>"I want to name something: the feedback to Sara has escalated pretty quickly. Sara, how are you doing? What do you need right now?"</li>
+<li>After protecting: "I also want to check in with the group about what just happened. What was going on for all of us just now?"</li>
+</ul>`
         },
         {
           type: 'cardSort',
