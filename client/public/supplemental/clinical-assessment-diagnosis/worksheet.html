@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Assessment Documentation Checklist &amp; MSE Form | CR-CLI-608</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; color: #1a1a1a; background: #ffffff; padding: 0.75in 1in; max-width: 8.5in; margin: 0 auto; }
+    .branding { text-align: center; font-size: 8.5pt; color: #555; letter-spacing: 0.04em; border-bottom: 2px solid #8B2542; padding-bottom: 6px; margin-bottom: 10px; }
+    .course-header { text-align: center; margin-bottom: 18px; }
+    .course-header .code { font-size: 9pt; color: #8B2542; letter-spacing: 0.08em; font-weight: bold; }
+    .course-header h1 { font-size: 15pt; color: #8B2542; line-height: 1.3; margin-top: 4px; }
+    .course-header .meta { font-size: 9pt; color: #555; margin-top: 4px; }
+    h2 { font-size: 11pt; color: #8B2542; border-bottom: 1px solid #8B2542; padding-bottom: 3px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    h3 { font-size: 10.5pt; color: #1a1a1a; font-weight: bold; margin: 10px 0 4px 0; }
+    h4 { font-size: 10pt; color: #8B2542; font-weight: bold; margin: 8px 0 3px 0; }
+    p { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
+    ul, ol { padding-left: 18px; margin-bottom: 8px; }
+    li { font-size: 10pt; line-height: 1.5; margin-bottom: 2px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+    .box { border: 1px solid #8B2542; border-radius: 4px; padding: 10px 12px; }
+    .box h3 { color: #8B2542; margin-top: 0; }
+    .highlight { background: #fff5f7; border-left: 3px solid #8B2542; padding: 4px 8px; margin-bottom: 4px; font-size: 10pt; }
+    .note-box { background: #f8f4f5; border: 1px solid #c9a0a8; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+    .note-box strong { color: #8B2542; }
+    .write-line { border-bottom: 1px solid #999; margin: 6px 0 14px 0; height: 22px; }
+    .write-line-short { border-bottom: 1px solid #999; margin: 4px 0 8px 0; height: 20px; display: inline-block; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+    th { background: #8B2542; color: white; padding: 5px 8px; text-align: left; }
+    td { border: 1px solid #c9a0a8; padding: 5px 8px; vertical-align: top; }
+    tr:nth-child(even) td { background: #fdf8f9; }
+    .footer { border-top: 1px solid #8B2542; margin-top: 20px; padding-top: 6px; text-align: center; font-size: 8pt; color: #555; }
+    .checklist-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 10px; }
+    .checklist-row .cb { flex-shrink: 0; width: 14px; height: 14px; border: 1.5px solid #8B2542; display: inline-block; margin-top: 2px; }
+    .checklist-row .label-block { flex: 1; }
+    .checklist-row .item-label { font-size: 10pt; font-weight: bold; color: #1a1a1a; }
+    .checklist-row .item-sub { font-size: 9pt; color: #555; margin-bottom: 2px; }
+    .cb-inline { width: 13px; height: 13px; border: 1.5px solid #8B2542; display: inline-block; vertical-align: middle; margin-right: 4px; }
+    .mse-section { border: 1px solid #c9a0a8; border-radius: 4px; padding: 10px 12px; margin-bottom: 10px; }
+    .mse-section h4 { margin-top: 0; }
+    .descriptor-group { margin: 4px 0 8px 0; font-size: 9pt; color: #555; }
+    .section-divider { border-top: 2px solid #8B2542; margin: 20px 0 12px 0; padding-top: 4px; }
+    .client-info { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+    .info-field label { font-size: 9pt; color: #555; display: block; margin-bottom: 2px; }
+    .info-field .write-line { margin-bottom: 0; }
+    @media print { body { padding: 0.5in 0.75in; } h2 { break-before: avoid; } .mse-section { break-inside: avoid; } .checklist-row { break-inside: avoid; } .footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="branding">GA Integrated Therapeutic Perspectives LLC &nbsp;|&nbsp; NBCC ACEP #7760 &nbsp;|&nbsp; CounselorReady CE</div>
+
+  <div class="course-header">
+    <div class="code">CR-CLI-608 &nbsp;|&nbsp; 2 CE HOURS</div>
+    <h1>Clinical Assessment Documentation Checklist<br>&amp; Mental Status Examination Form</h1>
+    <div class="meta">Clinical Assessment and Diagnosis: Structured Interviewing Skills &nbsp;|&nbsp; For Clinical Training Use</div>
+  </div>
+
+  <div class="client-info">
+    <div class="info-field">
+      <label>Client Identifier / Case ID</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="info-field">
+      <label>Date of Assessment</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="info-field">
+      <label>Clinician / Trainee</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <!-- PART 1 -->
+  <h2>Part 1 — Biopsychosocial Assessment Checklist</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:12px;">Check each domain as addressed during the intake interview. Use the notes line to capture key findings, gaps, or areas requiring follow-up.</p>
+
+  <h3>Presenting Concerns &amp; History of Present Illness</h3>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Chief Complaint</div>
+      <div class="item-sub">Client's own words describing the primary reason for seeking services</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">History of Present Illness (HPI)</div>
+      <div class="item-sub">Onset, duration, precipitants, course, severity, functional impact, and prior episodes</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <h3>Psychiatric &amp; Medical History</h3>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Psychiatric History</div>
+      <div class="item-sub">Prior diagnoses, hospitalizations, outpatient treatment, and response to past interventions</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Medical History</div>
+      <div class="item-sub">Current medical diagnoses, surgeries, neurological history, chronic conditions</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Medications &amp; Supplements</div>
+      <div class="item-sub">All current prescriptions, OTC medications, herbal supplements; doses; prescribing providers</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Substance Use History</div>
+      <div class="item-sub">All substances (including alcohol, cannabis, nicotine); age of first use; frequency/quantity; periods of abstinence; consequences; treatment history</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <h3>Developmental &amp; Family History</h3>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Trauma History</div>
+      <div class="item-sub">Type(s) of adverse experiences, age of onset, duration, disclosure history, current trauma-related symptoms</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Developmental History</div>
+      <div class="item-sub">Prenatal/perinatal events, developmental milestones, early attachment, academic history, special education needs</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Family Psychiatric &amp; Medical History</div>
+      <div class="item-sub">First- and second-degree relatives with psychiatric diagnoses, substance use disorders, suicide, or significant medical conditions</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <h3>Social, Occupational &amp; Cultural History</h3>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Social &amp; Relationship History</div>
+      <div class="item-sub">Current living situation, significant relationships, social support network, relationship history, current sources of conflict or isolation</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Occupational &amp; Financial History</div>
+      <div class="item-sub">Employment status, history, job functioning, financial stressors, educational attainment</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Legal History</div>
+      <div class="item-sub">Arrests, charges, convictions, probation/parole, restraining orders, pending legal matters</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Cultural Considerations</div>
+      <div class="item-sub">Cultural identity, language, acculturation stressors, explanatory model of illness, religious/spiritual beliefs, cultural barriers to care</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="checklist-row">
+    <span class="cb"></span>
+    <div class="label-block">
+      <div class="item-label">Strengths &amp; Resources</div>
+      <div class="item-sub">Personal coping skills, community supports, spirituality, resilience factors, protective factors for safety planning</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <!-- PART 2 -->
+  <div class="section-divider"></div>
+  <h2>Part 2 — Mental Status Examination Form</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:12px;">Complete based on direct observation and client report during this session. Check descriptors that apply and add detail on write-lines.</p>
+
+  <div class="mse-section">
+    <h4>Appearance</h4>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> Well-groomed &nbsp;&nbsp;
+      <span class="cb-inline"></span> Disheveled &nbsp;&nbsp;
+      <span class="cb-inline"></span> Age-appropriate attire &nbsp;&nbsp;
+      <span class="cb-inline"></span> Unusual attire &nbsp;&nbsp;
+      <span class="cb-inline"></span> Appears stated age &nbsp;&nbsp;
+      <span class="cb-inline"></span> Appears older &nbsp;&nbsp;
+      <span class="cb-inline"></span> Appears younger
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Additional observations:</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Behavior / Psychomotor Activity</h4>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> Cooperative &nbsp;&nbsp;
+      <span class="cb-inline"></span> Guarded &nbsp;&nbsp;
+      <span class="cb-inline"></span> Hostile &nbsp;&nbsp;
+      <span class="cb-inline"></span> Agitated &nbsp;&nbsp;
+      <span class="cb-inline"></span> Psychomotor retardation &nbsp;&nbsp;
+      <span class="cb-inline"></span> WNL eye contact &nbsp;&nbsp;
+      <span class="cb-inline"></span> Poor eye contact &nbsp;&nbsp;
+      <span class="cb-inline"></span> Abnormal movements
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Describe abnormal movements / notable behavior:</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Speech</h4>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> Normal rate &nbsp;&nbsp;
+      <span class="cb-inline"></span> Pressured &nbsp;&nbsp;
+      <span class="cb-inline"></span> Slowed &nbsp;&nbsp;
+      <span class="cb-inline"></span> Normal volume &nbsp;&nbsp;
+      <span class="cb-inline"></span> Loud &nbsp;&nbsp;
+      <span class="cb-inline"></span> Soft &nbsp;&nbsp;
+      <span class="cb-inline"></span> Spontaneous &nbsp;&nbsp;
+      <span class="cb-inline"></span> Sparse &nbsp;&nbsp;
+      <span class="cb-inline"></span> Monotone &nbsp;&nbsp;
+      <span class="cb-inline"></span> Dysarthric
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Describe:</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="two-col">
+    <div class="mse-section">
+      <h4>Mood (Client's Own Words)</h4>
+      <div style="font-size:9pt; color:#555; margin-bottom:4px;">Use quotation marks — client's exact language</div>
+      <div class="write-line"></div>
+      <div class="write-line"></div>
+    </div>
+    <div class="mse-section">
+      <h4>Affect (Clinician Observation)</h4>
+      <div style="font-size:9pt; color:#555; margin-bottom:4px;"><strong>Range:</strong></div>
+      <div class="descriptor-group">
+        <span class="cb-inline"></span> Full &nbsp;
+        <span class="cb-inline"></span> Restricted &nbsp;
+        <span class="cb-inline"></span> Blunted &nbsp;
+        <span class="cb-inline"></span> Flat
+      </div>
+      <div style="font-size:9pt; color:#555; margin-bottom:4px;"><strong>Quality:</strong></div>
+      <div class="descriptor-group">
+        <span class="cb-inline"></span> Euthymic &nbsp;
+        <span class="cb-inline"></span> Dysphoric &nbsp;
+        <span class="cb-inline"></span> Euphoric &nbsp;
+        <span class="cb-inline"></span> Irritable &nbsp;
+        <span class="cb-inline"></span> Labile &nbsp;
+        <span class="cb-inline"></span> Anxious
+      </div>
+      <div style="font-size:9pt; color:#555; margin-bottom:4px;"><strong>Mood-affect congruence:</strong> <span class="cb-inline"></span> Congruent &nbsp; <span class="cb-inline"></span> Incongruent</div>
+    </div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Thought Process</h4>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> Linear and goal-directed &nbsp;&nbsp;
+      <span class="cb-inline"></span> Circumstantial &nbsp;&nbsp;
+      <span class="cb-inline"></span> Tangential &nbsp;&nbsp;
+      <span class="cb-inline"></span> Loose associations &nbsp;&nbsp;
+      <span class="cb-inline"></span> Flight of ideas &nbsp;&nbsp;
+      <span class="cb-inline"></span> Thought blocking &nbsp;&nbsp;
+      <span class="cb-inline"></span> Perseveration &nbsp;&nbsp;
+      <span class="cb-inline"></span> Clang associations
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Describe:</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Thought Content</h4>
+    <div class="descriptor-group">
+      <strong>SI:</strong> <span class="cb-inline"></span> None &nbsp; <span class="cb-inline"></span> Passive ideation &nbsp; <span class="cb-inline"></span> Active ideation &nbsp; <span class="cb-inline"></span> With plan &nbsp; <span class="cb-inline"></span> With intent &nbsp; <span class="cb-inline"></span> With means access
+    </div>
+    <div class="descriptor-group">
+      <strong>HI:</strong> <span class="cb-inline"></span> None &nbsp; <span class="cb-inline"></span> Passive ideation &nbsp; <span class="cb-inline"></span> Active ideation &nbsp; <span class="cb-inline"></span> Specific target &nbsp; <span class="cb-inline"></span> With plan
+    </div>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> Paranoid ideation &nbsp;&nbsp;
+      <span class="cb-inline"></span> Ideas of reference &nbsp;&nbsp;
+      <span class="cb-inline"></span> Obsessions &nbsp;&nbsp;
+      <span class="cb-inline"></span> Compulsions &nbsp;&nbsp;
+      <span class="cb-inline"></span> Phobias &nbsp;&nbsp;
+      <span class="cb-inline"></span> Delusions (describe below) &nbsp;&nbsp;
+      <span class="cb-inline"></span> Magical thinking
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Describe delusions / notable content:</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Perceptual Disturbances</h4>
+    <div class="descriptor-group">
+      <span class="cb-inline"></span> No perceptual disturbances reported or observed &nbsp;&nbsp;
+      <span class="cb-inline"></span> Auditory hallucinations &nbsp;&nbsp;
+      <span class="cb-inline"></span> Visual hallucinations &nbsp;&nbsp;
+      <span class="cb-inline"></span> Tactile &nbsp;&nbsp;
+      <span class="cb-inline"></span> Olfactory &nbsp;&nbsp;
+      <span class="cb-inline"></span> Command AH &nbsp;&nbsp;
+      <span class="cb-inline"></span> Dissociative phenomena
+    </div>
+    <div style="font-size:9.5pt; margin-bottom:3px;">Describe (frequency, content, client's response to):</div>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="mse-section">
+    <h4>Cognition</h4>
+    <div style="font-size:9.5pt; margin-bottom:3px;"><strong>Orientation</strong> — Person: <span class="cb-inline"></span> Intact &nbsp; Place: <span class="cb-inline"></span> Intact &nbsp; Time: <span class="cb-inline"></span> Intact &nbsp; Situation: <span class="cb-inline"></span> Intact &nbsp;&nbsp; Deficits noted:</div>
+    <div class="write-line"></div>
+    <div style="font-size:9.5pt; margin-bottom:3px;"><strong>Recent Memory</strong> (e.g., recall of 3 words at 5 min):</div>
+    <div class="write-line"></div>
+    <div style="font-size:9.5pt; margin-bottom:3px;"><strong>Remote Memory</strong> (personal history, current events):</div>
+    <div class="write-line"></div>
+    <div style="font-size:9.5pt; margin-bottom:3px;"><strong>Concentration / Attention</strong> (serial 7s, digit span, WAIS-IV attention index if administered):</div>
+    <div class="write-line"></div>
+    <div style="font-size:9.5pt; margin-bottom:3px;"><strong>Abstract Reasoning</strong> (proverbs, similarities):</div>
+    <div class="write-line"></div>
+    <div class="descriptor-group" style="margin-top:6px;">Formal cognitive screening: <span class="cb-inline"></span> Not administered &nbsp; <span class="cb-inline"></span> MMSE &nbsp; <span class="cb-inline"></span> MoCA &nbsp; Score: _______ / _______ &nbsp; Date: _______________</div>
+  </div>
+
+  <div class="two-col">
+    <div class="mse-section">
+      <h4>Insight</h4>
+      <div class="descriptor-group">
+        <span class="cb-inline"></span> Full insight — aware of illness and its impact<br>
+        <span class="cb-inline"></span> Partial insight — acknowledges some difficulties<br>
+        <span class="cb-inline"></span> Limited insight — minimizes or denies illness<br>
+        <span class="cb-inline"></span> No insight — does not recognize illness
+      </div>
+      <div style="font-size:9.5pt; margin-bottom:3px;">Evidence / comment:</div>
+      <div class="write-line"></div>
+    </div>
+    <div class="mse-section">
+      <h4>Judgment</h4>
+      <div class="descriptor-group">
+        <span class="cb-inline"></span> Intact — capable of sound decision-making<br>
+        <span class="cb-inline"></span> Mildly impaired — some lapses in social/safety judgment<br>
+        <span class="cb-inline"></span> Moderately impaired<br>
+        <span class="cb-inline"></span> Severely impaired — unable to make safe decisions
+      </div>
+      <div style="font-size:9.5pt; margin-bottom:3px;">Evidence / comment:</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>Documentation reminder:</strong> This form is a training and practice aid. In clinical practice, MSE findings must be integrated into a full diagnostic narrative. Provisional diagnosis, differential diagnosis rationale, risk assessment summary, and clinical formulation should follow this form in the complete assessment record.
+  </div>
+
+  <div class="footer">&copy; 2026 GA Integrated Therapeutic Perspectives LLC. For licensed professional use only.<br>CR-CLI-608 | CounselorReady CE | NBCC ACEP #7760</div>
+</body>
+</html>
