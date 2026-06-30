@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Custom Domain | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld { width:100%; padding:.55rem .75rem; border:1px solid #e7e5e4; border-radius:.5rem; font-size:.875rem; outline:none; }
+    .fld:focus { box-shadow:0 0 0 2px #4A7C59; }
+    .lbl { display:block; font-size:.75rem; font-weight:600; color:#57534e; margin-bottom:.35rem; }
+    .step-inactive { opacity:.45; pointer-events:none; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-3xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Custom Domain</h1>
+      <p class="text-gray-500 mt-1">Host your learner portal on your own domain (e.g. <span class="font-mono text-sm">learn.yourcompany.com</span>).</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading…</p>
+    </div>
+
+    <!-- Feature upsell card (shown on 403 FEATURE_NOT_AVAILABLE) -->
+    <div id="upsell-card" class="hidden bg-navy-900 text-white rounded-xl p-8 mb-8" style="background:#284157">
+      <h2 class="font-display text-2xl font-semibold mb-2">Upgrade to Use Custom Domains</h2>
+      <p id="upsell-detail" class="text-white/80 mb-3 text-sm leading-relaxed"></p>
+      <p id="upsell-upgrade" class="text-honey-400 font-semibold text-sm mb-5"></p>
+      <a href="/partner-billing.html" class="inline-block bg-honey-400 text-navy-900 font-bold px-5 py-2.5 rounded-lg text-sm hover:opacity-90 transition-opacity" style="color:#284157">
+        View Upgrade Options
+      </a>
+    </div>
+
+    <!-- 3-step flow -->
+    <div id="flow" class="hidden space-y-5">
+
+      <!-- Step 1: Set domain -->
+      <div id="step1" class="bg-white rounded-xl border border-stone-200 p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-burgundy-800 text-white flex items-center justify-center text-sm font-bold">1</div>
+          <h2 class="font-semibold text-stone-900">Set Your Custom Domain</h2>
+        </div>
+        <p class="text-sm text-stone-500 mb-4">Enter the subdomain you want to use for your learner portal.</p>
+        <div class="flex gap-3">
+          <input type="text" id="domain-input" placeholder="learn.yourcompany.com"
+            class="fld font-mono flex-1">
+          <button onclick="saveDomain()" id="save-domain-btn"
+            class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+            Save Domain
+          </button>
+        </div>
+        <p id="step1-msg" class="mt-2 text-sm hidden"></p>
+      </div>
+
+      <!-- Step 2: TXT record -->
+      <div id="step2" class="bg-white rounded-xl border border-stone-200 p-6 step-inactive">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-burgundy-800 text-white flex items-center justify-center text-sm font-bold">2</div>
+          <h2 class="font-semibold text-stone-900">Add a DNS TXT Record</h2>
+        </div>
+        <p class="text-sm text-stone-500 mb-4">Generate your verification record, then add it to your domain's DNS settings.</p>
+        <button onclick="startVerification()" id="verify-init-btn"
+          class="bg-hunter-700 hover:bg-hunter-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Start Verification
+        </button>
+        <div id="txt-record" class="hidden mt-5 space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="lbl mb-0">Record Name</span>
+              <button onclick="copyText('txt-record-name')" class="text-xs text-burgundy-700 hover:underline">
+                <i class="fas fa-copy mr-1"></i>Copy
+              </button>
+            </div>
+            <div id="txt-record-name" class="fld bg-stone-50 font-mono text-xs break-all cursor-text select-all"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="lbl mb-0">Record Value</span>
+              <button onclick="copyText('txt-record-value')" class="text-xs text-burgundy-700 hover:underline">
+                <i class="fas fa-copy mr-1"></i>Copy
+              </button>
+            </div>
+            <div id="txt-record-value" class="fld bg-stone-50 font-mono text-xs break-all cursor-text select-all"></div>
+          </div>
+          <p id="txt-instructions" class="text-sm text-stone-600 bg-honey-50 border border-honey-200 rounded-lg px-4 py-3"></p>
+        </div>
+        <p id="step2-msg" class="mt-2 text-sm hidden"></p>
+      </div>
+
+      <!-- Step 3: Verify -->
+      <div id="step3" class="bg-white rounded-xl border border-stone-200 p-6 step-inactive">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-burgundy-800 text-white flex items-center justify-center text-sm font-bold">3</div>
+          <h2 class="font-semibold text-stone-900">Verify Domain</h2>
+        </div>
+        <p class="text-sm text-stone-500 mb-4">Once you've added the TXT record, click below to confirm. DNS changes can take up to 48 hours to propagate.</p>
+        <button onclick="checkVerification()" id="check-btn"
+          class="bg-hunter-700 hover:bg-hunter-800 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+          Check Verification
+        </button>
+        <div id="step3-result" class="hidden mt-4"></div>
+      </div>
+
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    function esc(s) { if (s == null) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function showMsg(id, text, ok) {
+      const el = document.getElementById(id);
+      el.textContent = text;
+      el.className = `mt-2 text-sm ${ok ? 'text-hunter-700' : 'text-red-600'}`;
+      el.classList.remove('hidden');
+    }
+
+    function showUpsell(data) {
+      document.getElementById('flow').classList.add('hidden');
+      document.getElementById('upsell-detail').textContent = data.detail || '';
+      document.getElementById('upsell-upgrade').textContent = data.upgrade || '';
+      document.getElementById('upsell-card').classList.remove('hidden');
+    }
+
+    function unlockStep(n) {
+      document.getElementById(`step${n}`).classList.remove('step-inactive');
+    }
+
+    function copyText(elId) {
+      const text = document.getElementById(elId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        // brief feedback via the sibling copy button's text
+      });
+    }
+
+    async function saveDomain() {
+      const btn = document.getElementById('save-domain-btn');
+      const domain = document.getElementById('domain-input').value.trim().toLowerCase();
+      if (!domain) { showMsg('step1-msg', 'Please enter a domain name.', false); return; }
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API}/api/partners/my-branding`, {
+          method: 'PUT', headers: AUTH, body: JSON.stringify({ customDomain: domain }),
+        });
+        const data = await res.json();
+        if (res.status === 403 && data.code === 'FEATURE_NOT_AVAILABLE') { showUpsell(data); return; }
+        if (!res.ok) throw new Error(data.error || 'Failed to save domain');
+        showMsg('step1-msg', `Domain set to ${esc(domain)}. Now generate your TXT verification record below.`, true);
+        unlockStep(2);
+      } catch (err) {
+        showMsg('step1-msg', err.message, false);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Domain';
+      }
+    }
+
+    async function startVerification() {
+      const btn = document.getElementById('verify-init-btn');
+      btn.disabled = true; btn.textContent = 'Generating…';
+      try {
+        const res = await fetch(`${API}/api/partners/my/domain/verify-init`, { method: 'POST', headers: AUTH });
+        const data = await res.json();
+        if (res.status === 403 && data.code === 'FEATURE_NOT_AVAILABLE') { showUpsell(data); return; }
+        if (!res.ok) throw new Error(data.error || 'Failed to start verification');
+        document.getElementById('txt-record-name').textContent = data.recordName;
+        document.getElementById('txt-record-value').textContent = data.recordValue;
+        document.getElementById('txt-instructions').textContent = data.instructions;
+        document.getElementById('txt-record').classList.remove('hidden');
+        unlockStep(3);
+        showMsg('step2-msg', 'Add the TXT record to your DNS, then check verification below.', true);
+      } catch (err) {
+        showMsg('step2-msg', err.message, false);
+      } finally {
+        btn.disabled = false; btn.textContent = 'Regenerate Record';
+      }
+    }
+
+    async function checkVerification() {
+      const btn = document.getElementById('check-btn');
+      btn.disabled = true; btn.textContent = 'Checking…';
+      const resultEl = document.getElementById('step3-result');
+      try {
+        const res = await fetch(`${API}/api/partners/my/domain/verify-check`, { method: 'POST', headers: AUTH });
+        const data = await res.json();
+        if (res.status === 403 && data.code === 'FEATURE_NOT_AVAILABLE') { showUpsell(data); return; }
+        if (!res.ok) throw new Error(data.error || 'Verification check failed');
+        if (data.verified) {
+          resultEl.innerHTML = `
+            <div class="flex items-center gap-3 bg-hunter-50 border border-hunter-200 rounded-lg px-4 py-3">
+              <i class="fas fa-check-circle text-hunter-700 text-lg"></i>
+              <div>
+                <p class="font-semibold text-hunter-800">Domain verified!</p>
+                <p class="text-sm text-stone-600">Your portal is now live at <span class="font-mono">${esc(data.domain)}</span>.</p>
+              </div>
+            </div>`;
+        } else {
+          resultEl.innerHTML = `
+            <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+              <i class="fas fa-clock mr-1"></i>
+              ${esc(data.message || 'Verification pending — DNS changes can take up to 48 hours to propagate. Try again later.')}
+            </div>`;
+        }
+        resultEl.classList.remove('hidden');
+      } catch (err) {
+        resultEl.innerHTML = `<p class="text-sm text-red-600">${esc(err.message)}</p>`;
+        resultEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Check Verification';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(`${API}/api/partners/my`, { headers: AUTH });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to load partner data');
+        const { partner } = await res.json();
+        const domain = partner?.branding?.customDomain || '';
+        if (domain) {
+          document.getElementById('domain-input').value = domain;
+          unlockStep(2);
+        }
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('flow').classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    });
+  </script>
+  <script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

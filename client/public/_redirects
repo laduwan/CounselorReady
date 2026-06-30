@@ -52,6 +52,16 @@
 /partner-marketplace /partner-marketplace.html  200
 /partner/earnings    /partner-earnings.html     200
 /partner-earnings    /partner-earnings.html     200
+/partner/courses          /partner-courses.html          200
+/partner-courses          /partner-courses.html          200
+/partner/onboarding       /partner-onboarding.html       200
+/partner-onboarding       /partner-onboarding.html       200
+/partner/email-templates  /partner-email-templates.html  200
+/partner-email-templates  /partner-email-templates.html  200
+/partner/domain           /partner-domain.html           200
+/partner-domain           /partner-domain.html           200
+/partner/bulk-upload      /partner-bulk-upload.html      200
+/partner-bulk-upload      /partner-bulk-upload.html      200
 /admin-payouts       /admin-payouts.html        200
 /recommendations     /recommendations.html      200
 /research-ready      /research-ready.html       200
