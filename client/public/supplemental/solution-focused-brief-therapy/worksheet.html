@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SFBT Session Planning &amp; Scaling Worksheet — CR-CLI-604</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; color: #1a1a1a; background: #ffffff; padding: 0.75in 1in; max-width: 8.5in; margin: 0 auto; }
+    .branding { text-align: center; font-size: 8.5pt; color: #555; letter-spacing: 0.04em; border-bottom: 2px solid #8B2542; padding-bottom: 6px; margin-bottom: 10px; }
+    .course-header { text-align: center; margin-bottom: 18px; }
+    .course-header .code { font-size: 9pt; color: #8B2542; letter-spacing: 0.08em; font-weight: bold; }
+    .course-header h1 { font-size: 15pt; color: #8B2542; line-height: 1.3; margin-top: 4px; }
+    .course-header .meta { font-size: 9pt; color: #555; margin-top: 4px; }
+    h2 { font-size: 11pt; color: #8B2542; border-bottom: 1px solid #8B2542; padding-bottom: 3px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    h3 { font-size: 10.5pt; color: #1a1a1a; font-weight: bold; margin: 10px 0 4px 0; }
+    p { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
+    ul, ol { padding-left: 18px; margin-bottom: 8px; }
+    li { font-size: 10pt; line-height: 1.5; margin-bottom: 2px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+    .box { border: 1px solid #8B2542; border-radius: 4px; padding: 10px 12px; }
+    .box h3 { color: #8B2542; margin-top: 0; }
+    .highlight { background: #fff5f7; border-left: 3px solid #8B2542; padding: 4px 8px; margin-bottom: 4px; font-size: 10pt; }
+    .note-box { background: #f8f4f5; border: 1px solid #c9a0a8; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+    .note-box strong { color: #8B2542; }
+    .write-line { border-bottom: 1px solid #999; margin: 6px 0 14px 0; height: 22px; }
+    .write-area { border: 1px solid #999; border-radius: 3px; margin: 6px 0 14px 0; height: 80px; width: 100%; }
+    .write-area-lg { border: 1px solid #999; border-radius: 3px; margin: 6px 0 14px 0; height: 120px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+    th { background: #8B2542; color: white; padding: 5px 8px; text-align: left; }
+    td { border: 1px solid #c9a0a8; padding: 5px 8px; vertical-align: top; }
+    tr:nth-child(even) td { background: #fdf8f9; }
+    .scale-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 14px; }
+    .scale-label { font-size: 9.5pt; font-weight: bold; color: #8B2542; min-width: 140px; padding-top: 2px; }
+    .scale-track { flex: 1; }
+    .scale-numbers { display: flex; justify-content: space-between; margin-bottom: 3px; }
+    .scale-numbers span { font-size: 8pt; color: #555; }
+    .scale-bar { display: flex; border: 1px solid #8B2542; border-radius: 3px; overflow: hidden; height: 22px; }
+    .scale-bar div { flex: 1; border-right: 1px solid #c9a0a8; }
+    .scale-bar div:last-child { border-right: none; }
+    .scale-reasoning { margin-top: 4px; }
+    .scale-reasoning .write-line { margin: 2px 0 8px 0; }
+    .session-info { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .info-field label { font-size: 8.5pt; color: #555; display: block; margin-bottom: 2px; }
+    .footer { border-top: 1px solid #8B2542; margin-top: 20px; padding-top: 6px; text-align: center; font-size: 8pt; color: #555; }
+    @media print { body { padding: 0.5in 0.75in; } h2 { break-before: avoid; } .two-col { break-inside: avoid; } .box { break-inside: avoid; } .footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="branding">GA Integrated Therapeutic Perspectives LLC &nbsp;|&nbsp; NBCC ACEP #7760 &nbsp;|&nbsp; CounselorReady CE</div>
+
+  <div class="course-header">
+    <div class="code">CR-CLI-604 &nbsp;|&nbsp; 2 CE HOURS &nbsp;|&nbsp; CLINICAL PRACTICE</div>
+    <h1>SFBT Session Planning &amp; Scaling Worksheet</h1>
+    <div class="meta">Solution-Focused Brief Therapy in Community Mental Health</div>
+  </div>
+
+  <div class="session-info">
+    <div class="info-field">
+      <label>Client Identifier / Initials</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="info-field">
+      <label>Session Date</label>
+      <div class="write-line"></div>
+    </div>
+    <div class="info-field">
+      <label>Session # &nbsp;&nbsp; Clinician</label>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <h2>Section 1 — Client Goal Statement</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:6px;">Ask: <em>"What would you like to leave here with today? What needs to happen for this conversation to have been worthwhile for you?"</em> Record the client's own words as closely as possible.</p>
+  <p><strong>Client's stated goal for this session (client's language):</strong></p>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+  <p><strong>Negotiated well-formed goal (small, specific, behavioral, positive):</strong></p>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <h2>Section 2 — The Miracle Question</h2>
+  <div class="note-box">
+    <strong>Scripted Prompt — read or paraphrase slowly:</strong><br>
+    <em>"I want to ask you a question that may seem a little unusual. Suppose that tonight, while you are sleeping, a miracle happens. The problem that brought you here — it's gone. But because you were asleep, you don't know the miracle happened. When you wake up tomorrow morning, what would be the very first small thing you notice that tells you something is different? What would you see, feel, or hear that lets you know things have changed?"</em><br><br>
+    Follow-up prompts: <em>"Who else would notice? What would they see you doing differently? What would be different in your day by mid-morning? By evening?"</em>
+  </div>
+
+  <p><strong>Client's miracle picture (capture key details — behaviors, relationships, feelings):</strong></p>
+  <div class="write-area-lg"></div>
+
+  <p><strong>Most vivid or energizing element the client mentioned:</strong></p>
+  <div class="write-line"></div>
+
+  <p><strong>Relational component (who else noticed / what changed in relationships):</strong></p>
+  <div class="write-line"></div>
+
+  <h2>Section 3 — Exception Exploration</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:8px;">Ask: <em>"When in the past week — or at any time — have you noticed even a small piece of what you just described? A time when the problem was a little less, or when you felt even slightly closer to that miracle picture?"</em></p>
+
+  <table>
+    <tr>
+      <th style="width:28%;">When / Situation</th>
+      <th style="width:38%;">What was different — what did the client do?</th>
+      <th style="width:34%;">Who noticed? What did they see?</th>
+    </tr>
+    <tr>
+      <td style="height:48px;"></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td style="height:48px;"></td>
+      <td></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td style="height:48px;"></td>
+      <td></td>
+      <td></td>
+    </tr>
+  </table>
+
+  <p><strong>Clinician's summary — key strength or resource observed in exceptions:</strong></p>
+  <div class="write-line"></div>
+
+  <h2>Section 4 — Scaling Questions</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:10px;">For each scale, circle or mark the client's number, then record the client's reasoning below it. <strong>0</strong> = worst it's ever been / no confidence; <strong>10</strong> = miracle picture achieved / completely confident.</p>
+
+  <div class="scale-row">
+    <div class="scale-label">Current State<br><span style="font-weight:normal; font-size:8.5pt; color:#555;">"Where are you right now?"</span></div>
+    <div class="scale-track">
+      <div class="scale-numbers">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="scale-bar">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="scale-reasoning">
+        <span style="font-size:8.5pt; color:#555;">Why that number, not lower? What's keeping you there?</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="scale-label">Goal State<br><span style="font-weight:normal; font-size:8.5pt; color:#555;">"Where would you like to be?"</span></div>
+    <div class="scale-track">
+      <div class="scale-numbers">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="scale-bar">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="scale-reasoning">
+        <span style="font-size:8.5pt; color:#555;">What would that number look like? What would be different?</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="scale-label">Confidence in Change<br><span style="font-weight:normal; font-size:8.5pt; color:#555;">"How confident that you can get there?"</span></div>
+    <div class="scale-track">
+      <div class="scale-numbers">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="scale-bar">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="scale-reasoning">
+        <span style="font-size:8.5pt; color:#555;">What gives you that level of confidence? What's already in your corner?</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scale-row">
+    <div class="scale-label">Next-Step Readiness<br><span style="font-weight:normal; font-size:8.5pt; color:#555;">"How ready to take one step this week?"</span></div>
+    <div class="scale-track">
+      <div class="scale-numbers">
+        <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span>
+      </div>
+      <div class="scale-bar">
+        <div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="scale-reasoning">
+        <span style="font-size:8.5pt; color:#555;">What would make you feel even one point more ready?</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Section 5 — Between-Session Task</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:6px;">Match task type to client position: <strong>Visitor</strong> = compliment only, no task. <strong>Complainant</strong> = observation task only. <strong>Customer</strong> = observation or behavioral action task.</p>
+
+  <div class="two-col">
+    <div>
+      <p><strong>Client position this session:</strong></p>
+      <div class="highlight">&#9675; Visitor &nbsp;&nbsp; &#9675; Complainant &nbsp;&nbsp; &#9675; Customer</div>
+    </div>
+    <div>
+      <p><strong>Task type:</strong></p>
+      <div class="highlight">&#9675; Compliment only &nbsp;&nbsp; &#9675; Observation &nbsp;&nbsp; &#9675; Behavioral action</div>
+    </div>
+  </div>
+
+  <p><strong>Task description (specific, doable, in client's language):</strong></p>
+  <div class="write-area"></div>
+
+  <p><strong>Client's commitment / response to task ("That sounds like something you could try?"):</strong></p>
+  <div class="write-line"></div>
+
+  <h2>Section 6 — Clinician's End-of-Session Summary Notes</h2>
+  <p style="font-size:9.5pt; color:#555; margin-bottom:6px;">For clinical record and supervision. Not shared with client.</p>
+
+  <div class="two-col">
+    <div>
+      <p><strong>Key strengths / resources surfaced this session:</strong></p>
+      <div class="write-area"></div>
+    </div>
+    <div>
+      <p><strong>Exceptions identified (summary):</strong></p>
+      <div class="write-area"></div>
+    </div>
+  </div>
+
+  <p><strong>Scaling trajectory (compare to prior session if applicable):</strong></p>
+  <div class="write-line"></div>
+
+  <p><strong>Next session focus / questions to revisit:</strong></p>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <p><strong>EARS follow-up items (what to amplify at the start of next session):</strong></p>
+  <div class="write-line"></div>
+
+  <div class="footer">&copy; 2026 GA Integrated Therapeutic Perspectives LLC. For licensed professional use only.<br>CR-CLI-604 | CounselorReady CE | NBCC ACEP #7760</div>
+</body>
+</html>

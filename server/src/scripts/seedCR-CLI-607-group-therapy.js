@@ -1,0 +1,608 @@
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config({ path: new URL('../../../.env', import.meta.url).pathname });
+
+const MONGODB_URI = process.env.MONGODB_URI;
+const SLUG = 'cr-cli-607-group-therapy-design-facilitation';
+
+const COURSE = {
+  title: 'Group Therapy: Design, Facilitation, and Common Pitfalls',
+  slug: SLUG,
+  courseCode: 'CR-CLI-607',
+  description: 'This course provides licensed mental health professionals with a comprehensive foundation in group therapy — from theoretical underpinnings and group design through facilitation skills, ethical considerations, and common clinical pitfalls. Drawing on decades of group psychotherapy research and Yalom\'s foundational therapeutic factors model, clinicians will develop practical skills for leading effective therapy groups across a variety of settings and populations.',
+  shortDescription: 'Master group therapy design, facilitation skills, Yalom\'s therapeutic factors, and how to navigate common group pitfalls in clinical practice.',
+  ceHours: 2,
+  category: 'clinical',
+  difficulty: 'intermediate',
+  targetAudience: 'Licensed mental health professionals (LPCs, LCSWs, LMFTs, NCCs)',
+  prerequisites: 'Basic counseling skills and experience working with individual clients. Some prior group work experience helpful but not required.',
+  learningObjectives: [
+    'Describe Yalom\'s eleven therapeutic factors and how they operate in group therapy',
+    'Design an effective therapy group including purpose, composition, structure, and setting',
+    'Identify facilitation skills essential to effective group leadership',
+    'Recognize and intervene with common group dynamics including scapegoating, monopolizing, and resistance',
+    'Apply ethical principles to group therapy including confidentiality, informed consent, and boundary management',
+    'Distinguish between different group formats (process, psychoeducational, support) and their appropriate indications'
+  ],
+  presenter: {
+    name: 'Kejuiana Johnson',
+    credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
+    licenseNumber: 'LPC009587',
+    licenseState: 'Georgia',
+    licenseType: 'LPC'
+  },
+  provider: {
+    name: 'GA Integrated Therapeutic Perspectives LLC',
+    shortName: 'GAITP LLC',
+    acepNumber: '7760',
+    approvalBody: 'NBCC'
+  },
+  approvals: [{
+    body: 'NBCC',
+    number: '#7760',
+    hourBreakdown: [{ label: 'core', hours: 2 }]
+  }],
+  isPublished: false,
+  status: 'draft',
+  sections: [
+    {
+      title: 'Introduction: The Power and Complexity of Group Therapy',
+      order: 0,
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Group Therapy: Design, Facilitation, and Common Pitfalls',
+          subtitle: 'From Yalom\'s therapeutic factors to practical group leadership'
+        },
+        {
+          type: 'text',
+          content: `<h2>Why Group Therapy?</h2>
+<p>Group therapy is one of the most powerful and underutilized modalities in mental health treatment. Meta-analyses consistently demonstrate that group therapy produces outcomes equivalent to individual therapy across a wide range of presenting concerns — including depression, anxiety, substance use disorders, personality pathology, trauma, and bereavement — while providing treatment to multiple clients simultaneously and at lower per-client cost.</p>
+<p>Beyond efficiency, group therapy offers something individual therapy cannot: a real-time social laboratory. In group, clients don't just talk about their interpersonal difficulties — they enact them, observe them, and work through them in the presence of others who can provide genuine feedback and authentic human connection. The group itself becomes a therapeutic instrument.</p>
+<p>Despite this, most training programs provide comparatively little group therapy preparation, and many licensed clinicians feel underprepared to lead groups. This course addresses that gap with practical, applied training in group design, facilitation, dynamics management, and ethics — anchored in the research that actually supports what works in group therapy.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Yalom's Therapeutic Factors: The Core of Group Therapy</h2>
+<p>Irvin Yalom's model of therapeutic factors — also called curative factors — remains the foundational theoretical framework for understanding how and why group therapy works. Yalom identified eleven factors, active to varying degrees in different groups and at different stages, that contribute to client change.</p>
+<p><strong>1. Instillation of Hope</strong><br>Observing that other group members have improved — or are improving — generates hope that change is possible. For clients who feel stuck, hopeless, or uniquely broken, watching peers progress is powerfully therapeutic. The leader cultivates hope explicitly: "Many people who have sat where you're sitting have told me that by the end of our time together, they felt very differently."</p>
+<p><strong>2. Universality</strong><br>"I thought I was the only one." The discovery that others share similar struggles, shameful thoughts, or painful experiences reduces isolation and self-condemnation. This is often cited as the most immediately impactful early-group factor. Groups that create safety for authentic self-disclosure amplify universality.</p>
+<p><strong>3. Imparting Information</strong><br>Psychoeducation from the leader, and information shared by peers ("When I tried that, here's what happened"). Psychoeducational groups emphasize this factor most explicitly, but it operates in all groups.</p>
+<p><strong>4. Altruism</strong><br>The experience of contributing meaningfully to others' wellbeing. Group members who feel ineffectual, low in self-esteem, or burdensome discover that they have something to offer. Being helpful is itself therapeutic — and group therapy uniquely provides this opportunity.</p>
+<p><strong>5. Corrective Recapitulation of the Primary Family Group</strong><br>Many clients enter groups with patterns developed in their families of origin. The group, with its authority figure (leader) and peers (siblings), recreates family-like dynamics — but with the opportunity to work them through differently. The leader's role here is to notice when clients are enacting family patterns and facilitate productive exploration.</p>
+<p><strong>6. Development of Socializing Techniques</strong><br>Group therapy is social skills training by another name. Feedback from peers, practice with interpersonal risk-taking, and observation of others' social behavior all build interpersonal competence.</p>
+<p><strong>7. Imitative Behavior</strong><br>Members learn from observing each other — how a peer handles confrontation, how they express vulnerability, how they respond to feedback. This observational learning is often more powerful than explicit instruction.</p>
+<p><strong>8. Interpersonal Learning</strong><br>The most complex and arguably most powerful therapeutic factor. Members learn about their interpersonal style through real-time feedback and through the group's response to them. "The way you just responded made me want to pull away — is that what happens in your relationships outside?" This can only happen in group.</p>
+<p><strong>9. Group Cohesiveness</strong><br>The group equivalent of therapeutic alliance — the bond members feel with each other and with the group as an entity. Cohesiveness is both a therapeutic outcome and a precondition for deeper work: members who feel genuinely connected are more willing to take risks, give honest feedback, and engage with difficult material.</p>
+<p><strong>10. Catharsis</strong><br>Emotional expression — crying, expressing anger, naming pain — in the presence of others who witness and accept that expression. Unlike private catharsis, group catharsis occurs in a relational context that can transform it from mere discharge into integration.</p>
+<p><strong>11. Existential Factors</strong><br>Confronting existential realities — death, freedom, isolation, meaninglessness — within the group. This factor is often underemphasized but is particularly central in bereavement, illness, or end-of-life groups. The group provides a context for facing these realities together rather than alone.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Group Formats: Not All Groups Are the Same</h2>
+<p>Before designing a group, clinicians must understand the differences between group formats and choose the right one for their population, setting, and purpose.</p>
+<p><strong>Process/Interpersonal Groups:</strong> Focus on the here-and-now interpersonal experience within the group. Members explore how they interact with each other in real time, with the group relationship as the primary vehicle of change. These are closest to Yalom's model and require the highest level of group therapy training to facilitate. Best suited for: outpatient settings, clients with relational concerns, personality pathology, and clients seeking deeper character change.</p>
+<p><strong>Psychoeducational Groups:</strong> Structured curriculum delivered to multiple clients simultaneously. Leader-directed; members receive information, learn skills, and practice together. Evidence-based examples include MBSR (Mindfulness-Based Stress Reduction) groups, DBT skills groups, and anxiety management groups. Best suited for: community mental health, high-caseload settings, clients with specific skill deficits, short-term treatment.</p>
+<p><strong>Support Groups:</strong> Focus on mutual support, universality, and shared experience. Leader facilitates but may play a less directive role. Can be professionally-led or peer-led. Best suited for: bereavement, chronic illness, addiction recovery, caregiver support. Note: professionally-led support groups are different from peer-led ones (like AA) and require group therapy competencies.</p>
+<p><strong>Cognitive-Behavioral Groups:</strong> Structured, protocol-driven groups delivering CBT skills. Examples include cognitive restructuring groups, behavioral activation groups, and exposure-based groups for specific phobias. Best suited for: clients with specific disorders (depression, anxiety, OCD), time-limited settings, insurance-funded services.</p>
+<p><strong>Open vs. Closed Groups:</strong> Closed groups begin and end with the same members; they go through developmental stages together and develop deep cohesion. Open groups allow members to join and leave at any time; they sacrifice some cohesion for accessibility. The right choice depends on setting, population, and therapeutic goals.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Key Takeaways: Group Therapy Foundations',
+          takeaways: [
+            'Group therapy produces outcomes equivalent to individual therapy across most presenting concerns — while treating multiple clients simultaneously',
+            'Yalom\'s 11 therapeutic factors describe HOW group therapy works: hope, universality, altruism, cohesiveness, interpersonal learning, and others',
+            'Interpersonal learning — real-time feedback about one\'s relational patterns — is the factor uniquely available only in group, not individual therapy',
+            'Group cohesiveness is both an outcome and a prerequisite for deeper therapeutic work',
+            'Group format selection (process, psychoeducational, support, CBT) should match the population, setting, and therapeutic goals',
+            'Open groups offer accessibility but sacrifice the developmental cohesion of closed groups'
+          ]
+        },
+        {
+          type: 'multipleChoice',
+          question: 'According to Yalom, which therapeutic factor uniquely occurs only in group therapy and cannot be replicated in individual treatment?',
+          options: [
+            { text: 'Catharsis', isCorrect: false },
+            { text: 'Instillation of hope', isCorrect: false },
+            { text: 'Interpersonal learning through real-time feedback', isCorrect: true },
+            { text: 'Imparting information', isCorrect: false }
+          ],
+          correctAnswer: 2,
+          explanation: 'Interpersonal learning — receiving authentic, real-time feedback about one\'s interpersonal style from peers who have direct experience of it — is uniquely available in group therapy. The leader can tell a client about their relational patterns, but hearing it from multiple peers who are directly experiencing it carries a different and often more powerful impact.'
+        },
+        {
+          type: 'multiSelect',
+          question: 'Which of the following are among Yalom\'s eleven therapeutic factors? Select all that apply.',
+          options: [
+            { text: 'Universality', isCorrect: true },
+            { text: 'Transference interpretation', isCorrect: false },
+            { text: 'Altruism', isCorrect: true },
+            { text: 'Group cohesiveness', isCorrect: true },
+            { text: 'Systematic desensitization', isCorrect: false }
+          ],
+          explanation: 'Universality, altruism, and group cohesiveness are among Yalom\'s eleven therapeutic factors. Transference interpretation is a psychodynamic technique, not a Yalom therapeutic factor. Systematic desensitization is a behavioral technique. Yalom\'s factors describe the relational and experiential mechanisms of change in group therapy.'
+        }
+      ]
+    },
+    {
+      title: 'Group Design and Facilitation Skills',
+      order: 1,
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Designing and Leading Effective Groups',
+          subtitle: 'Pre-group preparation, facilitation skills, and managing difficult dynamics'
+        },
+        {
+          type: 'text',
+          content: `<h2>Designing a Group: Pre-Group Preparation</h2>
+<p>The most important group therapy work happens before the first session. Thoughtful group design — purpose, composition, structure, and setting — is the single most powerful predictor of group success. Groups that are poorly designed tend to fail in predictable ways: members dropout, conflict becomes unmanageable, or the group never achieves cohesion.</p>
+<p><strong>1. Defining purpose and selecting a format:</strong> What is this group for? The answer should be specific: "A closed-format 12-week process group for adults with chronic depression in an outpatient setting" is a clear purpose. "A group for people having a hard time" is not. Purpose drives every subsequent design decision — composition, structure, norms, and facilitation style.</p>
+<p><strong>2. Membership and composition:</strong> Research on group composition yields an important finding: homogeneity in problem area or diagnosis combined with heterogeneity in coping style and interpersonal style produces the most productive groups. Members who all have depression but cope and relate differently from each other will generate more interpersonal learning than a group that is homogeneous in every dimension.</p>
+<p>Considerations for inclusion:</p>
+<ul>
+<li>Is the presenting concern appropriate for this group's format and goals?</li>
+<li>Does the client have the verbal, cognitive, and social capacity to participate?</li>
+<li>Is the client in sufficient crisis stability to engage (not so destabilized that they need individual work first)?</li>
+<li>Will this client's interpersonal style be productive in this particular group composition?</li>
+</ul>
+<p>Absolute exclusion criteria for most outpatient groups:</p>
+<ul>
+<li>Active psychosis</li>
+<li>Active suicidal intent requiring intensive intervention</li>
+<li>Severe cognitive impairment affecting comprehension</li>
+<li>Sociopathic traits that would make the group unsafe for others</li>
+</ul>
+<p><strong>3. Size:</strong> The optimal size for interpersonal process groups is 7–8 members. Smaller groups can't generate adequate interpersonal complexity; larger groups make it difficult for every member to participate meaningfully. Psychoeducational groups can be larger (12–15) because the format is less relational.</p>
+<p><strong>4. Duration and frequency:</strong> For closed outpatient groups, 12–20 sessions is typical. Weekly 90-minute sessions are the standard for process groups; psychoeducational groups may run 60 minutes. The research on session length supports 90 minutes as optimal for interpersonal work — enough time to establish context, move through material, and return to a stable place before ending.</p>
+<p><strong>5. Pre-group preparation:</strong> Individual pre-group meetings with each prospective member are essential for most process groups. These meetings: establish expectations, assess appropriateness, begin the therapeutic relationship, identify member goals, and answer questions about what group will be like. Members who are better prepared have lower dropout rates and engage more quickly.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Group Stages: What to Expect Over Time</h2>
+<p>Groups, like individuals, develop over time. Recognizing the stage of a group's development allows the clinician to calibrate their facilitation appropriately — what works in Stage 1 can derail Stage 3 work, and vice versa.</p>
+<p><strong>Stage 1: Formation and Engagement (early group)</strong><br>Members are orienting: Is this safe? Do I belong here? Will these people understand me? The leader is central, structure is helpful, and member-to-leader interaction is prominent. Universal themes surface quickly (universality factor). The leader's primary tasks: create safety, establish norms, facilitate initial disclosure, and help members identify connections to each other.</p>
+<p><strong>Stage 2: Conflict and Challenge (storming)</strong><br>Often emerging around sessions 3–6, this stage involves increased conflict — between members, and sometimes with the leader. Members test norms, challenge the leader's authority, and assert individuality. This is normal and necessary. Groups that skip this stage (through over-control by the leader) often stall at superficial cohesion. The leader's task: stay non-anxious, model handling conflict productively, and use conflict as material.</p>
+<p><strong>Stage 3: Cohesion and Working Through (norming and performing)</strong><br>Genuine cohesion develops. Members take more interpersonal risks, give more authentic feedback, and engage with deeper material. The leader steps back from center; member-to-member interaction increases. Interpersonal learning is most active here.</p>
+<p><strong>Stage 4: Termination</strong><br>Groups end, and the ending is itself therapeutic — or can be, when handled well. Themes of loss, gratitude, pride, and review emerge. The leader facilitates explicit processing of the ending, celebration of growth, and transition. Members who minimize termination often have avoidant patterns that the ending illuminates.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Core Facilitation Skills</h2>
+<p>Effective group facilitation requires a specific skill set distinct from individual therapy. Many skilled individual therapists initially struggle in group because their habitual responses — forming a dyadic relationship, providing extensive individual reflection — work against the group's development.</p>
+<p><strong>Activating member-to-member interaction:</strong> The leader's primary facilitation goal in process groups is to increase direct member-to-member interaction rather than channeling everything through themselves. Techniques:</p>
+<ul>
+<li>"Who in the group can respond to what Sarah just shared?"</li>
+<li>"Does anyone have a reaction to what just happened between Marcus and Diane?"</li>
+<li>[Silence] — allowing members to take up space rather than filling silence with leader commentary</li>
+</ul>
+<p><strong>Process commentary:</strong> Group process refers to the how of what's happening — the relational and emotional dynamics beneath the content. "We've been talking for 20 minutes about jobs and it feels like we're all working very hard to stay on safe ground. I wonder what's here that feels unsafe to approach?" Process commentary invites the group to look at itself — which is often where the richest work happens.</p>
+<p><strong>Protecting members while maintaining safety:</strong> A member who is being piled on by the group, or who is being shamed, needs the leader to intervene. "Wait — I want to slow down here. I'm noticing several people coming at Marcus from the same direction. Let's check in with Marcus about how he's experiencing this."</p>
+<p><strong>Managing self-disclosure:</strong> Leader self-disclosure in group is a calibrated tool, not a norm. Transparent sharing of immediate reactions ("I notice I'm feeling something protective when this topic comes up — I wonder if others are too") can be powerful. Personal narrative disclosure is rarely appropriate.</p>
+<p><strong>Linking:</strong> Explicitly connecting themes across members and across sessions. "What just happened between you and Diane reminds me of what you described with your sister last week." Linking builds cohesion, deepens meaning, and helps members see their patterns across contexts.</p>`
+        },
+        {
+          type: 'cardSort',
+          title: 'Therapeutic Factors Sorting Activity',
+          instructions: 'Sort each example into the Yalom therapeutic factor it best illustrates.',
+          cards: [
+            { text: 'A client says: "I thought I was the only one who felt this way. Hearing everyone else say the same thing changed everything."', category: 'Universality' },
+            { text: 'A client who had felt burdensome realizes she helped another member significantly and says "I actually had something to offer."', category: 'Altruism' },
+            { text: 'A member watches how a peer handles being challenged and thinks "I want to respond to confrontation the way she just did."', category: 'Imitative Behavior' },
+            { text: 'Three members independently tell one client his humor seems to push people away — this is the same feedback he gets in his marriage.', category: 'Interpersonal Learning' },
+            { text: 'A client, seeing others who were where she was six months ago, begins to believe her depression can actually get better.', category: 'Instillation of Hope' },
+            { text: 'A usually guarded client cries openly about her grief for the first time, and the group sits with her in silence rather than trying to fix it.', category: 'Catharsis' }
+          ],
+          categories: ['Universality', 'Altruism', 'Imitative Behavior', 'Interpersonal Learning', 'Instillation of Hope', 'Catharsis'],
+          explanation: 'Yalom\'s therapeutic factors describe the distinct pathways through which group therapy produces change. Each factor is active to varying degrees depending on the group\'s stage, format, and the specific interactions occurring. Skilled group leaders recognize which factors are active and how to cultivate them intentionally.'
+        },
+        {
+          type: 'text',
+          content: `<h2>Common Group Dynamics and How to Intervene</h2>
+<p>Group therapy involves complex dynamics that can either be harnessed for therapeutic work or, if unaddressed, undermine the group entirely. Recognizing these dynamics — and intervening skillfully — is the most challenging aspect of group facilitation.</p>
+<p><strong>The Monopolizer:</strong> A member who dominates airtime, often anxiously, in ways that frustrate other members and reduce their engagement. The monopolizer often has significant anxiety about silence or about others seeing their "real" self — the talk is protective. Interventions:</p>
+<ul>
+<li>Gently interrupt: "I want to make sure we have time to hear from everyone today — let's open this to the group."</li>
+<li>Address the process privately in the session: "I notice you often take up a lot of the early group time. I'm curious what it's like for you when you're not talking?"</li>
+<li>Invite the group to address it: "I want to check in with the group about something I've been noticing."</li>
+</ul>
+<p><strong>The Scapegoat:</strong> One member who absorbs the group's displaced anger, anxiety, or shame. Scapegoating often targets someone who is "different" in some way — who expresses what others are afraid to. This is one of the most dangerous group dynamics: scapegoated members are at highest dropout and harm risk. The leader must intervene actively, often by naming the pattern and exploring what the group is avoiding through the scapegoat.</p>
+<p><strong>Subgrouping:</strong> Two or more members forming an alliance that operates outside the group — through shared glances, pre-session conversations, or romantic involvement. Subgroups fragment group cohesion and introduce material the full group can't access. The intervention is to bring the subgroup into the full group: "I notice there seem to be some side conversations happening. What's alive between the two of you that the group could benefit from hearing?"</p>
+<p><strong>Resistance and avoidance:</strong> The group collectively avoiding difficult material — through humor, topic-changing, intellectualizing, or sustained focus on outside content. "I notice we've been talking about work situations for 30 minutes. I'm wondering if we're avoiding something that feels more personally risky to bring up here." Naming avoidance is usually more productive than pushing through it.</p>
+<p><strong>The silent member:</strong> Some silence is processing; some is avoidance; some is social anxiety; some is contempt. The distinction matters for intervention. Gently inviting silent members without putting them on the spot: "James, I notice you've been listening carefully to this. What's your experience been?"</p>`
+        },
+        {
+          type: 'multipleChoice',
+          question: 'During Stage 2 of group development, the leader should primarily:',
+          options: [
+            { text: 'Increase structure and directive leadership to contain the conflict', isCorrect: false },
+            { text: 'Remain non-anxious and use the conflict as therapeutic material', isCorrect: true },
+            { text: 'Identify the member responsible for the conflict and address it privately', isCorrect: false },
+            { text: 'Restructure the group composition to reduce interpersonal tension', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'Stage 2 conflict is normal, expected, and necessary for group development. The leader\'s task is to remain non-anxious (modeling conflict tolerance), use the conflict as material for interpersonal learning, and help the group work through rather than around the tension. Over-controlling or avoiding Stage 2 typically produces groups that stall at superficial cohesion.'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Which of the following represents an example of "process commentary" in group facilitation?',
+          options: [
+            { text: '"Let\'s talk about the cognitive distortions that came up in your week."', isCorrect: false },
+            { text: '"We\'ve spent 20 minutes on work situations. I notice we seem to be working hard to stay on safe ground — I wonder what feels risky to approach here."', isCorrect: true },
+            { text: '"Today I want us to review the handout from last session."', isCorrect: false },
+            { text: '"Tell me more about what happened at work on Tuesday."', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'Process commentary addresses the HOW of what\'s happening in the group — the relational and emotional dynamics beneath the content. Noting that the group has stayed on safe topics and inviting examination of what feels risky is a process comment. The other options focus on content (what) rather than process (how).'
+        },
+        {
+          type: 'multiSelect',
+          question: 'Which of the following are appropriate absolute exclusion criteria for most outpatient interpersonal process groups? Select all that apply.',
+          options: [
+            { text: 'Active psychosis', isCorrect: true },
+            { text: 'History of depression', isCorrect: false },
+            { text: 'Active suicidal intent requiring intensive intervention', isCorrect: true },
+            { text: 'Difficulty with interpersonal relationships', isCorrect: false },
+            { text: 'Severe cognitive impairment affecting comprehension', isCorrect: true }
+          ],
+          explanation: 'Active psychosis, active suicidal intent requiring intensive intervention, and severe cognitive impairment are appropriate exclusions for outpatient interpersonal process groups — these conditions require different levels of care or different modalities. History of depression and interpersonal difficulties are not exclusion criteria — in fact, they are often appropriate indications for group therapy.'
+        }
+      ]
+    },
+    {
+      title: 'Ethics, Special Populations, and Getting Started',
+      order: 2,
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Group Ethics, Special Populations, and Implementation',
+          subtitle: 'Confidentiality, boundaries, cultural considerations, and practical starting points'
+        },
+        {
+          type: 'text',
+          content: `<h2>Ethical Principles in Group Therapy</h2>
+<p>Group therapy raises unique ethical considerations not encountered in individual practice. These deserve explicit training and ongoing attention.</p>
+<p><strong>Confidentiality in group:</strong> The therapeutic privilege of confidentiality cannot be legally enforced among group members — the leader can maintain confidentiality, but they cannot control members' behavior outside the group. This creates a fundamental ethical and clinical challenge. Best practices:</p>
+<ul>
+<li>Include explicit confidentiality agreements in written informed consent</li>
+<li>Discuss confidentiality norms explicitly in the first session and revisit them</li>
+<li>Frame confidentiality as a group value and collective responsibility, not just a rule</li>
+<li>Identify what will happen if confidentiality is breached (member may be asked to leave the group)</li>
+<li>Be transparent with clients that absolute confidentiality cannot be guaranteed</li>
+</ul>
+<p><strong>Informed consent:</strong> Group therapy informed consent should include: the group format and goals, confidentiality limitations, expectations for attendance and participation, what happens if a member joins or leaves (for open groups), the leader's theoretical orientation and approach, and fee structure. This is best delivered both verbally (in pre-group individual meeting) and in writing.</p>
+<p><strong>Dual relationships:</strong> Adding a current individual therapy client to a group you lead creates a dual relationship with unique complexities. The client now has access to your behavior with others; other group members may perceive them as "favorites"; the therapeutic material in group may affect the individual work. This is not automatically contraindicated, but it requires careful clinical and ethical consideration and should be disclosed in informed consent.</p>
+<p><strong>Boundaries between group members:</strong> Sexual or romantic involvement between group members is ethically complex and clinically risky. It typically needs to be addressed in group when it occurs (subgrouping dynamic) and may require the leader to set explicit norms against outside relationships during treatment, particularly in closed groups where such involvement could fragment the group.</p>
+<p><strong>Mandatory reporting in group:</strong> If a disclosure is made in group that triggers a mandatory reporting obligation, the leader must fulfill that obligation — which will affect group confidentiality. The leader should be transparent with the group (without identifying the specific reportable information beyond what is necessary) about what happened and why.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Co-Leadership: Benefits, Challenges, and Best Practices</h2>
+<p>Co-led groups — facilitated by two therapists simultaneously — have significant advantages and introduce specific challenges that require explicit management.</p>
+<p><strong>Advantages of co-leadership:</strong></p>
+<ul>
+<li>Two perspectives on complex dynamics; co-leaders catch what one might miss</li>
+<li>Continuity when one leader is absent</li>
+<li>Models healthy adult relationships and conflict resolution</li>
+<li>Provides training opportunities (experienced leader + trainee)</li>
+<li>Reduces leader burnout in intense groups (trauma, grief, personality disorder)</li>
+<li>Gender diversity in leadership can be therapeutically powerful</li>
+</ul>
+<p><strong>Challenges of co-leadership:</strong></p>
+<ul>
+<li>Leader disagreements enacted in session can be confusing or destabilizing</li>
+<li>Power differentials (seniority, gender, race) between co-leaders model dynamics the group will enact</li>
+<li>Inconsistent theoretical orientations between leaders create mixed messages</li>
+</ul>
+<p><strong>Co-leadership best practices:</strong></p>
+<ul>
+<li>Regular (weekly) co-leader meetings before and after sessions to process dynamics</li>
+<li>Clear agreements about how to handle disagreements in session</li>
+<li>Explicit commitment to raising interpersonal issues between leaders in supervision, not through the group</li>
+<li>Awareness of the parallel process: how leaders relate to each other will be mirrored in how members relate to each other</li>
+</ul>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Group Therapy with Diverse Populations</h2>
+<p>Group composition always includes dimensions of difference — race, ethnicity, gender, sexual orientation, age, ability, and socioeconomic status — and these dimensions profoundly affect group dynamics. Clinicians who don't address this explicitly tend to reproduce societal power dynamics within the group.</p>
+<p><strong>Racially and ethnically diverse groups:</strong></p>
+<ul>
+<li>White leaders facilitating racially diverse groups carry the responsibility of understanding how race shapes the room — trust, vulnerability, and who gets heard</li>
+<li>Microaggressions between members (or from leaders toward members) require immediate, direct intervention</li>
+<li>Leaders should not rely on members of marginalized groups to educate the group about their experience</li>
+<li>Homogeneous cultural groups (e.g., a group specifically for Black women) can offer unique therapeutic advantages in universality and safety</li>
+</ul>
+<p><strong>LGBTQ+ members in groups:</strong></p>
+<ul>
+<li>Assess group safety before placing LGBTQ+ clients in mixed groups — heteronormative assumptions by leaders or members can be harmful</li>
+<li>LGBTQ+-specific groups offer a context where identity-related universality is immediate and powerful</li>
+<li>Leaders should use inclusive language from the first session and intervene directly on heteronormative comments</li>
+</ul>
+<p><strong>Groups in community mental health with economic marginalization:</strong></p>
+<ul>
+<li>Concrete barriers (transportation, childcare, work schedules) affect attendance in ways that can be misattributed to resistance</li>
+<li>Group norms designed for middle-class clients (consistent attendance, weekly time commitment) may be unrealistic — adapt accordingly</li>
+<li>Trust in institutional services may be low — earning it requires consistency, transparency, and cultural humility</li>
+</ul>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Telehealth and Online Groups</h2>
+<p>The COVID-19 pandemic forced a rapid transition to telehealth group therapy, which generated substantial research and clinical experience. What have we learned?</p>
+<p><strong>Online groups work.</strong> Studies of online group therapy — for depression, anxiety, PTSD, cancer-related distress, and other conditions — demonstrate outcomes comparable to in-person groups. Dropout rates are similar. Therapeutic alliance develops online, though it may develop more slowly.</p>
+<p><strong>What changes in online groups:</strong></p>
+<ul>
+<li>Nonverbal communication is reduced — the leader must be more explicit about inviting members to share reactions</li>
+<li>Video fatigue is real — 90-minute sessions online may feel longer; breaks or shorter sessions may be needed</li>
+<li>Members joining from different physical spaces can reduce the sense of shared "container" — the leader may need to be more explicit about creating group identity and boundaries</li>
+<li>Technical difficulties require explicit protocols (what happens if a member gets dropped)</li>
+<li>Privacy at home is not guaranteed — some members may not have private spaces for group participation</li>
+</ul>
+<p><strong>Online group best practices:</strong></p>
+<ul>
+<li>Use video, not audio-only, whenever possible to preserve nonverbal information</li>
+<li>Establish explicit norms for online participation (cameras on, no driving, private space)</li>
+<li>Consider shorter sessions (75 minutes) to mitigate screen fatigue</li>
+<li>Continue pre-group individual preparation via telehealth for new members</li></p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Common Pitfalls in Group Leadership</h2>
+<p>Even experienced group therapists make characteristic errors. Awareness of these patterns is the first step toward avoiding them.</p>
+<p><strong>Over-structuring:</strong> Using excessive structure to manage anxiety — about conflict, about silence, about losing control. Structure is appropriate in early sessions and in psychoeducational formats; in later-stage process groups, excessive structure prevents the interpersonal work the group needs to do.</p>
+<p><strong>Under-structuring:</strong> The opposite error — insufficient structure produces unsafe, chaotic groups that members leave. Early groups need more structure than most leaders provide.</p>
+<p><strong>Rescuing:</strong> Intervening too quickly when members are in distress, before the group has had a chance to respond. "John, that sounds really painful" — followed by looking immediately at John rather than at the group — short-circuits the most powerful available intervention (the group's response).</p>
+<p><strong>The "hot seat" error:</strong> Focusing intensely on one member for extended periods while others disengage. Every member should have some airtime in every session.</p>
+<p><strong>Failing to address process:</strong> Staying at the content level — what members say they're struggling with — rather than the process level — how they're relating to each other right now. Content-only groups often feel productive but produce limited lasting change.</p>
+<p><strong>Not addressing resistance directly:</strong> Letting the group chronically avoid difficult material, or letting problematic dynamics (monopolizing, scapegoating) continue without intervention, erodes trust and cohesion over time.</p>
+<p><strong>Neglecting termination:</strong> Treating the final session as just another session rather than using it therapeutically. Ending well requires preparation — often dedicating the last 2–3 sessions to explicit consolidation and processing of the ending.</p>`
+        },
+        {
+          type: 'flashcardDeck',
+          title: 'Group Therapy Key Terms',
+          instructions: 'Review essential group therapy terminology.',
+          flashcards: [
+            { front: 'Process Commentary', back: 'Leader observation about the HOW of group dynamics — the relational and emotional currents beneath the content — used to invite the group to examine itself' },
+            { front: 'Cohesiveness', back: 'The bond members feel with each other and with the group; the group equivalent of therapeutic alliance; prerequisite for deeper work' },
+            { front: 'Scapegoating', back: 'A group dynamic where one member absorbs displaced group anxiety or anger; one of the most dangerous group dynamics requiring active leader intervention' },
+            { front: 'Subgrouping', back: 'Two or more members forming an alliance that operates outside the full group; fragments cohesion and introduces inaccessible material' },
+            { front: 'Linking', back: 'Facilitation technique explicitly connecting themes across members or sessions; builds cohesion and helps members see patterns' },
+            { front: 'Pre-group Preparation', back: 'Individual meetings with prospective members before the group begins; reduces dropout and accelerates engagement; essential for process groups' },
+            { front: 'Closed Group', back: 'A group that begins and ends with the same members; allows deeper developmental stages but limits accessibility' },
+            { front: 'Open Group', back: 'A group where members join and leave at any time; increases accessibility but reduces cohesion and developmental depth' }
+          ]
+        },
+        {
+          type: 'text',
+          content: `<h2>Getting Started: Practical Steps for Implementing Group Therapy</h2>
+<p>For clinicians ready to start offering group therapy, these practical steps reduce the most common implementation barriers:</p>
+<p><strong>Start with what you know:</strong> Your first group should leverage existing clinical strengths. If you're strong in CBT, start with a CBT skills group. If you have trauma training, consider a trauma-informed support group. Don't start with the most complex format (open-ended interpersonal process groups) before building foundational skills.</p>
+<p><strong>Get supervision or consultation:</strong> Group therapy should not be conducted without access to supervision or consultation, particularly for the first several groups. ASGPP (American Society of Group Psychotherapy and Psychodrama) and AGPA (American Group Psychotherapy Association) offer training, consultation matching, and standards for group practice.</p>
+<p><strong>Build in pre-group preparation:</strong> Even if your setting limits the pre-group meeting to 30 minutes, do it. The evidence that pre-group preparation reduces dropout and increases engagement is substantial and consistent.</p>
+<p><strong>Establish group norms explicitly in Session 1:</strong> Don't assume members know how to behave in group. Explicitly introduce: confidentiality and its limits, attendance expectations, how members should give feedback to each other, how conflict will be handled, and the focus of the group. Writing these down as a group agreement is useful.</p>
+<p><strong>Attend to group composition carefully:</strong> The most common cause of early dropout is poor group fit — a member who is too different from the group, or too destabilized to use group effectively. Screening is not rejection; it's appropriate level-of-care matching.</p>
+<p><strong>Use process, not just content:</strong> The most common feedback in group therapy supervision is "stay in the room" — meaning, keep returning to what's happening between members right now rather than extended discussions of outside events.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Key Takeaways: Ethics and Implementation',
+          takeaways: [
+            'Confidentiality in group cannot be legally enforced among members — be transparent about this limit and establish explicit group norms',
+            'Pre-group individual preparation is the most evidence-supported step for reducing dropout and accelerating group engagement',
+            'Common facilitation pitfalls include over-structuring, rescuing, the hot-seat error, and neglecting to address process',
+            'Online groups produce outcomes comparable to in-person groups, but require adaptation for reduced nonverbal information and screen fatigue',
+            'Diverse group compositions require culturally responsive leadership — microaggressions, power dynamics, and identity-related material need active facilitation',
+            'Effective termination requires 2–3 sessions of explicit consolidation, not a single closing session'
+          ]
+        },
+        {
+          type: 'reflection',
+          question: 'Think about a group you have led or observed. Which of Yalom\'s therapeutic factors seemed most active? Which dynamics (scapegoating, monopolizing, subgrouping, resistance) emerged? Looking back, what facilitation intervention do you wish had been made — or would you make differently now?'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'A group member discloses information in session that triggers your mandatory reporting obligation. Which is the most ethically appropriate course of action?',
+          options: [
+            { text: 'Delay reporting until after the session to avoid disrupting the group', isCorrect: false },
+            { text: 'Fulfill the reporting obligation and be transparent with the group about what happened and why, without sharing identifying details unnecessarily', isCorrect: true },
+            { text: 'Address the disclosure with the member privately without informing the group', isCorrect: false },
+            { text: 'Ask the member\'s consent before filing the report', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'Mandatory reporting obligations supersede group confidentiality — the leader must fulfill them regardless of setting. Transparency with the group (without unnecessary identifying details) preserves trust, models ethical behavior, and allows the group to process what has occurred. Delaying reporting or seeking member consent before reporting is not ethically appropriate.'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Which of the following best describes the "rescuing" error in group facilitation?',
+          options: [
+            { text: 'Intervening too quickly when a member is distressed, before the group has had a chance to respond', isCorrect: true },
+            { text: 'Protecting a scapegoated member by directly addressing the group\'s behavior toward them', isCorrect: false },
+            { text: 'Providing psychoeducation to members who are confused about therapy goals', isCorrect: false },
+            { text: 'Using structure to contain conflict during Stage 2', isCorrect: false }
+          ],
+          correctAnswer: 0,
+          explanation: 'Rescuing occurs when the leader intervenes too quickly — before the group has had a chance to respond to a distressed member. By rushing to comfort or explain, the leader short-circuits the most powerful available intervention: the group\'s authentic response to their peer. Good facilitation holds the space for the group to respond first.'
+        },
+        {
+          type: 'multiSelect',
+          question: 'Which of the following are best practices for co-led therapy groups? Select all that apply.',
+          options: [
+            { text: 'Regular pre- and post-session meetings between co-leaders', isCorrect: true },
+            { text: 'Clear agreement on handling in-session disagreements', isCorrect: true },
+            { text: 'Working out interpersonal issues between leaders through the group process', isCorrect: false },
+            { text: 'Awareness that the co-leader relationship will be mirrored in member dynamics', isCorrect: true },
+            { text: 'Co-leaders should never have different theoretical orientations', isCorrect: false }
+          ],
+          explanation: 'Co-leadership best practices include regular meetings, clear agreements about in-session disagreement handling, and awareness of the parallel process between leaders and members. Processing leader interpersonal issues through the group is inappropriate — that belongs in supervision. Co-leaders can have complementary (though not contradictory) theoretical orientations.'
+        },
+        {
+          type: 'resources',
+          title: 'Additional Resources',
+          resources: [
+            { name: 'American Group Psychotherapy Association (AGPA)', url: 'https://www.agpa.org', description: 'Standards, training, consultation, and group therapy certification resources' },
+            { name: 'Yalom, I.D., & Leszcz, M. (2020). The Theory and Practice of Group Psychotherapy (6th ed.). Basic Books.', url: '', description: 'The foundational text in group psychotherapy; comprehensive coverage of therapeutic factors, dynamics, and facilitation' },
+            { name: 'Association for Specialists in Group Work (ASGW)', url: 'https://www.asgw.org', description: 'Division of ACA focused on group work training, standards, and professional development' },
+            { name: 'Burlingame, G.M., Strauss, B., & Joyce, A.S. (2013). Change mechanisms and effectiveness of small group treatments. In M.J. Lambert (Ed.), Bergin and Garfield\'s Handbook of Psychotherapy and Behavior Change', url: '', description: 'Comprehensive meta-analytic review of group therapy evidence base' }
+          ]
+        }
+      ]
+    }
+  ],
+  assessment: {
+    questions: [
+      {
+        question: 'According to Yalom, which therapeutic factor involves clients learning about their interpersonal style through real-time feedback from group members?',
+        options: ['Universality', 'Interpersonal learning', 'Imitative behavior', 'Catharsis'],
+        correctAnswer: 1,
+        explanation: 'Interpersonal learning is the process by which members receive genuine feedback about their relational patterns from others who are directly experiencing those patterns. This is the therapeutic factor uniquely available only in group, not in individual therapy.'
+      },
+      {
+        question: 'A group member who has felt like a burden discovers they have significantly helped another member. Which Yalom therapeutic factor is most active?',
+        options: ['Instillation of hope', 'Universality', 'Altruism', 'Cohesiveness'],
+        correctAnswer: 2,
+        explanation: 'Altruism is the therapeutic factor describing the benefit of contributing meaningfully to others\' wellbeing. Group members who feel ineffectual or burdensome discover their capacity to help, which is itself therapeutic and directly challenges their self-perception.'
+      },
+      {
+        question: 'What is the optimal group size for an outpatient interpersonal process group?',
+        options: ['3–4 members', '5–6 members', '7–8 members', '12–15 members'],
+        correctAnswer: 2,
+        explanation: '7–8 members is the research-supported optimal size for interpersonal process groups. Smaller groups lack sufficient interpersonal complexity; larger groups make it difficult for every member to participate meaningfully. Psychoeducational groups can be larger (12–15).'
+      },
+      {
+        question: 'Which stage of group development is characterized by increased conflict between members and challenges to the leader\'s authority?',
+        options: ['Stage 1: Formation', 'Stage 2: Conflict', 'Stage 3: Cohesion', 'Stage 4: Termination'],
+        correctAnswer: 1,
+        explanation: 'Stage 2 (often called "storming") involves increased conflict, member assertion of individuality, and challenges to the leader. This is normal and necessary — groups that skip this stage often stall at superficial cohesion. The leader\'s task is to stay non-anxious and use the conflict therapeutically.'
+      },
+      {
+        question: 'Which group composition principle does research most support for effective interpersonal process groups?',
+        options: ['Homogeneity in all dimensions to maximize universality', 'Homogeneity in problem area with heterogeneity in coping and interpersonal style', 'Heterogeneity in all dimensions to maximize diversity', 'Random composition with no attention to member characteristics'],
+        correctAnswer: 1,
+        explanation: 'Research supports homogeneity in presenting concern (shared enough to create universality) combined with heterogeneity in coping and interpersonal style (different enough to generate meaningful interpersonal learning and diverse perspectives).'
+      },
+      {
+        question: 'Absolute exclusion criteria for most outpatient interpersonal process groups include:',
+        options: ['Active depression', 'Interpersonal difficulties', 'Active psychosis', 'History of trauma'],
+        correctAnswer: 2,
+        explanation: 'Active psychosis is a standard absolute exclusion for outpatient process groups — it requires a higher level of care and a different modality. Depression, interpersonal difficulties, and trauma history are often appropriate indications for group therapy rather than exclusion criteria.'
+      },
+      {
+        question: 'Which facilitation technique explicitly connects themes across group members or across sessions?',
+        options: ['Process commentary', 'Linking', 'Bridging', 'Subgrouping'],
+        correctAnswer: 1,
+        explanation: 'Linking is the facilitation technique that explicitly connects what\'s happening between different members, or between current and past sessions. It builds cohesion, helps members see patterns across contexts, and deepens meaning-making.'
+      },
+      {
+        question: 'A group leader notices that one member is being collectively criticized by multiple other members in ways that feel piling-on and potentially harmful. This dynamic is called:',
+        options: ['Altruism', 'Subgrouping', 'Scapegoating', 'Resistance'],
+        correctAnswer: 2,
+        explanation: 'Scapegoating occurs when one member absorbs the group\'s displaced anger, anxiety, or shame. It is one of the most dangerous group dynamics, placing the scapegoated member at highest dropout and harm risk. The leader must intervene actively.'
+      },
+      {
+        question: 'Which of the following is a limitation of confidentiality that must be disclosed in group therapy informed consent?',
+        options: ['The leader may share group content with colleagues without client permission', 'Member-to-member confidentiality cannot be legally enforced by the leader', 'Group content may be shared with insurance companies automatically', 'The leader cannot maintain confidentiality because multiple people are present'],
+        correctAnswer: 1,
+        explanation: 'Unlike individual therapy, the leader in group therapy cannot legally control what other members share outside the group. This limitation must be disclosed in informed consent. The leader maintains their own confidentiality obligations, but cannot enforce confidentiality on other members.'
+      },
+      {
+        question: 'The "process" in "process commentary" refers to:',
+        options: ['The treatment plan and therapeutic goals', 'The steps the leader takes to facilitate group exercises', 'The relational and emotional dynamics occurring beneath the content', 'The administrative procedures for group documentation'],
+        correctAnswer: 2,
+        explanation: 'In group therapy, "process" refers to the HOW — the relational and emotional dynamics occurring between members and with the leader, beneath the surface content. Process commentary invites the group to examine itself: "I notice we\'ve been avoiding something — what feels risky to approach?"'
+      },
+      {
+        question: 'Which facilitation error involves focusing extensively on one member for a long period while others disengage?',
+        options: ['Rescuing', 'Over-structuring', 'The hot-seat error', 'Subgrouping'],
+        correctAnswer: 2,
+        explanation: 'The "hot seat" error involves the leader (or group) directing sustained, intense attention on one member at the expense of others\' participation. It reduces engagement, can feel persecutory to the focused member, and prevents the distributed, member-to-member work that produces the most lasting change.'
+      },
+      {
+        question: 'Pre-group individual preparation meetings are recommended because:',
+        options: ['They are legally required for group therapy billing', 'Research shows they reduce dropout rates and accelerate engagement', 'They allow the leader to set group agenda in advance', 'They eliminate the need for group norms discussion in Session 1'],
+        correctAnswer: 1,
+        explanation: 'Pre-group individual preparation is the most evidence-supported practice for improving group outcomes. Research consistently shows that members who receive preparation have lower dropout rates, engage more quickly, and develop group cohesion faster than unprepared members.'
+      },
+      {
+        question: 'Online group therapy research demonstrates:',
+        options: ['Online groups are significantly less effective than in-person groups', 'Online groups produce outcomes comparable to in-person groups', 'Online groups are only appropriate for psychoeducational formats', 'Online group therapy should be avoided due to confidentiality concerns'],
+        correctAnswer: 1,
+        explanation: 'Research on online group therapy demonstrates outcomes comparable to in-person groups across multiple conditions. Dropout rates are similar. Therapeutic alliance develops online, though it may develop more slowly. Online groups require adaptation but are not less effective.'
+      },
+      {
+        question: 'A co-leader has an unresolved interpersonal conflict with their co-leader partner. According to best practices, this should be addressed:',
+        options: ['Through the group process to model transparency', 'In their weekly pre/post-session co-leader meetings or in supervision', 'By temporarily suspending the co-leadership relationship', 'After the group ends to avoid disrupting treatment'],
+        correctAnswer: 1,
+        explanation: 'Co-leader interpersonal issues should be processed in regular co-leader meetings or supervision — not through the group. Using the group to process leader dynamics is inappropriate and harmful; it blurs role boundaries and uses members to serve leader needs.'
+      },
+      {
+        question: 'The Yalom therapeutic factor that directly counters clients\' sense that they are uniquely broken or isolated is:',
+        options: ['Catharsis', 'Universality', 'Instillation of hope', 'Existential factors'],
+        correctAnswer: 1,
+        explanation: 'Universality — the discovery that others share similar struggles, shameful thoughts, or painful experiences — directly counters the isolation and self-condemnation of "I thought I was the only one." It is often cited as one of the most immediately impactful early-group therapeutic factors.'
+      },
+      {
+        question: 'Effective group termination is best handled by:',
+        options: ['Treating the final session as another regular working session', 'Dedicating 2–3 sessions to consolidation, review, and processing the ending', 'Ending abruptly to simulate real-world loss', 'Allowing members to decide how to use the final session without leader guidance'],
+        correctAnswer: 1,
+        explanation: 'Group termination is itself a therapeutic event that requires preparation and explicit attention. Dedicating 2–3 sessions to consolidation, celebration of growth, and processing the ending allows members to engage with themes of loss, gratitude, and transition that often reflect their broader relational patterns.'
+      }
+    ]
+  },
+  references: [
+    { citation: 'Yalom, I.D., & Leszcz, M. (2020). The theory and practice of group psychotherapy (6th ed.). Basic Books.' },
+    { citation: 'Burlingame, G.M., Strauss, B., & Joyce, A.S. (2013). Change mechanisms and effectiveness of small group treatments. In M.J. Lambert (Ed.), Bergin and Garfield\'s handbook of psychotherapy and behavior change (6th ed., pp. 640–689). Wiley.' },
+    { citation: 'Fuhriman, A., & Burlingame, G.M. (1994). Group psychotherapy: Research and practice. In A. Fuhriman & G.M. Burlingame (Eds.), Handbook of group psychotherapy (pp. 3–40). Wiley.' },
+    { citation: 'Kivlighan, D.M., & Goldfine, D.C. (1991). Endorsement of therapeutic factors as a function of stage of group development and participant interpersonal attitudes. Journal of Counseling Psychology, 38(2), 150–158.' },
+    { citation: 'MacNair-Semands, R.R., & Lese, K.P. (2000). Interpersonal problems and the perception of therapeutic factors in group therapy. Small Group Research, 31(2), 158–174.' },
+    { citation: 'Norcross, J.C., & Lambert, M.J. (2019). Psychotherapy relationships that work (3rd ed.). Oxford University Press.' },
+    { citation: 'Association for Specialists in Group Work. (2008). ASGW best practice guidelines. Journal for Specialists in Group Work, 33(2), 111–117.' },
+    { citation: 'Corey, M.S., Corey, G., & Corey, C. (2018). Groups: Process and practice (10th ed.). Cengage Learning.' },
+    { citation: 'Brabender, V., Fallon, A., & Smolar, A. (2004). Essentials of group therapy. Wiley.' },
+    { citation: 'Johnson, J.E., Burlingame, G.M., Olsen, J.A., Davies, D.R., & Gleave, R.L. (2005). Group climate, cohesion, alliance, and empathy in group psychotherapy: Multilevel structural equation models. Journal of Counseling Psychology, 52(3), 310–321.' },
+    { citation: 'Kaklauskas, F.J., & Greene, L.R. (Eds.). (2020). Core principles of group psychotherapy: A training manual for theory, research, and practice. Routledge.' },
+    { citation: 'Barlow, S.H. (2013). Specialty competencies in group psychology. Oxford University Press.' },
+    { citation: 'Burlingame, G.M., & Baldwin, S. (2011). Group therapy. In J.C. Norcross, G.R. VandenBos, & D.K. Freedheim (Eds.), History of psychotherapy: Continuity and change (2nd ed., pp. 505–515). APA.' },
+    { citation: 'Tasca, G.A., & Lampard, A.M. (2012). Reciprocal influence of alliance to the group and outcome in day treatment for eating disorders. Journal of Counseling Psychology, 59(4), 507–517.' },
+    { citation: 'Tschuschke, V., & Dies, R.R. (1994). Intensive analysis of therapeutic factors and outcome in long-term inpatient groups. Journal of Consulting and Clinical Psychology, 62(5), 1013–1021.' },
+    { citation: 'Strauss, B., Burlingame, G.M., & Bormann, B. (2008). Using the CORE-R battery in group psychotherapy. Journal of Clinical Psychology, 64(11), 1225–1237.' }
+  ]
+};
+
+function stripHTML(h){return(h||'').replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();}
+function countWords(c){let t=0;for(const s of c.sections||[])for(const b of s.contentBlocks||[]){
+  if(b.content)t+=stripHTML(b.content).split(/\s+/).filter(Boolean).length;
+  if(b.question)t+=stripHTML(b.question).split(/\s+/).filter(Boolean).length;
+  if(b.explanation)t+=stripHTML(b.explanation).split(/\s+/).filter(Boolean).length;
+  if(b.accordionItems)b.accordionItems.forEach(a=>{t+=stripHTML(a.title).split(/\s+/).filter(Boolean).length;t+=stripHTML(a.content).split(/\s+/).filter(Boolean).length;});
+  if(b.options)b.options.forEach(o=>t+=stripHTML(typeof o==='string'?o:o.text||'').split(/\s+/).filter(Boolean).length);
+  if(b.cards||b.flashcards)(b.cards||b.flashcards||[]).forEach(c=>{t+=stripHTML(c.front).split(/\s+/).filter(Boolean).length;t+=stripHTML(c.back).split(/\s+/).filter(Boolean).length;});
+  if(b.nodes)b.nodes.forEach(n=>{t+=stripHTML(n.text).split(/\s+/).filter(Boolean).length;if(n.choices)n.choices.forEach(ch=>t+=stripHTML(ch.text).split(/\s+/).filter(Boolean).length);});
+  if(b.matchingPairs)b.matchingPairs.forEach(p=>{t+=stripHTML(p.term).split(/\s+/).filter(Boolean).length;t+=stripHTML(p.definition).split(/\s+/).filter(Boolean).length;});
+  if(b.steps)b.steps.forEach(s=>t+=stripHTML(s.text).split(/\s+/).filter(Boolean).length);
+  if(b.takeaways)b.takeaways.forEach(tk=>t+=stripHTML(tk).split(/\s+/).filter(Boolean).length);
+  if(b.blanks)b.blanks.forEach(bl=>{t+=stripHTML(bl.prompt).split(/\s+/).filter(Boolean).length;t+=stripHTML(bl.answer).split(/\s+/).filter(Boolean).length;});
+  if(b.resources)b.resources.forEach(r=>{t+=stripHTML(r.name||'').split(/\s+/).filter(Boolean).length;t+=stripHTML(r.description||'').split(/\s+/).filter(Boolean).length;});
+}return t;}
+function validate(c){const e=[];const wc=countWords(c);if(wc<c.ceHours*6000)e.push('CRITICAL:words');
+for(const[i,s]of(c.sections||[]).entries()){const t=(s.contentBlocks||[]).map(b=>b.type);
+if(!t.includes('sectionDivider'))e.push(`S${i+1}:divider`);
+if(t.filter(x=>['multipleChoice','multiSelect','matching','fillInBlank'].includes(x)).length<2)e.push(`S${i+1}:KC<2`);
+if(t.filter(x=>['flashcardDeck','scenarioTree','cardSort','sequencing'].includes(x)).length<1&&i>0&&i<c.sections.length-1)e.push(`S${i+1}:activity`);
+for(const b of s.contentBlocks||[])if(b.options?.length&&typeof b.options[0]==='string')e.push('CRITICAL:flat_options');}
+if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
+if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
+async function main(){
+  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
+  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
+  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
+  const crit=e.filter(x=>x.startsWith('CRITICAL'));
+  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
+  if(e.length)e.forEach(x=>console.warn('⚠️',x));
+  const ex=await col.findOne({slug:SLUG});
+  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
+  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  await mongoose.disconnect();
+}
+main().catch(e=>{console.error(e);process.exit(1);});
