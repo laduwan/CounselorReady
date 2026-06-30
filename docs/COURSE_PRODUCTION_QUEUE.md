@@ -47,16 +47,16 @@ To customize: edit this file before triggering. Swap titles, change CE hours, re
 
 | # | Status | Code | Title | CE | Category |
 |---|--------|------|-------|---:|----------|
-| 11 | [ ] | CR-CLI-601 | Attachment Theory in Adult Psychotherapy: Assessment and Intervention | 3 | clinical |
-| 12 | [ ] | CR-CLI-602 | Acceptance and Commitment Therapy: Core Processes for Clinicians | 2 | clinical |
-| 13 | [ ] | CR-CLI-603 | Internal Family Systems: An Introduction for Licensed Counselors | 3 | clinical |
-| 14 | [ ] | CR-CLI-604 | Solution-Focused Brief Therapy in Community Mental Health | 2 | clinical |
-| 15 | [ ] | CR-CLI-605 | Cognitive Processing Therapy for PTSD: A Practical Guide | 2 | clinical |
-| 16 | [ ] | CR-CLI-606 | Psychopharmacology for Non-Prescribers: What Counselors Need to Know | 3 | clinical |
-| 17 | [ ] | CR-CLI-607 | Group Therapy: Design, Facilitation, and Common Pitfalls | 2 | clinical |
-| 18 | [ ] | CR-CLI-608 | Clinical Assessment and Diagnosis: Structured Interviewing Skills | 2 | clinical |
-| 19 | [ ] | CR-ADD-701 | Co-Occurring Disorders: Integrated Treatment for Substance Use and Mental Health | 3 | clinical |
-| 20 | [ ] | CR-ADD-702 | Harm Reduction in Clinical Practice: Evidence and Application | 2 | clinical |
+| 11 | [G] | CR-CLI-601 | Attachment Theory in Adult Psychotherapy: Assessment and Intervention | 3 | clinical |
+| 12 | [G] | CR-CLI-602 | Acceptance and Commitment Therapy: Core Processes for Clinicians | 2 | clinical |
+| 13 | [G] | CR-CLI-603 | Internal Family Systems: An Introduction for Licensed Counselors | 3 | clinical |
+| 14 | [G] | CR-CLI-604 | Solution-Focused Brief Therapy in Community Mental Health | 2 | clinical |
+| 15 | [G] | CR-CLI-605 | Cognitive Processing Therapy for PTSD: A Practical Guide | 2 | clinical |
+| 16 | [G] | CR-CLI-606 | Psychopharmacology for Non-Prescribers: What Counselors Need to Know | 3 | clinical |
+| 17 | [G] | CR-CLI-607 | Group Therapy: Design, Facilitation, and Common Pitfalls | 2 | clinical |
+| 18 | [G] | CR-CLI-608 | Clinical Assessment and Diagnosis: Structured Interviewing Skills | 2 | clinical |
+| 19 | [G] | CR-ADD-701 | Co-Occurring Disorders: Integrated Treatment for Substance Use and Mental Health | 3 | clinical |
+| 20 | [G] | CR-ADD-702 | Harm Reduction in Clinical Practice: Evidence and Application | 2 | clinical |
 
 **Week 2 total: 24 CE**
 
