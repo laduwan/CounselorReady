@@ -823,8 +823,10 @@ async function main() {
   await mongoose.connect(MONGO_URI);
   console.log('✔  Connected to MongoDB\n');
 
-  // Dynamic import to avoid circular-model issues
-  const { default: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  // Use loose schema so script runs from any working directory without model path issues
+  const schema = new mongoose.Schema({}, { strict: false, timestamps: true });
+  const InteractiveCourse = mongoose.models.InteractiveCourse ||
+    mongoose.model('InteractiveCourse', schema, 'interactivecourses');
 
   // Upsert
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
