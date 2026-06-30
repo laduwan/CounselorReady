@@ -374,7 +374,8 @@ const COURSE = {
 <li>"I've been promoted three times since the trauma, but anyone could do my job." (Professional success explained away to preserve "I am permanently damaged.")</li>
 <li>"My therapist says I'm making good progress, but she has to say that." (Therapist feedback explained away as professional obligation.)</li>
 </ul>
-<p>Identifying patterns rather than individual Stuck Points accelerates the cognitive work and builds meta-cognitive skills the client can apply independently after treatment ends. When a client recognizes "Oh, I'm doing that emotional reasoning thing again," they can interrupt the cognitive process without the full Challenging Questions sequence — the goal of late-phase CPT skill-building.</p>`
+<p>Identifying patterns rather than individual Stuck Points accelerates the cognitive work and builds meta-cognitive skills the client can apply independently after treatment ends. When a client recognizes "Oh, I'm doing that emotional reasoning thing again," they can interrupt the cognitive process without the full Challenging Questions sequence — the goal of late-phase CPT skill-building.</p>
+<p>In practice, most trauma survivors show two to four dominant patterns of problematic thinking across their Stuck Points. Identifying these dominant patterns — and teaching the client to recognize them in the moment — is one of the most durable outcomes of CPT. These meta-cognitive skills generalize beyond trauma: clients report using them to manage ordinary stressors, relationship conflicts, and future difficult life events long after treatment ends. This generalization is not a side effect of CPT — it is a core outcome, building resilience that extends well beyond PTSD symptom reduction.</p>`
         },
         {
           type: 'text',
