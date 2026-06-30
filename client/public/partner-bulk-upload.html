@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bulk Upload | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld { width:100%; padding:.55rem .75rem; border:1px solid #e7e5e4; border-radius:.5rem; font-size:.875rem; outline:none; font-family: monospace; }
+    .fld:focus { box-shadow:0 0 0 2px #4A7C59; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Bulk Course Upload</h1>
+      <p class="text-gray-500 mt-1">Upload up to 50 courses at once by pasting a JSON array below.</p>
+    </div>
+
+    <!-- Feature upsell card (shown on 403 FEATURE_NOT_AVAILABLE) -->
+    <div id="upsell-card" class="hidden text-white rounded-xl p-8 mb-8" style="background:#284157">
+      <h2 class="font-display text-2xl font-semibold mb-2">Upgrade to Use Bulk Upload</h2>
+      <p id="upsell-detail" class="text-white/80 mb-3 text-sm leading-relaxed"></p>
+      <p id="upsell-upgrade" class="font-semibold text-sm mb-5" style="color:#D4A855"></p>
+      <a href="/partner-billing.html" class="inline-block font-bold px-5 py-2.5 rounded-lg text-sm hover:opacity-90 transition-opacity" style="background:#D4A855;color:#284157">
+        View Upgrade Options
+      </a>
+    </div>
+
+    <!-- Upload form -->
+    <div id="upload-form">
+
+      <!-- Example / format reference -->
+      <div class="bg-white rounded-xl border border-stone-200 p-6 mb-5">
+        <h2 class="text-sm font-semibold text-stone-900 mb-2">JSON Format</h2>
+        <p class="text-sm text-stone-500 mb-3">
+          Paste a JSON array of course objects. Only <code class="bg-stone-100 px-1 rounded">title</code>,
+          <code class="bg-stone-100 px-1 rounded">description</code>, and
+          <code class="bg-stone-100 px-1 rounded">ceHours</code> are required. Maximum 50 courses per upload.
+        </p>
+        <!-- CSV→JSON is a possible future enhancement, not missing functionality -->
+        <pre class="bg-stone-50 border border-stone-200 rounded-lg px-4 py-3 text-xs font-mono overflow-x-auto text-stone-700 leading-relaxed">[
+  {
+    "title": "Introduction to Counseling Ethics",
+    "description": "A foundational course covering ethical principles in counseling practice.",
+    "ceHours": 3,
+    "slug": "counseling-ethics-intro",
+    "objectives": ["Understand ethical codes", "Apply ethical decision-making"],
+    "categories": ["Ethics"],
+    "tags": ["ethics", "fundamentals"],
+    "presenter": "Dr. Jane Smith",
+    "targetAudience": "Licensed counselors",
+    "status": "draft"
+  }
+]</pre>
+      </div>
+
+      <!-- Paste area -->
+      <div class="bg-white rounded-xl border border-stone-200 p-6 mb-5">
+        <label class="block text-sm font-semibold text-stone-700 mb-2" for="json-input">Paste JSON Array</label>
+        <textarea id="json-input" rows="14" class="fld"
+          placeholder='[{"title":"...","description":"...","ceHours":1}]'></textarea>
+        <p id="parse-error" class="hidden mt-2 text-sm text-red-600"></p>
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="uploadCourses()" id="upload-btn"
+          class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">
+          Validate &amp; Upload
+        </button>
+      </div>
+    </div>
+
+    <!-- Results (shown after upload) -->
+    <div id="results" class="hidden mt-10">
+      <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-6">Upload Results</h2>
+
+      <div id="results-created" class="hidden mb-6">
+        <h3 class="font-semibold text-hunter-700 mb-3 flex items-center gap-2">
+          <i class="fas fa-check-circle"></i>
+          <span id="created-count"></span>
+        </h3>
+        <div id="created-list" class="space-y-2"></div>
+      </div>
+
+      <div id="results-errors" class="hidden mb-6">
+        <h3 class="font-semibold text-red-600 mb-3 flex items-center gap-2">
+          <i class="fas fa-times-circle"></i>
+          <span id="error-count"></span>
+        </h3>
+        <div id="error-list" class="space-y-2"></div>
+      </div>
+
+      <button onclick="resetForm()" class="text-sm text-burgundy-700 hover:underline">
+        <i class="fas fa-arrow-left mr-1"></i> Upload another batch
+      </button>
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    function esc(s) { if (s == null) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function showUpsell(data) {
+      document.getElementById('upload-form').classList.add('hidden');
+      document.getElementById('upsell-detail').textContent = data.detail || '';
+      document.getElementById('upsell-upgrade').textContent = data.upgrade || '';
+      document.getElementById('upsell-card').classList.remove('hidden');
+    }
+
+    function resetForm() {
+      document.getElementById('results').classList.add('hidden');
+      document.getElementById('results-created').classList.add('hidden');
+      document.getElementById('results-errors').classList.add('hidden');
+      document.getElementById('json-input').value = '';
+      document.getElementById('parse-error').classList.add('hidden');
+      document.getElementById('upload-form').classList.remove('hidden');
+    }
+
+    async function uploadCourses() {
+      const input = document.getElementById('json-input').value.trim();
+      const parseErr = document.getElementById('parse-error');
+      parseErr.classList.add('hidden');
+
+      let courses;
+      try {
+        courses = JSON.parse(input);
+      } catch (e) {
+        parseErr.textContent = `JSON syntax error: ${e.message}`;
+        parseErr.classList.remove('hidden');
+        return;
+      }
+
+      if (!Array.isArray(courses)) {
+        parseErr.textContent = 'Input must be a JSON array (starting with [ and ending with ]).';
+        parseErr.classList.remove('hidden');
+        return;
+      }
+      if (courses.length === 0) {
+        parseErr.textContent = 'Array is empty — add at least one course object.';
+        parseErr.classList.remove('hidden');
+        return;
+      }
+      if (courses.length > 50) {
+        parseErr.textContent = `Too many courses: ${courses.length} provided, maximum is 50 per upload.`;
+        parseErr.classList.remove('hidden');
+        return;
+      }
+
+      const btn = document.getElementById('upload-btn');
+      btn.disabled = true; btn.textContent = 'Uploading…';
+
+      try {
+        const res = await fetch(`${API}/api/partners/my/courses/bulk`, {
+          method: 'POST', headers: AUTH, body: JSON.stringify({ courses }),
+        });
+        const data = await res.json();
+        if (res.status === 403) {
+          if (data.code === 'FEATURE_NOT_AVAILABLE') { showUpsell(data); return; }
+          throw new Error(data.error || 'Access denied');
+        }
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        renderResults(data);
+      } catch (err) {
+        parseErr.textContent = err.message;
+        parseErr.classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Validate & Upload';
+      }
+    }
+
+    function renderResults({ created = [], errors = [] }) {
+      document.getElementById('upload-form').classList.add('hidden');
+      document.getElementById('results').classList.remove('hidden');
+
+      if (created.length > 0) {
+        document.getElementById('created-count').textContent =
+          `${created.length} course${created.length !== 1 ? 's' : ''} created successfully`;
+        document.getElementById('created-list').innerHTML = created.map(c => `
+          <div class="flex items-center gap-3 bg-hunter-50 border border-hunter-200 rounded-lg px-4 py-2.5">
+            <i class="fas fa-check text-hunter-700 flex-shrink-0"></i>
+            <span class="text-sm font-medium text-stone-800">${esc(c.title)}</span>
+            <span class="text-xs text-stone-400 font-mono ml-auto">${esc(c.slug)}</span>
+          </div>`).join('');
+        document.getElementById('results-created').classList.remove('hidden');
+      }
+
+      if (errors.length > 0) {
+        document.getElementById('error-count').textContent =
+          `${errors.length} course${errors.length !== 1 ? 's' : ''} failed`;
+        document.getElementById('error-list').innerHTML = errors.map(e => `
+          <div class="flex items-start gap-3 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5">
+            <i class="fas fa-times text-red-500 flex-shrink-0 mt-0.5"></i>
+            <div>
+              <span class="text-sm font-medium text-red-700">Row ${e.index + 1}${e.title ? ` — ${esc(e.title)}` : ''}</span>
+              <p class="text-xs text-red-500 mt-0.5">${esc(e.error)}</p>
+            </div>
+          </div>`).join('');
+        document.getElementById('results-errors').classList.remove('hidden');
+      }
+    }
+  </script>
+  <script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

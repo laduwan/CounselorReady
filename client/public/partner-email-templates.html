@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Email Templates | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld { width:100%; padding:.55rem .75rem; border:1px solid #e7e5e4; border-radius:.5rem; font-size:.875rem; outline:none; }
+    .fld:focus { box-shadow:0 0 0 2px #4A7C59; }
+    .lbl { display:block; font-size:.75rem; font-weight:600; color:#57534e; margin-bottom:.35rem; }
+    .tab-btn.active { border-bottom: 3px solid #6B1D34; color: #6B1D34; font-weight: 700; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Email Templates</h1>
+      <p class="text-gray-500 mt-1">Customize the emails your learners and team members receive.</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading email templates…</p>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed top-6 right-6 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium"></div>
+
+    <!-- Editor -->
+    <div id="content" class="hidden">
+      <!-- Tabs -->
+      <div class="border-b border-stone-200 mb-8 flex gap-8">
+        <button class="tab-btn active pb-3 text-sm transition-colors" data-tab="welcome" onclick="switchTab('welcome')">Welcome Email</button>
+        <button class="tab-btn pb-3 text-sm text-stone-500 transition-colors" data-tab="invitation" onclick="switchTab('invitation')">Invitation Email</button>
+      </div>
+
+      <!-- Welcome tab -->
+      <div id="tab-welcome" class="tab-panel">
+        <p class="text-xs text-stone-500 mb-6 bg-stone-100 border border-stone-200 rounded-lg px-4 py-2.5">
+          Sent when a new learner account is created. Available variable: <code class="bg-white px-1.5 py-0.5 rounded border border-stone-200 font-mono">&#123;&#123;firstName&#125;&#125;</code>
+        </p>
+        <div class="bg-white rounded-xl border border-stone-200 p-6 space-y-5">
+          <div>
+            <label class="lbl" for="w-subject">Subject <span class="font-normal text-stone-400">(max 200)</span></label>
+            <input type="text" id="w-subject" class="fld" maxlength="200" oninput="updateCounter(this,'w-subject-count',200)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="w-subject-count">0</span>/200</div>
+          </div>
+          <div>
+            <label class="lbl" for="w-heading">Heading <span class="font-normal text-stone-400">(max 200)</span></label>
+            <input type="text" id="w-heading" class="fld" maxlength="200" oninput="updateCounter(this,'w-heading-count',200)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="w-heading-count">0</span>/200</div>
+          </div>
+          <div>
+            <label class="lbl" for="w-body">Body <span class="font-normal text-stone-400">(max 1000)</span></label>
+            <textarea id="w-body" class="fld" rows="5" maxlength="1000" oninput="updateCounter(this,'w-body-count',1000)"></textarea>
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="w-body-count">0</span>/1000</div>
+          </div>
+          <div>
+            <label class="lbl" for="w-buttonText">Button Text <span class="font-normal text-stone-400">(max 50)</span></label>
+            <input type="text" id="w-buttonText" class="fld" maxlength="50" oninput="updateCounter(this,'w-btn-count',50)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="w-btn-count">0</span>/50</div>
+          </div>
+          <div>
+            <label class="lbl" for="w-footerText">Footer Text <span class="font-normal text-stone-400">(max 500)</span></label>
+            <textarea id="w-footerText" class="fld" rows="3" maxlength="500" oninput="updateCounter(this,'w-footer-count',500)"></textarea>
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="w-footer-count">0</span>/500</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invitation tab -->
+      <div id="tab-invitation" class="tab-panel hidden">
+        <p class="text-xs text-stone-500 mb-6 bg-stone-100 border border-stone-200 rounded-lg px-4 py-2.5">
+          Sent when a team member is invited. Available variable: <code class="bg-white px-1.5 py-0.5 rounded border border-stone-200 font-mono">&#123;&#123;inviterName&#125;&#125;</code>
+        </p>
+        <div class="bg-white rounded-xl border border-stone-200 p-6 space-y-5">
+          <div>
+            <label class="lbl" for="i-subject">Subject <span class="font-normal text-stone-400">(max 200)</span></label>
+            <input type="text" id="i-subject" class="fld" maxlength="200" oninput="updateCounter(this,'i-subject-count',200)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="i-subject-count">0</span>/200</div>
+          </div>
+          <div>
+            <label class="lbl" for="i-heading">Heading <span class="font-normal text-stone-400">(max 200)</span></label>
+            <input type="text" id="i-heading" class="fld" maxlength="200" oninput="updateCounter(this,'i-heading-count',200)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="i-heading-count">0</span>/200</div>
+          </div>
+          <div>
+            <label class="lbl" for="i-body">Body <span class="font-normal text-stone-400">(max 1000)</span></label>
+            <textarea id="i-body" class="fld" rows="5" maxlength="1000" oninput="updateCounter(this,'i-body-count',1000)"></textarea>
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="i-body-count">0</span>/1000</div>
+          </div>
+          <div>
+            <label class="lbl" for="i-buttonText">Button Text <span class="font-normal text-stone-400">(max 50)</span></label>
+            <input type="text" id="i-buttonText" class="fld" maxlength="50" oninput="updateCounter(this,'i-btn-count',50)">
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="i-btn-count">0</span>/50</div>
+          </div>
+          <div>
+            <label class="lbl" for="i-footerText">Footer Text <span class="font-normal text-stone-400">(max 500)</span></label>
+            <textarea id="i-footerText" class="fld" rows="3" maxlength="500" oninput="updateCounter(this,'i-footer-count',500)"></textarea>
+            <div class="text-right text-xs text-stone-400 mt-1"><span id="i-footer-count">0</span>/500</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex items-center gap-3">
+        <button onclick="saveTemplates()" id="saveBtn"
+          class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">
+          Save Templates
+        </button>
+        <span id="saveMsg" class="text-sm"></span>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    function updateCounter(el, counterId, max) {
+      const len = el.value.length;
+      const c = document.getElementById(counterId);
+      c.textContent = len;
+      c.className = len >= max * 0.9 ? 'text-red-500' : '';
+    }
+
+    function setField(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = value || '';
+      el.dispatchEvent(new Event('input'));
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+      document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    }
+
+    function showToast(msg, success) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = `fixed top-6 right-6 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium ${success ? 'bg-hunter-700' : 'bg-red-600'}`;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3500);
+    }
+
+    async function saveTemplates() {
+      const btn = document.getElementById('saveBtn');
+      const msg = document.getElementById('saveMsg');
+      btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+      const body = {
+        welcome: {
+          subject: document.getElementById('w-subject').value,
+          heading: document.getElementById('w-heading').value,
+          body: document.getElementById('w-body').value,
+          buttonText: document.getElementById('w-buttonText').value,
+          footerText: document.getElementById('w-footerText').value,
+        },
+        invitation: {
+          subject: document.getElementById('i-subject').value,
+          heading: document.getElementById('i-heading').value,
+          body: document.getElementById('i-body').value,
+          buttonText: document.getElementById('i-buttonText').value,
+          footerText: document.getElementById('i-footerText').value,
+        },
+      };
+      try {
+        const res = await fetch(`${API}/api/partners/my/email-templates`, {
+          method: 'PUT', headers: AUTH, body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        msg.className = 'text-sm text-hunter-700';
+        msg.innerHTML = '<i class="fas fa-check"></i> Saved';
+      } catch (err) {
+        msg.className = 'text-sm text-red-600'; msg.textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Templates';
+        setTimeout(() => { msg.textContent = ''; }, 4000);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch(`${API}/api/partners/my/email-templates`, { headers: AUTH });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to load templates');
+        const data = await res.json();
+        const t = data.templates || {};
+        const w = t.welcome || {};
+        setField('w-subject', w.subject); setField('w-heading', w.heading);
+        setField('w-body', w.body); setField('w-buttonText', w.buttonText);
+        setField('w-footerText', w.footerText);
+        const i = t.invitation || {};
+        setField('i-subject', i.subject); setField('i-heading', i.heading);
+        setField('i-body', i.body); setField('i-buttonText', i.buttonText);
+        setField('i-footerText', i.footerText);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    });
+  </script>
+  <script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
