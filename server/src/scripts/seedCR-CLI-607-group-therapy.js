@@ -474,17 +474,69 @@ const COURSE = {
         {
           type: 'text',
           content: `<h2>Common Group Dynamics and How to Intervene</h2>
-<p>Group therapy involves complex dynamics that can either be harnessed for therapeutic work or, if unaddressed, undermine the group entirely. Recognizing these dynamics — and intervening skillfully — is the most challenging aspect of group facilitation.</p>
-<p><strong>The Monopolizer:</strong> A member who dominates airtime, often anxiously, in ways that frustrate other members and reduce their engagement. The monopolizer often has significant anxiety about silence or about others seeing their "real" self — the talk is protective. Interventions:</p>
+<p>Group therapy involves complex dynamics that can either be harnessed for therapeutic work or, if unaddressed, undermine the group entirely. Recognizing these dynamics — and intervening skillfully — is the most challenging aspect of group facilitation. Many of these dynamics are not "problems" in the pathological sense but rather clinically meaningful expressions of the same patterns that bring members to treatment.</p>
+
+<h3>The Monopolizer: Intervention Steps</h3>
+<p>A monopolizing member dominates airtime in ways that frustrate other members, reduce overall engagement, and often protect the monopolizer from genuinely being seen. Monopolizing is almost always anxiety-driven — the constant talking is a defense against the vulnerability of being truly heard, evaluated, or rejected. The monopolizer fears what will happen if they stop talking more than they fear the group's frustration with them.</p>
+<p><strong>Step-by-step intervention:</strong></p>
+<ol>
+<li><strong>Interrupt gently and without shame:</strong> "I want to pause here for a moment — not because what you're sharing isn't important, but because I want to make sure there's room for others to respond." Early interruptions should be warm, not corrective in tone.</li>
+<li><strong>Open to the group:</strong> "Who's having reactions to what Marcus is sharing?" This shifts focus without singling out the monopolizer as a problem. Other members often feel relief when the leader intervenes.</li>
+<li><strong>Address the process in session:</strong> After the group has responded, return to the monopolizer with process-level curiosity: "Marcus, I noticed you've taken up a lot of the early time today. I'm curious — what's it like for you when you stop talking? What happens inside?"</li>
+<li><strong>Invite the group to name the dynamic:</strong> If it persists across sessions, the group-level intervention becomes appropriate: "I want to bring something to the group that I've been noticing. It feels important that we can talk about it together." This allows the group to address the dynamic rather than leaving it solely to the leader's intervention.</li>
+<li><strong>Individual pre- or post-session conversation:</strong> If the group intervention does not produce change, or if the member is particularly fragile, a brief private conversation may be appropriate: "I wanted to check in with you about what happens in group. I've noticed a pattern and I'm curious about your experience."</li>
+</ol>
+<p><strong>Clinical caution:</strong> Never shame a monopolizer. The relational pattern driving the monopolizing behavior will replicate in the group — shaming intervention risks replicating the same rejection experience that likely shaped the behavior in the first place. The goal is to help the member discover that slowing down and being genuinely seen is safer than they believe.</p>
+
+<h3>Scapegoating: Recognition and Repair</h3>
+<p>Scapegoating is one of the most dangerous dynamics in group therapy. It occurs when one member — often someone who is visibly different from the group, who expresses material the group is defending against, or who has low social capital — becomes the target of the group's displaced anger, anxiety, or shame. The scapegoat absorbs the group's negative affect, allowing the rest of the group to feel cohesive at the scapegoat's expense.</p>
+<p><strong>Recognizing scapegoating:</strong></p>
 <ul>
-<li>Gently interrupt: "I want to make sure we have time to hear from everyone today — let's open this to the group."</li>
-<li>Address the process privately in the session: "I notice you often take up a lot of the early group time. I'm curious what it's like for you when you're not talking?"</li>
-<li>Invite the group to address it: "I want to check in with the group about something I've been noticing."</li>
+<li>Multiple members criticizing the same person across multiple sessions, even for different things</li>
+<li>The criticized member always seems to be doing something wrong regardless of what they do</li>
+<li>The group's mood improves when the scapegoated member is absent</li>
+<li>The scapegoated member begins to show signs of withdrawal, resignation, or acting out</li>
+<li>The intensity of negative attention is disproportionate to the actual behavior being criticized</li>
 </ul>
-<p><strong>The Scapegoat:</strong> One member who absorbs the group's displaced anger, anxiety, or shame. Scapegoating often targets someone who is "different" in some way — who expresses what others are afraid to. This is one of the most dangerous group dynamics: scapegoated members are at highest dropout and harm risk. The leader must intervene actively, often by naming the pattern and exploring what the group is avoiding through the scapegoat.</p>
-<p><strong>Subgrouping:</strong> Two or more members forming an alliance that operates outside the group — through shared glances, pre-session conversations, or romantic involvement. Subgroups fragment group cohesion and introduce material the full group can't access. The intervention is to bring the subgroup into the full group: "I notice there seem to be some side conversations happening. What's alive between the two of you that the group could benefit from hearing?"</p>
-<p><strong>Resistance and avoidance:</strong> The group collectively avoiding difficult material — through humor, topic-changing, intellectualizing, or sustained focus on outside content. "I notice we've been talking about work situations for 30 minutes. I'm wondering if we're avoiding something that feels more personally risky to bring up here." Naming avoidance is usually more productive than pushing through it.</p>
-<p><strong>The silent member:</strong> Some silence is processing; some is avoidance; some is social anxiety; some is contempt. The distinction matters for intervention. Gently inviting silent members without putting them on the spot: "James, I notice you've been listening carefully to this. What's your experience been?"</p>`
+<p><strong>Intervention steps:</strong></p>
+<ol>
+<li><strong>Intervene immediately when you see it happening:</strong> Do not wait to see if the group self-corrects. "I need to stop us here. I'm noticing that we're piling onto Sara in a way that concerns me. Sara, how are you doing?"</li>
+<li><strong>Protect the scapegoated member directly:</strong> Make your protective stance explicit. "I want to be clear that what I'm seeing right now is not okay. Sara, you don't have to defend yourself. The group and I are going to look at what's happening here."</li>
+<li><strong>Name the group dynamic, not just the behavior:</strong> "This is a pattern I've been watching develop over the last several weeks. Sara keeps getting the group's critical energy. I want to explore what that's about for all of us, not just for Sara."</li>
+<li><strong>Explore the displacement:</strong> "What is it about what Sara does or says that activates so much reaction? And I wonder — is there anything that Sara expresses that might be something the rest of us are working hard not to express?"</li>
+<li><strong>Repair with the scapegoated member:</strong> After the group-level work, return explicitly to the scapegoated member: "Sara, I want to check in directly about your experience in this group. What has it been like for you these last several weeks?"</li>
+</ol>
+<p><strong>Clinical significance:</strong> Scapegoated members are at highest risk of dropout and psychological harm. If a member is being systematically scapegoated and the group-level intervention does not produce change, a conversation with the member outside the group (and possibly removal from the group with appropriate referral) may be necessary. The group's therapeutic benefit must be weighed against the potential for harm to the individual.</p>
+
+<h3>Sub-Grouping: Clinical Significance and Intervention</h3>
+<p>Sub-grouping occurs when two or more group members form an alliance that operates outside the full group — through private glances, text exchanges, pre-session conversations, or (in the most disruptive form) romantic or sexual involvement. Sub-groups fragment cohesion because they introduce material that the full group cannot access, creating in-group/out-group dynamics and undermining trust.</p>
+<p><strong>Clinical significance of subgrouping:</strong></p>
+<ul>
+<li>Information shared privately between members and not brought to the group creates a kind of "secret" that members outside the subgroup sense even if they can't name it, creating a low-level paranoia or distrust</li>
+<li>Members in a sub-group may protect each other in group from needed feedback, limiting the therapeutic value of the group for both of them</li>
+<li>Romantic or sexual sub-grouping carries the highest clinical risk — it typically produces powerful jealousy, competition, and fragmentation across the whole group</li>
+<li>Sub-grouping sometimes reflects a failure of the full group to provide what members are seeking — the sub-group relationship may be meeting needs the group is not</li>
+</ul>
+<p><strong>Intervention:</strong></p>
+<ul>
+<li><strong>Bring the sub-group into the full group:</strong> "I notice there seem to be some interactions happening between the two of you that the group isn't a part of. What's alive between you that might be useful for all of us to hear?"</li>
+<li><strong>Address the sub-group norm directly:</strong> "We have an agreement in this group that what happens between members outside the group comes back here. I want to revisit that and see how we're all doing with it."</li>
+<li><strong>Explore the sub-group's function:</strong> "I'm curious about the connection you two have developed. What does it give you that feels hard to find in the full group?" This question can open important material about what the group is and is not providing.</li>
+<li><strong>For romantic/sexual subgrouping:</strong> This typically requires individual conversations with both members, explicit norm-setting about romantic involvement, and in some cases, a clinical decision about one or both members' continued participation in the group.</li>
+</ul>
+
+<h3>Therapist Over-Involvement and Self-Reflection</h3>
+<p>Group leaders can become over-involved — rescuing too quickly, taking sides, developing stronger affinity for some members than others, or losing their non-anxious facilitative stance in favor of a more active, directive, or even corrective one. Over-involvement is often invisible to the leader who is experiencing it because it feels like good therapeutic work from the inside.</p>
+<p><strong>Signs of therapist over-involvement:</strong></p>
+<ul>
+<li>Consistently intervening before the group has had a chance to respond (rescuing)</li>
+<li>Having stronger emotional reactions to some members than others — and acting from those reactions without examining them</li>
+<li>Feeling responsible for the group's outcome in a way that generates anxiety rather than clinical curiosity</li>
+<li>Losing the ability to sit with silence, conflict, or distress without intervening</li>
+<li>Members directing all communication to the leader rather than to each other — often a sign that the leader has centralized themselves</li>
+</ul>
+<p><strong>Supervision and self-reflection as correctives:</strong> The primary remedy for therapist over-involvement is ongoing supervision or peer consultation. Group therapy conducted without supervision — particularly for early-career leaders or with high-complexity groups — is at high risk for leader over-involvement going unexamined. In supervision, the leader can explore: What is this group activating in me? Whose experience am I most identified with and why? What am I afraid will happen if I step back? Is my level of intervention driven by clinical need or by my own anxiety?</p>
+<p>Self-reflection practices between sessions are also essential: reviewing one's emotional reactions to each member, examining patterns of intervention (Did I intervene too quickly with certain members? Did I avoid challenging certain members?), and noting countertransference material that may be shaping the work.</p>`
         },
         {
           type: 'multipleChoice',
