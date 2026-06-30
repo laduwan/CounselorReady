@@ -113,6 +113,56 @@ const COURSE = {
 <p><strong>VA/DoD endorsement:</strong> CPT is one of two treatments (along with PE) most strongly recommended by the VA/DoD Clinical Practice Guideline for PTSD — the most widely used clinical guideline for this population.</p>`
         },
         {
+          type: 'text',
+          content: `<h2>Natural Recovery and Stuck Processing: Why Some People Recover and Others Don't</h2>
+<p>A question clinicians frequently ask is: if traumatic experiences are so common, why do only some people develop chronic PTSD? Understanding natural recovery — and what disrupts it — is foundational to understanding why CPT works and how to explain the treatment rationale to clients.</p>
+<p><strong>The natural recovery process</strong></p>
+<p>After a traumatic event, most people experience acute distress — intrusive memories, hypervigilance, sleep disruption, emotional numbing. These symptoms are normative, not pathological. They reflect an adaptive stress response that mobilizes the organism to process a significant threat.</p>
+<p>In the weeks and months following a trauma, most people naturally move through a recovery process. They think and talk about what happened, process their emotional reactions, and gradually integrate the traumatic experience into their narrative and worldview. Symptoms decrease. Functioning returns. This is natural recovery — and the majority of trauma survivors experience it.</p>
+<p>PTSD develops when this natural recovery process is disrupted. The central mechanism of disruption, from a CPT perspective, is cognitive avoidance: the person avoids thinking about, feeling about, or processing the traumatic experience because doing so is intensely painful. This avoidance prevents the cognitive and emotional processing that would otherwise resolve the symptoms.</p>
+<p><strong>The role of stuck points in disrupting recovery</strong></p>
+<p>Stuck Points are not merely symptoms of PTSD — they are the mechanism by which natural recovery is disrupted. Consider a sexual assault survivor who develops the Stuck Point: "It was my fault because I didn't fight back hard enough." This belief generates intense shame whenever the assault comes to mind. To avoid the shame, the survivor avoids thinking about the assault — which prevents the processing that would naturally resolve PTSD symptoms. The Stuck Point generates avoidance, the avoidance prevents recovery, and PTSD is maintained.</p>
+<p>Over-accommodation Stuck Points work similarly: "The world is completely dangerous" generates intense anxiety whenever the survivor leaves a safe environment. To reduce anxiety, they restrict their movements — which maintains hypervigilance and prevents the natural disconfirmation experiences that would revise the over-accommodated belief.</p>
+<p>This model has a critical clinical implication: PTSD symptoms are not evidence of trauma severity or personal weakness. They are evidence that natural recovery has been disrupted by cognitive avoidance — a problem that CPT is specifically designed to address.</p>
+<p><strong>Explaining the CPT rationale to clients</strong></p>
+<p>When clinicians explain this model to clients, it is important to normalize both the symptoms and the recovery process. A useful psychoeducational frame: "After something terrible happens, our minds naturally try to make sense of it. But sometimes the meaning we make — the beliefs we form about what it says about us, about others, about the world — gets stuck in extreme places. And when our beliefs are stuck in extreme places, we avoid thinking about the event to avoid the pain of those beliefs. This avoidance keeps us stuck. What we're going to do in CPT is gently examine those stuck beliefs and see if we can find a more accurate, balanced perspective."</p>
+<p>This framing does several important things: it normalizes PTSD symptoms as an understandable response (reducing shame), it identifies the cognitive mechanism clearly, it positions the client as an active participant in revision (rather than a passive recipient of therapy), and it sets realistic expectations for the treatment process.</p>`
+        },
+        {
+          type: 'text',
+          content: `<h2>Assimilation, Accommodation, and Over-Accommodation: Clinical Depth</h2>
+<p>The three cognitive processes at the heart of CPT's model — assimilation, accommodation, and over-accommodation — deserve clinical elaboration beyond their textbook definitions. Understanding how these processes manifest in real clients enables more precise case conceptualization and targeted intervention.</p>
+<p><strong>Assimilation in clinical practice</strong></p>
+<p>Assimilation occurs when the trauma survivor distorts the traumatic memory to fit pre-existing beliefs. The classic example is the person who held the pre-trauma belief "bad things only happen to bad people" and assimilates a traumatic assault by concluding "I must have done something to deserve it" — preserving the prior belief at the cost of self-blame.</p>
+<p>Assimilation also manifests as minimization: "It wasn't really that bad," "Plenty of people have been through worse," "I shouldn't be making such a big deal of this." These minimizing thoughts preserve the prior belief that trauma doesn't happen to ordinary people in ordinary circumstances — but at the cost of validating the severity of the experience and allowing full emotional processing.</p>
+<p>Clinical examples of assimilation Stuck Points:</p>
+<ul>
+<li>A combat veteran who witnessed civilian casualties and holds the assimilation Stuck Point "We must have had a good reason for that mission" — avoiding moral injury by distorting his memory of the circumstances</li>
+<li>A woman assaulted by a trusted friend who holds "He wouldn't have done that unless I gave him some reason to think it was okay" — distorting the event to preserve her prior belief that trusted friends are safe</li>
+<li>A car accident survivor who holds "I must have been driving badly for this to happen" — preserving the belief that accidents happen to careless people, not careful ones</li>
+</ul>
+<p>The therapeutic task with assimilation Stuck Points is to help the client examine whether the distortion serves them. "If you truly believe it was your fault, what has that belief cost you? And is there any way that belief could be accurate given what you've told me about the circumstances?"</p>
+<p><strong>Accommodation in clinical practice</strong></p>
+<p>Accommodation — the healthy integration of new information into existing schemas — is the goal of CPT. When accommodation occurs successfully, the client's worldview becomes more nuanced and realistic: "Most people are trustworthy, but some people are capable of causing harm, and I can learn to identify warning signs." This is not a prior belief (which may have been "everyone is trustworthy") or an over-accommodated belief ("no one can be trusted") — it is a revised belief that integrates the traumatic experience with balanced accuracy.</p>
+<p>Successful accommodation after trauma means:</p>
+<ul>
+<li>The traumatic event is understood as a real, significant event that happened (not minimized or denied)</li>
+<li>The meaning of the event is integrated into a worldview that acknowledges both the reality of the harm and the continued possibility of safety, trust, and meaning</li>
+<li>Symptoms decrease because avoidance is no longer necessary — the cognitive framework no longer generates overwhelming shame, guilt, or terror when the event comes to mind</li>
+</ul>
+<p><strong>Over-accommodation in clinical practice</strong></p>
+<p>Over-accommodation is the opposite extreme from assimilation: instead of distorting the memory to preserve prior beliefs, the survivor completely revises their prior beliefs to accommodate the traumatic experience — but in ways that are extreme, global, and overgeneralized.</p>
+<p>Clinical examples of over-accommodation across the five themes:</p>
+<ul>
+<li><em>Safety:</em> A domestic violence survivor who held the pre-trauma belief "My home is my safe place" over-accommodates after repeated abuse to "Nowhere is safe. Every relationship leads to harm."</li>
+<li><em>Trust:</em> A person betrayed by a trusted authority figure over-accommodates from "Most authority figures are trustworthy" to "Everyone in a position of authority will exploit you. Never trust anyone with power over you."</li>
+<li><em>Power/Control:</em> A survivor of a natural disaster who held the pre-trauma belief "Hard work and preparation protect me from catastrophe" over-accommodates to "There is no point in planning or preparing. Catastrophe can strike anyone at any time and there is nothing I can do."</li>
+<li><em>Esteem:</em> A sexual assault survivor who held the pre-trauma belief "I am a capable, competent person" over-accommodates to "I am permanently damaged. No one will ever want to be close to me. I will never recover from this."</li>
+<li><em>Intimacy:</em> A person whose intimate partner was the perpetrator of violence over-accommodates from "Intimate relationships can be a source of joy and connection" to "Intimacy is dangerous. Anyone I allow close to me will eventually hurt me."</li>
+</ul>
+<p>Over-accommodation Stuck Points are particularly painful because they cut the survivor off from the resources — connection, trust, agency, self-worth — that support recovery and resilience. CPT's primary therapeutic work targets these over-accommodated beliefs directly.</p>`
+        },
+        {
           type: 'keyTakeaway',
           title: 'Key Takeaways: CPT Foundations',
           takeaways: [
@@ -161,20 +211,45 @@ const COURSE = {
         },
         {
           type: 'text',
-          content: `<h2>The 12-Session CPT Protocol Structure</h2>
-<p>CPT follows a structured protocol, though good CPT therapists deliver it flexibly and relationally. The standard protocol consists of 12 individual sessions (60–90 minutes each), though some clients require more and some progress in fewer. A group format (CPT in groups of 8–12) has also demonstrated efficacy.</p>
-<p><strong>Phase 1: Education and Introduction (Sessions 1–2)</strong></p>
-<p>Session 1 introduces the cognitive model of PTSD, explains the treatment rationale, and assigns the first piece of work: the Impact Statement.</p>
-<p>The Impact Statement asks: "Why do you think this traumatic event occurred? How has it affected your beliefs about yourself, others, and the world in the areas of safety, trust, power/control, esteem, and intimacy?"</p>
-<p>This is not a trauma narrative — the client is not asked to describe what happened. The Impact Statement captures the client's current meaning-making: how they have explained the event to themselves and what it has done to their worldview. This provides the initial Stuck Points for the therapist to work with.</p>
-<p>Session 2 reviews the Impact Statement together. The therapist listens for Stuck Points, names them, and introduces the concept explicitly. The therapist also teaches the connection between thoughts, feelings, and behaviors — the cognitive model in accessible language.</p>
-<p><strong>Phase 2: Trauma Account and Stuck Point Identification (Sessions 3–4) — CPT+A version only</strong></p>
-<p>In the original CPT protocol (CPT+A), Sessions 3–4 include written trauma accounts in which the client writes a detailed account of the traumatic event including sensory details and emotions. The therapist reads the account with the client and identifies Stuck Points emerging from the account.</p>
-<p>In CPT-C (the more commonly used current version), the written accounts are omitted. Research has shown that CPT without accounts (CPT-C) produces equivalent outcomes for most clients — making it preferable in settings where accounts would be contraindicated or where clients strongly prefer to avoid them.</p>
-<p><strong>Phase 3: Challenging Stuck Points (Sessions 4–11)</strong></p>
-<p>The bulk of CPT focuses on challenging Stuck Points using structured worksheets. This phase is introduced gradually, moving from simpler to more complex challenging skills.</p>
-<p><strong>Phase 4: Themes and Consolidation (Sessions 11–12)</strong></p>
-<p>Later sessions address the five core Stuck Point themes systematically (safety, trust, power/control, esteem, intimacy) and consolidate gains. The final session includes a second Impact Statement for comparison, celebrating growth and consolidating resilience.</p>`
+          content: `<h2>The 12-Session CPT Protocol: Session-by-Session Guide</h2>
+<p>CPT follows a structured protocol, though good CPT therapists deliver it flexibly and relationally. The standard protocol consists of 12 individual sessions (60–90 minutes each), though some clients require more and some progress in fewer. A group format (CPT in groups of 8–12) has also demonstrated efficacy. Below is a detailed session-by-session breakdown of the CPT-C protocol (the version without written trauma accounts).</p>
+<p><strong>Session 1: Education and Rationale</strong></p>
+<p>Goals: Establish therapeutic alliance; provide psychoeducation about PTSD and the cognitive model; assign the Impact Statement homework.</p>
+<p>The therapist explains PTSD in client-friendly language — what it is, why it develops, and why natural recovery sometimes gets stuck. The cognitive model is introduced: "Your symptoms are being maintained by beliefs — stuck points — that prevent your mind from fully processing what happened. We're going to work together to examine those beliefs." The therapist normalizes both the PTSD symptoms and the recovery process, reducing shame and increasing hope.</p>
+<p>The Impact Statement assignment is introduced: "Between now and our next session, I'd like you to write at least one page about why you think this traumatic event happened and what impact it has had on your beliefs about yourself, other people, and the world. Think specifically about the areas of safety, trust, power and control, esteem, and intimacy." Critically, the client is asked about meaning — not what happened.</p>
+<p>Common Session 1 therapeutic considerations: Clients who minimize ("I don't think I have PTSD") may need additional time on symptom validation. Clients who are overwhelmed by psychoeducation may need a slower pace. The therapeutic alliance begins here — warmth, genuineness, and collaborative framing are essential.</p>
+<p><strong>Session 2: Impact Statement Review and Stuck Point Introduction</strong></p>
+<p>Goals: Review the Impact Statement; identify initial Stuck Points; introduce ABC Worksheet and assign for homework.</p>
+<p>The therapist reads the Impact Statement aloud with the client, listening carefully for Stuck Points. Stuck Points are circled or underlined and written on the Stuck Point Log — a running list maintained throughout therapy. The client may be surprised to have their beliefs identified so explicitly: "Wait, is that a stuck point? I thought that was just the truth." This moment of gentle challenge is the beginning of the cognitive work.</p>
+<p>The therapist introduces the concept of emotions vs. thoughts: "Feelings are not the same as beliefs. 'I feel guilty' is an emotion. 'It was my fault' is a belief — and that's what we can examine together." The ABC Worksheet is introduced and assigned for practice between Sessions 2 and 3.</p>
+<p><strong>Session 3: ABC Worksheets and Connecting Events to Emotions</strong></p>
+<p>Goals: Review ABC Worksheets; practice identifying the thought-feeling connection; begin building the habit of catching Stuck Points in real time.</p>
+<p>The therapist reviews the client's completed ABC Worksheets, models the analysis for any worksheets the client found difficult, and helps the client identify patterns. Early in this session, clients often report difficulty identifying their "B" — the belief. They describe activating events and emotional consequences but struggle to articulate the automatic thought connecting them. The therapist scaffolds this: "When that happened, what did you tell yourself about what it meant? About what it said about you?"</p>
+<p>The Stuck Point Log is updated with any new Stuck Points surfacing in the ABC Worksheets. The client begins to see that their distress is driven by beliefs, not events — a subtle but powerful cognitive shift that sets the stage for challenging work.</p>
+<p><strong>Session 4: Introduction to Challenging Beliefs (Challenging Questions Worksheet)</strong></p>
+<p>Goals: Introduce the Challenging Questions Worksheet; complete the first challenging worksheet together in session; assign for homework.</p>
+<p>This session marks a turning point: the client now has the tools to not just identify Stuck Points but actively examine them. The therapist introduces the Challenging Questions Worksheet and walks through each question with one of the client's identified Stuck Points. It is important to work collaboratively — the therapist asks the questions, the client generates the answers, and the therapist follows the client's lead rather than providing the "correct" response.</p>
+<p>Session 4 is often emotionally intense. Examining a deeply held Stuck Point for the first time can produce grief, anger, or insight — sometimes all three. The therapist should pace the session carefully and allow space for emotional processing.</p>
+<p><strong>Sessions 5–6: Stuck Point Challenging — Self-Blame and Assimilation</strong></p>
+<p>Goals: Continue Challenging Questions Worksheet practice; focus on self-blame and assimilation Stuck Points; introduce Patterns of Problematic Thinking.</p>
+<p>These sessions focus particularly on self-blame Stuck Points, which are often the most emotionally charged. The "Best Friend" technique — "Would you say this to a close friend who had been through the exact same thing?" — is highly effective in these sessions for dismantling the double standard between self-judgment and judgment of others.</p>
+<p>The Patterns of Problematic Thinking Worksheet is introduced, teaching clients to recognize recurring cognitive errors across multiple Stuck Points. Clients often find this worksheet liberating — recognizing patterns reduces the need for exhaustive challenging of each individual Stuck Point.</p>
+<p><strong>Sessions 7–8: Safety and Trust Themes</strong></p>
+<p>Goals: Systematically address Safety Stuck Points; then Trust Stuck Points; introduce the Alternative Thoughts Worksheet.</p>
+<p>Session 7 focuses specifically on the Safety theme, reviewing all safety-related Stuck Points from the Stuck Point Log. The therapist helps the client distinguish between actual danger assessment (which may require genuine updating of safety behaviors) and overgeneralized fear (which is the target of challenging). "Your hypervigilance makes complete sense given what you experienced. The question is: is your current danger assessment accurate for the situations you're actually in now?"</p>
+<p>Session 8 addresses Trust Stuck Points, which often include both self-trust ("I can't trust my own judgment") and trust in others. Interpersonal trauma survivors particularly struggle here. The therapist introduces the Alternative Thoughts Worksheet in these sessions, helping clients formulate balanced replacement beliefs rather than simply identifying what's wrong with the original Stuck Point.</p>
+<p><strong>Sessions 9–10: Power/Control and Esteem Themes</strong></p>
+<p>Goals: Address Power/Control Stuck Points and Esteem Stuck Points; continue Alternative Thoughts Worksheet work.</p>
+<p>Session 9 addresses the Power/Control theme — perhaps the most complex, because it involves two opposite distortions: the belief that one had more control than was actually possible ("I should have been able to prevent this") and the belief that one has no control ("There is nothing I can do to protect myself"). The therapist helps the client develop a nuanced sense of actual agency — what was genuinely controllable in the traumatic event and what was not.</p>
+<p>Session 10 addresses Esteem Stuck Points, which often include the most painful self-beliefs ("I am permanently damaged," "I am unlovable," "I am worthless"). These sessions may require additional time and gentleness. The therapist should validate the depth of the wound while maintaining the collaborative spirit of examination: "You've believed this about yourself for a long time. I wonder if we can look at the evidence together and see if it holds up."</p>
+<p><strong>Session 11: Intimacy Theme and Consolidation</strong></p>
+<p>Goals: Address Intimacy Stuck Points; review treatment progress; prepare for termination.</p>
+<p>Session 11 addresses the Intimacy theme — beliefs about capacity for connection, love, and closeness in the aftermath of trauma. These sessions often produce significant grief: clients who have isolated themselves for years may begin to recognize the toll of their over-accommodated intimacy beliefs. The therapist validates this grief while supporting movement toward connection.</p>
+<p>The session also begins consolidation: reviewing the Stuck Point Log, noticing which Stuck Points have shifted, celebrating progress, and anticipating future application of CPT skills.</p>
+<p><strong>Session 12: Final Impact Statement and Termination</strong></p>
+<p>Goals: Write and review the final Impact Statement; compare with the initial Impact Statement; consolidate gains; plan for maintenance and relapse prevention.</p>
+<p>The final session asks the client to write a new Impact Statement — answering the same questions as the first, about why the trauma happened and what they now believe about self, others, and the world. Reading this alongside the initial Impact Statement is typically a powerful experience: clients see in their own words how much their beliefs have changed.</p>
+<p>Termination includes relapse prevention planning: Which Stuck Points might return under stress? What would be the early warning signs? How will the client use CPT skills independently going forward? Some clients benefit from booster sessions — occasional check-ins to address new Stuck Points that emerge over time.</p>`
         },
         {
           type: 'text',
@@ -194,44 +269,112 @@ const COURSE = {
         },
         {
           type: 'text',
-          content: `<h2>Challenging Questions Worksheet</h2>
-<p>Once clients have identified Stuck Points via the ABC Worksheet, the next step is challenging them. The Challenging Questions Worksheet guides clients through a systematic examination of evidence, logical errors, and alternative perspectives.</p>
-<p><strong>The challenging questions include:</strong></p>
+          content: `<h2>The Challenging Questions Worksheet in Clinical Use</h2>
+<p>Once clients have identified Stuck Points via the ABC Worksheet, the next step is challenging them. The Challenging Questions Worksheet guides clients through a systematic examination of evidence, logical errors, and alternative perspectives. Understanding how to use this worksheet skillfully in clinical practice requires more than knowing the questions — it requires understanding the purpose of each question, the common errors clinicians make, and how to adapt the worksheet to different Stuck Points and client presentations.</p>
+<p><strong>The challenging questions and their clinical purpose:</strong></p>
 <ol>
-<li>What is the evidence for and against this belief?</li>
-<li>Is this belief always true? Are there exceptions?</li>
-<li>Is there an alternative way of looking at this situation?</li>
-<li>Am I confusing a habit with a fact?</li>
-<li>Am I thinking in all-or-nothing terms?</li>
-<li>Are my judgments based on feelings rather than facts?</li>
-<li>Am I taking events out of context?</li>
-<li>Am I making conclusions without evidence?</li>
-<li>Am I using extreme words? (always, never, no one, everyone)</li>
-<li>How important is this in the long run?</li>
+<li><em>What is the evidence for and against this belief?</em> The foundational empirical question — inviting the client to function as their own scientist. This question works best when clients can identify specific, concrete evidence rather than vague impressions. If a client says "I know I'm permanently damaged," the therapist might ask: "What would be evidence that someone is permanently damaged? What specific things do you believe you can no longer do?"</li>
+<li><em>Is this belief always true? Are there exceptions?</em> Targets overgeneralization. A Stuck Point that is "always" true becomes more nuanced when even a single exception is identified. "You said no one can ever be trusted. Has there ever been anyone — anyone at all — you've trusted and who didn't betray you?"</li>
+<li><em>Is there an alternative way of looking at this situation?</em> Invites perspective-taking without invalidating the client's current view. "That's one way to understand what happened. Is there another way to look at the same situation that could also be true?"</li>
+<li><em>Am I confusing a habit with a fact?</em> Targets cognitive habits — beliefs that are held not because they are accurate but because they have been repeated so many times they feel true. "You've been telling yourself this for years. What if you've been practicing this belief so long it feels like a fact when it might just be a habit of thought?"</li>
+<li><em>Am I thinking in all-or-nothing terms?</em> Identifies black-and-white thinking. "Is there a middle ground between 'completely safe' and 'completely dangerous'? What would that look like?"</li>
+<li><em>Are my judgments based on feelings rather than facts?</em> Targets emotional reasoning — the pattern of using feelings as evidence. "You said you feel like a bad person, so you must be one. But feelings aren't facts — what would be actual evidence that a person is a bad person?"</li>
+<li><em>Am I taking events out of context?</em> Examines whether the client is applying the meaning of a specific event too broadly. "That one experience is real and significant. But does it represent everything, or is it one part of a larger, more complex picture?"</li>
+<li><em>Am I making conclusions without evidence?</em> Targets arbitrary inference. "How do you know that's true? What specific evidence would you need to be able to conclude that?"</li>
+<li><em>Am I using extreme words? (always, never, no one, everyone)</em> Flags over-generalizations through language. Encouraging clients to replace extreme words with more qualified language — "some people," "sometimes," "in certain situations" — often reveals the inaccuracy of the original belief without additional argument.</li>
+<li><em>How important is this in the long run?</em> Provides temporal perspective. Some Stuck Points lose their power when the client considers how they might view the situation in five or ten years.</li>
 </ol>
-<p>Therapists should note: the goal of the Challenging Questions Worksheet is not to talk the client out of their beliefs or to "win" a debate. It is to help the client examine the evidence and logic underlying their beliefs so that they can revise those beliefs from the inside — a process that produces lasting change.</p>
-<p><strong>Common therapist errors with challenging:</strong></p>
+<p><strong>The goal of the Challenging Questions Worksheet:</strong> The purpose is not to talk the client out of their beliefs or to "win" a debate. It is to help the client examine the evidence and logic underlying their beliefs so that they can revise those beliefs from the inside — a process that produces lasting change because the revision comes from the client's own cognitive work, not from external persuasion.</p>
+<p><strong>Common therapist errors with the Challenging Questions Worksheet:</strong></p>
 <ul>
-<li>Rushing through the questions without genuine inquiry</li>
-<li>Arguing with or dismissing client responses</li>
-<li>Doing the challenging for the client rather than facilitating their own examination</li>
-<li>Moving to the "Alternative Thought" before the client has genuinely engaged with the evidence</li>
-</ul>`
+<li><em>Rushing through the questions without genuine inquiry:</em> Treating the worksheet as a checklist produces superficial answers. The therapist should linger on each question, follow up on partial responses, and allow genuine reflection.</li>
+<li><em>Arguing with or dismissing client responses:</em> If a client says "I can't think of any evidence against this belief," the therapist who responds with "But what about X?" is doing the challenging for the client — and will likely produce client compliance without genuine cognitive change.</li>
+<li><em>Doing the challenging for the client:</em> This is the most common error and the most damaging. If the therapist is doing most of the cognitive work, the client is not building the skills to challenge future Stuck Points independently.</li>
+<li><em>Moving to the "Alternative Thought" before the client has genuinely engaged with the evidence:</em> The alternative thought should emerge organically from the challenging process, not be imposed prematurely. A premature alternative thought often lacks the emotional weight of a belief the client has genuinely worked through.</li>
+<li><em>Using challenging questions sarcastically or dismissively:</em> The questioning stance must be genuinely curious, warm, and collaborative. Questions asked with even a subtle edge of "of course that's not true" will trigger defensiveness and undermine the therapeutic alliance.</li>
+</ul>
+<p><strong>Worked clinical example — Challenging Questions Worksheet in practice:</strong></p>
+<p>Stuck Point: "I should have known it was going to happen. I'm stupid for not seeing the warning signs."</p>
+<p>Therapist: "Let's look at this together. What's the evidence that you should have known it was going to happen?" [Client lists several things she noticed but didn't act on.] Therapist: "So there were some signs. Were there things you didn't know at the time that you know now?" [Client begins to describe the perpetrator's deliberate grooming behavior that was not visible to her at the time.] Therapist: "So some of what you 'should have known' was information the other person was actively hiding from you. Does that change the picture at all?" [Pause.] Client: "I guess I couldn't have known what I didn't know." Therapist: "Is there an alternative thought that might be more accurate — something that takes all of this into account?"</p>
+<p>This sequence illustrates the key principles: genuine curiosity, client-generated answers, building from the client's own responses, and allowing the alternative thought to emerge from the client's own process.</p>`
         },
         {
           type: 'text',
-          content: `<h2>The Patterns of Problematic Thinking Worksheet</h2>
-<p>In later sessions, clients learn to identify patterns of problematic thinking — cognitive errors — that appear across multiple Stuck Points. Recognizing patterns helps clients challenge future Stuck Points more efficiently without needing the full Challenging Questions sequence each time.</p>
-<p><strong>CPT's Patterns of Problematic Thinking include:</strong></p>
-<p><em>Jumping to conclusions:</em> Assuming without evidence. "She didn't call back, which means she doesn't care about me."</p>
-<p><em>Exaggerating or minimizing:</em> Catastrophizing negative events or minimizing positive ones. "That small mistake at work will definitely get me fired."</p>
-<p><em>Ignoring important parts:</em> Focusing on one aspect of a situation while ignoring others. "I got 9 out of 10 answers right, but I got one wrong — I'm terrible at this."</p>
-<p><em>Overgeneralizing:</em> Drawing broad conclusions from one event. "I was attacked once, so everywhere is dangerous."</p>
-<p><em>Mind reading:</em> Assuming you know what others are thinking. "Everyone at the party could tell something was wrong with me."</p>
-<p><em>Emotional reasoning:</em> Treating feelings as facts. "I feel guilty, so I must be guilty."</p>
-<p><em>Shoulds:</em> Using inflexible rules about how you, others, or the world should be. "I should have done something to stop it."</p>
-<p><em>Disqualifying the positive:</em> Explaining away positive evidence. "She said she trusts me, but she's just saying that."</p>
-<p>Identifying patterns rather than individual Stuck Points accelerates the cognitive work and builds meta-cognitive skills the client can apply independently after treatment ends.</p>`
+          content: `<h2>Patterns of Problematic Thinking: PTSD-Specific Clinical Examples</h2>
+<p>In later sessions (typically Sessions 5–7), clients learn to identify patterns of problematic thinking — cognitive errors — that appear across multiple Stuck Points. Recognizing patterns accelerates the cognitive work and builds meta-cognitive skills the client can apply independently after treatment ends. Each pattern is particularly relevant to PTSD in specific ways, and clinicians benefit from understanding not just the definition but the characteristic ways each pattern manifests in trauma presentations.</p>
+<p><strong>Jumping to conclusions</strong></p>
+<p>Definition: Assuming something is true without evidence, or predicting the future with certainty despite insufficient evidence.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"She hasn't called me back, which means she's found out what happened to me and is disgusted." (A domestic violence survivor assuming her friend's silence is about her trauma history.)</li>
+<li>"If I go to that neighborhood again, I will definitely be assaulted again." (A mugging survivor generalizing one event to predict certain future harm.)</li>
+<li>"I could tell by the way he looked at me that he thinks I deserved it." (A sexual assault survivor interpreting a stranger's neutral expression as condemnation.)</li>
+<li>"My therapist is going to think I'm making too big a deal of this." (A new therapy client predicting judgment before sharing their story.)</li>
+</ul>
+<p>Clinical note: In PTSD, jumping-to-conclusions thinking is often powered by hypervigilance — the nervous system's attempt to predict danger before it arrives. Clinicians should validate the protective function of this pattern while helping the client examine whether the predictions are accurate.</p>
+<p><strong>Exaggerating or minimizing</strong></p>
+<p>Definition: Catastrophizing negative events (making them larger than they are) or minimizing positive events (making them smaller than they are).</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"I got triggered during our session today. This proves I will never get better." (Exaggerating one difficult moment to predict permanent failure.)</li>
+<li>"I managed to drive past the accident scene without panicking — but that doesn't mean anything, it was just a good day." (Minimizing evidence of progress to maintain the belief "I will never recover.")</li>
+<li>"My nightmares came back twice this week. I've completely relapsed." (Exaggerating symptom fluctuation, which is normal during recovery.)</li>
+<li>"People said nice things about my work presentation, but they were just being polite." (A combat veteran minimizing evidence of competence to maintain the Stuck Point "I am permanently damaged.")</li>
+</ul>
+<p><strong>Ignoring important parts</strong></p>
+<p>Definition: Focusing selectively on one aspect of a situation while ignoring other relevant information, resulting in a distorted conclusion.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"The only thing that matters about that deployment is that I wasn't able to save everyone." (A combat medic ignoring the many lives saved to focus exclusively on losses.)</li>
+<li>"I froze during the assault. That's all that matters. I didn't fight back." (A sexual assault survivor ignoring the physiological freeze response to focus exclusively on her immobility as evidence of complicity or weakness.)</li>
+<li>"My kids need me, I've been promoted at work, I've maintained my friendships — but none of that means anything because I still have nightmares." (A survivor ignoring substantial evidence of functioning.)</li>
+</ul>
+<p>Clinical note: This pattern often works in concert with the Esteem theme — selectively attending to evidence that confirms the over-accommodated Stuck Point about self-worth while systematically ignoring disconfirming evidence.</p>
+<p><strong>Overgeneralizing</strong></p>
+<p>Definition: Drawing broad, global conclusions from a single event or limited evidence.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"I was assaulted by a stranger in a parking garage. No public space is safe." (One assault → all public spaces are dangerous.)</li>
+<li>"My marriage ended in abuse. All intimate relationships lead to harm." (One abusive relationship → all relationships are dangerous.)</li>
+<li>"I made a mistake under fire that I regret. I will always make the wrong decision under pressure." (One combat decision → global incapacity for good judgment.)</li>
+<li>"I couldn't protect my child during the accident. I'm a bad parent." (One event → global identity as a bad parent.)</li>
+</ul>
+<p><strong>Mind reading</strong></p>
+<p>Definition: Assuming you know what others are thinking, typically assuming the worst, without evidence.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"Everyone at the support group can tell I'm more damaged than they are." (A PTSD group member assuming others are judging her severity.)</li>
+<li>"My boss knows something is wrong with me. She's going to fire me." (A veteran with PTSD interpreting a supervisor's neutral behavior as suspicion.)</li>
+<li>"When I told my partner what happened, they were disgusted even if they didn't say so." (A survivor interpreting a partner's quiet response as hidden contempt rather than empathy or emotional processing.)</li>
+</ul>
+<p><strong>Emotional reasoning</strong></p>
+<p>Definition: Using emotional states as evidence of factual truth: "I feel X, therefore X is true."</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"I feel guilty about surviving when others didn't, so I must have done something wrong." (Survivor's guilt used as evidence of actual culpability.)</li>
+<li>"I feel like damaged goods, so I must be damaged goods." (Shame used as evidence of permanent worthlessness.)</li>
+<li>"I feel like it was my fault, which means it was my fault." (Guilt feelings used as evidence of causation.)</li>
+<li>"I feel like I'll never get better, so I probably won't." (Hopelessness used as evidence of prognosis.)</li>
+</ul>
+<p>Clinical note: Emotional reasoning is one of the most challenging patterns in trauma work because the emotions are real and intense — and in our culture, strong feelings are often taken as evidence. The CPT therapist helps clients distinguish between the validity of the emotion (which should be respected) and its use as evidence for factual claims (which should be examined).</p>
+<p><strong>Shoulds</strong></p>
+<p>Definition: Using inflexible rules — "should," "must," "have to," "ought to" — about how you, others, or the world should be, leading to guilt, shame, or anger when reality doesn't match the rule.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"I should have fought back harder." (Applying a rule — resistance equals safety — to a situation in which freeze was the physiological response and fighting back might have escalated danger.)</li>
+<li>"I should be over this by now." (Applying an arbitrary timeline rule to a complex psychological process.)</li>
+<li>"A good soldier should not be affected by combat. I should be able to handle this." (Applying a cultural/military ideal to a human response to extreme stress.)</li>
+<li>"I should have known he was dangerous. I should have seen the signs." (Applying perfect-foresight standards retrospectively.)</li>
+</ul>
+<p><strong>Disqualifying the positive</strong></p>
+<p>Definition: Explaining away or minimizing positive evidence so that it cannot challenge the negative belief.</p>
+<p>PTSD-specific examples:</p>
+<ul>
+<li>"My children love me, but that's because they don't know what really happened to me." (Love explained away to preserve the Stuck Point "I am unworthy of love.")</li>
+<li>"I've been promoted three times since the trauma, but anyone could do my job." (Professional success explained away to preserve "I am permanently damaged.")</li>
+<li>"My therapist says I'm making good progress, but she has to say that." (Therapist feedback explained away as professional obligation.)</li>
+</ul>
+<p>Identifying patterns rather than individual Stuck Points accelerates the cognitive work and builds meta-cognitive skills the client can apply independently after treatment ends. When a client recognizes "Oh, I'm doing that emotional reasoning thing again," they can interrupt the cognitive process without the full Challenging Questions sequence — the goal of late-phase CPT skill-building.</p>`
         },
         {
           type: 'text',
