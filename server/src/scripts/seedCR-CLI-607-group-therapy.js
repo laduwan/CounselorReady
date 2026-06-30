@@ -289,12 +289,85 @@ const COURSE = {
         },
         {
           type: 'text',
-          content: `<h2>Group Stages: What to Expect Over Time</h2>
-<p>Groups, like individuals, develop over time. Recognizing the stage of a group's development allows the clinician to calibrate their facilitation appropriately — what works in Stage 1 can derail Stage 3 work, and vice versa.</p>
-<p><strong>Stage 1: Formation and Engagement (early group)</strong><br>Members are orienting: Is this safe? Do I belong here? Will these people understand me? The leader is central, structure is helpful, and member-to-leader interaction is prominent. Universal themes surface quickly (universality factor). The leader's primary tasks: create safety, establish norms, facilitate initial disclosure, and help members identify connections to each other.</p>
-<p><strong>Stage 2: Conflict and Challenge (storming)</strong><br>Often emerging around sessions 3–6, this stage involves increased conflict — between members, and sometimes with the leader. Members test norms, challenge the leader's authority, and assert individuality. This is normal and necessary. Groups that skip this stage (through over-control by the leader) often stall at superficial cohesion. The leader's task: stay non-anxious, model handling conflict productively, and use conflict as material.</p>
-<p><strong>Stage 3: Cohesion and Working Through (norming and performing)</strong><br>Genuine cohesion develops. Members take more interpersonal risks, give more authentic feedback, and engage with deeper material. The leader steps back from center; member-to-member interaction increases. Interpersonal learning is most active here.</p>
-<p><strong>Stage 4: Termination</strong><br>Groups end, and the ending is itself therapeutic — or can be, when handled well. Themes of loss, gratitude, pride, and review emerge. The leader facilitates explicit processing of the ending, celebration of growth, and transition. Members who minimize termination often have avoidant patterns that the ending illuminates.</p>`
+          content: `<h2>Group Stages: Tuckman's Model and Clinical Implications</h2>
+<p>Groups, like individuals, develop over time. Recognizing the stage of a group's development allows the clinician to calibrate their facilitation appropriately — what works in Stage 1 can derail Stage 3 work, and vice versa. Bruce Tuckman's (1965) model of group development — Forming, Storming, Norming, Performing, and Adjourning — remains the most widely used framework and maps closely onto clinical observations of therapy group development.</p>
+
+<h3>Stage 1: Formation and Engagement (Forming)</h3>
+<p>Members are orienting to a fundamentally uncertain situation: Is this safe? Do I belong here? Will these people understand me? Will I be judged? Will the leader be able to contain what happens in here? The uncertainty is managed through polite, somewhat careful interaction in which members present curated versions of themselves and monitor carefully for signals of acceptance or rejection.</p>
+<p><strong>What you'll observe:</strong></p>
+<ul>
+<li>High member-to-leader interaction; members look to the leader for direction, reassurance, and structure</li>
+<li>Careful self-presentation; members share, but at a manageable depth</li>
+<li>Quick universality moments ("You feel that way too? So do I") — often the most powerful early-group experiences</li>
+<li>Anxiety about the group format itself and what will be expected</li>
+<li>Testing of the leader's competence and trustworthiness</li>
+</ul>
+<p><strong>Leader interventions in Stage 1:</strong></p>
+<ul>
+<li><strong>Provide structure:</strong> More leader direction is appropriate and welcomed in Stage 1. Begin sessions with brief check-ins; facilitate introductions with clear invitations; summarize themes the group shares. Structure reduces the anxiety of the unknown.</li>
+<li><strong>Facilitate universality actively:</strong> When a member shares, invite the group to connect: "Who else has had a similar experience?" Connections made in the first two sessions have disproportionate impact on early cohesion.</li>
+<li><strong>Establish norms through behavior:</strong> How the leader responds to the first disclosure, the first moment of silence, the first expression of emotion, and the first interpersonal tension sets the normative template for the group's life. These are not arbitrary moments.</li>
+<li><strong>Calibrate depth to early trust:</strong> Do not invite deep disclosure before safety has been established. Deep disclosure before trust can feel invasive and drive dropout. Let depth emerge gradually as safety develops.</li>
+<li><strong>Name the group's experience:</strong> "It often feels a bit uncertain in early sessions — I notice some of us are figuring out what this is supposed to look like. That's very normal." Normalizing the Stage 1 experience is itself therapeutic.</li>
+</ul>
+
+<h3>Stage 2: Conflict and Challenge (Storming)</h3>
+<p>Often emerging around sessions 3–6 in closed groups, this stage involves increased conflict — between members, and sometimes between members and the leader. Members test norms, challenge the leader's authority, assert individuality, and begin to be more honest about negative reactions. This stage is normal, necessary, and frequently anxiety-provoking for new group leaders who experience it as a failure.</p>
+<p>Storming is not a problem to be solved — it is a developmental necessity. Groups that skip this stage (through over-control by the leader, through a norm of excessive positivity, or through the group's collective anxiety) often stall at a superficial cohesion that never quite becomes genuine. Members in perpetually "positive" groups often describe feeling fake — they like each other, but they don't trust each other. Real trust requires having navigated something difficult together.</p>
+<p><strong>What you'll observe:</strong></p>
+<ul>
+<li>Direct or indirect challenges to the leader's authority ("Why do you always redirect us when we're just talking?", "I don't see why we have to do it that way")</li>
+<li>More direct member-to-member conflict, irritation, or confrontation</li>
+<li>Members beginning to push back against each other's patterns ("When you always have a solution for everyone else, I feel like there's no room for my experience")</li>
+<li>Possible lateness, absences, or dropout if conflict feels uncontained</li>
+<li>Testing of what the leader will allow and whether conflict will destroy the group</li>
+</ul>
+<p><strong>Leader interventions in Stage 2:</strong></p>
+<ul>
+<li><strong>Stay non-anxious:</strong> The most important intervention in Stage 2 is the leader's emotional regulation. If the leader becomes defensive, controlling, or anxious when conflict emerges, the group learns that conflict is dangerous. If the leader remains curious and present, the group learns that conflict is survivable.</li>
+<li><strong>Name the conflict directly without pathologizing it:</strong> "I notice there's been some friction today, and I don't want us to skip past it. What's actually happening between the two of you?" Naming conflict is different from amplifying it.</li>
+<li><strong>Reduce structure deliberately:</strong> Leaders who over-structure in Stage 2 to manage their own anxiety prevent the group from developing the capacity to manage itself. Controlled releases of structure — longer silences, fewer redirections — allow the group to begin self-organizing.</li>
+<li><strong>Model conflict tolerance:</strong> When challenged directly, respond with genuine curiosity rather than defensiveness: "You're frustrated that I keep redirecting — tell me more about that. What would feel more useful to you?" This models the very behavior the group needs to learn.</li>
+<li><strong>Use the conflict therapeutically:</strong> Conflict in Stage 2 often mirrors the conflicts members have in outside life. "What's happening between Marcus and Diane right now feels important. Marcus, when you respond that way to criticism, is that a pattern you recognize?" Conflict becomes interpersonal learning material.</li>
+</ul>
+
+<h3>Stage 3: Cohesion and Working Through (Norming and Performing)</h3>
+<p>Genuine cohesion develops. Members take more interpersonal risks, give more authentic feedback, tolerate and repair conflict, and engage with deeper material. The leader steps back from center; member-to-member interaction increases substantially. Interpersonal learning is most active. This is the stage of deepest therapeutic work.</p>
+<p><strong>What you'll observe:</strong></p>
+<ul>
+<li>Members initiating without the leader's prompting; the group runs itself for stretches of time</li>
+<li>Authentic, specific, and sometimes challenging feedback between members ("I care about you enough to say that this pattern I see in you is costing you something important")</li>
+<li>Members bringing in outside material and explicitly connecting it to what they've learned in the group</li>
+<li>The development of group rituals, shared language, and in-jokes that mark the group as having an identity</li>
+<li>Members expressing genuine care and concern for each other; attendance becomes personally important</li>
+<li>Increasing willingness to engage with here-and-now process, even when it's uncomfortable</li>
+</ul>
+<p><strong>Leader interventions in Stage 3:</strong></p>
+<ul>
+<li><strong>Step back further:</strong> The Stage 3 error for leaders is staying as central as they were in Stages 1–2. Allow the group to do its work. Resist the impulse to interpret or redirect prematurely. Silence that lasts 30 seconds in Stage 3 is often productive processing, not a crisis to be rescued.</li>
+<li><strong>Deepen process commentary:</strong> In Stage 3, the group can handle and benefit from deeper process-level observation. "I notice that whenever Sara starts to talk about her marriage, the group seems to organize around advice-giving in a way that allows her to stay at arm's length from her own feelings. I wonder what we're all protecting here."</li>
+<li><strong>Maintain safety with deeper disclosure:</strong> As members take greater risks, the leader's role in protecting members who are over-exposed or being piled on remains essential. Deeper cohesion does not mean lower-stakes dynamics — the material is higher-stakes.</li>
+<li><strong>Actively link across sessions:</strong> The leader in Stage 3 connects current interactions to earlier-session patterns, building the longitudinal narrative of individual member development. "This is similar to what happened in week 4 — what's different now in how you're responding?"</li>
+</ul>
+
+<h3>Stage 4: Termination (Adjourning)</h3>
+<p>Groups end, and the ending is itself therapeutic — or can be, when handled well. Themes of loss, gratitude, pride, review, and transition emerge. Members who minimize termination often have avoidant attachment patterns that the ending illuminates. Members who become destabilized by termination may have abandonment schema that the ending activates. Both are therapeutic opportunities.</p>
+<p><strong>What you'll observe:</strong></p>
+<ul>
+<li>Return of some earlier-stage behaviors — increased anxiety, some distancing, attendance disruptions — as members begin to process the ending</li>
+<li>Review of the group's history and celebration of what members have learned and changed</li>
+<li>Direct expression of grief, gratitude, and sometimes anger about the ending</li>
+<li>Future-orientation: what will members do differently? What have they internalized?</li>
+<li>Individual members having different emotional reactions to the ending that reflect their attachment patterns</li>
+</ul>
+<p><strong>Leader interventions in Stage 4:</strong></p>
+<ul>
+<li><strong>Begin preparation 2–3 sessions before the end:</strong> Do not save termination processing for the final session. Dedicate the last 2–3 sessions explicitly to consolidation, grief, and review. "We have three sessions left. How do you want to use this time?"</li>
+<li><strong>Facilitate explicit grief:</strong> Resist the impulse (and the group's impulse) to stay in celebration mode and avoid sadness. The ending involves real loss. Members who are helped to grieve the ending are more likely to retain what they've gained.</li>
+<li><strong>Facilitate consolidation of learning:</strong> Each member should be able to articulate, before the group ends, what they've learned about themselves and what they intend to do differently. This consolidation supports transfer to life outside the group.</li>
+<li><strong>Address termination-activated patterns directly:</strong> The member who starts missing sessions in the final month; the member who becomes more dependent on the leader; the member who dismisses the ending as "no big deal" — these are clinical material, not just attendance problems. Name them in the group.</li>
+<li><strong>Provide aftercare resources:</strong> For members who may need ongoing support after the group ends, have individual therapy resources, other group options, or community resources prepared.</li>
+</ul>`
         },
         {
           type: 'text',
