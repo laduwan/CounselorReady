@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Onboarding | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Getting Started</h1>
+      <p class="text-gray-500 mt-1">Complete the steps below to finish setting up your partner account.</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading onboarding…</p>
+    </div>
+
+    <!-- Celebration banner -->
+    <div id="celebration" class="hidden mb-6 rounded-xl bg-hunter-700 text-white p-6 text-center">
+      <div class="text-4xl mb-2">&#127881;</div>
+      <h2 class="font-display text-2xl font-semibold mb-1">You're all set!</h2>
+      <p class="text-white/80">All required setup steps are complete. Your partner account is fully configured.</p>
+    </div>
+
+    <!-- Progress bar -->
+    <div id="progress-section" class="hidden mb-8">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm font-medium text-stone-700">Setup Progress</span>
+        <span id="progress-label" class="text-sm text-stone-500"></span>
+      </div>
+      <div class="w-full bg-stone-200 rounded-full h-3">
+        <div id="progress-bar" class="h-3 rounded-full bg-burgundy-700 transition-all duration-500" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div id="steps-list" class="hidden space-y-3"></div>
+
+    <!-- Error -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    function esc(s) { if (s == null) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    async function loadOnboarding() {
+      try {
+        const res = await fetch(`${API}/api/partners/my/onboarding`, { headers: AUTH });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to load onboarding data');
+        const data = await res.json();
+        renderOnboarding(data);
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function renderOnboarding({ steps, progress }) {
+      document.getElementById('loading').classList.add('hidden');
+
+      const progressSection = document.getElementById('progress-section');
+      progressSection.classList.remove('hidden');
+      document.getElementById('progress-bar').style.width = `${progress.percentage}%`;
+      document.getElementById('progress-label').textContent =
+        `${progress.requiredCompleted} of ${progress.requiredTotal} required steps complete`;
+
+      if (progress.allRequiredDone) {
+        document.getElementById('celebration').classList.remove('hidden');
+      }
+
+      const list = document.getElementById('steps-list');
+      list.classList.remove('hidden');
+      list.innerHTML = steps.map(step => {
+        const done = step.completed;
+        const card = `
+          <div class="bg-white rounded-xl border ${done ? 'border-stone-200 opacity-70' : 'border-honey-400 hover:shadow-md'} p-5 transition-shadow">
+            ${done
+              ? `<div class="flex items-start gap-4">
+                  <div class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full bg-hunter-600 flex items-center justify-center">
+                    <i class="fas fa-check text-white text-xs"></i>
+                  </div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-stone-400 line-through">${esc(step.title)}</span>
+                      ${step.optional ? `<span class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-400 font-medium">optional</span>` : ''}
+                    </div>
+                    <p class="text-sm text-stone-400 mt-0.5">${esc(step.description)}</p>
+                  </div>
+                </div>`
+              : `<a href="${esc(step.link)}" class="flex items-start gap-4">
+                  <div class="flex-shrink-0 mt-0.5 w-6 h-6 rounded-full border-2 border-burgundy-700"></div>
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-semibold text-burgundy-900">${esc(step.title)}</span>
+                      ${step.optional ? `<span class="text-xs px-2 py-0.5 rounded-full bg-honey-100 text-honey-700 font-medium">optional</span>` : ''}
+                    </div>
+                    <p class="text-sm text-stone-500 mt-0.5">${esc(step.description)}</p>
+                  </div>
+                  <i class="fas fa-chevron-right text-burgundy-400 text-sm flex-shrink-0 mt-1"></i>
+                </a>`
+            }
+          </div>`;
+        return card;
+      }).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', loadOnboarding);
+  </script>
+  <script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
