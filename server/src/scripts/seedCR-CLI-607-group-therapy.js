@@ -207,26 +207,85 @@ const COURSE = {
         {
           type: 'text',
           content: `<h2>Designing a Group: Pre-Group Preparation</h2>
-<p>The most important group therapy work happens before the first session. Thoughtful group design — purpose, composition, structure, and setting — is the single most powerful predictor of group success. Groups that are poorly designed tend to fail in predictable ways: members dropout, conflict becomes unmanageable, or the group never achieves cohesion.</p>
-<p><strong>1. Defining purpose and selecting a format:</strong> What is this group for? The answer should be specific: "A closed-format 12-week process group for adults with chronic depression in an outpatient setting" is a clear purpose. "A group for people having a hard time" is not. Purpose drives every subsequent design decision — composition, structure, norms, and facilitation style.</p>
-<p><strong>2. Membership and composition:</strong> Research on group composition yields an important finding: homogeneity in problem area or diagnosis combined with heterogeneity in coping style and interpersonal style produces the most productive groups. Members who all have depression but cope and relate differently from each other will generate more interpersonal learning than a group that is homogeneous in every dimension.</p>
-<p>Considerations for inclusion:</p>
+<p>The most important group therapy work happens before the first session. Thoughtful group design — purpose, composition, structure, and setting — is the single most powerful predictor of group success. Groups that are poorly designed tend to fail in predictable ways: members dropout, conflict becomes unmanageable, or the group never achieves cohesion. Clinicians who invest time in careful pre-group work find that the group runs with noticeably less intervention and achieves significantly better outcomes.</p>
+
+<h3>1. Defining Purpose and Selecting a Format</h3>
+<p>What is this group for? The answer should be specific: "A closed-format 12-week process group for adults with chronic depression in an outpatient setting" is a clear purpose. "A group for people having a hard time" is not. Purpose drives every subsequent design decision — composition, structure, norms, and facilitation style.</p>
+<p>Ask yourself: What change mechanism am I trying to activate? If interpersonal learning is the primary mechanism, a process format is indicated. If skill acquisition is the goal, a psychoeducational or CBT group format is indicated. If shared experience and community are primary, a support group format is indicated. The therapeutic factors most active in each format differ significantly (see Section 1), and your facilitation style, session structure, and composition decisions should all align with the format you select.</p>
+
+<h3>2. The Pre-Group Screening Interview</h3>
+<p>Pre-group individual screening — meeting with each prospective member before the group begins — is the most evidence-supported preparation practice in group therapy. Studies consistently show that prepared members have significantly lower dropout rates, develop therapeutic alliances more quickly, and engage in meaningful disclosure earlier in the group's life. Despite this evidence, many clinicians skip this step due to time constraints, treating it as a luxury. It is not optional for interpersonal process groups.</p>
+<p><strong>What the pre-group interview accomplishes:</strong></p>
 <ul>
-<li>Is the presenting concern appropriate for this group's format and goals?</li>
-<li>Does the client have the verbal, cognitive, and social capacity to participate?</li>
-<li>Is the client in sufficient crisis stability to engage (not so destabilized that they need individual work first)?</li>
-<li>Will this client's interpersonal style be productive in this particular group composition?</li>
+<li><strong>Clinical assessment:</strong> Determine whether this client is appropriate for this group at this time. Assess crisis stability, interpersonal capacity, cognitive ability, and motivation. This is not rejection — it is appropriate level-of-care matching. A client who is not ready for group may be an excellent candidate in three months after stabilization in individual therapy.</li>
+<li><strong>Psychoeducation:</strong> Explain what group therapy is and is not. Many clients have misconceptions ("Am I going to have to talk about my childhood in front of strangers?" "Will people judge me?"). Accurate expectations reduce anxiety and dropout. Describe the format, session structure, expectations for attendance and participation, and what happens if they miss a session.</li>
+<li><strong>Goal setting:</strong> Identify what the client wants to get from the group experience. What interpersonal patterns do they recognize? What do they want to be different in their relationships? Goals formed before the group provide benchmarks for progress and give the client a sense of direction.</li>
+<li><strong>Beginning the therapeutic relationship:</strong> The pre-group meeting is the first contact with the leader. This relationship matters — members with stronger leader alliance early in the group tend to develop stronger group cohesion. Begin it thoughtfully.</li>
+<li><strong>Answering informed consent questions:</strong> The pre-group meeting is the appropriate time to review informed consent in detail, including confidentiality limits, attendance expectations, financial policies, and the nature of group therapy.</li>
 </ul>
-<p>Absolute exclusion criteria for most outpatient groups:</p>
+<p><strong>Inclusion criteria for most outpatient process groups:</strong></p>
 <ul>
-<li>Active psychosis</li>
-<li>Active suicidal intent requiring intensive intervention</li>
-<li>Severe cognitive impairment affecting comprehension</li>
-<li>Sociopathic traits that would make the group unsafe for others</li>
+<li>Presenting concern is appropriate for the group's format and goals</li>
+<li>Sufficient verbal, cognitive, and social capacity to participate in group interaction</li>
+<li>Crisis stability: not actively suicidal, psychotic, or so destabilized that they need higher-level care before engaging in group</li>
+<li>Willingness to attend regularly and engage with other members, not just the leader</li>
+<li>Some capacity for self-reflection and the ability to consider one's impact on others</li>
 </ul>
-<p><strong>3. Size:</strong> The optimal size for interpersonal process groups is 7–8 members. Smaller groups can't generate adequate interpersonal complexity; larger groups make it difficult for every member to participate meaningfully. Psychoeducational groups can be larger (12–15) because the format is less relational.</p>
-<p><strong>4. Duration and frequency:</strong> For closed outpatient groups, 12–20 sessions is typical. Weekly 90-minute sessions are the standard for process groups; psychoeducational groups may run 60 minutes. The research on session length supports 90 minutes as optimal for interpersonal work — enough time to establish context, move through material, and return to a stable place before ending.</p>
-<p><strong>5. Pre-group preparation:</strong> Individual pre-group meetings with each prospective member are essential for most process groups. These meetings: establish expectations, assess appropriateness, begin the therapeutic relationship, identify member goals, and answer questions about what group will be like. Members who are better prepared have lower dropout rates and engage more quickly.</p>`
+<p><strong>Absolute exclusion criteria for most outpatient process groups:</strong></p>
+<ul>
+<li>Active psychosis, mania, or severe dissociation — these require higher-level care and would be unsafe or untherapeutic in an outpatient group setting</li>
+<li>Active suicidal intent requiring intensive intervention — the group setting cannot provide the level of monitoring and support needed; stabilize in individual or intensive outpatient first</li>
+<li>Severe cognitive impairment affecting comprehension of group interaction</li>
+<li>Sociopathic or predatory traits that would render the group unsafe for other members</li>
+<li>Relationship with another group member that would create a disruptive dual relationship within the group (e.g., a couple, close friends, or an employer/employee dyad)</li>
+</ul>
+<p><strong>Relative exclusion criteria</strong> (requiring careful clinical judgment):</p>
+<ul>
+<li>Active substance use that is not being managed — intoxication in group sessions is not manageable and undermines the group; sobriety requirements should be specified in advance</li>
+<li>Recent acute trauma — some clients in the acute phase of trauma are better served by stabilization before joining an interpersonal group where trauma material may surface without adequate containment</li>
+<li>Extreme social anxiety that makes group participation impossible without individual preparation and possibly concurrent individual treatment</li>
+</ul>
+
+<h3>3. Informed Consent for Group Therapy</h3>
+<p>Informed consent for group therapy has both standard and group-specific elements. Written informed consent should be supplemented by a verbal discussion in the pre-group meeting. Group-specific informed consent elements include:</p>
+<ul>
+<li><strong>Confidentiality limits:</strong> The leader maintains their own confidentiality obligations, but cannot legally enforce confidentiality among members. Members may disclose outside the group what they hear, and the leader cannot prevent this. This limitation must be disclosed clearly, and the leader should establish explicit group norms around confidentiality as a supplement to (not replacement for) this disclosure.</li>
+<li><strong>Attendance expectations:</strong> Regular attendance is a clinical necessity in closed groups, not just a preference. Missing sessions disrupts other members' sense of safety and the group's developmental continuity. Clients should understand that consistent attendance is expected and that repeated absences may result in a referral to individual therapy.</li>
+<li><strong>No outside relationships:</strong> Many leaders establish explicit norms against romantic or sexual involvement among group members during the course of treatment, and specify norms around outside contact (e.g., no text message exchanges that remain private from the group). These expectations should be disclosed before the group begins.</li>
+<li><strong>What happens if someone joins or leaves (for open groups):</strong> Members of open groups should understand that new members will join and others will leave, and what the process will look like when transitions occur.</li>
+<li><strong>The leader's role and theoretical orientation:</strong> Clients have a right to understand the type of therapy they are receiving, including the leader's theoretical orientation, the structure of sessions, and what they can expect the leader to do and not do.</li>
+<li><strong>Fee structure and cancellation policy:</strong> Including whether individual sessions will be charged separately if the client is also in individual therapy with the same provider.</li>
+</ul>
+
+<h3>4. Group Composition Decisions</h3>
+<p>Research on group composition yields an important and counterintuitive finding: homogeneity in problem area or diagnosis combined with heterogeneity in coping style and interpersonal style produces the most productive process groups. Members who all have depression but cope and relate differently from each other will generate more interpersonal learning than a group that is homogeneous in every dimension.</p>
+<p>The clinical logic is straightforward: if everyone in the group copes the same way (for example, all members are avoidant), there is no one to offer an alternative model. Heterogeneity in coping style means members encounter approaches to problems they haven't considered, and interact with people whose relational style differs from their habitual environment — which is exactly the learning opportunity the group is designed to provide.</p>
+<p>Composition considerations beyond diagnosis:</p>
+<ul>
+<li><strong>Developmental stage and age:</strong> Grouping members too far apart in developmental stage (e.g., a 25-year-old navigating first relationships with a 65-year-old in retirement) can reduce universality and create engagement difficulties. This matters more in some groups than others — grief groups may span wide age ranges productively; young adult groups may be specifically age-limited.</li>
+<li><strong>Trauma history:</strong> In general-purpose outpatient groups, it is wise to screen for active PTSD presentations that might be easily destabilized by others' trauma material and respond with dissociation or flooding that disrupts the group.</li>
+<li><strong>Interpersonal dominance:</strong> A group in which two members have high dominance/control tendencies may spend most of its energy managing their rivalry rather than doing therapeutic work. One dominant member is workable; more requires compositional adjustment.</li>
+<li><strong>Cultural and identity diversity:</strong> Deliberate attention to cultural composition acknowledges that race, ethnicity, gender, sexual orientation, religion, and class are clinical variables, not demographic footnotes. A group with only one member of a particular race or gender may inadvertently put that person in the position of representing their entire demographic group — which is burdensome and limits their therapeutic work.</li>
+</ul>
+
+<h3>5. Group Size, Duration, and Frequency</h3>
+<p>The optimal size for interpersonal process groups is 7–8 members. Smaller groups (below 5) can't generate adequate interpersonal complexity; there aren't enough perspectives or relational dynamics. Larger groups (above 10) make it difficult for every member to participate meaningfully in 90 minutes — some members will consistently disengage while others dominate. Psychoeducational groups can be larger (12–15) because the format is less relational and the leader is more directive.</p>
+<p>For closed outpatient groups, 12–20 sessions is the most common range. Brief groups (8–12 sessions) are appropriate for focused psychoeducational or CBT interventions. Longer-term groups (20+ sessions, or ongoing open groups) are appropriate for interpersonal process work with personality pathology or chronic presentations. The research literature on "dose" of group therapy generally supports this range: significant gains are achievable in 12–16 sessions for focused interventions; personality and character change typically require longer treatment.</p>
+<p>Weekly 90-minute sessions are the standard for interpersonal process groups. The 90-minute duration is not arbitrary: it allows sufficient time to establish context through opening (15–20 minutes), move through multiple member interactions and process commentary (50–60 minutes), and return to a stable place before ending (10–15 minutes). Sessions shorter than 75 minutes frequently end before members have had time to do meaningful work. Sessions longer than 120 minutes can become exhausting and produce material that the group cannot adequately process before the end.</p>
+
+<h3>6. Establishing Group Norms and Group Agreements</h3>
+<p>Group norms — the implicit and explicit rules that govern member behavior — are established in the first two sessions and persist, often with remarkable tenacity, throughout the group's life. The leader who understands this will invest significant attention in norm-setting early, because norms established inadvertently are much harder to change than norms established deliberately.</p>
+<p><strong>The group agreement:</strong> Many leaders develop a written or verbal group agreement reviewed in Session 1 that covers:</p>
+<ul>
+<li>Confidentiality expectations and their limits</li>
+<li>Attendance commitment (what to do if you cannot attend; how many sessions can be missed before the group needs to discuss your membership)</li>
+<li>How feedback is given (from the first-person perspective; focus on behavior rather than character; both positive and challenging feedback are expected)</li>
+<li>Norms around outside contact between members (some leaders prohibit it entirely during treatment; others ask that outside interactions be brought back into the group)</li>
+<li>Norms around substance use (arriving to group under the influence is grounds for not participating in that session)</li>
+<li>What happens at the end of the group (how will termination be handled)</li>
+</ul>
+<p><strong>Norms the leader models:</strong> Beyond explicit agreements, leaders communicate norms through their own behavior. A leader who begins sessions on time signals that time is valued. A leader who maintains a non-anxious, curious stance in the face of conflict signals that conflict is safe here. A leader who responds to a member's disclosure with genuine interest (not with a pivot to problem-solving) signals that vulnerability will be received with care. The leader's behavior in the first two sessions creates the normative template the group will follow for its entire life.</p>
+<p><strong>Process norms vs. content norms:</strong> In process groups, one of the most important norms to establish is the expectation of process-level communication — speaking in the first person about one's experience of others, rather than talking about external events and relationships. "Tell us what's happening for you right now, in this room, with these people" is a norm that must be established early and returned to consistently, because clients will naturally default to outside-content focus unless the leader actively redirects to the here-and-now.</p>`
         },
         {
           type: 'text',
