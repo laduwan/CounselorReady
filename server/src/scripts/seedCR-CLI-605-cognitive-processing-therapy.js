@@ -394,6 +394,125 @@ const COURSE = {
 <p>The five themes provide a clinical map for understanding each client's specific pattern of over-accommodation. Not every client has significant Stuck Points in every theme — CPT focuses where the client's specific beliefs cluster.</p>`
         },
         {
+          type: 'text',
+          content: `<h2>Stuck Points Across the Five Themes: Clinical Examples</h2>
+<p>The five CPT themes — Safety, Trust, Power/Control, Esteem, and Intimacy — provide a clinical map for organizing Stuck Points. Understanding the characteristic Stuck Points in each theme, including the sub-categories of self-focused and other-focused beliefs, allows for more precise clinical work. What follows is an expanded clinical guide to Stuck Points in each theme, with examples drawn from common trauma presentations.</p>
+<p><strong>Theme 1: Safety</strong></p>
+<p>The Safety theme addresses beliefs about personal vulnerability and the dangerousness of the world. Trauma survivors frequently develop over-accommodated safety beliefs that restrict their lives far more than is proportionate to the actual risk environment they live in.</p>
+<p>Safety Stuck Points about self:</p>
+<ul>
+<li>"I cannot protect myself from harm." (A domestic violence survivor who successfully escaped her abuser but has generalized helplessness to all situations.)</li>
+<li>"I will be attacked again. It is only a matter of time." (A mugging survivor who now avoids all public transportation despite low actual risk in her neighborhood.)</li>
+<li>"I am not safe anywhere." (A combat veteran who cannot enter a grocery store without a weapon because of a generalized threat perception that extends to civilian environments.)</li>
+<li>"My body is not safe. Something is always wrong with me physically." (A sexual assault survivor with somatic hypervigilance interpreting normal bodily sensations as threats.)</li>
+</ul>
+<p>Safety Stuck Points about others and the world:</p>
+<ul>
+<li>"The world is completely dangerous. Terrible things happen constantly and randomly." (Over-accommodation driven by the perceived randomness of the traumatic event.)</li>
+<li>"Other people are dangerous. Anyone could be a threat." (Generalized from one perpetrator to all people.)</li>
+<li>"I cannot keep my children safe." (A parent whose child was harmed, generalizing inability to prevent one specific harm to global parental incapacity.)</li>
+</ul>
+<p>Clinical note on Safety Stuck Points: The therapist must be careful to distinguish between over-accommodated safety beliefs (the CPT target) and accurate threat perception. A domestic violence survivor who has returned to an actively dangerous relationship does not need cognitive challenging of her safety concerns — she needs safety planning. The clinician's task is to assess actual risk before determining whether safety beliefs are over-accommodated.</p>
+<p><strong>Theme 2: Trust</strong></p>
+<p>The Trust theme addresses beliefs about trustworthiness — of self and others. Interpersonal traumas (betrayal, assault by trusted persons, childhood abuse) particularly affect this domain.</p>
+<p>Trust Stuck Points about self:</p>
+<ul>
+<li>"I can't trust my own instincts. I had no idea he was dangerous." (A person betrayed by someone she trusted, generalizing failure to detect one perpetrator's deception to global judgment incapacity.)</li>
+<li>"My body betrayed me during the assault. I can't trust my own reactions." (A survivor confused or ashamed by physiological responses during the trauma — arousal, freeze, dissociation.)</li>
+<li>"I make bad decisions. I chose to be there. I chose to trust him." (Over-accommodation of responsibility that undermines self-trust.)</li>
+</ul>
+<p>Trust Stuck Points about others:</p>
+<ul>
+<li>"No one can ever be trusted. Everyone has a hidden agenda." (A survivor of childhood abuse by a caregiver, generalizing caregiver betrayal to universal untrustworthy otherness.)</li>
+<li>"People who seem trustworthy are the most dangerous. The person I trusted most was the one who hurt me." (Inverse trust — where demonstrated trustworthiness becomes a red flag rather than a reassurance.)</li>
+<li>"Men [or women, or authority figures, or family members] are inherently untrustworthy." (Group-level generalization from one perpetrator.)</li>
+<li>"My family did not protect me. No one will ever protect me." (A childhood trauma survivor whose primary caregivers failed to protect her, generalizing to all potential protectors.)</li>
+</ul>
+<p><strong>Theme 3: Power/Control</strong></p>
+<p>The Power/Control theme is distinctive in that it encompasses two opposite extreme positions: beliefs of excessive control (I should have been able to prevent this) and beliefs of total powerlessness (I have no control over anything). Both are over-accommodated positions that interfere with adaptive functioning.</p>
+<p>Power Stuck Points reflecting excessive responsibility:</p>
+<ul>
+<li>"I should have been able to stop what happened. If I had done something different, it wouldn't have occurred." (Hindsight bias applied to a situation in which the client genuinely had limited options.)</li>
+<li>"As the senior person there, it was my responsibility. Everything that happened is my fault." (A combat leader who holds himself responsible for outcomes beyond his actual control.)</li>
+<li>"I could have left the relationship earlier. I chose to stay. So it's my fault." (A domestic violence survivor holding herself responsible for her abuser's actions.)</li>
+</ul>
+<p>Power Stuck Points reflecting powerlessness:</p>
+<ul>
+<li>"There is nothing I can do to protect myself. I am helpless." (Generalized learned helplessness from an event in which the client was genuinely unable to escape.)</li>
+<li>"Trying to plan or prepare is pointless. Something terrible can always happen and there's nothing I can do." (A natural disaster survivor who has abandoned adaptive safety behaviors because no preparation prevented the disaster.)</li>
+<li>"I have no control over my emotions. My PTSD controls me." (A survivor who has experienced panic attacks or dissociation interpreting these events as loss of all self-regulation capacity.)</li>
+</ul>
+<p>The therapeutic task with Power/Control Stuck Points is to help clients develop a nuanced, accurate sense of agency: where did you genuinely have influence, and where were you genuinely constrained? The "retrospective wisdom" examination — "What did you know at the moment the decision was made? What options did you actually have?" — is particularly effective here.</p>
+<p><strong>Theme 4: Esteem</strong></p>
+<p>The Esteem theme is often where the most painful Stuck Points live. Self-blame, shame, and over-accommodated beliefs about personal worthlessness are central features of PTSD in most trauma populations.</p>
+<p>Esteem Stuck Points about self:</p>
+<ul>
+<li>"I am permanently damaged. I am not who I was before." (A survivor who experienced significant functional changes after trauma, generalizing real changes to permanent, total damage.)</li>
+<li>"I am worthless. What happened to me proves I have no value." (A sexual assault survivor who has internalized the perpetrator's treatment of her as reflecting her actual worth.)</li>
+<li>"I am weak for not being over this by now." (Comparing one's own recovery timeline to an idealized standard.)</li>
+<li>"I am disgusting. What happened made me dirty/broken/used." (Sexual assault survivors, particularly, often hold profound shame-based esteem Stuck Points.)</li>
+<li>"I deserved this. I must have done something to deserve what happened." (A self-blame Stuck Point that serves the secondary function of maintaining the belief that the world is fair — "bad things happen to people who deserve them.")</li>
+</ul>
+<p>Esteem Stuck Points about others:</p>
+<ul>
+<li>"People are terrible. Humanity is fundamentally evil." (A survivor of mass violence or torture generalizing from perpetrators to humanity.)</li>
+<li>"Other people cannot understand what I've been through. They are superficial and unaware of real suffering." (A trauma survivor who has become isolated and has developed contempt or disconnection from people without trauma histories.)</li>
+</ul>
+<p><strong>Theme 5: Intimacy</strong></p>
+<p>The Intimacy theme addresses capacity for closeness, vulnerability, and connection. Over-accommodated intimacy beliefs are often among the most functionally limiting, as they cut survivors off from the social support that is most protective against chronic PTSD.</p>
+<p>Intimacy Stuck Points:</p>
+<ul>
+<li>"I will never be able to be close to anyone again. The trauma destroyed my ability to connect." (A survivor who has experienced emotional numbing and interprets this as permanent incapacity for connection.)</li>
+<li>"No one could ever love me after what happened to me." (A shame-based belief that the trauma itself renders the survivor unlovable.)</li>
+<li>"Being vulnerable is dangerous. Letting anyone in just gives them the chance to hurt me." (A survivor of interpersonal betrayal who has generalized the danger of intimacy from one relationship to all potential close relationships.)</li>
+<li>"My family/partner is better off without me. I am a burden." (A PTSD survivor who interprets her symptoms as evidence that she diminishes rather than enriches the lives of people who love her.)</li>
+<li>"Sex is now impossible for me. The trauma has taken that away permanently." (A sexual assault survivor who has experienced sexual dysfunction and generalized current difficulty to permanent incapacity.)</li>
+</ul>`
+        },
+        {
+          type: 'text',
+          content: `<h2>CPT for Specific Populations</h2>
+<p>CPT has been adapted and researched for a number of specific trauma populations. Understanding these adaptations allows clinicians to deliver CPT with greater precision and cultural responsiveness.</p>
+<p><strong>CPT for Military and Veteran Populations</strong></p>
+<p>Veterans and active-duty military represent one of the most extensively studied CPT populations. The VA/DoD Clinical Practice Guideline identifies CPT as a strongly recommended first-line treatment for military-related PTSD, and CPT is widely implemented across VA healthcare systems.</p>
+<p>Military-specific considerations in CPT include:</p>
+<p><em>Moral injury Stuck Points:</em> Military combat often involves morally complex situations — decisions made under fire, civilian casualties, orders followed that caused harm. Stuck Points in the veteran population frequently reflect moral injury: "I killed civilians who turned out to be non-combatants. I am a murderer." These Stuck Points require the "retrospective wisdom" examination — what did the service member know at the moment of the decision, under what constraints, with what information — as well as attention to the grief and loss dimensions that accompany moral injury beyond pure cognitive distortion.</p>
+<p><em>Military identity and esteem:</em> Veterans often hold deep identifications with military values — strength, self-sufficiency, stoicism, unit cohesion — that generate specific Stuck Points about the meaning of having PTSD. "A good soldier doesn't let combat affect him" is a particularly entrenched Stuck Point in military populations that pathologizes a normal human response to extreme stress.</p>
+<p><em>Betrayal trauma:</em> Military sexual trauma (MST) — sexual assault or harassment during military service — is prevalent and often accompanied by betrayal-specific Stuck Points: "The military was supposed to be my family and they failed to protect me" and "Those responsible were never held accountable, which proves I don't matter." MST survivors may need additional attention to institutional betrayal as a CPT theme not captured in the standard five.</p>
+<p><em>Group format:</em> CPT in group format has been extensively studied in VA settings and demonstrates efficacy comparable to individual CPT for veterans. Groups of 6–10 veterans, typically meeting twice weekly for 6 weeks (the "massed" format) or once weekly for 12 weeks, produce significant PTSD symptom reduction. The group setting has the added benefit of normalizing trauma responses and Stuck Points through shared experience.</p>
+<p><strong>CPT for Sexual Assault Survivors</strong></p>
+<p>CPT was originally developed for sexual assault survivors, and this population has the strongest evidence base within the CPT literature. Sexual assault produces a characteristic constellation of Stuck Points that CPT is particularly effective in addressing.</p>
+<p><em>Self-blame Stuck Points:</em> Sexual assault survivors carry disproportionate burdens of self-blame driven by cultural rape myths, social attributions of responsibility, and the need to make sense of a traumatic experience. Common self-blame Stuck Points include: "I shouldn't have been drinking," "I should have said no more clearly," "I shouldn't have gone to his apartment," "If I had fought harder it would have stopped." These Stuck Points reflect the internalization of cultural rape myths and require both cognitive challenging and — for many clients — psychoeducation about sexual coercion, consent, and perpetrator responsibility.</p>
+<p><em>Shame and contamination Stuck Points:</em> Sexual assault often produces profound shame-based Stuck Points related to the body and sexual self: "I am dirty," "I am damaged goods," "No one will want to be with me after this." These Stuck Points are often held with particular rigidity and require sustained, careful work.</p>
+<p><em>Trust and intimate relationship Stuck Points:</em> When the perpetrator was known to the survivor (as is the case in the majority of sexual assaults), trust Stuck Points are often severe: "The person I trusted most is the person who hurt me." These beliefs can generalize broadly and affect capacity for intimate relationships.</p>
+<p><em>Secondary victimization:</em> Many sexual assault survivors have experienced invalidating, blaming, or dismissive responses from family, friends, police, or medical providers following the assault. These secondary victimization experiences generate their own Stuck Points ("No one believed me, which proves I deserved it") that require explicit clinical attention.</p>
+<p><strong>CPT for Childhood Trauma Survivors</strong></p>
+<p>Adult survivors of childhood sexual abuse (CSA), physical abuse, emotional abuse, or neglect present with complex PTSD presentations shaped by developmental context. CPT has been studied and adapted for this population, though the clinical work often requires additional time and flexibility.</p>
+<p>Childhood trauma-specific considerations:</p>
+<p><em>Developmental timing of schema formation:</em> When trauma occurs in childhood, over-accommodated beliefs are often formed before the client has developed abstract reasoning or theory of mind. "I am bad" as a childhood sexual abuse Stuck Point is not just an overgeneralization — it may have been the only way a child could make sense of abuse by a trusted caregiver. These early-formed schemas are deeply entrenched and often felt as identity rather than as beliefs.</p>
+<p><em>Caregiver betrayal:</em> Abuse or neglect by primary caregivers disrupts attachment in ways that create particularly complex trust and intimacy Stuck Points. The client may have no template for safe relationships at all — the CPT therapeutic relationship itself may be one of the first trusting relationships they have experienced.</p>
+<p><em>Self-blame as protective belief:</em> Children who are abused by caregivers often develop self-blame Stuck Points that originally served a protective function: "I am bad and my parent hurts me because of what I do" is more manageable than "My parent, whom I depend on for survival, is dangerous and unpredictable." Recognizing this protective origin can reduce resistance to challenging and increase compassion for the child-self who developed the belief.</p>
+<p><em>Pacing:</em> CPT with childhood trauma presentations often requires additional sessions, slower pacing, and more time on the foundational phases before moving to challenging. The therapist should assess the client's current Window of Tolerance and titrate the pace of trauma-adjacent work accordingly.</p>
+<p><strong>CPT in Group Format</strong></p>
+<p>Group CPT follows the same 12-session protocol as individual CPT but is delivered in a group of 6–12 participants. Research demonstrates that group CPT produces outcomes equivalent to individual CPT for most participants. Groups have some unique therapeutic benefits:</p>
+<ul>
+<li>Normalization through shared experience: hearing that others hold similar Stuck Points reduces shame and isolation</li>
+<li>Social support for between-session homework: group members can encourage and coach each other</li>
+<li>Vicarious challenging: clients sometimes find it easier to identify the problems with another group member's Stuck Points before applying the same examination to their own</li>
+<li>Cost-effectiveness: group format serves more clients per therapist hour</li>
+</ul>
+<p>Group CPT does require some adaptations: the therapist must balance time equitably across group members, pacing the challenging work so all members progress through the worksheets together. Some clients are not appropriate for group format — those with severe shame or social anxiety that would prevent engagement, or those whose trauma type (e.g., combat trauma) is so discordant from other group members that shared experience would be minimal.</p>
+<p><strong>CPT via Telehealth</strong></p>
+<p>CPT has been studied in telehealth formats, including fully remote video-based delivery, and demonstrates efficacy comparable to in-person delivery. Telehealth CPT expanded dramatically during the COVID-19 pandemic and is now widely practiced across VA and community settings.</p>
+<p>Telehealth CPT considerations:</p>
+<ul>
+<li>Worksheet completion and sharing: electronic worksheets (shared via screen-sharing or secure patient portals) maintain the structure of the protocol</li>
+<li>Safety planning: clinicians must have clear protocols for managing crisis situations in remote sessions, including verifying the client's location and establishing local emergency contacts</li>
+<li>Privacy: clients conducting sessions from home may have limited privacy from family members — therapists should assess this explicitly and problem-solve as needed</li>
+<li>Grounding for dissociation: grounding interventions may require adaptation for remote settings (e.g., cold water on hands is easy to implement at home)</li>
+</ul>`
+        },
+        {
           type: 'matching',
           matchingInstructions: 'Match each CPT component to its correct description.',
           matchingPairs: [
