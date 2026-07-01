@@ -21,7 +21,7 @@ import { enforceCourseQuota, enforceUserQuota, enforceCustomDomainFeature, enfor
 import { PARTNER_PLANS, getPlanLimits } from '../utils/planLimits.js';
 import { canStart, chargeUsage, costCentsFromUsage, ensurePeriod, budgetSummary, AI_CREDIT_PACKS, MAX_CE_HOURS_PER_GENERATION } from '../utils/aiBudget.js';
 import { AI_BUILDER_DISCLAIMER, AI_BUILDER_DISCLAIMER_VERSION } from '../config/aiBuilderDisclaimer.js';
-import { generateCourseDraft } from '../services/courseDraftGenerator.js';
+import { generateCourseDraft, generatePartnerCourseDraft } from '../services/courseDraftGenerator.js';
 import { reviewFeeForCourse } from '../config/courseReview.js';
 
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -2007,7 +2007,7 @@ router.get('/my/ai/budget', protect, requirePartnerAdmin, async (req, res) => {
 
 router.post('/my/ai/generate', protect, requirePartnerAdmin, aiGenerateRateLimit, async (req, res) => {
   try {
-    const { topic, uploadedContent, ceHours, level, category, acknowledgedDisclaimerVersion } = req.body;
+    const { topic, uploadedContent, ceHours, level, category, targetAudience, acknowledgedDisclaimerVersion } = req.body;
 
     if (acknowledgedDisclaimerVersion !== AI_BUILDER_DISCLAIMER_VERSION) {
       return res.status(428).json({ error: 'You must acknowledge the AI Course Builder disclaimer before generating.', disclaimer: AI_BUILDER_DISCLAIMER });
@@ -2031,7 +2031,7 @@ router.post('/my/ai/generate', protect, requirePartnerAdmin, aiGenerateRateLimit
 
     let course, usageTotals;
     try {
-      ({ course, usageTotals } = await generateCourseDraft({ topic, uploadedContent, ceHours, level, category }));
+      ({ course, usageTotals } = await generatePartnerCourseDraft({ topic, uploadedContent, ceHours, level, category, targetAudience }));
     } catch (genErr) {
       console.error('Partner AI generation error:', genErr);
       return res.status(502).json({ error: 'Generation failed — your allowance was not charged. Please try again.' });
