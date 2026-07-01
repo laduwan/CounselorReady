@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Researched-N-Ready CE | CounselorReady</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    :root {
+      /* Woodgrain palette */
+      --ink:#110A02;--ink-mid:#2A1D10;--ink-muted:#4D3D2C;--ink-faint:#7A6A54;
+      --parchment:#F6F1E7;--vellum:#EFE8D6;--cream:#FAF7F0;--butter:#FDF8EE;
+      --burgundy:#6B1D34;--burgundy-d:#4A1224;--burgundy-l:#8B3050;--burg-l:#FAF6F4;
+      --green:#2C4F2E;--green-m:#3D6B40;--green-l:#EAF0E4;
+      --gold:#C09040;--gold-d:#8B6820;--gold-l:#F0DFA0;--gold-pale:#FBF5E2;
+      --honey:#8B5E2E;--honey2:#A5712E;--honey-l:#F8EEDC;
+      --navy:#1A2B40;
+      --pewter:#C8C3BC;--pewter2:#DDD9D3;--pewter3:#EAE7E2;
+      --rule:rgba(192,144,64,0.4);
+      --radius:6px;--radius-sm:3px;
+      --shadow-sm:0 1px 3px rgba(0,0,0,0.04);--shadow-md:0 4px 12px rgba(0,0,0,0.06);
+      --t:0.15s ease;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'EB Garamond',Georgia,serif;background:var(--vellum);color:var(--ink);line-height:1.6;}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' seed='7'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='250' height='250' filter='url(%23p)' opacity='0.03'/%3E%3C/svg%3E");background-size:250px 250px;}
+
+    /* Woodgrain strips */
+    .wg-strip{height:14px;width:100%;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='14'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.85' numOctaves='5' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.35 0.25 0 0 0.14 0.22 0.14 0 0 0.08 0.1 0.06 0 0 0.03 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='500' height='14' filter='url(%23w)'/%3E%3C/svg%3E");background-size:500px 14px}
+    .wg-top{border-bottom:1.5px solid var(--rule)}
+    .wg-bot{border-top:1.5px solid var(--rule)}
+    .rule-double{height:4px;background:linear-gradient(to bottom,var(--rule) 0,var(--rule) 1.5px,transparent 1.5px,transparent 2.5px,var(--rule) 2.5px,var(--rule) 4px)}
+
+    /* Shared nav override */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+
+    /* Hero / Masthead */
+    .hero{background:var(--burgundy-d);position:relative;overflow:hidden;padding:36px 2rem 30px;text-align:center}
+    .hero::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5L35 20L50 20L38 29L43 44L30 35L17 44L22 29L10 20L25 20Z' fill='none' stroke='rgba(192,144,64,0.07)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 60px}
+    .hero *{position:relative;z-index:1}
+    .hero-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(192,144,64,0.15);border:1px solid rgba(192,144,64,0.3);padding:4px 14px;border-radius:20px;font-family:'Cinzel',serif;font-size:9px;font-weight:600;color:var(--gold);letter-spacing:0.12em;text-transform:uppercase;margin-bottom:12px}
+    .hero-badge svg{width:14px;height:14px}
+    .hero h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--gold-l);margin-bottom:6px;line-height:1.2}
+    .hero p{font-family:'EB Garamond',serif;font-size:15px;font-style:italic;color:rgba(240,223,160,0.6);max-width:560px;margin:0 auto}
+    .hero-ornament{color:rgba(192,144,64,0.4);font-size:14px;letter-spacing:8px;margin-top:12px}
+    .filigree-line{height:12px;margin:6px auto;max-width:300px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='12' viewBox='0 0 200 12'%3E%3Cpath d='M0 6Q10 0 20 6T40 6T60 6T80 6T100 6T120 6T140 6T160 6T180 6T200 6' fill='none' stroke='rgba(192,144,64,0.25)' stroke-width='1'/%3E%3Cpath d='M0 6Q10 12 20 6T40 6T60 6T80 6T100 6T120 6T140 6T160 6T180 6T200 6' fill='none' stroke='rgba(192,144,64,0.25)' stroke-width='1'/%3E%3C/svg%3E") repeat-x center;background-size:200px 12px}
+    .fb span:first-child{color:#D0768A}.fb span:last-child{color:#4A7C59}
+    .o{color:var(--gold)}
+
+    /* Page body with sidebar rails */
+    .page-wrap{position:relative;max-width:960px;margin:0 auto}
+    .page{padding:2rem 1.5rem 4rem}
+
+    /* Section labels */
+    .section-label{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:8px}
+
+    /* Scroll dividers */
+    .scroll-div{display:flex;align-items:center;gap:12px;margin:18px 0;color:rgba(192,144,64,0.4)}
+    .scroll-div::before,.scroll-div::after{content:'';flex:1;height:1px;background:linear-gradient(to right,transparent,rgba(192,144,64,0.3),transparent)}
+
+    /* Hour selector */
+    .hour-selector{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem}
+    .hour-pill{display:flex;flex-direction:column;align-items:center;padding:10px 18px;border-radius:var(--radius);border:1px solid var(--pewter2);background:var(--cream);cursor:pointer;transition:all var(--t);min-width:90px;font-family:'EB Garamond',serif}
+    .hour-pill:hover{border-color:var(--burgundy);background:var(--butter)}
+    .hour-pill.active{border:1.5px solid var(--burgundy);background:var(--butter);color:var(--burgundy)}
+    .hour-pill .hp-val{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;line-height:1.2}
+    .hour-pill .hp-sub{font-family:'Cinzel',serif;font-size:9px;color:var(--ink-muted);margin-top:2px;letter-spacing:0.05em;text-transform:uppercase}
+    .hour-pill.active .hp-val{color:var(--burgundy)}.hour-pill.active .hp-sub{color:var(--burgundy-l)}
+
+    /* Search */
+    .search-wrap{display:flex;gap:10px;margin-bottom:1rem}
+    .search-input{flex:1;padding:10px 14px 10px 40px;border:1px solid rgba(107,29,52,0.15);border-radius:var(--radius-sm);font-size:14px;font-family:'EB Garamond',serif;background:var(--cream) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%237A6A54' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='5'/%3E%3Cline x1='11' y1='11' x2='14.5' y2='14.5'/%3E%3C/svg%3E") 12px center no-repeat;color:var(--ink);transition:border-color var(--t)}
+    .search-input:focus{outline:none;border-color:var(--burgundy)}
+    .search-input::placeholder{color:var(--ink-faint);font-style:italic}
+    .btn-search{padding:0 22px;border-radius:var(--radius-sm);background:var(--burgundy);color:var(--gold-l);border:none;font-size:11px;font-weight:600;cursor:pointer;font-family:'Cinzel',serif;letter-spacing:0.1em;text-transform:uppercase;transition:background var(--t);white-space:nowrap}
+    .btn-search:hover{background:var(--burgundy-l)}
+
+    /* Topic chips */
+    .topic-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem}
+    .topic-chip{padding:6px 14px;border-radius:20px;font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;border:1px solid rgba(107,29,52,0.15);background:transparent;cursor:pointer;transition:all var(--t);color:var(--ink-mid)}
+    .topic-chip:hover{border-color:var(--burgundy);color:var(--burgundy);background:var(--butter)}
+    .topic-chip.active{border:1.5px solid var(--burgundy);background:var(--butter);color:var(--burgundy)}
+
+    /* Filter row */
+    .filter-row{display:flex;gap:12px;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap}
+    .filter-row label{font-family:'Cinzel',serif;font-size:10px;font-weight:600;color:var(--ink-muted);letter-spacing:0.08em;text-transform:uppercase}
+    .filter-select{padding:6px 12px;border-radius:var(--radius-sm);border:1px solid var(--pewter2);font-size:12px;font-family:'EB Garamond',serif;color:var(--ink);background:var(--cream);cursor:pointer}
+    .results-count{margin-left:auto;font-family:'Cinzel',serif;font-size:10px;color:var(--ink-faint);letter-spacing:0.08em;text-transform:uppercase}
+
+    /* Article cards */
+    .article-card{background:var(--cream);border:1px solid rgba(107,29,52,0.08);border-radius:var(--radius);padding:1.25rem 1.25rem 1.25rem 1.75rem;margin-bottom:12px;box-shadow:var(--shadow-sm);transition:border-color var(--t),box-shadow var(--t);position:relative;overflow:hidden}
+    .article-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:5px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='5' height='300'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.5 0.01' numOctaves='5' seed='12' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0.3 0.2 0 0 0.18 0.18 0.12 0 0 0.1 0.08 0.05 0 0 0.04 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='5' height='300' filter='url(%23s)'/%3E%3C/svg%3E");background-size:5px 300px;border-radius:var(--radius) 0 0 var(--radius)}
+    .article-card:hover{border-color:rgba(192,144,64,0.4);box-shadow:var(--shadow-md)}
+    .article-card.selected{background:var(--butter);border-left:4px solid var(--burgundy);border-left-color:var(--burgundy)}
+
+    /* Badges */
+    .ac-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+    .badge{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:9px;font-weight:600;white-space:nowrap;letter-spacing:0.05em;text-transform:uppercase}
+    .badge-year{background:var(--pewter3);color:var(--ink-muted)}.badge-oa{background:var(--honey-l);color:var(--honey)}
+    .badge-oa svg{width:11px;height:11px}.badge-cited{background:var(--burg-l);color:var(--burgundy)}.badge-topic{background:rgba(139,94,46,0.08);color:var(--honey)}
+
+    .ac-title{font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:600;color:var(--navy);line-height:1.4;margin-bottom:4px}
+    .ac-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--ink-muted);margin-bottom:8px;font-style:italic}
+    .ac-meta-sep{color:var(--pewter)}
+    .ac-abstract{font-size:12.5px;color:var(--ink);line-height:1.65;margin-bottom:6px;font-style:italic}
+    .ac-abstract.clamped{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .ac-expand{font-family:'Cinzel',serif;font-size:10px;color:var(--burgundy);font-weight:600;cursor:pointer;border:none;background:none;padding:0;margin-bottom:10px;display:inline-block;letter-spacing:0.05em;text-transform:uppercase}
+    .ac-expand:hover{color:var(--burgundy-l)}
+    .ac-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding-top:10px;border-top:0.5px solid var(--pewter2)}
+    .ac-ce-info{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .wc-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:10px;font-weight:600;letter-spacing:0.03em}
+    .wc-badge svg{width:12px;height:12px}
+    .wc-sufficient{background:#EEF5EA;color:#2A4A18}.wc-borderline{background:#FBF2E0;color:#7A5018}.wc-thin{background:#FAF0ED;color:#8A3020}
+    .ce-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:3px;font-family:'Cinzel',serif;font-size:10px;font-weight:700;background:var(--honey-l);color:var(--honey);letter-spacing:0.03em}
+    .ce-pill svg{width:12px;height:12px}
+    .btn-select{padding:7px 16px;border-radius:var(--radius-sm);background:var(--green);color:var(--green-l);border:none;font-family:'Cinzel',serif;font-size:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background var(--t);letter-spacing:0.06em;text-transform:uppercase}
+    .btn-select:hover{background:var(--green-m)}.btn-select.is-selected{background:var(--burgundy)}.btn-select.is-selected:hover{background:var(--burgundy-l)}.btn-select svg{width:13px;height:13px}
+
+    /* Selection tray */
+    .selection-tray{position:sticky;bottom:0;left:0;right:0;background:var(--butter);border-top:2px solid var(--gold);padding:0.75rem 1.5rem;z-index:50;box-shadow:0 -4px 16px rgba(0,0,0,0.08);display:none}
+    .selection-tray.visible{display:block}
+    .tray-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+    .tray-info{display:flex;align-items:center;gap:16px}
+    .tray-count{font-family:'EB Garamond',serif;font-size:14px;font-weight:600;color:var(--ink)}.tray-count span{color:var(--burgundy)}
+    .tray-hours{font-family:'Cinzel',serif;font-size:11px;color:var(--ink-muted);letter-spacing:0.05em}.tray-hours strong{color:var(--honey);font-weight:700}
+    .btn-submit{padding:9px 24px;border-radius:var(--radius-sm);background:var(--burgundy);color:var(--gold-l);border:none;font-family:'Cinzel',serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:0.08em;text-transform:uppercase;transition:background var(--t)}
+    .btn-submit:hover{background:var(--burgundy-l)}.btn-submit:disabled{opacity:0.4;cursor:not-allowed}
+    .btn-clear{padding:7px 14px;border-radius:var(--radius-sm);background:none;color:var(--ink-muted);border:1px solid var(--pewter2);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;cursor:pointer}
+    .btn-clear:hover{border-color:var(--ink-faint);color:var(--ink)}
+
+    /* My requests */
+    .my-requests{margin-top:2rem}
+    .mr-toggle{font-family:'Cinzel',serif;font-size:11px;font-weight:600;color:var(--burgundy);cursor:pointer;border:none;background:none;padding:0;display:flex;align-items:center;gap:6px;margin-bottom:1rem;letter-spacing:0.08em;text-transform:uppercase}
+    .mr-toggle svg{width:14px;height:14px;transition:transform var(--t)}.mr-toggle.open svg{transform:rotate(180deg)}
+    .request-card{background:var(--cream);border:0.5px solid var(--pewter2);border-radius:var(--radius);padding:0.75rem 1rem;margin-bottom:0.5rem;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .rc-left{flex:1;min-width:200px}.rc-title{font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:var(--ink)}.rc-meta{font-size:11px;color:var(--ink-faint);margin-top:2px;font-style:italic}
+    .status-badge{padding:3px 10px;border-radius:3px;font-family:'Cinzel',serif;font-size:10px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase}
+    .status-pending{background:var(--honey-l);color:var(--honey)}.status-approved,.status-posttest_ready{background:var(--burg-l);color:var(--burgundy)}
+    .status-completed{background:#EEF5EA;color:#2A4A18}.status-rejected,.status-failed{background:#FAF0ED;color:#8A3020}
+    .btn-posttest{padding:5px 12px;border-radius:var(--radius-sm);background:var(--burgundy);color:var(--cream);border:none;font-family:'Cinzel',serif;font-size:10px;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block;letter-spacing:0.05em;text-transform:uppercase}
+
+    /* Utilities */
+    .loading{display:flex;align-items:center;justify-content:center;padding:3rem;color:var(--ink-faint);font-size:13px;font-style:italic}
+    .spinner{width:18px;height:18px;border:2px solid var(--pewter2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin-right:10px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty-state{text-align:center;padding:3rem 1rem;color:var(--ink-faint)}.empty-state svg{width:40px;height:40px;margin-bottom:10px;opacity:0.35}.empty-state p{font-size:13px;font-style:italic}
+    .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink-mid);color:var(--cream);padding:10px 22px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;font-family:'EB Garamond',serif;box-shadow:var(--shadow-md);opacity:0;transition:all 0.3s ease;z-index:200;pointer-events:none}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* Footer */
+    .footer-bar{background:var(--burgundy-d);padding:14px 2rem;text-align:center;position:relative;overflow:hidden}
+    .footer-bar::before{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M30 5L35 20L50 20L38 29L43 44L30 35L17 44L22 29L10 20L25 20Z' fill='none' stroke='rgba(192,144,64,0.06)' stroke-width='1'/%3E%3C/svg%3E");background-size:60px 60px}
+    .footer-bar *{position:relative;z-index:1}
+    .footer-text{font-family:'Cinzel',serif;font-size:8px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(240,223,160,0.4)}
+
+    @media(max-width:640px){.page{padding:1rem 1rem 6rem}.hero{padding:1.5rem}.hero h1{font-size:1.3rem}.search-wrap{flex-direction:column}.btn-search{padding:10px}.hour-selector{gap:6px}.hour-pill{min-width:70px;padding:8px 12px}.ac-footer{flex-direction:column;align-items:flex-start}}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body>
+  <div class="wg-strip wg-top"></div>
+  <div class="rule-double"></div>
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <div class="hero">
+    <div class="hero-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422A12.083 12.083 0 0121 17.5C21 20 16.97 22 12 22S3 20 3 17.5a12.083 12.083 0 012.84-6.922L12 14z"/></svg><span class="o">&#10022;</span> NBCC ACEP #7760 <span class="o">&#10022;</span></div>
+    <h1>Researched<span style="color:rgba(240,223,160,0.4);font-style:italic"> &amp; </span>Ready</h1>
+    <p>Current research. Earned credit. Search open-access articles, read peer-reviewed scholarship, and earn CE backed by the research you choose.</p>
+    <div class="filigree-line"></div>
+    <div class="hero-ornament">&#10087; &#10022; &#9830; &#10022; &#10087;</div>
+  </div>
+
+  <div class="rule-double"></div>
+
+  <div class="page-wrap">
+    <div class="page">
+
+      <!-- Explainer -->
+      <div style="background:var(--cream);border:1px solid rgba(192,144,64,0.2);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px">
+        <div style="font-family:'Playfair Display',serif;font-size:17px;font-weight:600;color:var(--burgundy);margin-bottom:8px">How It Works</div>
+        <p style="font-size:14px;color:var(--ink-mid);line-height:1.7;margin-bottom:10px">
+          Search real, peer-reviewed journal articles filtered to psychology and counseling. Select 1&ndash;4 that interest you and submit for review. Once approved, you read the actual articles &mdash; AI generates a course title that ties the concepts together and a posttest based on the content. Pass at 75% and your NBCC-approved CE certificate is issued instantly.
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:12px">
+          <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:140px">
+            <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1">1</span>
+            <div><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-weight:600">Search</span><br><span style="font-size:12px;color:var(--ink-mid)">Find open-access articles by topic</span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:140px">
+            <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1">2</span>
+            <div><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-weight:600">Select</span><br><span style="font-size:12px;color:var(--ink-mid)">Pick articles that match your CE goals</span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:140px">
+            <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1">3</span>
+            <div><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-weight:600">Read &amp; Test</span><br><span style="font-size:12px;color:var(--ink-mid)">Read the articles, take the posttest at 75%</span></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:140px">
+            <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1">4</span>
+            <div><span style="font-family:'Cinzel',serif;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--burgundy);font-weight:600">Earn CE</span><br><span style="font-size:12px;color:var(--ink-mid)">Certificate + syllabus generated instantly</span></div>
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--ink-faint);margin-top:12px;font-style:italic">CE hours calculated at 6,000 words/hr per NBCC standards. All articles sourced from OpenAlex, filtered to psychology &amp; counseling journals. <a href="/research-ready-about.html" style="color:var(--burgundy);font-weight:600">Learn more</a></p>
+      </div>
+
+      <div class="scroll-div"><span class="o" style="font-size:11px">&#10022;</span></div>
+
+      <div class="section-label"><span class="o">&#10022;</span> Select target hours</div>
+      <div class="hour-selector" id="hourSelector">
+        <div class="hour-pill active" onclick="selectHours(this,'')"><span class="hp-val">Any</span><span class="hp-sub">all lengths</span></div>
+        <div class="hour-pill" onclick="selectHours(this,'0.5')"><span class="hp-val">&#189; hr</span><span class="hp-sub">~30 min</span></div>
+        <div class="hour-pill" onclick="selectHours(this,'1.0')"><span class="hp-val">1 hr</span><span class="hp-sub">~60 min</span></div>
+        <div class="hour-pill" onclick="selectHours(this,'1.5')"><span class="hp-val">1&#189; hrs</span><span class="hp-sub">~90 min</span></div>
+        <div class="hour-pill" onclick="selectHours(this,'2.0')"><span class="hp-val">2 hrs</span><span class="hp-sub">~120 min</span></div>
+      </div>
+
+      <div class="search-wrap">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search peer-reviewed articles..." />
+        <button class="btn-search" onclick="doSearch()">Search</button>
+      </div>
+
+      <div class="section-label"><span class="o">&#10022;</span> Or browse by content area</div>
+      <div class="topic-chips" id="topicChips">
+        <button class="topic-chip" onclick="chipSearch(this)">Supervision</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Ethics &amp; Gatekeeping</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Trauma-Informed Care</button>
+        <button class="topic-chip" onclick="chipSearch(this)">CBT &amp; Depression</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Motivational Interviewing</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Multicultural Counseling</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Telehealth</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Group Counseling</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Substance Use</button>
+        <button class="topic-chip" onclick="chipSearch(this)">Career Development</button>
+      </div>
+
+      <div class="filter-row" id="filterRow" style="display:none;">
+        <label>Year from</label>
+        <select class="filter-select" id="yearFrom" onchange="doSearch()"><option value="2020">2020</option><option value="2021">2021</option><option value="2022">2022</option><option value="2023">2023</option></select>
+        <label>Sort by</label>
+        <select class="filter-select" id="sortBy" onchange="doSearch()"><option value="publication_date:desc">Newest</option><option value="cited_by_count:desc">Most Cited</option><option value="relevance_score:desc">Most Relevant</option></select>
+        <span class="results-count" id="resultsCount"></span>
+      </div>
+
+      <div id="results"></div>
+
+      <div class="my-requests" id="myRequestsSection" style="display:none;">
+        <button class="mr-toggle" id="mrToggle" onclick="toggleMyRequests()"><span class="o">&#10022;</span> My Requests <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div id="myRequestsList" style="display:none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="selection-tray" id="selectionTray">
+    <div class="tray-inner">
+      <div class="tray-info">
+        <span class="tray-count"><span id="trayCount">0</span> article(s) selected</span>
+        <span class="tray-hours"><strong id="trayHours">0</strong> CE hrs &middot; <strong id="trayWords">0</strong> words</span>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-clear" onclick="clearSelection()">Clear</button>
+        <button class="btn-submit" id="btnSubmit" onclick="submitRequest()" disabled>Submit for Review</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule-double"></div>
+  <div class="wg-strip wg-bot"></div>
+
+  <div class="footer-bar">
+    <div class="footer-text"><span class="fb"><span>Counselor</span><span>Ready</span></span> <span class="o">&#10022;</span> NBCC ACEP #7760 <span class="o">&#10022;</span> GAITP LLC <span class="o">&#10022;</span> Learn. License. Lead.</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div id="cr-footer"></div>
+
+  <script>
+    const API_BASE=window.location.hostname==='localhost'?'http://localhost:5000/api':'https://api.counselorready.com/api';
+    let currentResults=[],selectedArticles=[],activeHours='',activeChip=null;
+    function selectHours(el,val){document.querySelectorAll('.hour-pill').forEach(p=>p.classList.remove('active'));el.classList.add('active');activeHours=val;if(document.getElementById('searchInput').value.trim())doSearch();}
+    function chipSearch(el){document.querySelectorAll('.topic-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');activeChip=el;document.getElementById('searchInput').value=el.textContent;doSearch();}
+    document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+    async function doSearch(){const q=document.getElementById('searchInput').value.trim();if(!q)return;const resultsDiv=document.getElementById('results');resultsDiv.innerHTML='<div class="loading"><div class="spinner"></div>Searching OpenAlex...</div>';document.getElementById('filterRow').style.display='flex';const yearFrom=document.getElementById('yearFrom').value;const sort=document.getElementById('sortBy').value;let url=`${API_BASE}/research-ready/search?q=${encodeURIComponent(q)}&year_from=${yearFrom}&sort=${sort}&per_page=8`;if(activeHours)url+=`&desired_hours=${activeHours}`;try{const token=localStorage.getItem('token');const res=await fetch(url,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(!res.ok){resultsDiv.innerHTML=`<div class="empty-state"><p>${esc(data.error||'Search failed')}</p></div>`;return;}currentResults=data.results||[];document.getElementById('resultsCount').textContent=`${currentResults.length} result${currentResults.length!==1?'s':''}${data.meta?.desiredHoursApplied?` matching ${data.meta.desiredHours} hr target`:''}`;if(!currentResults.length){resultsDiv.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No articles found. Try broadening your search.</p></div>';return;}renderResults();}catch(err){console.error(err);resultsDiv.innerHTML='<div class="empty-state"><p>Network error. Please try again.</p></div>';}}
+    function renderResults(){document.getElementById('results').innerHTML=currentResults.map((a,i)=>{const isSel=selectedArticles.some(s=>s.openAlexId===a.openAlexId);const wcCls=a.wcStatus==='sufficient'?'wc-sufficient':a.wcStatus==='borderline'?'wc-borderline':'wc-thin';const wcLbl=a.wcStatus==='sufficient'?`${a.wordCount.toLocaleString()} words`:a.wcStatus==='borderline'?`${a.wordCount} words · Borderline`:`${a.wordCount} words · Thin`;const chk='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';const wrn='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>';const pls='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';return`<div class="article-card ${isSel?'selected':''}" id="card-${i}"><div class="ac-badges"><span class="badge badge-year">${a.year}</span>${a.oaUrl?'<span class="badge badge-oa"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="7" r="2"/><circle cx="12" cy="17" r="2"/></svg>Open Access</span>':''}${a.citedByCount>0?`<span class="badge badge-cited">${a.citedByCount} citation${a.citedByCount!==1?'s':''}</span>`:''}${a.topic?`<span class="badge badge-topic">${esc(a.topic)}</span>`:''}</div><div class="ac-title">${esc(a.title)}</div><div class="ac-meta"><span>${esc(a.journal)}</span><span class="ac-meta-sep">&middot;</span><span>${esc(a.authors)}</span></div>${a.abstract?`<div class="ac-abstract clamped" id="abs-${i}">${esc(a.abstract)}</div><button class="ac-expand" onclick="toggleAbs(${i})">Show more</button>`:''}<div class="ac-footer"><div class="ac-ce-info"><span class="wc-badge ${wcCls}">${a.wcStatus==='sufficient'?chk:wrn} ${wcLbl}</span>${a.ceHours>0?`<span class="ce-pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${a.ceHours} CE hr${a.ceHours!==1?'s':''}</span>`:''}</div><button class="btn-select ${isSel?'is-selected':''}" onclick="toggleArticle(${i})">${isSel?chk+' Selected':pls+' Select'}</button></div></div>`;}).join('');}
+    function toggleAbs(i){const el=document.getElementById(`abs-${i}`);const btn=el.nextElementSibling;el.classList.toggle('clamped');btn.textContent=el.classList.contains('clamped')?'Show more':'Show less';}
+    function toggleArticle(i){const art=currentResults[i];const idx=selectedArticles.findIndex(s=>s.openAlexId===art.openAlexId);if(idx>=0){selectedArticles.splice(idx,1);}else{if(selectedArticles.length>=4){showToast('Maximum 4 articles per request');return;}selectedArticles.push(art);}updateTray();renderResults();}
+    function updateTray(){const n=selectedArticles.length;document.getElementById('trayCount').textContent=n;const tw=selectedArticles.reduce((s,a)=>s+a.wordCount,0);const tc=Math.floor((tw/6000)*2)/2;document.getElementById('trayHours').textContent=tc;document.getElementById('trayWords').textContent=tw.toLocaleString();document.getElementById('btnSubmit').disabled=n<1;document.getElementById('selectionTray').classList.toggle('visible',n>0);}
+    function clearSelection(){selectedArticles=[];updateTray();renderResults();}
+    async function submitRequest(){const token=localStorage.getItem('token');if(!token){showToast('Please log in');return;}const btn=document.getElementById('btnSubmit');btn.disabled=true;btn.textContent='Submitting...';const contentArea=activeChip?.textContent||document.getElementById('searchInput').value||'General';const desiredHours=parseFloat(activeHours)||Math.floor((selectedArticles.reduce((s,a)=>s+(a.wordCount||0),0)/6000)*2)/2||0.5;try{const res=await fetch(`${API_BASE}/research-ready/request`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({contentArea,desiredHours,articles:selectedArticles})});const data=await res.json();if(res.ok){showToast('Request submitted!');selectedArticles=[];updateTray();renderResults();loadMyRequests();}else{showToast(data.error||'Submission failed');}}catch(err){console.error(err);showToast('Network error');}btn.disabled=false;btn.textContent='Submit for Review';}
+    async function loadMyRequests(){const token=localStorage.getItem('token');if(!token)return;try{const res=await fetch(`${API_BASE}/research-ready/my-requests`,{headers:{'Authorization':`Bearer ${token}`}});const data=await res.json();if(data.requests?.length){document.getElementById('myRequestsSection').style.display='block';document.getElementById('myRequestsList').innerHTML=data.requests.map(r=>`<div class="request-card"><div class="rc-left"><div class="rc-title">${esc(r.contentArea)} &middot; ${r.totalCeHours} CE hrs</div><div class="rc-meta">${r.selectedArticles.length} article(s) &middot; ${new Date(r.createdAt).toLocaleDateString()}</div></div><span class="status-badge status-${r.status}">${r.status.replace(/_/g,' ')}</span>${['approved','posttest_ready','test_ready','in_progress'].includes(r.status)?`<a class="btn-posttest" href="/research-ready-posttest.html?id=${r._id}">Take Posttest</a>`:''}</div>`).join('');}}catch(err){console.error('Failed:',err);}}
+    function toggleMyRequests(){const list=document.getElementById('myRequestsList');const btn=document.getElementById('mrToggle');const s=list.style.display==='none';list.style.display=s?'block':'none';btn.classList.toggle('open',s);}
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+    function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+    loadMyRequests();
+  </script>
+</body>
+</html>

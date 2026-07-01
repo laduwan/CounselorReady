@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Course Marketplace | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .switch{position:relative;display:inline-block;width:46px;height:26px;flex:none}
+    .switch input{opacity:0;width:0;height:0}
+    .slider{position:absolute;cursor:pointer;inset:0;background:#d6d3d1;border-radius:999px;transition:.2s}
+    .slider:before{content:"";position:absolute;height:20px;width:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+    input:checked + .slider{background:#4A7C59}
+    input:checked + .slider:before{transform:translateX(20px)}
+    input:disabled + .slider{opacity:.5;cursor:not-allowed}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-3xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <div class="inline-flex items-center gap-2 text-xs font-semibold px-2.5 py-1 rounded-full mb-2" style="background:#fef3c7;color:#B8903A">
+        <i class="fas fa-bullhorn"></i> Marketing Additive
+      </div>
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Course Marketplace</h1>
+      <p class="text-gray-500 mt-1">Grow your library and earn on every sale — opt in any time.</p>
+    </div>
+
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading marketplace options...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <div id="content" class="hidden space-y-5">
+
+      <!-- Option 1: import CR catalog — discontinued -->
+      <div class="bg-stone-100 border border-stone-300 rounded-lg p-4 opacity-60">
+        <p class="font-medium text-stone-600">Import Platform Courses</p>
+        <p class="text-sm text-stone-500 mt-1">This program has been discontinued. You can list your own courses in the CounselorReady marketplace instead.</p>
+      </div>
+
+      <!-- Option 2: list in CR marketplace -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-6">
+        <div class="flex items-start gap-4">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-none" style="background:#f0fdf4">
+            <i class="fas fa-store text-hunter-600"></i>
+          </div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h2 class="text-base font-semibold text-stone-900">List your courses in the CounselorReady marketplace</h2>
+                <p class="text-sm text-stone-500 mt-0.5">Expose your published courses to CounselorReady's audience of licensed clinicians. You keep <span id="listCut" class="font-semibold text-hunter-700">85%</span> of each marketplace sale; CounselorReady keeps <span id="listFee" class="font-semibold">15%</span> as the distributor.</p>
+              </div>
+              <label class="switch mt-1">
+                <input type="checkbox" id="listToggle" onchange="onToggle()">
+                <span class="slider"></span>
+              </label>
+            </div>
+            <div class="mt-3 inline-flex items-center gap-2 text-xs text-stone-600 bg-stone-50 rounded-lg px-3 py-1.5">
+              <i class="fas fa-book text-stone-400"></i>
+              <span id="myCount">—</span> of your published courses eligible
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agreement acknowledgment -->
+      <div id="agreementCard" class="bg-white rounded-2xl border border-gray-200 p-5">
+        <div id="reacceptBanner" class="hidden mb-3 rounded-lg p-3 text-xs" style="background:#fffbeb;color:#B8903A">
+          <i class="fas fa-triangle-exclamation mr-1"></i> The Partner Marketplace Agreement has been updated. Please review and re-accept to keep the marketplace enabled.
+        </div>
+        <label class="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" id="agreeCheck" class="mt-0.5 h-4 w-4 rounded border-stone-300" onchange="onToggle()">
+          <span class="text-sm text-stone-700">
+            I have read and agree to the
+            <a id="agreementLink" href="#" target="_blank" rel="noopener" class="text-burgundy-700 hover:underline font-medium">Partner Marketplace Agreement</a>
+            <span id="agreementVer" class="text-stone-500"></span>.
+          </span>
+        </label>
+        <p id="acceptedStatus" class="hidden text-xs text-hunter-700 mt-2"></p>
+        <button id="resendCopyBtn" type="button" onclick="resendCopy()" class="hidden text-xs text-burgundy-700 hover:underline mt-1">
+          <i class="fas fa-paper-plane mr-1"></i>Email me a copy
+        </button>
+        <span id="resendMsg" class="text-xs ml-2"></span>
+      </div>
+
+      <!-- Save -->
+      <div class="flex items-center gap-3">
+        <button onclick="save()" id="saveBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-5 py-2.5 rounded-lg font-medium transition-colors">Save Preferences</button>
+        <span id="saveMsg" class="text-sm"></span>
+      </div>
+
+      <!-- Terms / payout note -->
+      <div class="bg-white rounded-2xl border border-gray-200 p-5">
+        <p class="text-xs text-stone-500 leading-relaxed">
+          <i class="fas fa-info-circle text-stone-400 mr-1"></i>
+          The distributor keeps <span id="rateNote">15%</span> of each syndicated sale; the course owner keeps the remainder. Earnings accrue to your account and are reconciled on a regular payout schedule. Opting in adds these terms to your partner agreement; you can opt out at any time (existing enrollments are unaffected). All courses remain subject to CounselorReady's content and NBCC/ACEP compliance standards.
+        </p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      const un = document.getElementById('userName'); if (un) un.textContent = p.name || '';
+      const av = document.getElementById('userAvatar'); if (av) av.textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    let DIRTY = false;
+    let AGREEMENT = { currentVersion: null, url: '#', accepted: false, reacceptanceRequired: false };
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const res = await fetch(`${API}/api/partners/my/syndication`, { headers: AUTH }).catch(() => null);
+        if (!res || !res.ok) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+        const d = await res.json();
+        const distPct = d.distributorPercent ?? 15;
+        const ownPct = d.ownerPercent ?? 85;
+
+        document.getElementById('listToggle').checked = !!d.syndication.listInMarketplace;
+        document.getElementById('platformCount').textContent = d.opportunities?.platformCoursesAvailable ?? 0;
+        document.getElementById('myCount').textContent = d.opportunities?.myPublishedCourses ?? 0;
+
+        document.getElementById('importCut').textContent = distPct + '%';
+        document.getElementById('listCut').textContent = ownPct + '%';
+        document.getElementById('listFee').textContent = distPct + '%';
+        document.getElementById('rateNote').textContent = distPct + '%';
+
+        // ── Agreement ──
+        AGREEMENT = d.agreement || AGREEMENT;
+        document.getElementById('agreementLink').href = AGREEMENT.url || '#';
+        document.getElementById('agreementVer').textContent = AGREEMENT.currentVersion ? `(v${AGREEMENT.currentVersion})` : '';
+        const status = document.getElementById('acceptedStatus');
+        const banner = document.getElementById('reacceptBanner');
+        const chk = document.getElementById('agreeCheck');
+        if (AGREEMENT.accepted) {
+          chk.checked = true;
+          status.textContent = `Accepted v${AGREEMENT.acceptedVersion} on ${new Date(AGREEMENT.acceptedAt).toLocaleDateString()}`;
+          status.classList.remove('hidden');
+          document.getElementById('resendCopyBtn').classList.remove('hidden');
+        } else {
+          chk.checked = false;
+          status.classList.add('hidden');
+          document.getElementById('resendCopyBtn').classList.add('hidden');
+        }
+        banner.classList.toggle('hidden', !AGREEMENT.reacceptanceRequired);
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load marketplace options';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function onToggle() { DIRTY = true; document.getElementById('saveMsg').textContent = ''; }
+
+    async function resendCopy() {
+      const msg = document.getElementById('resendMsg');
+      msg.className = 'text-xs ml-2 text-stone-500'; msg.textContent = 'Sending…';
+      try {
+        const res = await fetch(`${API}/api/partners/my/agreement/resend`, { method: 'POST', headers: AUTH });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not send');
+        msg.className = 'text-xs ml-2 text-hunter-700'; msg.textContent = data.message || 'Sent';
+      } catch (err) {
+        msg.className = 'text-xs ml-2 text-red-600'; msg.textContent = err.message;
+      }
+      setTimeout(() => { msg.textContent = ''; }, 5000);
+    }
+
+    async function save() {
+      const btn = document.getElementById('saveBtn');
+      const msg = document.getElementById('saveMsg');
+      const wantList = document.getElementById('listToggle').checked;
+      const willBeOn = wantList;
+      const agreed = document.getElementById('agreeCheck').checked;
+
+      // Enabling requires accepting the current agreement version (unless already on file).
+      if (willBeOn && !AGREEMENT.accepted && !agreed) {
+        msg.className = 'text-sm text-red-600';
+        msg.innerHTML = 'Please accept the Partner Marketplace Agreement to enable the marketplace.';
+        return;
+      }
+
+      btn.disabled = true; btn.textContent = 'Saving...';
+      try {
+        const body = { listInMarketplace: wantList };
+        // Send the accepted version when the user has checked the box and we don't already have a
+        // current-version acceptance on file (a fresh acceptance / re-acceptance).
+        if (agreed && !AGREEMENT.accepted) body.acceptedVersion = AGREEMENT.currentVersion;
+
+        const res = await fetch(`${API}/api/partners/my/syndication`, {
+          method: 'PUT', headers: AUTH, body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (res.status === 409 && data.code === 'AGREEMENT_ACCEPTANCE_REQUIRED') {
+          AGREEMENT.accepted = false; AGREEMENT.currentVersion = data.currentVersion || AGREEMENT.currentVersion;
+          document.getElementById('agreeCheck').checked = false;
+          document.getElementById('reacceptBanner').classList.remove('hidden');
+          throw new Error('Please review and accept the updated agreement, then save again.');
+        }
+        if (!res.ok) throw new Error(data.error || 'Failed to save');
+
+        // Acceptance now on file
+        if (body.acceptedVersion) {
+          AGREEMENT.accepted = true; AGREEMENT.acceptedVersion = body.acceptedVersion; AGREEMENT.acceptedAt = new Date().toISOString();
+          AGREEMENT.reacceptanceRequired = false;
+          document.getElementById('reacceptBanner').classList.add('hidden');
+          const status = document.getElementById('acceptedStatus');
+          status.textContent = `Accepted v${AGREEMENT.acceptedVersion} on ${new Date().toLocaleDateString()}`;
+          status.classList.remove('hidden');
+          document.getElementById('resendCopyBtn').classList.remove('hidden');
+        }
+        DIRTY = false;
+        msg.className = 'text-sm text-hunter-700'; msg.innerHTML = '<i class="fas fa-check"></i> Saved';
+      } catch (err) {
+        msg.className = 'text-sm text-red-600'; msg.textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Preferences';
+        setTimeout(() => { if (!DIRTY) msg.textContent = ''; }, 4000);
+      }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

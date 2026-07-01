@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "cloudinary": "^2.9.0"
+  },
+  "scripts": {
+    "check:seeds":   "node tools/check-seed.cjs",
+    "audit:courses": "node tools/audit-course-quality.cjs",
+    "seo:sitemap":   "node tools/generate-sitemap.cjs",
+    "seo:noindex":   "node tools/seo-noindex.cjs",
+    "seo:courses":   "node tools/prerender-courses.cjs",
+    "seo:all":       "npm run seo:sitemap && npm run seo:courses && npm run seo:noindex"
+  }
+}

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account - CounselorReady</title>
+  <meta name="description" content="Create your CounselorReady account. Track CE hours, earn certificates, and stay compliant with your licensing board.">
+  <link rel="canonical" href="https://counselorready.com/register">
+  <meta property="og:title" content="Create Your Free Account — CounselorReady">
+  <meta property="og:description" content="Sign up for CounselorReady to access NBCC-approved CE courses, track your hours, and earn certificates for LPC and NCC renewal.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://counselorready.com/register.html">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Create Your Free Account — CounselorReady">
+  <meta name="twitter:description" content="Join CounselorReady to earn NBCC-approved CE hours, track your progress, and stay compliant with your licensing board.">
+  <meta name="twitter:image" content="https://counselorready.com/images/og-social.png">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen flex flex-col">
+  
+  <!-- Header -->
+  <header class="border-b border-hunter-100 bg-white/80 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34); shadow-lg shadow-forest-900/20">
+          <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-semibold text-2xl tracking-wide">
+            <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          </span>
+        </div>
+      </a>
+      <a href="/login.html" class="text-forest-700 hover:text-burgundy-700 text-sm font-medium transition-colors">
+        Already have an account? Sign in
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+      
+      <!-- Card -->
+      <div class="bg-white rounded-2xl shadow-xl shadow-burgundy-900/10 p-8 border border-burgundy-100">
+        
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 text-center mb-2">
+          Create Your Account
+        </h1>
+        <p class="text-forest-600 text-center mb-8">
+          Start your 7-day free trial
+        </p>
+
+        <!-- Form -->
+        <form id="registerForm" class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label for="firstName" class="block text-sm font-medium text-forest-700 mb-2">
+                First Name
+              </label>
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName" 
+                required
+                class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none"
+              >
+            </div>
+            <div>
+              <label for="lastName" class="block text-sm font-medium text-forest-700 mb-2">
+                Last Name
+              </label>
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName" 
+                required
+                class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label for="email" class="block text-sm font-medium text-forest-700 mb-2">
+              Email Address
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required
+              placeholder="you@example.com"
+              class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none"
+            >
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-forest-700 mb-2">
+              Password
+            </label>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                required
+                minlength="8"
+                placeholder="At least 8 characters"
+                class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none pr-12"
+              >
+              <button 
+                type="button" 
+                onclick="togglePassword()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-forest-400 hover:text-forest-600"
+              >
+                <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Policy Acknowledgment -->
+          <div class="bg-forest-50 border border-forest-200 rounded-xl p-4">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                id="agreeTerms" 
+                name="agreeTerms"
+                required
+                class="w-5 h-5 mt-0.5 text-burgundy-600 border-forest-300 rounded focus:ring-burgundy-500 flex-shrink-0"
+              >
+              <span class="text-sm text-forest-700 leading-relaxed">
+                I agree to the
+                <a href="/terms.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Terms of Service</a>,
+                <a href="/privacy.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Privacy Policy</a>, and
+                <a href="/refund-policy.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Refund Policy</a>.
+                I acknowledge the
+                <a href="/non-discrimination.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Non-Discrimination Policy</a>,
+                <a href="/ada-accommodations.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">ADA Accommodations</a>,
+                and
+                <a href="/complaint-resolution.html" target="_blank" class="text-burgundy-700 underline hover:text-burgundy-800">Complaint &amp; Grievance Process</a>.
+              </span>
+            </label>
+          </div>
+
+          <button 
+            type="submit"
+            class="w-full bg-gradient-to-r from-burgundy-800 to-burgundy-700 hover:from-burgundy-900 hover:to-burgundy-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Start Free Trial
+          </button>
+        </form>
+
+        <!-- Error Message (hidden by default) -->
+        <div id="errorMessage" class="hidden mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+          <p class="text-red-700 text-sm" id="errorText"></p>
+        </div>
+
+        <!-- Trial Info -->
+        <div class="mt-6 text-center">
+          <p class="text-sm text-forest-600">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            7-day free trial • No credit card required
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Sign In Link -->
+      <p class="text-center mt-6 text-forest-600">
+        Already have an account? 
+        <a href="/login.html" class="text-burgundy-700 hover:text-burgundy-800 font-medium">
+          Sign in
+        </a>
+      </p>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const eyeIcon = document.getElementById('eye-icon');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+        `;
+      } else {
+        input.type = 'password';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        `;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('registerForm');
+      const errorMessage = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+
+      if (!form) {
+        console.error('Register form not found');
+        return;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const agreeTerms = document.getElementById('agreeTerms').checked;
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        // Validate terms agreement
+        if (!agreeTerms) {
+          errorText.textContent = 'You must agree to the Terms of Service, Privacy Policy, Refund Policy, and acknowledge the Non-Discrimination Policy, ADA Accommodations, and Complaint & Grievance Process.';
+          errorMessage.classList.remove('hidden');
+          return;
+        }
+
+        // Hide any previous errors
+        errorMessage.classList.add('hidden');
+        
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        `;
+
+        try {
+          console.log('Attempting registration to:', `${API_URL}/api/auth/register`);
+          
+          const response = await fetch(`${API_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              firstName, 
+              lastName, 
+              email, 
+              password,
+              agreedToTerms: true,
+              agreedAt: new Date().toISOString()
+            }),
+          });
+
+          console.log('Response status:', response.status);
+          const data = await response.json();
+          console.log('Response data:', data);
+
+          if (response.ok) {
+            // Store token
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            
+            // Redirect to dashboard
+            if (window.gtag_report_conversion) { gtag_report_conversion(); }
+            window.location.href = '/welcome.html';
+          } else {
+            // Show error
+            errorText.textContent = data.error || data.message || 'Something went wrong. Please try again.';
+            errorMessage.classList.remove('hidden');
+          }
+        } catch (error) {
+          console.error('Registration error:', error);
+          errorText.textContent = 'Unable to connect to server. Please try again.';
+          errorMessage.classList.remove('hidden');
+        }
+
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Start Free Trial';
+      });
+    });
+  </script>
+
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

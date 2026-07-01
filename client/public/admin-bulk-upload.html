@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Bulk Course Upload - CounselorReady Admin</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+  <div class="max-w-5xl mx-auto p-6">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-burgundy-600 to-burgundy-800 rounded-xl flex items-center justify-center">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-burgundy-900">Bulk Course Upload</h1>
+            <p class="text-forest-600 text-sm">Upload multiple course files (DOCX, PDF, TXT, MD, ZIP)</p>
+          </div>
+        </div>
+        <a href="/admin-courses.html" class="text-forest-600 hover:text-burgundy-700 flex items-center gap-1">
+          ← Back to Courses
+        </a>
+      </div>
+    </div>
+    
+    <!-- Settings Panel -->
+    <div class="bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Default Settings</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Access Type</label>
+          <select id="accessType" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+            <option value="free">Free</option>
+            <option value="paid" selected>Paid</option>
+            <option value="subscription">Subscription</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Access Tier</label>
+          <select id="accessTier" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+            <option value="free">Free</option>
+            <option value="professional" selected>Professional</option>
+            <option value="vip">VIP</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Pricing Tier</label>
+          <select id="pricingTier" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+            <option value="standard" selected>Standard</option>
+            <option value="premium">Premium</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Approving Body</label>
+          <select id="approvingBody" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+            <option value="NBCC" selected>NBCC</option>
+            <option value="ACA">ACA</option>
+            <option value="ASWB">ASWB</option>
+            <option value="NASW">NASW</option>
+          </select>
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Approval Number</label>
+          <input type="text" id="approvalNumber" value="7760" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Instructor</label>
+          <input type="text" id="instructor" value="GA Integrated Therapeutic Perspectives LLC" class="w-full border border-forest-200 rounded-lg px-3 py-2">
+        </div>
+      </div>
+      
+      <div class="mt-4 flex items-center gap-2">
+        <input type="checkbox" id="autoSave" class="w-4 h-4 text-burgundy-600 rounded">
+        <label for="autoSave" class="text-sm text-forest-700">Auto-save courses (skip preview)</label>
+      </div>
+    </div>
+    
+    <!-- Upload Area -->
+    <div class="bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Upload Files</h2>
+      
+      <div id="dropZone" 
+           class="border-2 border-dashed border-burgundy-300 rounded-xl p-8 text-center hover:border-burgundy-500 hover:bg-burgundy-50 transition cursor-pointer"
+           onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" multiple accept=".docx,.pdf,.txt,.md,.zip" class="hidden" onchange="handleFileSelect(event)">
+        <svg class="w-12 h-12 text-burgundy-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <p class="text-burgundy-700 font-medium">Drag & drop files here, or click to select</p>
+        <p class="text-burgundy-500 text-sm mt-1">Supports: DOCX, PDF, TXT, MD, ZIP (max 50MB)</p>
+      </div>
+      
+      <!-- Selected Files List -->
+      <div id="fileList" class="hidden mt-4">
+        <h3 class="font-medium text-forest-800 mb-2">Selected Files (<span id="fileCount">0</span>)</h3>
+        <div id="fileItems" class="space-y-2 max-h-48 overflow-y-auto"></div>
+        <button onclick="uploadFiles()" id="uploadBtn" class="mt-4 bg-burgundy-600 hover:bg-burgundy-700 text-white font-semibold px-6 py-2 rounded-lg flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload & Parse
+        </button>
+      </div>
+    </div>
+    
+    <!-- Error Display -->
+    <div id="errorDisplay" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div>
+          <p class="font-medium text-red-800">Error</p>
+          <p id="errorText" class="text-red-600"></p>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Results Summary -->
+    <div id="resultsSection" class="hidden bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Results</h2>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <div class="bg-forest-50 rounded-lg p-3 text-center">
+          <p id="filesUploaded" class="text-2xl font-bold text-forest-800">0</p>
+          <p class="text-sm text-forest-600">Files Uploaded</p>
+        </div>
+        <div class="bg-forest-50 rounded-lg p-3 text-center">
+          <p id="docsExtracted" class="text-2xl font-bold text-forest-800">0</p>
+          <p class="text-sm text-forest-600">Documents Extracted</p>
+        </div>
+        <div class="bg-green-50 rounded-lg p-3 text-center">
+          <p id="successParsed" class="text-2xl font-bold text-green-600">0</p>
+          <p class="text-sm text-forest-600">Successfully Parsed</p>
+        </div>
+        <div class="bg-blue-50 rounded-lg p-3 text-center">
+          <p id="savedCount" class="text-2xl font-bold text-blue-600">0</p>
+          <p class="text-sm text-forest-600">Saved to Database</p>
+        </div>
+      </div>
+      
+      <!-- Saved Courses -->
+      <div id="savedCourses" class="hidden mt-4">
+        <h3 class="font-medium text-forest-800 mb-2">Saved Courses</h3>
+        <div id="savedCoursesList" class="space-y-2"></div>
+      </div>
+      
+      <!-- Errors -->
+      <div id="parseErrors" class="hidden mt-4 bg-red-50 rounded-lg p-4">
+        <h4 class="font-medium text-red-800 mb-2">Errors</h4>
+        <div id="errorsList"></div>
+      </div>
+    </div>
+    
+    <!-- Preview Courses -->
+    <div id="previewSection" class="hidden bg-white rounded-xl shadow-sm border border-forest-100 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-semibold text-burgundy-900">
+          Preview Courses (<span id="selectedCount">0</span> selected)
+        </h2>
+        <button onclick="saveSelected()" id="saveBtn" class="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Save Selected
+        </button>
+      </div>
+      <div id="previewCourses" class="space-y-4"></div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-xl p-6 flex items-center gap-3">
+        <div class="w-6 h-6 border-2 border-burgundy-300 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <span id="loadingText" class="text-forest-700">Processing...</span>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script>
+    const API_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000' 
+      : 'https://api.counselorready.com';
+    
+    let selectedFiles = [];
+    let previewCourses = [];
+    
+    // Drag and drop handlers
+    const dropZone = document.getElementById('dropZone');
+    
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('border-burgundy-500', 'bg-burgundy-50');
+    });
+    
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50');
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50');
+      const files = Array.from(e.dataTransfer.files);
+      addFiles(files);
+    });
+    
+    function handleFileSelect(event) {
+      const files = Array.from(event.target.files);
+      addFiles(files);
+    }
+    
+    function addFiles(files) {
+      selectedFiles = files;
+      displayFileList();
+    }
+    
+    function displayFileList() {
+      const fileList = document.getElementById('fileList');
+      const fileItems = document.getElementById('fileItems');
+      const fileCount = document.getElementById('fileCount');
+      
+      if (selectedFiles.length === 0) {
+        fileList.classList.add('hidden');
+        return;
+      }
+      
+      fileList.classList.remove('hidden');
+      fileCount.textContent = selectedFiles.length;
+      
+      fileItems.innerHTML = selectedFiles.map((file, index) => `
+        <div class="flex items-center gap-2 p-2 bg-forest-50 rounded-lg">
+          <svg class="w-5 h-5 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="text-forest-800">${file.name}</span>
+          <span class="text-forest-500 text-sm">(${(file.size / 1024).toFixed(1)} KB)</span>
+        </div>
+      `).join('');
+    }
+    
+    async function uploadFiles() {
+      if (selectedFiles.length === 0) return;
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        showError('Please log in to upload courses');
+        return;
+      }
+      
+      showLoading('Uploading and parsing files...');
+      hideError();
+      
+      const formData = new FormData();
+      selectedFiles.forEach(file => formData.append('files', file));
+      
+      // Add settings
+      formData.append('accessType', document.getElementById('accessType').value);
+      formData.append('accessTier', document.getElementById('accessTier').value);
+      formData.append('pricingTier', document.getElementById('pricingTier').value);
+      formData.append('approvingBody', document.getElementById('approvingBody').value);
+      formData.append('approvalNumber', document.getElementById('approvalNumber').value);
+      formData.append('instructor', document.getElementById('instructor').value);
+      formData.append('autoSave', document.getElementById('autoSave').checked);
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/bulk-upload`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Upload failed');
+        }
+        
+        displayResults(data);
+        
+      } catch (error) {
+        console.error('Upload error:', error);
+        showError(error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+    
+    function displayResults(data) {
+      const resultsSection = document.getElementById('resultsSection');
+      resultsSection.classList.remove('hidden');
+      
+      // Update summary
+      document.getElementById('filesUploaded').textContent = data.summary?.filesUploaded || 0;
+      document.getElementById('docsExtracted').textContent = data.summary?.documentsExtracted || 0;
+      document.getElementById('successParsed').textContent = data.summary?.successfullyParsed || 0;
+      document.getElementById('savedCount').textContent = data.summary?.saved || 0;
+      
+      // Show saved courses
+      if (data.courses && data.courses.length > 0 && document.getElementById('autoSave').checked) {
+        const savedCoursesDiv = document.getElementById('savedCourses');
+        savedCoursesDiv.classList.remove('hidden');
+        
+        document.getElementById('savedCoursesList').innerHTML = data.courses.map(course => `
+          <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="font-medium text-forest-800">${course.title}</span>
+            <span class="text-forest-500 text-sm">(${course.ceuHours} CE hrs)</span>
+            <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+          </div>
+        `).join('');
+      }
+      
+      // Show preview courses if not auto-saved
+      if (data.courses && data.courses.length > 0 && !document.getElementById('autoSave').checked) {
+        previewCourses = data.courses.map(c => ({ ...c, selected: true }));
+        displayPreviewCourses();
+      }
+      
+      // Show errors
+      const allErrors = [
+        ...(data.errors?.extraction || []),
+        ...(data.errors?.parsing || []),
+        ...(data.errors?.saving || [])
+      ];
+      
+      if (allErrors.length > 0) {
+        const parseErrors = document.getElementById('parseErrors');
+        parseErrors.classList.remove('hidden');
+        
+        document.getElementById('errorsList').innerHTML = allErrors.map(err => `
+          <p class="text-sm text-red-600 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            ${err.filename || err.title}: ${err.error}
+          </p>
+        `).join('');
+      }
+    }
+    
+    function displayPreviewCourses() {
+      const previewSection = document.getElementById('previewSection');
+      previewSection.classList.remove('hidden');
+      
+      updateSelectedCount();
+      
+      document.getElementById('previewCourses').innerHTML = previewCourses.map((item, index) => `
+        <div class="border rounded-lg p-4 ${item.selected ? 'border-burgundy-300 bg-burgundy-50' : 'border-forest-200'}">
+          <div class="flex items-start gap-3">
+            <input type="checkbox" ${item.selected ? 'checked' : ''} 
+                   onchange="toggleCourse(${index})" 
+                   class="mt-1 w-4 h-4 text-burgundy-600 rounded">
+            <div class="flex-1">
+              <h4 class="font-medium text-forest-900">${item.course?.title || 'Untitled'}</h4>
+              <p class="text-sm text-forest-600 mt-1">
+                ${item.course?.ceuHours || 0} CE Hours • 
+                ${item.course?.modules?.length || 0} Modules • 
+                ${item.course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0} Lessons
+              </p>
+              ${item.course?.objectives?.length > 0 ? `
+                <p class="text-sm text-forest-500 mt-1">${item.course.objectives.length} Learning Objectives</p>
+              ` : ''}
+              <p class="text-xs text-forest-400 mt-1">Source: ${item.filename}</p>
+            </div>
+            <button onclick="removeCourse(${index})" class="text-forest-400 hover:text-red-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function toggleCourse(index) {
+      previewCourses[index].selected = !previewCourses[index].selected;
+      displayPreviewCourses();
+    }
+    
+    function removeCourse(index) {
+      previewCourses.splice(index, 1);
+      displayPreviewCourses();
+    }
+    
+    function updateSelectedCount() {
+      const count = previewCourses.filter(c => c.selected).length;
+      document.getElementById('selectedCount').textContent = count;
+    }
+    
+    async function saveSelected() {
+      const coursesToSave = previewCourses
+        .filter(c => c.selected)
+        .map(c => c.course);
+      
+      if (coursesToSave.length === 0) {
+        showError('No courses selected to save');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      showLoading('Saving courses...');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/bulk-save`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ courses: coursesToSave })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Save failed');
+        }
+        
+        // Update display
+        document.getElementById('savedCount').textContent = data.saved.length;
+        
+        const savedCoursesDiv = document.getElementById('savedCourses');
+        savedCoursesDiv.classList.remove('hidden');
+        
+        document.getElementById('savedCoursesList').innerHTML = data.saved.map(course => `
+          <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
+            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            <span class="font-medium text-forest-800">${course.title}</span>
+            <span class="text-forest-500 text-sm">(${course.ceuHours} CE hrs)</span>
+            <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+          </div>
+        `).join('');
+        
+        // Clear preview
+        previewCourses = [];
+        document.getElementById('previewSection').classList.add('hidden');
+        
+      } catch (error) {
+        console.error('Save error:', error);
+        showError(error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+    
+    function showError(message) {
+      document.getElementById('errorDisplay').classList.remove('hidden');
+      document.getElementById('errorText').textContent = message;
+    }
+    
+    function hideError() {
+      document.getElementById('errorDisplay').classList.add('hidden');
+    }
+    
+    function showLoading(text) {
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      document.getElementById('loadingText').textContent = text;
+    }
+    
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.add('hidden');
+    }
+    
+    // Check auth on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html?redirect=' + encodeURIComponent(window.location.pathname);
+      }
+    });
+  </script>
+<script src="/js/footer.js"></script>
+  </main></div>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

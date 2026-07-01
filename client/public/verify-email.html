@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Verify Email - CounselorReady</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="min-h-screen bg-stone-50 flex items-center justify-center p-4" style="background:#F8F7F4">
+  <div class="max-w-md w-full">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="inline-block">
+        <h1 class="font-display text-3xl font-bold text-burgundy-800">CounselorReady</h1>
+        <p class="text-xs text-navy-500 tracking-widest mt-1">LEARN. LICENSE. LEAD.</p>
+      </a>
+    </div>
+
+    <!-- Verification Card -->
+    <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 text-center">
+      <!-- Loading State -->
+      <div id="loading-state">
+        <div class="w-12 h-12 border-4 border-burgundy-700 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <h2 class="text-xl font-bold text-navy-700 mb-2">Verifying Your Email</h2>
+        <p class="text-navy-500 text-sm">Please wait...</p>
+      </div>
+
+      <!-- Success State -->
+      <div id="success-state" class="hidden">
+        <div class="w-16 h-16 rounded-full bg-hunter-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-hunter-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-navy-700 mb-2">Email Verified!</h2>
+        <p class="text-navy-500 text-sm mb-6">Your email has been successfully verified. You now have full access to CounselorReady.</p>
+        <a href="/dashboard.html" class="inline-block bg-burgundy-800 hover:bg-burgundy-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Go to Dashboard
+        </a>
+      </div>
+
+      <!-- Error State -->
+      <div id="error-state" class="hidden">
+        <div class="w-16 h-16 rounded-full bg-burgundy-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-navy-700 mb-2">Verification Failed</h2>
+        <p id="error-message" class="text-navy-500 text-sm mb-6">This link may have expired or is invalid.</p>
+        <button onclick="resendVerification()" id="resend-btn" class="inline-block bg-hunter-600 hover:bg-hunter-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Resend Verification Email
+        </button>
+        <p id="resend-status" class="text-sm text-navy-500 mt-3 hidden"></p>
+        <div class="mt-4">
+          <a href="/login.html" class="text-sm text-burgundy-700 hover:text-burgundy-800 font-medium">Back to Login</a>
+        </div>
+      </div>
+
+      <!-- No Token State -->
+      <div id="no-token-state" class="hidden">
+        <div class="w-16 h-16 rounded-full bg-honey-100 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-honey-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-navy-700 mb-2">Check Your Email</h2>
+        <p class="text-navy-500 text-sm mb-6">We sent a verification link to your email address. Click the link to verify your account.</p>
+        <a href="/login.html" class="inline-block bg-burgundy-800 hover:bg-burgundy-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Back to Login
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-center text-xs text-slate-400 mt-6">
+      Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760
+    </p>
+  </div>
+
+  <script>
+    const API = (window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com') + '/api/auth';
+
+    async function verifyEmail() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+
+      if (!token) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('no-token-state').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API}/verify-email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+
+        document.getElementById('loading-state').classList.add('hidden');
+
+        if (res.ok) {
+          document.getElementById('success-state').classList.remove('hidden');
+        } else {
+          document.getElementById('error-message').textContent = data.error || 'Verification failed. Please try again.';
+          document.getElementById('error-state').classList.remove('hidden');
+        }
+      } catch (err) {
+        document.getElementById('loading-state').classList.add('hidden');
+        document.getElementById('error-message').textContent = 'Network error. Please try again.';
+        document.getElementById('error-state').classList.remove('hidden');
+      }
+    }
+
+    async function resendVerification() {
+      const btn = document.getElementById('resend-btn');
+      const status = document.getElementById('resend-status');
+      
+      const token = localStorage.getItem('token');
+      if (!token) {
+        status.textContent = 'Please log in first to resend verification.';
+        status.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`${API}/resend-verification`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await res.json();
+
+        status.textContent = data.message || 'Verification email sent!';
+        status.classList.remove('hidden');
+        btn.textContent = 'Email Sent';
+      } catch (err) {
+        status.textContent = 'Failed to send. Please try again.';
+        status.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Resend Verification Email';
+      }
+    }
+
+    verifyEmail();
+  </script>
+<script src="/js/footer.js"></script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

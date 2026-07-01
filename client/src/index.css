@@ -1,0 +1,211 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @lock-start: Base theme — do not modify */
+@layer base {
+  body {
+    @apply font-body text-forest-700 bg-stone-50;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display text-burgundy-800;
+  }
+}
+/* @lock-end */
+
+@layer components {
+  /* @lock-start: Core button styles */
+  /* Primary Button */
+  .btn-primary {
+    @apply bg-burgundy-700 hover:bg-burgundy-800 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Secondary Button */
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-burgundy-700 border border-burgundy-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  /* Tertiary Button */
+  .btn-tertiary {
+    @apply bg-burgundy-800 hover:bg-burgundy-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  /* @lock-end */
+
+  .card { /* @lock */
+    @apply bg-white rounded-xl shadow-sm border border-forest-200 p-6;
+  }
+  
+  /* Input Field */
+  .input-field {
+    @apply w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none transition-all duration-200;
+  }
+  
+  /* Label */
+  .label {
+    @apply block text-sm font-medium text-forest-700 mb-2;
+  }
+  
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-forest-100 text-forest-700;
+  }
+  
+  .badge-warning {
+    @apply bg-honey-400 text-burgundy-900;
+  }
+  
+  .badge-info {
+    @apply bg-burgundy-100 text-burgundy-800;
+  }
+  
+  /* Loading Spinner */
+  .spinner {
+    @apply animate-spin h-8 w-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full;
+  }
+  
+  /* Page Container */
+  .page-container {
+    @apply min-h-screen bg-stone-50;
+  }
+  
+  /* Content Wrapper */
+  .content-wrapper {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
+  }
+  
+  .header-nav { /* @lock */
+    @apply bg-white border-b border-burgundy-100 sticky top-0 z-50;
+  }
+  
+  /* Grid Container */
+  .grid-container {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+  }
+  
+  /* Link Styles */
+  .link-primary {
+    @apply text-forest-600 hover:text-forest-700 font-medium underline-offset-4 hover:underline transition-colors duration-200;
+  }
+  
+  .link-secondary {
+    @apply text-burgundy-800 hover:text-burgundy-700 font-medium underline-offset-4 hover:underline transition-colors duration-200;
+  }
+  
+  /* Progress Bar */
+  .progress-bar {
+    @apply w-full bg-forest-100 rounded-full h-2 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply bg-forest-600 h-full transition-all duration-300 ease-out;
+  }
+  
+  /* Alert/Notice */
+  .alert {
+    @apply p-4 rounded-lg border;
+  }
+  
+  .alert-success {
+    @apply bg-forest-100 border-forest-200 text-forest-700;
+  }
+  
+  .alert-warning {
+    @apply bg-honey-400 bg-opacity-20 border-honey-400 text-burgundy-900;
+  }
+  
+  .alert-error {
+    @apply bg-burgundy-100 border-burgundy-200 text-burgundy-800;
+  }
+  
+  .alert-info {
+    @apply bg-stone-100 border-stone-200 text-forest-700;
+  }
+}
+
+@layer utilities {
+  /* Text gradient for logo */
+  .text-gradient-logo {
+    color: #6B1D34;
+  }
+  
+  /* Focus ring utility */
+  .focus-ring {
+    @apply focus:ring-2 focus:ring-burgundy-500 focus:ring-offset-2 outline-none;
+  }
+}
+
+/* ==========================================
+   ACCESSIBILITY STYLES (WCAG 2.1 AA)
+   ========================================== */
+
+/* High Contrast Mode */
+.high-contrast {
+  --tw-bg-opacity: 1;
+  filter: contrast(1.25);
+}
+
+.high-contrast button,
+.high-contrast a,
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  border-width: 2px !important;
+}
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* Enhanced Focus Indicators (WCAG 2.4.7) */
+.focus-visible-enhanced *:focus-visible {
+  outline: 3px solid #8B2542 !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px rgba(139, 37, 66, 0.3) !important;
+}
+
+/* Dyslexia-Friendly Font */
+.dyslexia-font {
+  font-family: 'OpenDyslexic', 'Comic Sans MS', 'Arial', sans-serif !important;
+  letter-spacing: 0.05em;
+  word-spacing: 0.15em;
+}
+
+/* Screen reader only helper */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Ensure visible when focused (skip-to-content) */
+.sr-only:focus,
+.sr-only:active {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}

@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Partner Management - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i> Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-tags w-5"></i>
+          Coupons
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-database w-5"></i>
+          Migration
+        </a>
+        <a href="/admin-partners.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-handshake w-5"></i>
+          Partners
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-7xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-900">Partner Management</h1>
+            <p class="text-forest-600 mt-1">Create and manage whitelabel distribution partners</p>
+          </div>
+          <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            Add Partner
+          </button>
+        </div>
+
+        <div class="-mt-4 mb-6">
+          <a href="/admin-payouts.html" class="inline-flex items-center gap-2 text-sm text-burgundy-700 hover:text-burgundy-900 font-medium">
+            <i class="fas fa-coins"></i> Marketplace Payouts &amp; Reconciliation
+          </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-handshake text-hunter-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statTotalPartners">--</p>
+                <p class="text-xs text-forest-500">Total Partners</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statActivePartners">--</p>
+                <p class="text-xs text-forest-500">Active</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statTotalPartnerUsers">--</p>
+                <p class="text-xs text-forest-500">Total Partner Users</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-book text-honey-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statTotalPartnerCourses">--</p>
+                <p class="text-xs text-forest-500">Partner Courses</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Partner List -->
+        <div class="bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-forest-50 border-b border-forest-200">
+                <tr>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Partner</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Slug</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Plan</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Status</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Users</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Created</th>
+                  <th class="text-right px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="partnersTableBody" class="divide-y divide-forest-100">
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading partners...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create / Edit Partner Modal -->
+  <div id="partnerModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white p-6 rounded-t-xl">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-xl font-bold" id="modalTitle">New Partner</h2>
+          <button onclick="closeModal()" class="text-white/70 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+        </div>
+      </div>
+      <form onsubmit="handleSave(event)" class="p-6 space-y-5">
+        <input type="hidden" id="editingId" value="">
+
+        <!-- Name & Slug -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-forest-600 mb-1">Partner Name *</label>
+            <input id="fName" required class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-forest-600 mb-1">URL Slug *</label>
+            <input id="fSlug" required placeholder="e.g. therapy-solutions" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9-]/g,'')"
+              class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500">
+          </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="border-t border-forest-100 pt-4">
+          <p class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-3">Branding</p>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-forest-600 mb-1">Display Name</label>
+              <input id="fCompanyName" placeholder="Name shown in header" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-forest-600 mb-1">Logo URL</label>
+              <input id="fLogoUrl" placeholder="https://..." class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-forest-600 mb-1">Custom Domain</label>
+              <input id="fCustomDomain" placeholder="ce.theirsite.com" oninput="this.value=this.value.toLowerCase().replace(/\s/g,'')"
+                class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-hunter-500">
+              <p class="text-xs text-forest-400 mt-1">Partner points CNAME here for custom domain access</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-forest-600 mb-1">Brand Color</label>
+                <div class="flex items-center gap-2">
+                  <input type="color" id="fColorPicker" value="#6B1D34" oninput="document.getElementById('fPrimaryColor').value=this.value"
+                    class="w-8 h-8 rounded border border-forest-200 cursor-pointer">
+                  <input id="fPrimaryColor" value="#6B1D34" oninput="document.getElementById('fColorPicker').value=this.value"
+                    class="flex-1 px-3 py-2 border border-forest-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-hunter-500">
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-forest-600 mb-1">Tagline</label>
+                <input id="fTagline" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="border-t border-forest-100 pt-4">
+          <p class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-3">Contact</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-forest-600 mb-1">Email</label>
+              <input type="email" id="fEmail" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-forest-600 mb-1">Website</label>
+              <input id="fWebsite" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- Plan & Active -->
+        <div class="grid grid-cols-2 gap-4 border-t border-forest-100 pt-4">
+          <div>
+            <label class="block text-xs font-semibold text-forest-600 mb-1">Default User Plan</label>
+            <select id="fDefaultPlan" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500">
+              <option value="free">Free</option>
+              <option value="starter">Starter</option>
+              <option value="professional">Professional</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          <div class="flex items-end">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="fActive" checked class="w-4 h-4 rounded border-forest-300 text-hunter-600 focus:ring-hunter-500">
+              <span class="text-sm text-forest-700">Active</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Error -->
+        <div id="modalError" class="hidden p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm"></div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 rounded-lg">Cancel</button>
+          <button type="submit" class="px-4 py-2 text-sm text-white rounded-lg font-medium bg-burgundy-800 hover:bg-burgundy-900">
+            <span id="saveLabel">Create Partner</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Set Admin Modal -->
+  <div id="setAdminModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-sm w-full">
+      <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white p-5 rounded-t-xl">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-lg font-bold">Set Partner Admin</h2>
+          <button onclick="closeSetAdminModal()" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+      <div class="p-5 space-y-4">
+        <p class="text-sm text-forest-600">Enter the email of an existing user to promote them to partner admin for <strong id="setAdminPartnerName"></strong>.</p>
+        <input type="email" id="setAdminEmail" placeholder="user@example.com"
+          class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500">
+        <div id="setAdminMsg" class="hidden text-sm rounded-lg p-2"></div>
+        <div class="flex justify-end gap-3">
+          <button onclick="closeSetAdminModal()" class="px-4 py-2 text-sm text-forest-600 hover:bg-forest-50 rounded-lg">Close</button>
+          <button onclick="handleSetAdmin()" class="px-4 py-2 text-sm text-white rounded-lg font-medium bg-burgundy-800 hover:bg-burgundy-900">Promote</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Users Modal -->
+  <div id="usersModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col">
+      <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white p-5 rounded-t-xl flex items-center justify-between">
+        <h2 class="font-display text-lg font-bold">Partner Users (<span id="usersCount">0</span>)</h2>
+        <button onclick="closeUsersModal()" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4" id="usersListBody">
+        <p class="text-center text-forest-400 py-8"><i class="fas fa-spinner fa-spin"></i> Loading...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Courses Modal -->
+  <div id="coursesModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-hidden flex flex-col">
+      <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white p-5 rounded-t-xl flex items-center justify-between">
+        <h2 class="font-display text-lg font-bold">Partner Courses (<span id="coursesCount">0</span>)</h2>
+        <button onclick="closeCoursesModal()" class="text-white/70 hover:text-white"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4" id="coursesListBody">
+        <p class="text-center text-forest-400 py-8"><i class="fas fa-spinner fa-spin"></i> Loading...</p>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+  const token = localStorage.getItem('token');
+  let partners = [];
+  let setAdminPartnerId = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    checkAuth();
+    loadPartners();
+  });
+
+  function checkAuth() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token || user.role !== 'admin') {
+      alert('Admin access required');
+      window.location.href = '/dashboard.html';
+    }
+    document.getElementById('adminEmail').textContent = user.email || 'Admin';
+  }
+
+  async function apiFetch(path, opts = {}) {
+    const res = await fetch(`${API_URL}${path}`, {
+      ...opts,
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) }
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Request failed (${res.status})`);
+    }
+    return res.json();
+  }
+
+  // ── Load Partners ──
+  async function loadPartners() {
+    try {
+      const data = await apiFetch('/api/partners');
+      partners = data.partners || [];
+      renderPartners();
+      updateStats();
+    } catch (err) {
+      document.getElementById('partnersTableBody').innerHTML =
+        `<tr><td colspan="7" class="px-6 py-12 text-center text-red-500">${err.message}</td></tr>`;
+    }
+  }
+
+  function updateStats() {
+    const active = partners.filter(p => p.active).length;
+    const totalUsers = partners.reduce((sum, p) => sum + (p.userCount || 0), 0);
+    const totalCourses = partners.reduce((sum, p) => sum + (p.courseCount || 0), 0);
+    document.getElementById('statTotalPartners').textContent = partners.length;
+    document.getElementById('statActivePartners').textContent = active;
+    document.getElementById('statTotalPartnerUsers').textContent = totalUsers;
+    document.getElementById('statTotalPartnerCourses').textContent = totalCourses;
+  }
+
+  function renderPartners() {
+    const tbody = document.getElementById('partnersTableBody');
+    if (partners.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-12 text-center text-forest-500">
+        <i class="fas fa-handshake text-3xl text-forest-300 mb-2"></i>
+        <p>No partners yet. Click <strong>Add Partner</strong> to create your first.</p>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = partners.map(p => {
+      const initial = p.name.charAt(0).toUpperCase();
+      const color = p.branding?.primaryColor || '#6b1d34';
+      const statusBadge = p.active
+        ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>'
+        : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">Inactive</span>';
+      const created = p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '--';
+
+      return `<tr class="hover:bg-forest-50/50 cursor-pointer" onclick="openDrawer('${p._id}')">
+        <td class="px-6 py-4">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background:${color}">
+              ${p.branding?.logoUrl ? `<img src="${p.branding.logoUrl}" class="w-full h-full object-contain rounded-lg" alt="">` : initial}
+            </div>
+            <div>
+              <p class="font-medium text-burgundy-900">${esc(p.name)}</p>
+              ${p.branding?.companyName && p.branding.companyName !== p.name ? `<p class="text-xs text-forest-500">${esc(p.branding.companyName)}</p>` : ''}
+            </div>
+          </div>
+        </td>
+        <td class="px-6 py-4 font-mono text-sm text-forest-600">/${esc(p.slug)}</td>
+        <td class="px-6 py-4 text-sm capitalize text-forest-700">${p.defaultPlan || 'free'}</td>
+        <td class="px-6 py-4">${statusBadge}</td>
+        <td class="px-6 py-4 text-sm text-forest-700">${p.userCount || 0}</td>
+        <td class="px-6 py-4 text-sm text-forest-500">${created}</td>
+        <td class="px-6 py-4 text-right">
+          <div class="flex items-center justify-end gap-1" onclick="event.stopPropagation()">
+            <button onclick="viewUsers('${p._id}')" title="View users" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-users text-sm"></i></button>
+            <button onclick="viewCourses('${p._id}')" title="View courses" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-book text-sm"></i></button>
+            <button onclick="openSetAdmin('${p._id}', '${esc(p.name)}')" title="Set partner admin" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-user-plus text-sm"></i></button>
+            <button onclick="copyLink('${esc(p.slug)}')" title="Copy registration link" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-link text-sm"></i></button>
+            <button onclick="toggleActive('${p._id}', ${p.active})" title="${p.active ? 'Deactivate' : 'Activate'}" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500">
+              <i class="fas fa-${p.active ? 'eye-slash' : 'eye'} text-sm"></i>
+            </button>
+            <button onclick="openEditModal('${p._id}')" title="Edit" class="p-2 rounded-lg hover:bg-forest-100 text-forest-500"><i class="fas fa-pen text-sm"></i></button>
+            <button onclick="deletePartner('${p._id}', '${esc(p.name)}')" title="Delete" class="p-2 rounded-lg hover:bg-red-50 text-red-400"><i class="fas fa-trash text-sm"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function esc(s) { return (s || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+  // ── Create / Edit Modal ──
+  function openCreateModal() {
+    document.getElementById('editingId').value = '';
+    document.getElementById('modalTitle').textContent = 'New Partner';
+    document.getElementById('saveLabel').textContent = 'Create Partner';
+    document.getElementById('fName').value = '';
+    document.getElementById('fSlug').value = '';
+    document.getElementById('fCompanyName').value = '';
+    document.getElementById('fLogoUrl').value = '';
+    document.getElementById('fCustomDomain').value = '';
+    document.getElementById('fPrimaryColor').value = '#6B1D34';
+    document.getElementById('fColorPicker').value = '#6B1D34';
+    document.getElementById('fTagline').value = '';
+    document.getElementById('fEmail').value = '';
+    document.getElementById('fWebsite').value = '';
+    document.getElementById('fDefaultPlan').value = 'free';
+    document.getElementById('fActive').checked = true;
+    document.getElementById('modalError').classList.add('hidden');
+    document.getElementById('partnerModal').classList.remove('hidden');
+  }
+
+  function openEditModal(id) {
+    const p = partners.find(x => x._id === id);
+    if (!p) return;
+    document.getElementById('editingId').value = id;
+    document.getElementById('modalTitle').textContent = 'Edit Partner';
+    document.getElementById('saveLabel').textContent = 'Save Changes';
+    document.getElementById('fName').value = p.name || '';
+    document.getElementById('fSlug').value = p.slug || '';
+    document.getElementById('fCompanyName').value = p.branding?.companyName || '';
+    document.getElementById('fLogoUrl').value = p.branding?.logoUrl || '';
+    document.getElementById('fCustomDomain').value = p.branding?.customDomain || '';
+    document.getElementById('fPrimaryColor').value = p.branding?.primaryColor || '#6B1D34';
+    document.getElementById('fColorPicker').value = p.branding?.primaryColor || '#6B1D34';
+    document.getElementById('fTagline').value = p.branding?.tagline || '';
+    document.getElementById('fEmail').value = p.contact?.email || '';
+    document.getElementById('fWebsite').value = p.contact?.website || '';
+    document.getElementById('fDefaultPlan').value = p.defaultPlan || 'free';
+    document.getElementById('fActive').checked = p.active !== false;
+    document.getElementById('modalError').classList.add('hidden');
+    document.getElementById('partnerModal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+    document.getElementById('partnerModal').classList.add('hidden');
+  }
+
+  async function handleSave(e) {
+    e.preventDefault();
+    const errEl = document.getElementById('modalError');
+    errEl.classList.add('hidden');
+
+    const id = document.getElementById('editingId').value;
+    const payload = {
+      name: document.getElementById('fName').value.trim(),
+      slug: document.getElementById('fSlug').value.trim(),
+      active: document.getElementById('fActive').checked,
+      defaultPlan: document.getElementById('fDefaultPlan').value,
+      branding: {
+        companyName: document.getElementById('fCompanyName').value.trim(),
+        logoUrl: document.getElementById('fLogoUrl').value.trim(),
+        customDomain: document.getElementById('fCustomDomain').value.trim(),
+        primaryColor: document.getElementById('fPrimaryColor').value.trim(),
+        tagline: document.getElementById('fTagline').value.trim()
+      },
+      contact: {
+        email: document.getElementById('fEmail').value.trim(),
+        website: document.getElementById('fWebsite').value.trim()
+      }
+    };
+
+    if (!payload.name || !payload.slug) {
+      errEl.textContent = 'Name and slug are required';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    try {
+      if (id) {
+        await apiFetch(`/api/partners/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+      } else {
+        await apiFetch('/api/partners', { method: 'POST', body: JSON.stringify(payload) });
+      }
+      closeModal();
+      loadPartners();
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  // ── Toggle Active ──
+  async function toggleActive(id, isActive) {
+    try {
+      await apiFetch(`/api/partners/${id}`, { method: 'PUT', body: JSON.stringify({ active: !isActive }) });
+      loadPartners();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // ── Delete ──
+  async function deletePartner(id, name) {
+    if (!confirm(`Delete partner "${name}"? This will unlink all associated users.`)) return;
+    try {
+      await apiFetch(`/api/partners/${id}`, { method: 'DELETE' });
+      loadPartners();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  // ── Copy Registration Link ──
+  function copyLink(slug) {
+    const url = `${window.location.origin}/register?partner=${slug}`;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = event.target.closest('button');
+      const icon = btn.querySelector('i');
+      icon.className = 'fas fa-check text-sm text-green-600';
+      setTimeout(() => { icon.className = 'fas fa-link text-sm'; }, 2000);
+    });
+  }
+
+  // ── Set Admin ──
+  function openSetAdmin(id, name) {
+    setAdminPartnerId = id;
+    document.getElementById('setAdminPartnerName').textContent = name;
+    document.getElementById('setAdminEmail').value = '';
+    document.getElementById('setAdminMsg').classList.add('hidden');
+    document.getElementById('setAdminModal').classList.remove('hidden');
+  }
+
+  function closeSetAdminModal() {
+    document.getElementById('setAdminModal').classList.add('hidden');
+    setAdminPartnerId = null;
+  }
+
+  async function handleSetAdmin() {
+    const email = document.getElementById('setAdminEmail').value.trim();
+    if (!email) return;
+    const msgEl = document.getElementById('setAdminMsg');
+
+    try {
+      const data = await apiFetch(`/api/partners/${setAdminPartnerId}/set-admin`, {
+        method: 'POST', body: JSON.stringify({ email })
+      });
+      msgEl.textContent = data.message;
+      msgEl.className = 'text-sm rounded-lg p-2 bg-green-50 text-green-700';
+      msgEl.classList.remove('hidden');
+      document.getElementById('setAdminEmail').value = '';
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-sm rounded-lg p-2 bg-red-50 text-red-700';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  // ── View Users ──
+  async function viewUsers(id) {
+    document.getElementById('usersModal').classList.remove('hidden');
+    document.getElementById('usersListBody').innerHTML = '<p class="text-center text-forest-400 py-8"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+
+    try {
+      const data = await apiFetch(`/api/partners/${id}/users`);
+      const users = data.users || [];
+      document.getElementById('usersCount').textContent = users.length;
+
+      if (users.length === 0) {
+        document.getElementById('usersListBody').innerHTML = '<p class="text-center text-forest-400 py-8">No users yet</p>';
+        return;
+      }
+
+      document.getElementById('usersListBody').innerHTML = users.map(u => {
+        const initial = (u.profile?.firstName || u.email || '?').charAt(0).toUpperCase();
+        return `<div class="flex items-center gap-3 p-3 rounded-lg bg-forest-50 mb-2">
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold bg-burgundy-800">${initial}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-burgundy-900 truncate">${u.profile?.firstName || ''} ${u.profile?.lastName || ''}</p>
+            <p class="text-xs text-forest-500 truncate">${u.email}</p>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="text-xs font-medium capitalize text-burgundy-700">${u.subscription?.plan || 'free'}</p>
+            <p class="text-xs text-forest-400">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ''}</p>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      document.getElementById('usersListBody').innerHTML = `<p class="text-center text-red-500 py-8">${err.message}</p>`;
+    }
+  }
+
+  function closeUsersModal() { document.getElementById('usersModal').classList.add('hidden'); }
+
+  // ── View Courses ──
+  async function viewCourses(id) {
+    document.getElementById('coursesModal').classList.remove('hidden');
+    document.getElementById('coursesListBody').innerHTML = '<p class="text-center text-forest-400 py-8"><i class="fas fa-spinner fa-spin"></i> Loading...</p>';
+
+    try {
+      const data = await apiFetch(`/api/partners/${id}/courses`);
+      const courses = data.courses || [];
+      document.getElementById('coursesCount').textContent = courses.length;
+
+      if (courses.length === 0) {
+        document.getElementById('coursesListBody').innerHTML = '<p class="text-center text-forest-400 py-8">No courses yet</p>';
+        return;
+      }
+
+      document.getElementById('coursesListBody').innerHTML = courses.map(c => {
+        const statusColor = c.status === 'published' ? 'text-green-600' : 'text-amber-600';
+        return `<div class="flex items-center gap-3 p-3 rounded-lg bg-forest-50 mb-2">
+          <i class="fas fa-book text-burgundy-700"></i>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-burgundy-900 truncate">${c.title}</p>
+            <div class="flex items-center gap-3 text-xs text-forest-500 mt-0.5">
+              <span>${c.ceHours || 0} CE hrs</span>
+              <span class="${statusColor}">${c.status || 'draft'}</span>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0 text-xs text-forest-500">
+            <p>${c.enrollments || 0} enrolled</p>
+            <p>${c.completions || 0} completed</p>
+          </div>
+        </div>`;
+      }).join('');
+    } catch (err) {
+      document.getElementById('coursesListBody').innerHTML = `<p class="text-center text-red-500 py-8">${err.message}</p>`;
+    }
+  }
+
+  function closeCoursesModal() { document.getElementById('coursesModal').classList.add('hidden'); }
+</script>
+
+  <div id="cr-footer"></div>
+
+  <!-- ── Partner Detail Drawer ── -->
+  <!-- Backdrop -->
+  <div id="drawerBackdrop" onclick="closeDrawer()" class="hidden fixed inset-0 bg-black/40 z-40 transition-opacity"></div>
+
+  <!-- Drawer panel -->
+  <div id="partnerDrawer" class="fixed top-0 right-0 h-full w-full max-w-3xl bg-stone-50 z-50 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col" style="border-left:1px solid #d1d5c0;">
+
+    <!-- Drawer Header -->
+    <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white px-6 py-4 flex items-center justify-between flex-shrink-0">
+      <div>
+        <h2 class="font-display text-xl font-bold" id="drawerPartnerName">Partner Detail</h2>
+        <p class="text-burgundy-200 text-sm mt-0.5" id="drawerPartnerSlug"></p>
+      </div>
+      <button onclick="closeDrawer()" class="text-white/70 hover:text-white p-1 rounded-lg hover:bg-white/10"><i class="fas fa-times text-lg"></i></button>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="bg-white border-b border-forest-200 flex-shrink-0">
+      <div class="flex overflow-x-auto">
+        <button onclick="switchTab('overview')" id="tab-overview" class="drawer-tab active px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-burgundy-700 text-burgundy-800">
+          <i class="fas fa-info-circle mr-1.5"></i>Overview
+        </button>
+        <button onclick="switchTab('users-courses')" id="tab-users-courses" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-users mr-1.5"></i>Users &amp; Courses
+        </button>
+        <button onclick="switchTab('health')" id="tab-health" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-heartbeat mr-1.5"></i>Health
+        </button>
+        <button onclick="switchTab('audit-log')" id="tab-audit-log" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-history mr-1.5"></i>Audit Log
+        </button>
+        <button onclick="switchTab('notes-actions')" id="tab-notes-actions" class="drawer-tab px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 border-transparent text-forest-600 hover:text-burgundy-700">
+          <i class="fas fa-sticky-note mr-1.5"></i>Notes &amp; Actions
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="flex-1 overflow-y-auto p-6">
+
+      <!-- Tab: Overview -->
+      <div id="panel-overview" class="drawer-panel">
+        <div id="overviewContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Users & Courses -->
+      <div id="panel-users-courses" class="drawer-panel hidden">
+        <div id="usersCourseContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Health -->
+      <div id="panel-health" class="drawer-panel hidden">
+        <div id="healthContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Audit Log -->
+      <div id="panel-audit-log" class="drawer-panel hidden">
+        <div id="auditLogContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+      <!-- Tab: Notes & Actions -->
+      <div id="panel-notes-actions" class="drawer-panel hidden">
+        <div id="notesActionsContent"><div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div></div>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+  // ── Drawer State ──
+  let drawerPartnerId = null;
+  const drawerTabsLoaded = {};
+
+  function openDrawer(partnerId) {
+    drawerPartnerId = partnerId;
+    // reset loaded state
+    Object.keys(drawerTabsLoaded).forEach(k => delete drawerTabsLoaded[k]);
+
+    const p = partners.find(x => x._id === partnerId);
+    if (p) {
+      document.getElementById('drawerPartnerName').textContent = p.name;
+      document.getElementById('drawerPartnerSlug').textContent = '/' + p.slug;
+    }
+
+    // Reset to Overview tab
+    switchTab('overview');
+
+    document.getElementById('drawerBackdrop').classList.remove('hidden');
+    document.getElementById('partnerDrawer').style.transform = 'translateX(0)';
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawerBackdrop').classList.add('hidden');
+    document.getElementById('partnerDrawer').style.transform = 'translateX(100%)';
+    drawerPartnerId = null;
+  }
+
+  function switchTab(tabId) {
+    // Update tab button styles
+    document.querySelectorAll('.drawer-tab').forEach(btn => {
+      btn.classList.remove('active', 'border-burgundy-700', 'text-burgundy-800');
+      btn.classList.add('border-transparent', 'text-forest-600');
+    });
+    const activeBtn = document.getElementById('tab-' + tabId);
+    if (activeBtn) {
+      activeBtn.classList.add('active', 'border-burgundy-700', 'text-burgundy-800');
+      activeBtn.classList.remove('border-transparent', 'text-forest-600');
+    }
+
+    // Show/hide panels
+    document.querySelectorAll('.drawer-panel').forEach(panel => panel.classList.add('hidden'));
+    const activePanel = document.getElementById('panel-' + tabId);
+    if (activePanel) activePanel.classList.remove('hidden');
+
+    // Lazy-load tab data on first open
+    if (!drawerTabsLoaded[tabId] && drawerPartnerId) {
+      drawerTabsLoaded[tabId] = true;
+      switch (tabId) {
+        case 'overview':      loadDrawerOverview(); break;
+        case 'users-courses': loadDrawerUsersCourses(); break;
+        case 'health':        loadDrawerHealth(); break;
+        case 'audit-log':     loadDrawerAuditLog(); break;
+        case 'notes-actions': loadDrawerNotesActions(); break;
+      }
+    }
+  }
+
+  // ── Tab 1: Overview ──
+  async function loadDrawerOverview() {
+    const el = document.getElementById('overviewContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const [detailData, statsData] = await Promise.all([
+        apiFetch('/api/partners/' + drawerPartnerId),
+        apiFetch('/api/partners/' + drawerPartnerId + '/stats')
+      ]);
+      const p = detailData.partner || detailData;
+      const stats = statsData.stats || statsData;
+
+      const addons = p.premiumAddons || {};
+      const addonList = [
+        { key: 'certTracking', label: 'Cert Tracking' },
+        { key: 'credentialManagement', label: 'Credential Mgmt' },
+        { key: 'complianceTracking', label: 'Compliance Tracking' },
+        { key: 'clinicalTools', label: 'Clinical Tools' }
+      ];
+
+      el.innerHTML = `
+        <div class="space-y-5">
+          <!-- Identity Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Identity &amp; Plan</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><p class="text-forest-500 text-xs mb-0.5">Name</p><p class="font-medium text-burgundy-900">${escHtml(p.name)}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Slug</p><p class="font-mono text-forest-700">/${escHtml(p.slug)}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Plan</p><p class="capitalize font-medium text-hunter-700">${p.defaultPlan || 'free'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Status</p><p>${p.active ? '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">Active</span>' : '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">Inactive</span>'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Created</p><p class="text-forest-700">${p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '--'}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Custom Domain</p><p class="font-mono text-forest-700 text-xs">${escHtml(p.branding?.customDomain || '--')}</p></div>
+            </div>
+          </div>
+
+          <!-- Branding Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Branding</h3>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div><p class="text-forest-500 text-xs mb-0.5">Display Name</p><p class="text-forest-700">${escHtml(p.branding?.companyName || '--')}</p></div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Tagline</p><p class="text-forest-700">${escHtml(p.branding?.tagline || '--')}</p></div>
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded border border-forest-200 flex-shrink-0" style="background:${escHtml(p.branding?.primaryColor || '#6B1D34')}"></div>
+                <div><p class="text-forest-500 text-xs mb-0.5">Brand Color</p><p class="font-mono text-xs text-forest-700">${escHtml(p.branding?.primaryColor || '#6B1D34')}</p></div>
+              </div>
+              <div><p class="text-forest-500 text-xs mb-0.5">Contact Email</p><p class="text-forest-700 text-xs">${escHtml(p.contact?.email || '--')}</p></div>
+            </div>
+          </div>
+
+          <!-- Stats Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Metrics</h3>
+            <div class="grid grid-cols-3 gap-4 text-center">
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalUsers ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Total Users</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalCourses ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Courses</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.totalEnrollments ?? '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Enrollments</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3">
+                <p class="text-xl font-bold text-burgundy-900">${stats.revenue != null ? '$' + Number(stats.revenue).toLocaleString() : '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Revenue</p>
+              </div>
+              <div class="bg-forest-50 rounded-lg p-3 col-span-2">
+                <p class="text-xl font-bold text-burgundy-900">${stats.completionRate != null ? Math.round(stats.completionRate) + '%' : '--'}</p>
+                <p class="text-xs text-forest-500 mt-0.5">Completion Rate</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Premium Addons Card -->
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Premium Add-ons</h3>
+            <div class="space-y-2" id="addonToggles-${drawerPartnerId}">
+              ${addonList.map(a => `
+                <div class="flex items-center justify-between gap-2 text-sm py-1">
+                  <span class="${addons[a.key]?.enabled ? 'text-forest-700 font-medium' : 'text-stone-400'}">${a.label}</span>
+                  <button
+                    data-partner="${drawerPartnerId}"
+                    data-key="${a.key}"
+                    data-enabled="${addons[a.key]?.enabled ? '1' : '0'}"
+                    onclick="toggleAddon(this)"
+                    class="px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${addons[a.key]?.enabled ? 'bg-hunter-50 border-hunter-300 text-hunter-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700' : 'bg-stone-50 border-stone-300 text-stone-600 hover:bg-hunter-50 hover:border-hunter-300 hover:text-hunter-700'}">
+                    ${addons[a.key]?.enabled ? 'Disable' : 'Enable'}
+                  </button>
+                </div>`).join('')}
+            </div>
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 2: Users & Courses ──
+  async function loadDrawerUsersCourses() {
+    const el = document.getElementById('usersCourseContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const [usersData, coursesData] = await Promise.all([
+        apiFetch('/api/partners/' + drawerPartnerId + '/users'),
+        apiFetch('/api/partners/' + drawerPartnerId + '/courses')
+      ]);
+      const users = usersData.users || [];
+      const courses = coursesData.courses || [];
+
+      el.innerHTML = `
+        <div class="space-y-6">
+          <!-- Users Table -->
+          <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+            <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+              <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Users (${users.length})</h3>
+            </div>
+            ${users.length === 0 ? '<p class="text-center text-forest-400 py-8 text-sm">No users yet</p>' : `
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-forest-100">
+                  <tr>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Name</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Email</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Role</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Last Active</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Courses</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-forest-50">
+                  ${users.map(u => `<tr class="hover:bg-forest-50/50">
+                    <td class="px-4 py-3 font-medium text-burgundy-900">${escHtml((u.profile?.firstName || '') + ' ' + (u.profile?.lastName || '')).trim() || '--'}</td>
+                    <td class="px-4 py-3 text-forest-600 text-xs">${escHtml(u.email)}</td>
+                    <td class="px-4 py-3 capitalize text-forest-600">${escHtml(u.role || 'user')}</td>
+                    <td class="px-4 py-3 text-forest-400 text-xs">${u.lastActive ? new Date(u.lastActive).toLocaleDateString() : '--'}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${u.enrolledCoursesCount ?? u.courseCount ?? '--'}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>`}
+          </div>
+
+          <!-- Courses Table -->
+          <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+            <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+              <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Courses (${courses.length})</h3>
+            </div>
+            ${courses.length === 0 ? '<p class="text-center text-forest-400 py-8 text-sm">No courses yet</p>' : `
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="border-b border-forest-100">
+                  <tr>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Title</th>
+                    <th class="text-left px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Status</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Enrollments</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">Completion</th>
+                    <th class="text-right px-4 py-2.5 text-xs font-semibold text-forest-500 uppercase tracking-wide">CE hrs</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-forest-50">
+                  ${courses.map(c => `<tr class="hover:bg-forest-50/50">
+                    <td class="px-4 py-3 font-medium text-burgundy-900 max-w-[180px] truncate">${escHtml(c.title)}</td>
+                    <td class="px-4 py-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${c.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">${escHtml(c.status || 'draft')}</span></td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.enrollments ?? '--'}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.completionRate != null ? Math.round(c.completionRate) + '%' : (c.completions != null ? c.completions : '--')}</td>
+                    <td class="px-4 py-3 text-right text-forest-600">${c.ceHours ?? '--'}</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>`}
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 3: Health ──
+  async function loadDrawerHealth() {
+    const el = document.getElementById('healthContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/health');
+      const health = data.health || data;
+
+      const indicators = [
+        { key: 'billingCurrent', label: 'Billing Current', icon: 'fa-credit-card' },
+        { key: 'domainActive', label: 'Domain Active', icon: 'fa-globe' },
+        { key: 'coursesPublished', label: 'Courses Published', icon: 'fa-book' },
+        { key: 'userActivity', label: 'User Activity', icon: 'fa-users' }
+      ];
+
+      const statusIcon = (val) => {
+        if (val === true || val === 'ok' || val === 'healthy') return '<i class="fas fa-check-circle text-green-500 text-lg"></i>';
+        if (val === false || val === 'error' || val === 'critical') return '<i class="fas fa-times-circle text-red-500 text-lg"></i>';
+        return '<i class="fas fa-exclamation-circle text-amber-500 text-lg"></i>';
+      };
+
+      const statusLabel = (val) => {
+        if (val === true || val === 'ok' || val === 'healthy') return '<span class="text-xs font-medium text-green-600">Healthy</span>';
+        if (val === false || val === 'error' || val === 'critical') return '<span class="text-xs font-medium text-red-600">Issue</span>';
+        if (val == null) return '<span class="text-xs text-stone-400">Unknown</span>';
+        return `<span class="text-xs font-medium text-amber-600">${escHtml(String(val))}</span>`;
+      };
+
+      el.innerHTML = `
+        <div class="space-y-4">
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Health Indicators</h3>
+            <div class="grid grid-cols-2 gap-4">
+              ${indicators.map(ind => `
+                <div class="flex items-center gap-3 p-4 rounded-lg bg-stone-50 border border-forest-100">
+                  <div class="w-8 h-8 flex items-center justify-center">${statusIcon(health[ind.key])}</div>
+                  <div>
+                    <p class="text-sm font-medium text-forest-700"><i class="fas ${ind.icon} text-forest-400 mr-1.5"></i>${ind.label}</p>
+                    ${statusLabel(health[ind.key])}
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>
+          ${Object.keys(health).filter(k => !indicators.map(i => i.key).includes(k)).length > 0 ? `
+          <div class="bg-white rounded-xl border border-forest-200 p-5">
+            <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Additional Status</h3>
+            <div class="space-y-2">
+              ${Object.entries(health).filter(([k]) => !indicators.map(i => i.key).includes(k)).map(([k, v]) => `
+                <div class="flex items-center justify-between py-2 border-b border-forest-50 last:border-0 text-sm">
+                  <span class="text-forest-600 capitalize">${escHtml(k.replace(/([A-Z])/g, ' $1').trim())}</span>
+                  <span class="font-medium text-burgundy-800">${escHtml(String(v))}</span>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 4: Audit Log ──
+  async function loadDrawerAuditLog() {
+    const el = document.getElementById('auditLogContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/audit-log');
+      const logs = data.logs || data.auditLog || data.entries || [];
+
+      if (logs.length === 0) {
+        el.innerHTML = '<p class="text-center text-forest-400 py-8 text-sm">No audit entries yet</p>';
+        return;
+      }
+
+      el.innerHTML = `
+        <div class="bg-white rounded-xl border border-forest-200 overflow-hidden">
+          <div class="px-5 py-3 bg-forest-50 border-b border-forest-200">
+            <h3 class="text-xs font-semibold text-forest-600 uppercase tracking-wider">Activity (${logs.length} entries)</h3>
+          </div>
+          <div class="divide-y divide-forest-50">
+            ${logs.map(entry => `
+              <div class="px-5 py-4 hover:bg-forest-50/40">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-burgundy-900">${escHtml(entry.action || entry.event || entry.type || 'Action')}</p>
+                    ${entry.actor || entry.performedBy ? `<p class="text-xs text-forest-500 mt-0.5">by ${escHtml(entry.actor || entry.performedBy)}</p>` : ''}
+                    ${entry.details ? `<p class="text-xs text-forest-400 mt-1">${escHtml(typeof entry.details === 'object' ? JSON.stringify(entry.details) : entry.details)}</p>` : ''}
+                  </div>
+                  <p class="text-xs text-stone-400 whitespace-nowrap flex-shrink-0">${entry.timestamp || entry.createdAt ? new Date(entry.timestamp || entry.createdAt).toLocaleString() : '--'}</p>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  // ── Tab 5: Notes & Actions ──
+  async function loadDrawerNotesActions() {
+    const el = document.getElementById('notesActionsContent');
+    el.innerHTML = '<div class="flex items-center justify-center py-16 text-forest-400"><i class="fas fa-spinner fa-spin text-2xl"></i></div>';
+    try {
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      el.innerHTML = `<p class="text-center text-red-500 py-8">${escHtml(err.message)}</p>`;
+    }
+  }
+
+  function renderNotesActions(notes) {
+    const el = document.getElementById('notesActionsContent');
+    el.innerHTML = `
+      <div class="space-y-5">
+        <!-- Notes -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Admin Notes (${notes.length})</h3>
+          <div id="notesList" class="space-y-3 mb-4">
+            ${notes.length === 0 ? '<p class="text-forest-400 text-sm text-center py-3">No notes yet</p>' :
+              notes.map(n => `
+                <div class="bg-stone-50 border border-forest-100 rounded-lg p-3" data-note-id="${escHtml(n._id)}">
+                  <div class="flex items-start justify-between gap-2">
+                    <p class="text-sm text-forest-700 flex-1">${escHtml(n.text || n.content || n.note || '')}</p>
+                    <button onclick="deleteNote('${escHtml(n._id)}')" class="text-stone-300 hover:text-red-400 flex-shrink-0 p-0.5 rounded"><i class="fas fa-trash text-xs"></i></button>
+                  </div>
+                  <p class="text-xs text-stone-400 mt-1.5">${n.createdAt ? new Date(n.createdAt).toLocaleString() : ''} ${n.createdBy ? '· ' + escHtml(n.createdBy) : ''}</p>
+                </div>`).join('')}
+          </div>
+          <!-- Add Note Form -->
+          <div class="border-t border-forest-100 pt-4">
+            <textarea id="newNoteText" rows="3" placeholder="Add a note…" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500 resize-none"></textarea>
+            <div class="flex justify-end mt-2">
+              <button onclick="addNote()" class="px-4 py-1.5 text-sm text-white bg-burgundy-800 hover:bg-burgundy-900 rounded-lg font-medium">Add Note</button>
+            </div>
+            <p id="noteMsg" class="hidden text-xs mt-1 rounded p-1"></p>
+          </div>
+        </div>
+
+        <!-- Send Notification -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Send Notification</h3>
+          <textarea id="notifyMessage" rows="3" placeholder="Notification message to send to partner…" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 resize-none mb-2"></textarea>
+          <button onclick="sendNotification()" class="px-4 py-1.5 text-sm text-white bg-hunter-700 hover:bg-hunter-800 rounded-lg font-medium"><i class="fas fa-paper-plane mr-1.5"></i>Send Notification</button>
+          <p id="notifyMsg" class="hidden text-xs mt-2 rounded p-1"></p>
+        </div>
+
+        <!-- Quick-Fix Actions -->
+        <div class="bg-white rounded-xl border border-forest-200 p-5">
+          <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Quick Actions</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-stone-50 border border-forest-100">
+              <div>
+                <p class="text-sm font-medium text-forest-700">Reset Domain</p>
+                <p class="text-xs text-forest-400">Clear and reset the partner's custom domain</p>
+              </div>
+              <button onclick="quickFix('reset-domain')" class="px-3 py-1.5 text-xs text-white bg-burgundy-700 hover:bg-burgundy-800 rounded-lg font-medium flex-shrink-0">Reset</button>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-stone-50 border border-forest-100">
+              <div>
+                <p class="text-sm font-medium text-forest-700">Resend Welcome Email</p>
+                <p class="text-xs text-forest-400">Resend the partner onboarding welcome email</p>
+              </div>
+              <button onclick="quickFix('resend-welcome')" class="px-3 py-1.5 text-xs text-white bg-hunter-700 hover:bg-hunter-800 rounded-lg font-medium flex-shrink-0">Resend</button>
+            </div>
+            <div class="flex items-start justify-between p-3 rounded-lg bg-stone-50 border border-forest-100 gap-4">
+              <div class="flex-1">
+                <p class="text-sm font-medium text-forest-700">Fix Billing Status</p>
+                <p class="text-xs text-forest-400 mb-2">Force-set billing status on this partner</p>
+                <select id="billingStatusSelect" class="w-full px-2 py-1.5 border border-forest-200 rounded-lg text-xs focus:ring-2 focus:ring-hunter-500">
+                  <option value="current">Current</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <button onclick="quickFix('billing-status')" class="px-3 py-1.5 text-xs text-white bg-burgundy-700 hover:bg-burgundy-800 rounded-lg font-medium flex-shrink-0 mt-7">Apply</button>
+            </div>
+          </div>
+          <p id="quickFixMsg" class="hidden text-xs mt-3 rounded p-1.5"></p>
+        </div>
+      </div>`;
+  }
+
+  async function addNote() {
+    const text = document.getElementById('newNoteText').value.trim();
+    const msgEl = document.getElementById('noteMsg');
+    if (!text) return;
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notes', {
+        method: 'POST', body: JSON.stringify({ text })
+      });
+      document.getElementById('newNoteText').value = '';
+      // Reload notes
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-1 rounded p-1 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  async function deleteNote(noteId) {
+    if (!confirm('Delete this note?')) return;
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notes/' + noteId, { method: 'DELETE' });
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/notes');
+      renderNotesActions(data.notes || data || []);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function sendNotification() {
+    const message = document.getElementById('notifyMessage').value.trim();
+    const msgEl = document.getElementById('notifyMsg');
+    if (!message) { msgEl.textContent = 'Enter a message first'; msgEl.className = 'text-xs mt-2 rounded p-1 text-amber-600 bg-amber-50'; msgEl.classList.remove('hidden'); return; }
+    try {
+      await apiFetch('/api/partners/' + drawerPartnerId + '/notify', {
+        method: 'POST', body: JSON.stringify({ message })
+      });
+      document.getElementById('notifyMessage').value = '';
+      msgEl.textContent = 'Notification sent successfully';
+      msgEl.className = 'text-xs mt-2 rounded p-1 text-green-600 bg-green-50';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 3000);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-2 rounded p-1 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  async function quickFix(action) {
+    const msgEl = document.getElementById('quickFixMsg');
+    if (!confirm(`Run quick-fix: ${action}?`)) return;
+    try {
+      const payload = action === 'billing-status'
+        ? { status: document.getElementById('billingStatusSelect').value }
+        : {};
+      const data = await apiFetch('/api/partners/' + drawerPartnerId + '/quick-fix/' + action, {
+        method: 'POST', body: JSON.stringify(payload)
+      });
+      msgEl.textContent = data.message || 'Done';
+      msgEl.className = 'text-xs mt-3 rounded p-1.5 text-green-700 bg-green-50';
+      msgEl.classList.remove('hidden');
+      setTimeout(() => msgEl.classList.add('hidden'), 4000);
+    } catch (err) {
+      msgEl.textContent = err.message;
+      msgEl.className = 'text-xs mt-3 rounded p-1.5 text-red-600 bg-red-50';
+      msgEl.classList.remove('hidden');
+    }
+  }
+
+  function escHtml(s) {
+    return (s || '').toString()
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  async function toggleAddon(btn) {
+    const partnerId = btn.dataset.partner;
+    const addonKey = btn.dataset.key;
+    const currentlyEnabled = btn.dataset.enabled === '1';
+    const newEnabled = !currentlyEnabled;
+    btn.disabled = true;
+    btn.textContent = '...';
+    try {
+      const res = await apiFetch('/api/partners/' + partnerId + '/addons', {
+        method: 'PATCH',
+        body: JSON.stringify({ addonKey, enabled: newEnabled })
+      });
+      btn.dataset.enabled = newEnabled ? '1' : '0';
+      btn.textContent = newEnabled ? 'Disable' : 'Enable';
+      if (newEnabled) {
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-medium border transition-colors bg-hunter-50 border-hunter-300 text-hunter-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700';
+        btn.previousElementSibling && (btn.previousElementSibling.className = 'text-forest-700 font-medium');
+      } else {
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-medium border transition-colors bg-stone-50 border-stone-300 text-stone-600 hover:bg-hunter-50 hover:border-hunter-300 hover:text-hunter-700';
+        btn.previousElementSibling && (btn.previousElementSibling.className = 'text-stone-400');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = currentlyEnabled ? 'Disable' : 'Enable';
+      alert('Failed to update add-on: ' + err.message);
+    }
+  }
+</script>
+
+</body>
+</html>

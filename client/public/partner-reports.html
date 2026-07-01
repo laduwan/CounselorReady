@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Reports | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Reports</h1>
+      <p class="text-gray-500 mt-1">Export compliance and engagement data for your organization</p>
+    </div>
+
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading reports...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <div id="content" class="hidden space-y-6">
+
+      <!-- Summary -->
+      <div id="statsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-4"></div>
+
+      <!-- Downloads -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Download CSV Reports</h2>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <button onclick="downloadReport('users', this)" class="report-dl flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-burgundy-300 hover:shadow-md transition text-left">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-burgundy-50"><i class="fas fa-users text-burgundy-800"></i></div>
+            <div>
+              <p class="text-sm font-semibold text-stone-900">Users</p>
+              <p class="text-xs text-stone-500">Roster &amp; plan status</p>
+            </div>
+          </button>
+          <button onclick="downloadReport('courses', this)" class="report-dl flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-burgundy-300 hover:shadow-md transition text-left">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#eff6ff"><i class="fas fa-book-open" style="color:#2563eb"></i></div>
+            <div>
+              <p class="text-sm font-semibold text-stone-900">Courses</p>
+              <p class="text-xs text-stone-500">Enrollment &amp; completion</p>
+            </div>
+          </button>
+          <button onclick="downloadReport('completions', this)" class="report-dl flex items-center gap-3 p-4 rounded-xl border border-stone-200 hover:border-burgundy-300 hover:shadow-md transition text-left">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#fef3c7"><i class="fas fa-award" style="color:#d97706"></i></div>
+            <div>
+              <p class="text-sm font-semibold text-stone-900">CE Completions</p>
+              <p class="text-xs text-stone-500">Per-user CE hours</p>
+            </div>
+          </button>
+        </div>
+        <p id="dlMsg" class="text-xs mt-3"></p>
+      </div>
+
+      <!-- Course performance preview -->
+      <div id="coursePerformance" class="hidden"></div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}` };
+
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      const un = document.getElementById('userName'); if (un) un.textContent = p.name || '';
+      const av = document.getElementById('userAvatar'); if (av) av.textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    function esc(s){ if(s==null) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const myRes = await fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null);
+        if (!myRes || !myRes.ok) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+        const statsRes = await fetch(`${API}/api/partners/my/stats`, { headers: AUTH }).catch(() => null);
+        const stats = statsRes && statsRes.ok ? await statsRes.json() : {};
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        renderStats(stats);
+        renderCourses(stats);
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load reports';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function statCard(value, label, bg, icon, color) {
+      return `
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:${bg}"><i class="fas ${icon}" style="color:${color}"></i></div>
+            <div>
+              <p class="text-2xl font-bold text-stone-900">${value}</p>
+              <p class="text-xs text-stone-500">${label}</p>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function renderStats(s) {
+      document.getElementById('statsGrid').innerHTML =
+        statCard(s.totalUsers ?? 0, 'Total Users', '#fdf2f5', 'fa-users', '#6B1D34') +
+        statCard(s.activeUsers ?? 0, 'Active (30d)', '#f0fdf4', 'fa-chart-line', '#4A7C59') +
+        statCard(s.coursesCompleted ?? 0, 'Courses Completed', '#eff6ff', 'fa-book-open', '#2563eb') +
+        statCard(s.ceHoursEarned ?? 0, 'CE Hours Earned', '#fef3c7', 'fa-award', '#d97706');
+    }
+
+    function renderCourses(s) {
+      if (!s.courseBreakdown || !s.courseBreakdown.length) return;
+      const rows = s.courseBreakdown.map(c => {
+        const bg = c.completionRate >= 70 ? '#f0fdf4' : c.completionRate >= 40 ? '#fef3c7' : '#fef2f2';
+        const col = c.completionRate >= 70 ? '#4A7C59' : c.completionRate >= 40 ? '#d97706' : '#dc2626';
+        return `<tr class="border-b border-stone-100 last:border-0">
+          <td class="py-2.5 px-3 text-stone-900 font-medium">${esc(c.title)}</td>
+          <td class="py-2.5 px-3 text-right text-stone-600">${c.enrollments}</td>
+          <td class="py-2.5 px-3 text-right text-stone-600">${c.completions}</td>
+          <td class="py-2.5 px-3 text-right"><span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium" style="background:${bg};color:${col}">${c.completionRate}%</span></td>
+        </tr>`;
+      }).join('');
+      document.getElementById('coursePerformance').innerHTML = `
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-stone-900 mb-3">Course Performance</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead><tr class="border-b border-stone-200">
+                <th class="text-left py-2 px-3 text-xs font-medium text-stone-500">Course</th>
+                <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Enrollments</th>
+                <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Completions</th>
+                <th class="text-right py-2 px-3 text-xs font-medium text-stone-500">Rate</th>
+              </tr></thead>
+              <tbody>${rows}</tbody>
+            </table>
+          </div>
+        </div>`;
+      document.getElementById('coursePerformance').classList.remove('hidden');
+    }
+
+    async function downloadReport(type, btn) {
+      const msg = document.getElementById('dlMsg');
+      btn.disabled = true; btn.style.opacity = '.6';
+      msg.className = 'text-xs mt-3 text-stone-500'; msg.textContent = 'Preparing download...';
+      try {
+        const res = await fetch(`${API}/api/partners/my/reports/${type}?format=csv`, { headers: AUTH });
+        if (!res.ok) {
+          let detail = 'Download failed';
+          try { detail = (await res.json()).error || detail; } catch (e) {}
+          throw new Error(detail);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}-report-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        msg.className = 'text-xs mt-3 text-hunter-700'; msg.innerHTML = '<i class="fas fa-check"></i> Download started';
+      } catch (err) {
+        msg.className = 'text-xs mt-3 text-red-600'; msg.textContent = err.message;
+      } finally {
+        btn.disabled = false; btn.style.opacity = '1';
+        setTimeout(() => { msg.textContent = ''; }, 5000);
+      }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

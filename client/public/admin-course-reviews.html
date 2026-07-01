@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>ACEP Review Queue — CounselorReady Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root { --burgundy-700:#6B2040; --burgundy-800:#5A1A35; --stone-100:#f5f5f4; }
+    body { background: var(--stone-100); }
+    .status-chip { display:inline-block; padding:2px 10px; border-radius:9999px; font-size:0.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+    .chip-none      { background:#e7e5e4; color:#57534e; }
+    .chip-requested { background:#dbeafe; color:#1d4ed8; }
+    .chip-in_review { background:#fef9c3; color:#a16207; }
+    .chip-approved  { background:#dcfce7; color:#15803d; }
+    .chip-rejected  { background:#fee2e2; color:#b91c1c; }
+    .pass-chip { background:#dcfce7; color:#15803d; padding:2px 8px; border-radius:9999px; font-size:0.7rem; font-weight:700; }
+    .fail-chip { background:#fee2e2; color:#b91c1c; padding:2px 8px; border-radius:9999px; font-size:0.7rem; font-weight:700; }
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; display:flex; align-items:center; justify-content:center; padding:1rem; }
+    .modal-box { background:#fff; border-radius:12px; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+<nav class="bg-gradient-to-r from-burgundy-800 to-burgundy-700 text-white px-6 py-4 flex items-center gap-4" style="background:linear-gradient(135deg,#5A1A35,#6B2040)">
+  <a href="/admin.html" class="text-white opacity-70 hover:opacity-100 transition-opacity">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+  </a>
+  <h1 class="text-lg font-bold">ACEP Review Queue</h1>
+  <span class="ml-auto text-sm opacity-70">Provider #7760</span>
+</nav>
+
+<div class="max-w-6xl mx-auto p-6">
+
+  <!-- Filter bar -->
+  <div class="bg-white rounded-xl border border-stone-200 p-4 mb-6 flex flex-wrap gap-3 items-center">
+    <label class="text-sm font-medium text-stone-600">Status:</label>
+    <select id="statusFilter" onchange="loadQueue()" class="border border-stone-300 rounded-lg px-3 py-1.5 text-sm">
+      <option value="requested">Requested</option>
+      <option value="in_review">In Review</option>
+      <option value="approved">Approved</option>
+      <option value="rejected">Rejected</option>
+      <option value="all">All</option>
+    </select>
+    <button onclick="loadQueue()" class="ml-auto px-4 py-1.5 rounded-lg text-sm font-medium text-white" style="background:#6B2040">
+      <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Queue table -->
+  <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+    <div id="tableBody">
+      <div class="p-8 text-center text-stone-400">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail modal -->
+<div id="detailModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-lg font-bold text-stone-800" id="modalTitle">Course Detail</h2>
+      <button onclick="closeModal()" class="text-stone-400 hover:text-stone-700">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="modalAudit" class="mb-4"></div>
+    <div id="modalActions" class="flex flex-wrap gap-3"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/admin/course-reviews';
+let currentCourseId = null;
+let currentAuditPass = false;
+
+async function apiFetch(url, opts = {}) {
+  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...(opts.headers || {}) },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (res.status === 401) { window.location.href = '/login.html'; throw new Error('Unauthorized'); }
+  return res;
+}
+
+function chipHtml(status) {
+  return `<span class="status-chip chip-${status}">${status}</span>`;
+}
+
+async function loadQueue() {
+  const status = document.getElementById('statusFilter').value;
+  document.getElementById('tableBody').innerHTML = '<div class="p-8 text-center text-stone-400">Loading...</div>';
+  try {
+    const res = await apiFetch(`${API}?status=${status}`);
+    const { data } = await res.json();
+    if (!data || data.length === 0) {
+      document.getElementById('tableBody').innerHTML = '<div class="p-8 text-center text-stone-400">No courses in this queue.</div>';
+      return;
+    }
+    let html = `<table class="w-full text-sm">
+      <thead><tr class="text-left text-xs font-semibold text-stone-500 uppercase tracking-wide border-b border-stone-100">
+        <th class="px-4 py-3">Course</th>
+        <th class="px-4 py-3">Partner</th>
+        <th class="px-4 py-3">CE Hrs</th>
+        <th class="px-4 py-3">Fee</th>
+        <th class="px-4 py-3">Status</th>
+        <th class="px-4 py-3">Audit</th>
+        <th class="px-4 py-3">Actions</th>
+      </tr></thead><tbody>`;
+    data.forEach(row => {
+      const auditChip = row.auditPass
+        ? '<span class="pass-chip">PASS</span>'
+        : '<span class="fail-chip">FAIL</span>';
+      const fee = row.reviewFeeCents ? `$${(row.reviewFeeCents/100).toFixed(2)}` : '—';
+      html += `<tr class="border-b border-stone-50 hover:bg-stone-50">
+        <td class="px-4 py-3 font-medium text-stone-800 max-w-xs truncate">${row.title}</td>
+        <td class="px-4 py-3 text-stone-600">${row.partnerName}</td>
+        <td class="px-4 py-3 text-stone-600">${row.ceHours}</td>
+        <td class="px-4 py-3 text-stone-600">${fee}</td>
+        <td class="px-4 py-3">${chipHtml(row.reviewStatus)}</td>
+        <td class="px-4 py-3">${auditChip}</td>
+        <td class="px-4 py-3">
+          <button onclick="openDetail('${row._id}','${row.title.replace(/'/g,"\\'")}',${row.auditPass},'${row.reviewStatus}')"
+            class="text-xs px-3 py-1 rounded-lg border border-stone-300 hover:bg-stone-100">Review</button>
+        </td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    document.getElementById('tableBody').innerHTML = html;
+  } catch (err) {
+    document.getElementById('tableBody').innerHTML = `<div class="p-8 text-center text-red-500">${err.message}</div>`;
+  }
+}
+
+async function openDetail(id, title, auditPass, status) {
+  currentCourseId = id;
+  currentAuditPass = auditPass;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('detailModal').classList.remove('hidden');
+  document.getElementById('modalAudit').innerHTML = '<p class="text-stone-400 text-sm">Loading audit...</p>';
+  document.getElementById('modalActions').innerHTML = '';
+
+  try {
+    const res = await apiFetch(`${API}/${id}/audit`);
+    const { audit } = await res.json();
+    let auditHtml = `<div class="rounded-lg border p-3 mb-3 ${audit.pass ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+      <p class="font-semibold text-sm mb-1 ${audit.pass ? 'text-green-700' : 'text-red-700'}">${audit.pass ? 'Audit: PASS' : 'Audit: FAIL'}</p>
+      <p class="text-xs text-stone-600">Words: ${audit.wordCount} / target ${audit.wordTarget} &bull; References blocks: ${audit.refCount} &bull; CE hrs: ${audit.ceHours}</p>`;
+    if (audit.fails && audit.fails.length > 0) {
+      auditHtml += '<ul class="mt-2 text-xs text-red-700 list-disc list-inside">';
+      audit.fails.forEach(f => { auditHtml += `<li>${f.rule}: ${f.detail}</li>`; });
+      auditHtml += '</ul>';
+    }
+    auditHtml += '</div>';
+    document.getElementById('modalAudit').innerHTML = auditHtml;
+
+    // Build action buttons by status
+    let actionsHtml = '';
+    if (status === 'requested') {
+      actionsHtml += `<button onclick="claimReview()" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background:#1d4ed8">Claim for Review</button>`;
+    }
+    if (status === 'requested' || status === 'in_review') {
+      actionsHtml += `<button onclick="approveReview(${audit.pass})" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background:#15803d">Approve (ACEP #7760)</button>`;
+      actionsHtml += `<button onclick="openReject()" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background:#b91c1c">Reject</button>`;
+    }
+    document.getElementById('modalActions').innerHTML = actionsHtml
+      || '<p class="text-sm text-stone-400">No actions available for this status.</p>';
+  } catch (err) {
+    document.getElementById('modalAudit').innerHTML = `<p class="text-red-500 text-sm">${err.message}</p>`;
+  }
+}
+
+function closeModal() {
+  document.getElementById('detailModal').classList.add('hidden');
+  currentCourseId = null;
+}
+
+async function claimReview() {
+  if (!currentCourseId) return;
+  const res = await apiFetch(`${API}/${currentCourseId}/claim`, { method: 'POST' });
+  if (res.ok) { closeModal(); loadQueue(); }
+  else { const d = await res.json(); alert(d.error || 'Failed'); }
+}
+
+async function approveReview(auditPass) {
+  if (!currentCourseId) return;
+  if (!auditPass && !confirm('Audit FAILED. Approve anyway? You are taking personal responsibility for NBCC/ACEP compliance under Provider #7760.')) return;
+  const res = await apiFetch(`${API}/${currentCourseId}/approve`, { method: 'POST' });
+  if (res.ok) { closeModal(); loadQueue(); }
+  else { const d = await res.json(); alert(d.error || 'Failed'); }
+}
+
+function openReject() {
+  if (!currentCourseId) return;
+  const notes = prompt('Rejection reason (will be sent to partner):');
+  if (notes === null) return;
+  const refund = confirm('Issue a refund to the partner? (Non-refundable by default — only grant as exception)');
+  rejectReview(notes, refund);
+}
+
+async function rejectReview(notes, refund) {
+  const res = await apiFetch(`${API}/${currentCourseId}/reject`, {
+    method: 'POST',
+    body: JSON.stringify({ notes, refund }),
+  });
+  if (res.ok) { closeModal(); loadQueue(); }
+  else { const d = await res.json(); alert(d.error || 'Failed'); }
+}
+
+// Close modal on overlay click
+document.getElementById('detailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+loadQueue();
+</script>
+</body>
+</html>

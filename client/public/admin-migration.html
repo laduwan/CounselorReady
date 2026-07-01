@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Course Migration - CounselorReady Admin</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+          Users
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Migration
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Messages
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          Hardship Requests
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          Integrations
+        </a>
+      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+    
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-forest-200 mb-8">
+      <button onclick="showTab('import')" id="tab-import" class="px-6 py-3 font-medium text-burgundy-800 border-b-2 border-burgundy-700">
+        Import Courses
+      </button>
+      <button onclick="showTab('export')" id="tab-export" class="px-6 py-3 font-medium text-hunter-600 hover:text-hunter-700">
+        Export Courses
+      </button>
+      <button onclick="showTab('talentlms')" id="tab-talentlms" class="px-6 py-3 font-medium text-hunter-600 hover:text-hunter-700">
+        TalentLMS Import
+      </button>
+    </div>
+
+    <!-- Import Tab -->
+    <div id="panel-import" class="space-y-6">
+      
+      <!-- Import from JSON -->
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Import from JSON</h2>
+        <p class="text-forest-600 text-sm mb-4">
+          Upload a JSON file exported from CounselorReady or formatted according to our schema.
+        </p>
+        
+        <div class="border-2 border-dashed border-forest-200 rounded-xl p-8 text-center hover:border-forest-400 transition-colors" id="jsonDropZone">
+          <input type="file" id="jsonFileInput" accept=".json,application/json" class="hidden" onchange="handleJsonFile(event)">
+          <svg class="w-12 h-12 text-forest-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-forest-600 mb-2">Drop JSON file here or</p>
+          <button onclick="document.getElementById('jsonFileInput').click()" class="text-burgundy-700 font-medium hover:text-burgundy-900">
+            Browse Files
+          </button>
+        </div>
+        
+        <div class="flex items-center gap-6 mt-4">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="skipExisting" class="w-4 h-4 text-burgundy-600 rounded">
+            <span class="text-sm text-forest-700">Skip existing courses</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="updateExisting" class="w-4 h-4 text-burgundy-600 rounded">
+            <span class="text-sm text-forest-700">Update existing courses</span>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Import from CSV -->
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Import from CSV</h2>
+        <p class="text-forest-600 text-sm mb-4">
+          Upload a CSV file with course information. Great for bulk creating course shells.
+        </p>
+        
+        <div class="flex items-center gap-4 mb-4">
+          <button onclick="downloadTemplate()" class="text-burgundy-700 hover:text-burgundy-900 text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Download CSV Template
+          </button>
+        </div>
+        
+        <div class="border-2 border-dashed border-forest-200 rounded-xl p-8 text-center hover:border-forest-400 transition-colors" id="csvDropZone">
+          <input type="file" id="csvFileInput" accept=".csv,text/csv" class="hidden" onchange="handleCsvFile(event)">
+          <svg class="w-12 h-12 text-forest-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <p class="text-forest-600 mb-2">Drop CSV file here or</p>
+          <button onclick="document.getElementById('csvFileInput').click()" class="text-burgundy-700 font-medium hover:text-burgundy-900">
+            Browse Files
+          </button>
+        </div>
+      </div>
+      
+    </div>
+
+    <!-- Export Tab -->
+    <div id="panel-export" class="hidden space-y-6">
+      
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Export All Courses</h2>
+        <p class="text-forest-600 text-sm mb-4">
+          Download all your courses as a JSON file for backup or migration to another system.
+        </p>
+        
+        <button onclick="exportAllCourses()" id="exportAllBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Export All Courses (JSON)
+        </button>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Export Individual Course</h2>
+        <p class="text-forest-600 text-sm mb-4">
+          Select a specific course to export.
+        </p>
+        
+        <select id="courseSelect" class="w-full md:w-1/2 border border-forest-200 rounded-lg px-4 py-2 mb-4">
+          <option value="">Loading courses...</option>
+        </select>
+        
+        <button onclick="exportSingleCourse()" id="exportSingleBtn" class="bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Export Selected Course
+        </button>
+      </div>
+      
+    </div>
+
+    <!-- TalentLMS Tab -->
+    <div id="panel-talentlms" class="hidden space-y-6">
+      
+      <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+        <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Connect to TalentLMS</h2>
+        <p class="text-forest-600 text-sm mb-4">
+          Import courses directly from your TalentLMS account. You'll need your API key and domain.
+        </p>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">TalentLMS Domain</label>
+            <div class="flex items-center">
+              <span class="bg-forest-100 text-forest-600 px-3 py-2 rounded-l-lg border border-r-0 border-forest-200 text-sm">https://</span>
+              <input type="text" id="tlmsDomain" placeholder="yourdomain" class="flex-1 border border-forest-200 px-3 py-2 focus:ring-2 focus:ring-burgundy-500">
+              <span class="bg-forest-100 text-forest-600 px-3 py-2 rounded-r-lg border border-l-0 border-forest-200 text-sm">.talentlms.com</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">API Key</label>
+            <input type="password" id="tlmsApiKey" placeholder="Your TalentLMS API key" class="w-full border border-forest-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-burgundy-500">
+            <p class="text-xs text-forest-500 mt-1">Find this in TalentLMS → Account & Settings → Basic Settings → API Key</p>
+          </div>
+        </div>
+        
+        <button onclick="previewTalentLMS()" id="previewBtn" class="bg-forest-600 hover:bg-forest-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Connect & Preview Courses
+        </button>
+      </div>
+      
+      <!-- TalentLMS Course List -->
+      <div id="tlmsCourseList" class="hidden bg-white rounded-xl border border-burgundy-100 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-semibold text-burgundy-900">Available Courses</h2>
+          <div class="flex items-center gap-2">
+            <button onclick="selectAllTLMS()" class="text-sm text-burgundy-700 hover:text-burgundy-900">Select All</button>
+            <span class="text-forest-300">|</span>
+            <button onclick="deselectAllTLMS()" class="text-sm text-burgundy-700 hover:text-burgundy-900">Deselect All</button>
+          </div>
+        </div>
+        
+        <div id="tlmsCoursesGrid" class="space-y-2 max-h-96 overflow-y-auto mb-4">
+          <!-- Courses loaded here -->
+        </div>
+        
+        <button onclick="importSelectedTLMS()" id="importTLMSBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Import Selected Courses
+        </button>
+      </div>
+      
+    </div>
+
+    <!-- Results Panel -->
+    <div id="resultsPanel" class="hidden mt-8 bg-white rounded-xl border border-burgundy-100 p-6">
+      <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Import Results</h2>
+      <div id="resultsContent">
+        <!-- Results loaded here -->
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let courses = [];
+    let tlmsCourses = [];
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadCourses();
+      setupDragDrop();
+    });
+    
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token || user.role !== 'admin') {
+        alert('Admin access required');
+        window.location.href = '/dashboard.html';
+      }
+    }
+    
+    function showTab(tab) {
+      // Hide all panels
+      document.getElementById('panel-import').classList.add('hidden');
+      document.getElementById('panel-export').classList.add('hidden');
+      document.getElementById('panel-talentlms').classList.add('hidden');
+      
+      // Reset tab styles
+      document.getElementById('tab-import').classList.remove('text-burgundy-800', 'border-b-2', 'border-burgundy-700');
+      document.getElementById('tab-import').classList.add('text-forest-600');
+      document.getElementById('tab-export').classList.remove('text-burgundy-800', 'border-b-2', 'border-burgundy-700');
+      document.getElementById('tab-export').classList.add('text-forest-600');
+      document.getElementById('tab-talentlms').classList.remove('text-burgundy-800', 'border-b-2', 'border-burgundy-700');
+      document.getElementById('tab-talentlms').classList.add('text-forest-600');
+      
+      // Show selected panel and style tab
+      document.getElementById(`panel-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).classList.add('text-burgundy-800', 'border-b-2', 'border-burgundy-700');
+      document.getElementById(`tab-${tab}`).classList.remove('text-forest-600');
+    }
+    
+    async function loadCourses() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/interactive-courses/admin/all`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          courses = data.data || data.courses || [];
+          
+          const select = document.getElementById('courseSelect');
+          select.innerHTML = '<option value="">Select a course...</option>' + 
+            courses.map(c => `<option value="${c._id}">${c.title}</option>`).join('');
+        }
+      } catch (error) {
+        console.error('Load courses error:', error);
+      }
+    }
+    
+    function setupDragDrop() {
+      ['jsonDropZone', 'csvDropZone'].forEach(id => {
+        const zone = document.getElementById(id);
+        
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          zone.classList.add('border-burgundy-400', 'bg-burgundy-50');
+        });
+        
+        zone.addEventListener('dragleave', () => {
+          zone.classList.remove('border-burgundy-400', 'bg-burgundy-50');
+        });
+        
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('border-burgundy-400', 'bg-burgundy-50');
+          
+          const file = e.dataTransfer.files[0];
+          if (id === 'jsonDropZone' && file.name.endsWith('.json')) {
+            handleJsonFile({ target: { files: [file] } });
+          } else if (id === 'csvDropZone' && file.name.endsWith('.csv')) {
+            handleCsvFile({ target: { files: [file] } });
+          }
+        });
+      });
+    }
+    
+    async function handleJsonFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('skipExisting', document.getElementById('skipExisting').checked);
+      formData.append('updateExisting', document.getElementById('updateExisting').checked);
+      
+      showLoading('Importing JSON...');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/import/json`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        const data = await response.json();
+        showResults(data);
+      } catch (error) {
+        showError('Import failed: ' + error.message);
+      }
+    }
+    
+    async function handleCsvFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      showLoading('Importing CSV...');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/import/csv`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        const data = await response.json();
+        showResults(data);
+      } catch (error) {
+        showError('Import failed: ' + error.message);
+      }
+    }
+    
+    async function downloadTemplate() {
+      const token = localStorage.getItem('token');
+      window.open(`${API_URL}/api/migration/template`, '_blank');
+    }
+    
+    async function exportAllCourses() {
+      const token = localStorage.getItem('token');
+      const btn = document.getElementById('exportAllBtn');
+      btn.disabled = true;
+      btn.textContent = 'Exporting...';
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/export`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `courses_export_${Date.now()}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        alert('Export failed: ' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Export All Courses (JSON)';
+      }
+    }
+    
+    async function exportSingleCourse() {
+      const courseId = document.getElementById('courseSelect').value;
+      if (!courseId) {
+        alert('Please select a course');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/export/${courseId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `course_export_${courseId}.json`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        alert('Export failed: ' + error.message);
+      }
+    }
+    
+    async function previewTalentLMS() {
+      const domain = document.getElementById('tlmsDomain').value.trim();
+      const apiKey = document.getElementById('tlmsApiKey').value.trim();
+      
+      if (!domain || !apiKey) {
+        alert('Please enter both domain and API key');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      const btn = document.getElementById('previewBtn');
+      btn.disabled = true;
+      btn.textContent = 'Connecting...';
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/talentlms/preview`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ domain, apiKey })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Connection failed');
+        }
+        
+        tlmsCourses = data.courses;
+        renderTLMSCourses();
+        document.getElementById('tlmsCourseList').classList.remove('hidden');
+        
+      } catch (error) {
+        alert('Connection failed: ' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Connect & Preview Courses';
+      }
+    }
+    
+    function renderTLMSCourses() {
+      const container = document.getElementById('tlmsCoursesGrid');
+      
+      container.innerHTML = tlmsCourses.map(course => `
+        <label class="flex items-center gap-3 p-3 rounded-lg hover:bg-forest-50 cursor-pointer">
+          <input type="checkbox" value="${course.id}" class="tlms-course-checkbox w-5 h-5 text-burgundy-600 rounded">
+          <div class="flex-1">
+            <p class="font-medium text-forest-800">${course.name}</p>
+            <p class="text-sm text-forest-500">${course.category || 'No category'} • ${course.status}</p>
+          </div>
+        </label>
+      `).join('');
+    }
+    
+    function selectAllTLMS() {
+      document.querySelectorAll('.tlms-course-checkbox').forEach(cb => cb.checked = true);
+    }
+    
+    function deselectAllTLMS() {
+      document.querySelectorAll('.tlms-course-checkbox').forEach(cb => cb.checked = false);
+    }
+    
+    async function importSelectedTLMS() {
+      const selected = Array.from(document.querySelectorAll('.tlms-course-checkbox:checked')).map(cb => cb.value);
+      
+      if (selected.length === 0) {
+        alert('Please select at least one course to import');
+        return;
+      }
+      
+      const domain = document.getElementById('tlmsDomain').value.trim();
+      const apiKey = document.getElementById('tlmsApiKey').value.trim();
+      const token = localStorage.getItem('token');
+      
+      const btn = document.getElementById('importTLMSBtn');
+      btn.disabled = true;
+      btn.textContent = `Importing ${selected.length} courses...`;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/migration/import/talentlms`, {
+          method: 'POST',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ domain, apiKey, courseIds: selected })
+        });
+        
+        const data = await response.json();
+        showResults(data);
+        
+      } catch (error) {
+        showError('Import failed: ' + error.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Import Selected Courses';
+      }
+    }
+    
+    function showLoading(message) {
+      const panel = document.getElementById('resultsPanel');
+      const content = document.getElementById('resultsContent');
+      
+      panel.classList.remove('hidden');
+      content.innerHTML = `
+        <div class="flex items-center gap-3">
+          <div class="w-6 h-6 border-2 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+          <span class="text-forest-600">${message}</span>
+        </div>
+      `;
+    }
+    
+    function showError(message) {
+      const panel = document.getElementById('resultsPanel');
+      const content = document.getElementById('resultsContent');
+      
+      panel.classList.remove('hidden');
+      content.innerHTML = `
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p class="text-red-800">${message}</p>
+        </div>
+      `;
+    }
+    
+    function showResults(data) {
+      const panel = document.getElementById('resultsPanel');
+      const content = document.getElementById('resultsContent');
+      
+      panel.classList.remove('hidden');
+      
+      let html = `
+        <div class="mb-4 p-4 rounded-lg ${data.results?.failed?.length > 0 ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}">
+          <p class="font-medium ${data.results?.failed?.length > 0 ? 'text-yellow-800' : 'text-green-800'}">${data.message}</p>
+        </div>
+      `;
+      
+      if (data.results?.success?.length > 0) {
+        html += `
+          <div class="mb-4">
+            <h3 class="font-medium text-green-800 mb-2">✓ Imported Successfully (${data.results.success.length})</h3>
+            <ul class="space-y-1">
+              ${data.results.success.map(c => `
+                <li class="text-sm text-forest-600">
+                  <a href="/admin-courses.html?edit=${c.id}" class="text-burgundy-700 hover:underline">${c.title}</a>
+                  ${c.action === 'updated' ? '<span class="text-yellow-600 ml-1">(updated)</span>' : ''}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      if (data.results?.skipped?.length > 0) {
+        html += `
+          <div class="mb-4">
+            <h3 class="font-medium text-yellow-800 mb-2">⏭ Skipped (${data.results.skipped.length})</h3>
+            <ul class="space-y-1">
+              ${data.results.skipped.map(c => `<li class="text-sm text-forest-600">${c.title} - ${c.reason}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      if (data.results?.failed?.length > 0) {
+        html += `
+          <div class="mb-4">
+            <h3 class="font-medium text-red-800 mb-2">✗ Failed (${data.results.failed.length})</h3>
+            <ul class="space-y-1">
+              ${data.results.failed.map(c => `<li class="text-sm text-red-600">${c.title || 'Row ' + c.row} - ${c.error}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+      
+      html += `
+        <div class="pt-4 border-t border-forest-100">
+          <a href="/admin-courses.html" class="text-burgundy-700 hover:text-burgundy-900 font-medium">
+            ← View All Courses
+          </a>
+        </div>
+      `;
+      
+      content.innerHTML = html;
+      loadCourses(); // Refresh course list
+    }
+    
+    // Load admin email
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.email) {
+      document.getElementById('adminEmail').textContent = user.email;
+    }
+  </script>
+
+    </main>
+  </div>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

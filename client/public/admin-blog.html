@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Blog Manager - CounselorReady Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <!-- Markdown renderer -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+  
+  <style>
+    body { font-family: 'Lato', sans-serif; }
+    .prose h1 { font-size: 1.75rem; font-weight: 700; margin: 1.5rem 0 0.75rem; color: #6B1D34; }
+    .prose h2 { font-size: 1.375rem; font-weight: 700; margin: 1.25rem 0 0.5rem; color: #284157; }
+    .prose h3 { font-size: 1.125rem; font-weight: 600; margin: 1rem 0 0.5rem; color: #D4A855; }
+    .prose p { margin: 0.5rem 0; line-height: 1.7; color: #374151; }
+    .prose ul, .prose ol { margin: 0.5rem 0; padding-left: 1.5rem; }
+    .prose li { margin: 0.25rem 0; color: #374151; }
+    .prose ul li { list-style-type: disc; }
+    .prose ol li { list-style-type: decimal; }
+    .prose strong { font-weight: 700; }
+    .prose a { color: #6B1D34; text-decoration: underline; }
+    .prose hr { margin: 1.5rem 0; border-color: #D4A855; }
+    .prose blockquote { border-left: 3px solid #D4A855; padding-left: 1rem; color: #6B7280; font-style: italic; margin: 1rem 0; }
+    .toast { animation: slideIn 0.3s ease-out; }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Toast container -->
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden">
+    <div class="toast bg-white border-l-4 border-hunter rounded-lg shadow-lg px-4 py-3 max-w-sm">
+      <p id="toast-msg" class="text-sm text-gray-700"></p>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/admin-users.html" class="text-gray-400 hover:text-burgundy">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <h1 class="font-display text-xl font-semibold text-burgundy">Blog Manager</h1>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="file" id="md-upload-input" accept=".md" class="hidden" onchange="uploadMarkdown(event)">
+        <button onclick="document.getElementById('md-upload-input').click()" class="bg-white border border-burgundy text-burgundy hover:bg-burgundy hover:text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          Upload .md
+        </button>
+        <button onclick="showEditor()" class="bg-burgundy hover:bg-burgundy-dark text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
+          + New Post
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-6xl mx-auto px-4 py-6">
+
+    <!-- POST LIST VIEW -->
+    <div id="list-view">
+      <!-- Filters -->
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button onclick="filterPosts('all')" class="filter-btn active px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600" data-filter="all">All</button>
+        <button onclick="filterPosts('published')" class="filter-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600" data-filter="published">Published</button>
+        <button onclick="filterPosts('draft')" class="filter-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600" data-filter="draft">Drafts</button>
+      </div>
+
+      <!-- Stats bar -->
+      <div class="flex gap-4 mb-4 text-sm text-gray-500">
+        <span id="stat-total">0 posts</span>
+        <span id="stat-published">0 published</span>
+        <span id="stat-drafts">0 drafts</span>
+      </div>
+
+      <!-- Posts list -->
+      <div id="posts-list" class="space-y-3">
+        <div class="text-center py-12 text-gray-400">Loading posts...</div>
+      </div>
+    </div>
+
+    <!-- EDITOR VIEW -->
+    <div id="editor-view" class="hidden">
+      <div class="flex items-center gap-3 mb-4">
+        <button onclick="showList()" class="text-gray-400 hover:text-burgundy">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
+        <h2 id="editor-title" class="font-display text-lg font-semibold text-navy">New Post</h2>
+      </div>
+
+      <!-- Tab bar: Edit / Preview / SEO -->
+      <div class="flex border-b border-gray-200 mb-4">
+        <button onclick="showTab('edit')" class="tab-btn active px-4 py-2 text-sm font-medium border-b-2 border-burgundy text-burgundy" data-tab="edit">Edit</button>
+        <button onclick="showTab('preview')" class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="preview">Preview</button>
+        <button onclick="showTab('seo')" class="tab-btn px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="seo">SEO</button>
+      </div>
+
+      <!-- EDIT TAB -->
+      <div id="tab-edit" class="tab-content space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <input type="text" id="post-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="Georgia LPC Renewal Requirements 2026: Complete Guide">
+          <p class="text-xs text-gray-400 mt-1">Slug: <span id="slug-preview" class="text-burgundy">—</span></p>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Excerpt <span class="text-gray-400">(shown on blog index)</span></label>
+          <textarea id="post-excerpt" rows="2" maxlength="300" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="A short summary of this post (max 300 chars)"></textarea>
+          <p class="text-xs text-gray-400 mt-1"><span id="excerpt-count">0</span>/300</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select id="post-category" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy">
+              <option value="state-guide">State Guide</option>
+              <option value="problem-solution" selected>Problem / Solution</option>
+              <option value="authority">Authority / Thought Leadership</option>
+              <option value="clinical">Clinical</option>
+              <option value="news">News</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Tags <span class="text-gray-400">(comma separated)</span></label>
+            <input type="text" id="post-tags" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="georgia, lpc, renewal">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Content <span class="text-gray-400">(Markdown supported)</span></label>
+          <textarea id="post-content" rows="20" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="Write your post here using Markdown...
+
+# Heading 1
+## Heading 2
+
+**Bold text** and *italic text*
+
+- Bullet list
+- Another item
+
+[Link text](https://url.com)
+
+---
+
+> Blockquote"></textarea>
+          <p class="text-xs text-gray-400 mt-1"><span id="word-count">0</span> words · ~<span id="read-time">0</span> min read</p>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+          <button onclick="savePost('draft')" class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700">Save Draft</button>
+          <button onclick="savePost('published')" class="px-4 py-2 text-sm font-medium bg-burgundy text-white rounded-lg hover:bg-burgundy-dark">Publish</button>
+          <button onclick="deletePost()" id="btn-delete" class="hidden ml-auto px-4 py-2 text-sm font-medium bg-white border border-red-300 rounded-lg hover:bg-red-50 text-red-600">Delete</button>
+        </div>
+      </div>
+
+      <!-- PREVIEW TAB -->
+      <div id="tab-preview" class="tab-content hidden">
+        <div class="bg-white rounded-lg border border-gray-200 p-6 max-w-3xl">
+          <p id="preview-category" class="text-xs font-medium text-honey uppercase tracking-wide mb-2"></p>
+          <h1 id="preview-title" class="font-display text-2xl font-bold text-burgundy mb-2"></h1>
+          <p class="text-sm text-gray-500 mb-4">By <span id="preview-author">Kejuiana Johnson</span> · <span id="preview-date"></span> · <span id="preview-read"></span> min read</p>
+          <hr class="border-honey mb-4">
+          <div id="preview-content" class="prose"></div>
+        </div>
+      </div>
+
+      <!-- SEO TAB -->
+      <div id="tab-seo" class="tab-content hidden space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Meta Title <span class="text-gray-400">(max 70 chars — shown in Google)</span></label>
+          <input type="text" id="post-meta-title" maxlength="70" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="Georgia LPC Renewal Requirements 2026 | CounselorReady">
+          <p class="text-xs text-gray-400 mt-1"><span id="meta-title-count">0</span>/70</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Meta Description <span class="text-gray-400">(max 160 chars — shown in Google)</span></label>
+          <textarea id="post-meta-desc" rows="2" maxlength="160" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="Everything Georgia LPCs need to know about 2026 CE renewal: 35 hours, ethics rules, deadlines, and a free CE planner."></textarea>
+          <p class="text-xs text-gray-400 mt-1"><span id="meta-desc-count">0</span>/160</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Target Keywords <span class="text-gray-400">(comma separated)</span></label>
+          <input type="text" id="post-keywords" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-burgundy focus:border-burgundy" placeholder="georgia lpc renewal, ga lpc ce requirements, georgia composite board">
+        </div>
+
+        <!-- Google preview -->
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <p class="text-xs text-gray-400 mb-2 font-medium">Google Search Preview</p>
+          <p id="google-title" class="text-lg text-blue-800 font-medium leading-tight cursor-pointer hover:underline">Post Title | CounselorReady</p>
+          <p id="google-url" class="text-sm text-green-700 mt-0.5">counselorready.com/blog/post-slug</p>
+          <p id="google-desc" class="text-sm text-gray-600 mt-0.5 line-clamp-2">Meta description will appear here...</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api/blog'
+      : 'https://api.counselorready.com/api/blog';
+
+    let currentPostId = null;
+    let allPosts = [];
+
+    // ============================================================
+    // AUTH
+    // ============================================================
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      };
+    }
+
+    // ============================================================
+    // TOAST
+    // ============================================================
+    function toast(msg, isError = false) {
+      const el = document.getElementById('toast');
+      const msgEl = document.getElementById('toast-msg');
+      msgEl.textContent = msg;
+      el.querySelector('div').classList.toggle('border-red-500', isError);
+      el.querySelector('div').classList.toggle('border-hunter', !isError);
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 3000);
+    }
+
+    // ============================================================
+    // VIEWS
+    // ============================================================
+    function showList() {
+      document.getElementById('list-view').classList.remove('hidden');
+      document.getElementById('editor-view').classList.add('hidden');
+      loadPosts();
+    }
+
+    function showEditor(post = null) {
+      document.getElementById('list-view').classList.add('hidden');
+      document.getElementById('editor-view').classList.remove('hidden');
+      showTab('edit');
+
+      if (post) {
+        currentPostId = post._id;
+        document.getElementById('editor-title').textContent = 'Edit Post';
+        document.getElementById('post-title').value = post.title || '';
+        document.getElementById('post-excerpt').value = post.excerpt || '';
+        document.getElementById('post-category').value = post.category || 'problem-solution';
+        document.getElementById('post-tags').value = (post.tags || []).join(', ');
+        document.getElementById('post-content').value = post.content || '';
+        document.getElementById('post-meta-title').value = post.metaTitle || '';
+        document.getElementById('post-meta-desc').value = post.metaDescription || '';
+        document.getElementById('post-keywords').value = (post.targetKeywords || []).join(', ');
+        document.getElementById('btn-delete').classList.remove('hidden');
+      } else {
+        currentPostId = null;
+        document.getElementById('editor-title').textContent = 'New Post';
+        document.getElementById('post-title').value = '';
+        document.getElementById('post-excerpt').value = '';
+        document.getElementById('post-category').value = 'problem-solution';
+        document.getElementById('post-tags').value = '';
+        document.getElementById('post-content').value = '';
+        document.getElementById('post-meta-title').value = '';
+        document.getElementById('post-meta-desc').value = '';
+        document.getElementById('post-keywords').value = '';
+        document.getElementById('btn-delete').classList.add('hidden');
+      }
+
+      updateCounts();
+    }
+
+    // ============================================================
+    // TABS
+    // ============================================================
+    function showTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const isActive = btn.dataset.tab === tab;
+        btn.classList.toggle('border-burgundy', isActive);
+        btn.classList.toggle('text-burgundy', isActive);
+        btn.classList.toggle('border-transparent', !isActive);
+        btn.classList.toggle('text-gray-500', !isActive);
+      });
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+      if (tab === 'preview') updatePreview();
+      if (tab === 'seo') updateGooglePreview();
+    }
+
+    // ============================================================
+    // FILTERS
+    // ============================================================
+    function filterPosts(filter) {
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        const isActive = btn.dataset.filter === filter;
+        btn.classList.toggle('bg-burgundy', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('border-burgundy', isActive);
+        btn.classList.toggle('bg-white', !isActive);
+        btn.classList.toggle('text-gray-600', !isActive);
+      });
+      renderPosts(filter);
+    }
+
+    // ============================================================
+    // LOAD POSTS
+    // ============================================================
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API}/admin/all`, { headers: authHeaders() });
+        if (res.status === 401 || res.status === 403) {
+          window.location.href = '/login.html';
+          return;
+        }
+        const data = await res.json();
+        allPosts = data.posts || [];
+        updateStats();
+        renderPosts('all');
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('posts-list').innerHTML = '<p class="text-center py-8 text-red-500">Failed to load posts</p>';
+      }
+    }
+
+    function updateStats() {
+      const published = allPosts.filter(p => p.status === 'published').length;
+      const drafts = allPosts.filter(p => p.status === 'draft').length;
+      document.getElementById('stat-total').textContent = `${allPosts.length} posts`;
+      document.getElementById('stat-published').textContent = `${published} published`;
+      document.getElementById('stat-drafts').textContent = `${drafts} drafts`;
+    }
+
+    function renderPosts(filter) {
+      const filtered = filter === 'all' ? allPosts : allPosts.filter(p => p.status === filter);
+      const container = document.getElementById('posts-list');
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-12">
+            <p class="text-gray-400 mb-4">No ${filter === 'all' ? '' : filter + ' '}posts yet</p>
+            <button onclick="showEditor()" class="text-burgundy font-medium text-sm hover:underline">Create your first post</button>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(post => {
+        const date = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Draft';
+        const catLabel = { 'state-guide': 'State Guide', 'problem-solution': 'Problem/Solution', 'authority': 'Authority', 'clinical': 'Clinical', 'news': 'News' }[post.category] || post.category;
+        const statusColor = post.status === 'published' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+
+        return `
+          <div class="bg-white rounded-lg border border-gray-200 p-4 hover:border-burgundy/30 transition-colors cursor-pointer" onclick="editPost('${post._id}')">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 text-sm leading-tight mb-1">${post.title}</h3>
+                <p class="text-xs text-gray-500 line-clamp-2 mb-2">${post.excerpt || ''}</p>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs px-2 py-0.5 rounded-full ${statusColor} font-medium">${post.status}</span>
+                  <span class="text-xs text-gray-400">${catLabel}</span>
+                  <span class="text-xs text-gray-400">${date}</span>
+                  ${post.wordCount ? `<span class="text-xs text-gray-400">${post.wordCount.toLocaleString()} words</span>` : ''}
+                </div>
+              </div>
+              <button onclick="event.stopPropagation(); togglePost('${post._id}')" class="shrink-0 text-xs px-2 py-1 rounded border ${post.status === 'published' ? 'border-yellow-300 text-yellow-600 hover:bg-yellow-50' : 'border-green-300 text-green-600 hover:bg-green-50'}">
+                ${post.status === 'published' ? 'Unpublish' : 'Publish'}
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ============================================================
+    // CRUD
+    // ============================================================
+    async function editPost(id) {
+      try {
+        const res = await fetch(`${API}/admin/${id}`, { headers: authHeaders() });
+        const data = await res.json();
+        if (data.post) showEditor(data.post);
+      } catch (err) {
+        toast('Failed to load post', true);
+      }
+    }
+
+    async function savePost(status) {
+      const title = document.getElementById('post-title').value.trim();
+      const content = document.getElementById('post-content').value.trim();
+      const excerpt = document.getElementById('post-excerpt').value.trim();
+
+      if (!title) { toast('Title is required', true); return; }
+      if (!content) { toast('Content is required', true); return; }
+      if (!excerpt) { toast('Excerpt is required', true); return; }
+
+      const body = {
+        title,
+        content,
+        excerpt,
+        category: document.getElementById('post-category').value,
+        tags: document.getElementById('post-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+        metaTitle: document.getElementById('post-meta-title').value.trim() || undefined,
+        metaDescription: document.getElementById('post-meta-desc').value.trim() || undefined,
+        targetKeywords: document.getElementById('post-keywords').value.split(',').map(t => t.trim()).filter(Boolean),
+        status
+      };
+
+      try {
+        const url = currentPostId ? `${API}/admin/${currentPostId}` : `${API}/admin`;
+        const method = currentPostId ? 'PUT' : 'POST';
+
+        const res = await fetch(url, {
+          method,
+          headers: authHeaders(),
+          body: JSON.stringify(body)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast(data.error || 'Save failed', true);
+          return;
+        }
+
+        toast(data.message || 'Saved!');
+        currentPostId = data.post._id;
+        document.getElementById('editor-title').textContent = 'Edit Post';
+        document.getElementById('btn-delete').classList.remove('hidden');
+      } catch (err) {
+        toast('Network error — check connection', true);
+      }
+    }
+
+    async function togglePost(id) {
+      try {
+        const res = await fetch(`${API}/admin/${id}/toggle`, {
+          method: 'POST',
+          headers: authHeaders()
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast(data.message);
+          loadPosts();
+        } else {
+          toast(data.error || 'Toggle failed', true);
+        }
+      } catch (err) {
+        toast('Network error', true);
+      }
+    }
+
+    async function deletePost() {
+      if (!currentPostId) return;
+      if (!confirm('Delete this post permanently?')) return;
+
+      try {
+        const res = await fetch(`${API}/admin/${currentPostId}`, {
+          method: 'DELETE',
+          headers: authHeaders()
+        });
+        if (res.ok) {
+          toast('Post deleted');
+          showList();
+        } else {
+          toast('Delete failed', true);
+        }
+      } catch (err) {
+        toast('Network error', true);
+      }
+    }
+
+    // ============================================================
+    // MARKDOWN UPLOAD
+    // ============================================================
+    async function uploadMarkdown(event) {
+      const input = event.target;
+      const file = input.files && input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch(`${API}/admin/upload`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${getToken()}` },
+          body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          toast(data.error || 'Upload failed', true);
+          return;
+        }
+
+        toast(data.message || 'Post uploaded');
+        loadPosts();
+      } catch (err) {
+        toast('Network error — check connection', true);
+      } finally {
+        input.value = '';
+      }
+    }
+
+    // ============================================================
+    // COUNTS AND PREVIEWS
+    // ============================================================
+    function updateCounts() {
+      const content = document.getElementById('post-content').value;
+      const words = content.split(/\s+/).filter(w => w.length > 0).length;
+      document.getElementById('word-count').textContent = words.toLocaleString();
+      document.getElementById('read-time').textContent = Math.max(1, Math.ceil(words / 250));
+
+      const excerpt = document.getElementById('post-excerpt').value;
+      document.getElementById('excerpt-count').textContent = excerpt.length;
+
+      const title = document.getElementById('post-title').value;
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').substring(0, 100);
+      document.getElementById('slug-preview').textContent = slug || '—';
+
+      const metaTitle = document.getElementById('post-meta-title').value;
+      document.getElementById('meta-title-count').textContent = metaTitle.length;
+
+      const metaDesc = document.getElementById('post-meta-desc').value;
+      document.getElementById('meta-desc-count').textContent = metaDesc.length;
+    }
+
+    function updatePreview() {
+      const title = document.getElementById('post-title').value || 'Untitled';
+      const content = document.getElementById('post-content').value || '';
+      const category = document.getElementById('post-category').value;
+      const catLabel = { 'state-guide': 'State Guide', 'problem-solution': 'Problem / Solution', 'authority': 'Authority', 'clinical': 'Clinical', 'news': 'News' }[category] || category;
+
+      document.getElementById('preview-category').textContent = catLabel;
+      document.getElementById('preview-title').textContent = title;
+      document.getElementById('preview-date').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      const words = content.split(/\s+/).filter(w => w.length > 0).length;
+      document.getElementById('preview-read').textContent = Math.max(1, Math.ceil(words / 250));
+      document.getElementById('preview-content').innerHTML = marked.parse(content);
+    }
+
+    function updateGooglePreview() {
+      const metaTitle = document.getElementById('post-meta-title').value || document.getElementById('post-title').value || 'Post Title';
+      const title = document.getElementById('post-title').value || '';
+      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const metaDesc = document.getElementById('post-meta-desc').value || document.getElementById('post-excerpt').value || 'Description';
+
+      document.getElementById('google-title').textContent = `${metaTitle} | CounselorReady`;
+      document.getElementById('google-url').textContent = `counselorready.com/blog/${slug}`;
+      document.getElementById('google-desc').textContent = metaDesc;
+    }
+
+    // ============================================================
+    // EVENT LISTENERS
+    // ============================================================
+    document.getElementById('post-content').addEventListener('input', updateCounts);
+    document.getElementById('post-title').addEventListener('input', updateCounts);
+    document.getElementById('post-excerpt').addEventListener('input', updateCounts);
+    document.getElementById('post-meta-title').addEventListener('input', updateCounts);
+    document.getElementById('post-meta-desc').addEventListener('input', updateCounts);
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    if (!getToken()) {
+      window.location.href = '/login.html';
+    } else {
+      loadPosts();
+    }
+  </script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

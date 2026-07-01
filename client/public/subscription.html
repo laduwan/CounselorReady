@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CE Subscription Plans — Unlimited NBCC-Approved Courses | CounselorReady</title>
+  <meta name="description" content="Unlock unlimited NBCC-approved continuing education with a CounselorReady subscription. Affordable plans for LPCs, LCPCs, and NCCs. Cancel anytime.">
+  <link rel="canonical" href="https://counselorready.com/subscription">
+  <meta property="og:title" content="CE Subscription Plans — Unlimited NBCC-Approved Courses">
+  <meta property="og:description" content="Get unlimited access to NBCC-approved CE courses for licensed counselors. Flexible subscription plans starting at an affordable monthly rate.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://counselorready.com/subscription.html">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CE Subscription Plans — Unlimited NBCC-Approved Courses">
+  <meta name="twitter:description" content="Unlock unlimited NBCC-approved CE courses for licensed counselors. Flexible, affordable plans. Cancel anytime.">
+  <meta name="twitter:image" content="https://counselorready.com/images/og-social.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">Subscription & Billing</h1>
+    <p class="text-forest-600 mb-8">Manage your plan and payment methods</p>
+
+    <!-- Current Plan -->
+    <section id="currentPlanSection" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold text-burgundy-900">Current Plan</h2>
+        <span id="planBadge" class="px-3 py-1 bg-forest-100 text-forest-700 rounded-full text-sm font-medium">Loading...</span>
+      </div>
+      
+      <div id="planDetails" class="mb-6">
+        <!-- Populated by JS -->
+      </div>
+
+      <div id="planActions" class="flex gap-4">
+        <!-- Populated by JS -->
+      </div>
+    </section>
+
+    <!-- Pricing Plans -->
+    <section class="mb-8">
+      <h2 class="text-xl font-semibold text-burgundy-900 mb-6 text-center">Choose Your Plan</h2>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+        
+        <!-- Free Plan -->
+        <div class="bg-white rounded-xl border border-hunter-200 shadow-sm p-6">
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Free</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$0</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>4 CE hours</strong> included
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Unlimited certificate uploads
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Secure document vault
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Digital certificates
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> Unlimited CE courses
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> AI certificate scanning
+            </li>
+          </ul>
+          <button onclick="selectPlan('free')" class="w-full py-2 border border-hunter-300 text-hunter-700 rounded-lg hover:bg-hunter-50 transition-colors font-medium" id="freeBtn">
+            Current Plan
+          </button>
+        </div>
+
+        <!-- Starter Plan -->
+        <div class="bg-white rounded-xl border border-hunter-300 shadow-sm p-6">
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Starter</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$19.99</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Unlimited CE courses</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Full credential tracking
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> AI certificate scanning
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Audit-ready reports
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> Specialty credentials
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> Multi-state tracking
+            </li>
+          </ul>
+          <button onclick="selectPlan('starter')" class="w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold" id="starterBtn">
+            Upgrade Now
+          </button>
+        </div>
+
+        <!-- Professional Plan -->
+        <div class="bg-white rounded-xl border-2 border-honey-400 shadow-lg p-6 relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-honey-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+            POPULAR
+          </div>
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Professional</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$29.99</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Everything in Starter
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Specialty credentials</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> BC-TMH, CPCS tracking
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Certification courses
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> 1 state
+            </li>
+            <li class="flex items-center gap-2 text-hunter-400">
+              <span>✗</span> Unlimited states
+            </li>
+          </ul>
+          <button onclick="selectPlan('professional')" class="w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold" id="proBtn">
+            Upgrade Now
+          </button>
+        </div>
+
+        <!-- VIP Plan -->
+        <div class="bg-gradient-to-b from-burgundy-50 to-white rounded-xl border-2 border-burgundy-400 shadow-lg p-6 relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-burgundy-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            ⭐ VIP
+          </div>
+          <h3 class="font-display text-xl font-semibold text-burgundy-800 mb-2">VIP</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-burgundy-900">$49.99</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Everything in Professional
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Unlimited states</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Renewal reminders (text/calendar)
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>1 hardship month/year</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Quarterly 1:1 consult
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Early access to new features
+            </li>
+          </ul>
+          <button onclick="selectPlan('vip')" class="w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold" id="vipBtn">
+            Go VIP
+          </button>
+        </div>
+
+      </div>
+      <div class="mt-4 flex justify-center">
+        <button onclick="selectPlan('test1')" class="w-full py-2 mt-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors font-semibold" id="test1Btn">Test $1 Checkout</button>
+      </div>
+    </section>
+
+    <!-- Payment Method -->
+    <section id="paymentSection" class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-8">
+      <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Payment Method</h2>
+      
+      <div id="paymentMethods">
+        <div id="noPaymentMethod" class="text-center py-8 text-forest-500">
+          <p class="mb-4">No payment method on file</p>
+          <button onclick="addPaymentMethod()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+            Add Payment Method
+          </button>
+        </div>
+        
+        <div id="hasPaymentMethod" class="hidden">
+          <div class="flex items-center justify-between p-4 bg-stone-50 rounded-lg">
+            <div class="flex items-center gap-4">
+              <div class="w-12 h-8 bg-blue-900 rounded flex items-center justify-center text-white text-xs font-bold">
+                <span id="cardBrand">VISA</span>
+              </div>
+              <div>
+                <p class="font-medium text-forest-900">•••• •••• •••• <span id="cardLast4">4242</span></p>
+                <p class="text-sm text-forest-500">Expires <span id="cardExpiry">12/25</span></p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="updatePaymentMethod()" class="text-sm text-hunter-600 hover:text-hunter-700">Update</button>
+              <button onclick="removePaymentMethod()" class="text-sm text-red-600 hover:text-red-700">Remove</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Billing History -->
+    <section class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6">
+      <h2 class="text-lg font-semibold text-burgundy-900 mb-4">Billing History</h2>
+      
+      <div id="billingHistory">
+        <div id="noBillingHistory" class="text-center py-8 text-forest-500">
+          <p>No billing history yet</p>
+        </div>
+        
+        <div id="hasBillingHistory" class="hidden">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-forest-100 text-left text-sm text-forest-600">
+                <th class="pb-2">Date</th>
+                <th class="pb-2">Description</th>
+                <th class="pb-2">Amount</th>
+                <th class="pb-2">Status</th>
+                <th class="pb-2"></th>
+              </tr>
+            </thead>
+            <tbody id="billingHistoryBody">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Promo Code Section -->
+    <section class="bg-gradient-to-r from-gold-50 to-burgundy-50 rounded-xl border border-gold-200 p-6 mt-8">
+      <div class="flex flex-col md:flex-row md:items-center gap-4">
+        <div class="flex-1">
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">Have a Promo Code?</h3>
+          <p class="text-forest-600 text-sm">Enter your code to unlock special access or discounts.</p>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" id="promoCodeInput" placeholder="Enter code" class="px-4 py-2 border border-gold-300 rounded-lg focus:ring-2 focus:ring-gold-500 outline-none uppercase w-40">
+          <button onclick="applyPromoCode()" class="px-5 py-2 bg-gold-500 hover:bg-gold-600 text-white font-semibold rounded-lg transition-colors">
+            Apply
+          </button>
+        </div>
+      </div>
+      <div id="promoMessage" class="hidden mt-3 p-3 rounded-lg text-sm"></div>
+    </section>
+
+  </main>
+
+  <!-- Stripe Modal -->
+  <div id="stripeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="font-display text-xl font-semibold text-burgundy-900">Payment Details</h3>
+        <button onclick="closeStripeModal()" class="text-forest-500 hover:text-burgundy-700 text-2xl">&times;</button>
+      </div>
+      
+      <div id="stripeElements" class="mb-4">
+        <!-- Stripe Elements will be inserted here -->
+        <div id="card-element" class="p-3 border border-forest-200 rounded-lg"></div>
+        <div id="card-errors" class="text-red-600 text-sm mt-2"></div>
+      </div>
+      
+      <!-- Coupon Code Field -->
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-forest-700 mb-1">Coupon Code (optional)</label>
+        <input type="text" id="couponCodeInput" placeholder="e.g. FOUNDERS50" class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none uppercase">
+        <p id="couponMessage" class="text-sm mt-1 hidden"></p>
+      </div>
+      
+      <button onclick="submitPayment()" id="submitPaymentBtn" class="w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 rounded-lg transition-colors">
+        Subscribe Now
+      </button>
+      
+      <p class="text-xs text-forest-500 mt-4 text-center">
+        Secure payment powered by Stripe. Cancel anytime.
+      </p>
+    </div>
+  </div>
+
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="/js/stripe-config.js"></script>
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let stripe = null;
+    let cardElement = null;
+    let selectedPlan = null;
+    let user = null;
+
+    // Plan pricing - 4-tier model
+    const PLANS = {
+      free: { name: 'Free', price: 0, interval: 'month', priceId: null, maxCourseHours: 4, maxStates: 1, consultsPerQuarter: 0 },
+      starter: { name: 'Starter', price: 19.99, interval: 'month', priceId: 'price_1TiMorBV8IIVTFOIosEIoMCn', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
+      professional: { name: 'Professional', price: 29.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIoxYzFOcd', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
+      vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIxdJ5FQ0q', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 },
+      test1: { name: 'Test $1', price: 1, interval: 'month', priceId: 'price_1TiMotBV8IIVTFOIaDFi6ca6', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 }
+    };
+
+    // Initialize
+    async function init() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+    // Handle Stripe redirect params
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('success') === 'true') {
+      const banner = document.createElement('div');
+      banner.className = 'mb-6 p-4 bg-hunter-50 border border-hunter-200 rounded-xl text-hunter-700 text-sm font-medium text-center';
+      banner.textContent = 'Your subscription is now active! Welcome aboard.';
+      const main = document.querySelector('main') || document.querySelector('.max-w-4xl') || document.body.firstElementChild;
+      if (main) main.prepend(banner);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (urlParams.get('canceled') === 'true') {
+      const banner = document.createElement('div');
+      banner.className = 'mb-6 p-4 bg-burgundy-50 border border-burgundy-200 rounded-xl text-burgundy-700 text-sm font-medium text-center';
+      banner.textContent = 'Checkout was canceled. No charges were made.';
+      const main = document.querySelector('main') || document.querySelector('.max-w-4xl') || document.body.firstElementChild;
+      if (main) main.prepend(banner);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+
+      await loadUser();
+      await loadSubscription();
+      await loadBillingHistory();
+      initStripe();
+    }
+
+    async function loadUser() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        user = data.user || data;
+      } catch (error) {
+        console.error('Load user error:', error);
+      }
+    }
+
+    async function loadSubscription() {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/payments/subscription`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.subscription) {
+          displaySubscription(data.subscription);
+        } else {
+          displayFreePlan();
+        }
+        
+        if (data.paymentMethod) {
+          displayPaymentMethod(data.paymentMethod);
+        }
+      } catch (error) {
+        console.error('Load subscription error:', error);
+        displayFreePlan();
+      }
+    }
+
+    function displaySubscription(subscription) {
+      const badge = document.getElementById('planBadge');
+      const details = document.getElementById('planDetails');
+      const actions = document.getElementById('planActions');
+      
+      const plan = PLANS[subscription.plan] || PLANS.free;
+      const planName = plan.name;
+      const price = `$${plan.price}/${plan.interval}`;
+      
+      badge.textContent = planName;
+      badge.className = 'px-3 py-1 bg-burgundy-100 text-burgundy-700 rounded-full text-sm font-medium';
+      
+      details.innerHTML = `
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-forest-500">Plan</p>
+            <p class="font-semibold text-forest-900">${planName}</p>
+          </div>
+          <div>
+            <p class="text-forest-500">Price</p>
+            <p class="font-semibold text-forest-900">${price}</p>
+          </div>
+          <div>
+            <p class="text-forest-500">Status</p>
+            <p class="font-semibold text-green-600">Active</p>
+          </div>
+          <div>
+            <p class="text-forest-500">Next Billing</p>
+            <p class="font-semibold text-forest-900">${new Date(subscription.currentPeriodEnd).toLocaleDateString()}</p>
+          </div>
+        </div>
+      `;
+      
+      actions.innerHTML = `
+        <button onclick="cancelSubscription()" class="px-4 py-2 border border-burgundy-300 text-burgundy-700 rounded-lg hover:bg-burgundy-50 transition-colors">
+          Cancel Subscription
+        </button>
+      `;
+
+      // Update button states
+      updatePlanButtons(subscription.plan);
+    }
+
+    function displayFreePlan() {
+      const badge = document.getElementById('planBadge');
+      const details = document.getElementById('planDetails');
+      const actions = document.getElementById('planActions');
+      
+      badge.textContent = 'Free';
+      badge.className = 'px-3 py-1 bg-hunter-100 text-hunter-700 rounded-full text-sm font-medium';
+      
+      details.innerHTML = `
+        <p class="text-hunter-600">You're on the free plan. Upgrade to access unlimited CE courses and premium features!</p>
+      `;
+      
+      actions.innerHTML = `
+        <button onclick="selectPlan('starter')" class="px-6 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold">
+          Upgrade to Starter
+        </button>
+      `;
+
+      updatePlanButtons('free');
+    }
+
+    function updatePlanButtons(currentPlan) {
+      const freeBtn = document.getElementById('freeBtn');
+      const starterBtn = document.getElementById('starterBtn');
+      const proBtn = document.getElementById('proBtn');
+      const vipBtn = document.getElementById('vipBtn');
+
+      // Helper to set button state
+      const setButton = (btn, isCurrent, defaultText, defaultClasses) => {
+        if (isCurrent) {
+          btn.textContent = 'Current Plan';
+          btn.disabled = true;
+          btn.className = 'w-full py-2 bg-hunter-200 text-hunter-600 rounded-lg font-semibold cursor-not-allowed';
+        } else {
+          btn.textContent = defaultText;
+          btn.disabled = false;
+          btn.className = defaultClasses;
+        }
+      };
+
+      // Free
+      freeBtn.textContent = currentPlan === 'free' ? 'Current Plan' : 'Downgrade';
+      freeBtn.disabled = currentPlan === 'free';
+      
+      // Starter
+      setButton(starterBtn, currentPlan === 'starter', 'Upgrade Now',
+        'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold');
+      
+      // Professional
+      setButton(proBtn, currentPlan === 'professional', 'Upgrade Now', 
+        'w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold');
+      
+      // VIP
+      setButton(vipBtn, currentPlan === 'vip', 'Go VIP', 
+        'w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold');
+    }
+
+    function displayPaymentMethod(pm) {
+      document.getElementById('noPaymentMethod').classList.add('hidden');
+      document.getElementById('hasPaymentMethod').classList.remove('hidden');
+      
+      document.getElementById('cardBrand').textContent = pm.brand.toUpperCase();
+      document.getElementById('cardLast4').textContent = pm.last4;
+      document.getElementById('cardExpiry').textContent = `${pm.expMonth}/${pm.expYear}`;
+    }
+
+    async function loadBillingHistory() {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/payments/invoices`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (data.invoices && data.invoices.length > 0) {
+          displayBillingHistory(data.invoices);
+        }
+      } catch (error) {
+        console.error('Load billing history error:', error);
+      }
+    }
+
+    function displayBillingHistory(invoices) {
+      document.getElementById('noBillingHistory').classList.add('hidden');
+      document.getElementById('hasBillingHistory').classList.remove('hidden');
+      
+      const tbody = document.getElementById('billingHistoryBody');
+      tbody.innerHTML = invoices.map(inv => `
+        <tr class="border-b border-forest-50">
+          <td class="py-3 text-sm">${new Date(inv.date).toLocaleDateString()}</td>
+          <td class="py-3 text-sm">${inv.description}</td>
+          <td class="py-3 text-sm font-medium">$${(inv.amount / 100).toFixed(2)}</td>
+          <td class="py-3">
+            <span class="px-2 py-1 text-xs rounded-full ${inv.status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+              ${inv.status}
+            </span>
+          </td>
+          <td class="py-3">
+            <a href="${inv.invoiceUrl}" target="_blank" class="text-sm text-burgundy-700 hover:text-burgundy-900">View</a>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function initStripe() {
+      const pk = window.STRIPE_PUBLISHABLE_KEY || '';
+      if (typeof Stripe !== 'undefined' && pk) {
+        stripe = Stripe(pk);
+      } else if (!pk) {
+        console.warn('Stripe publishable key not set — add it in /js/stripe-config.js');
+      }
+    }
+
+    function selectPlan(plan) {
+      if (plan === 'free') {
+        cancelSubscription();
+        return;
+      }
+      
+      selectedPlan = plan;
+      openStripeModal();
+    }
+
+    function openStripeModal() {
+      document.getElementById('stripeModal').classList.remove('hidden');
+      
+      if (stripe && !cardElement) {
+        const elements = stripe.elements();
+        cardElement = elements.create('card', {
+          style: {
+            base: {
+              fontSize: '16px',
+              color: '#2b4133',
+              '::placeholder': { color: '#a1bba8' }
+            }
+          }
+        });
+        cardElement.mount('#card-element');
+        
+        cardElement.on('change', (event) => {
+          const errors = document.getElementById('card-errors');
+          errors.textContent = event.error ? event.error.message : '';
+        });
+      }
+    }
+
+    function closeStripeModal() {
+      document.getElementById('stripeModal').classList.add('hidden');
+    }
+
+    async function submitPayment() {
+      if (!stripe || !cardElement || !selectedPlan) {
+        alert('Please select a plan');
+        return;
+      }
+
+      const btn = document.getElementById('submitPaymentBtn');
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      const token = localStorage.getItem('token');
+
+      try {
+        // Create payment method
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+          type: 'card',
+          card: cardElement
+        });
+
+        if (error) {
+          document.getElementById('card-errors').textContent = error.message;
+          btn.disabled = false;
+          btn.textContent = 'Subscribe Now';
+          return;
+        }
+
+        // Get coupon code if entered
+        const couponCode = document.getElementById('couponCodeInput').value.trim();
+
+        // Create subscription
+        const response = await fetch(`${API_URL}/api/payments/create-subscription`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            paymentMethodId: paymentMethod.id,
+            priceId: PLANS[selectedPlan].priceId,
+            couponCode: couponCode || undefined
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          document.getElementById('card-errors').textContent = data.error;
+          btn.disabled = false;
+          btn.textContent = 'Subscribe Now';
+          return;
+        }
+
+        // Success!
+        closeStripeModal();
+        alert('Subscription successful! Welcome to ' + PLANS[selectedPlan].name + '!');
+        window.location.reload();
+
+      } catch (error) {
+        console.error('Payment error:', error);
+        document.getElementById('card-errors').textContent = 'Payment failed. Please try again.';
+        btn.disabled = false;
+        btn.textContent = 'Subscribe Now';
+      }
+    }
+
+    async function cancelSubscription() {
+      if (!confirm('Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.')) {
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/payments/cancel-subscription`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          alert('Subscription cancelled. You will have access until the end of your billing period.');
+          window.location.reload();
+        } else {
+          alert('Failed to cancel subscription');
+        }
+      } catch (error) {
+        console.error('Cancel error:', error);
+        alert('Failed to cancel subscription');
+      }
+    }
+
+    function addPaymentMethod() {
+      openStripeModal();
+    }
+
+    function updatePaymentMethod() {
+      openStripeModal();
+    }
+
+    async function removePaymentMethod() {
+      if (!confirm('Are you sure you want to remove this payment method?')) return;
+      
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/payments/remove-payment-method`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        } else {
+          alert('Failed to remove payment method');
+        }
+      } catch (error) {
+        console.error('Remove payment method error:', error);
+      }
+    }
+
+    async function applyPromoCode() {
+      const code = document.getElementById('promoCodeInput').value.trim();
+      const messageDiv = document.getElementById('promoMessage');
+      
+      if (!code) {
+        messageDiv.textContent = 'Please enter a promo code';
+        messageDiv.className = 'mt-3 p-3 rounded-lg text-sm bg-red-50 text-red-700';
+        messageDiv.classList.remove('hidden');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/payments/apply-promo`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ code })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          messageDiv.textContent = data.message;
+          messageDiv.className = 'mt-3 p-3 rounded-lg text-sm bg-green-50 text-green-700';
+          messageDiv.classList.remove('hidden');
+          
+          // Refresh the page after 2 seconds to show updated subscription
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        } else {
+          messageDiv.textContent = data.error || 'Failed to apply promo code';
+          messageDiv.className = 'mt-3 p-3 rounded-lg text-sm bg-red-50 text-red-700';
+          messageDiv.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Promo code error:', error);
+        messageDiv.textContent = 'Failed to apply promo code. Please try again.';
+        messageDiv.className = 'mt-3 p-3 rounded-lg text-sm bg-red-50 text-red-700';
+        messageDiv.classList.remove('hidden');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Smart CE Recommendations | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- ═══════ HEADER (matches dashboard.html) ═══════ -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <!-- Breadcrumb -->
+    <a href="/courses.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Courses
+    </a>
+
+    <!-- Page Header -->
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Smart CE Recommendations</h1>
+      <p class="text-gray-500 mt-1">Personalized course suggestions based on your credentials and requirements</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading recommendations...</p>
+    </div>
+
+    <!-- Content (hidden until loaded) -->
+    <div id="content" class="hidden">
+
+      <!-- Summary Cards -->
+      <div id="summaryCards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
+
+      <!-- Upcoming Expirations -->
+      <div id="expirations" class="hidden mb-8"></div>
+
+      <!-- Recommended Courses Heading -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-4">Recommended For You</h2>
+
+      <!-- Course List -->
+      <div id="courseList" class="space-y-4"></div>
+
+      <!-- Empty State -->
+      <div id="emptyState" class="hidden bg-gray-50 rounded-xl p-8 text-center">
+        <i class="fas fa-lightbulb text-4xl text-gray-300 mb-4"></i>
+        <p class="text-gray-500">No recommendations available yet. Add credentials to get personalized course suggestions.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+
+    // ── Set user avatar from JWT ──
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      document.getElementById('userName').textContent = p.name || '';
+      document.getElementById('userAvatar').textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    // ── Escape HTML ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const res = await fetch(`${API}/api/recommendations`, {
+          headers: { 'Authorization': `Bearer ${T}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load recommendations');
+        const data = await res.json();
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+
+        renderSummary(data.summary);
+        renderExpirations(data.summary?.upcomingExpirations);
+        renderCourses(data.recommendations);
+      } catch (err) {
+        console.error('Failed to load recommendations:', err);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      }
+    }
+
+    // ── Summary Cards ──
+    function renderSummary(summary) {
+      if (!summary) return;
+      const container = document.getElementById('summaryCards');
+      container.innerHTML = `
+        <div class="rounded-xl border border-burgundy-300 p-5" style="background: linear-gradient(135deg, #fae8eb, #f5d0d6);">
+          <div class="text-3xl font-bold text-burgundy-800">${esc(String(summary.totalHoursNeeded ?? 0))}</div>
+          <div class="text-sm text-burgundy-700 font-medium">CE Hours Needed</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="text-3xl font-bold text-gray-900">${esc(String(summary.coursesCompleted ?? 0))}</div>
+          <div class="text-sm text-gray-500">Courses Completed</div>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <div class="text-3xl font-bold text-gray-900">${esc(String(summary.coursesAvailable ?? 0))}</div>
+          <div class="text-sm text-gray-500">Courses Available</div>
+        </div>
+      `;
+    }
+
+    // ── Upcoming Expirations ──
+    function renderExpirations(expirations) {
+      if (!expirations || expirations.length === 0) return;
+      const container = document.getElementById('expirations');
+      container.classList.remove('hidden');
+      container.innerHTML = `
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+          <h2 class="font-display font-semibold text-amber-800 text-lg mb-3">
+            <i class="fas fa-exclamation-triangle mr-2"></i>Upcoming Credential Expirations
+          </h2>
+          <div class="space-y-2">
+            ${expirations.map(exp => `
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-amber-900 font-medium">${esc(exp.credential)}</span>
+                <div class="text-right">
+                  <div class="text-sm text-amber-700">Expires ${new Date(exp.expirationDate).toLocaleDateString()}</div>
+                  <div class="text-xs text-amber-600">${esc(String(exp.hoursNeeded))} hours needed</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    // ── Recommended Courses ──
+    function renderCourses(recommendations) {
+      const container = document.getElementById('courseList');
+      const emptyState = document.getElementById('emptyState');
+
+      if (!recommendations || recommendations.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      container.innerHTML = recommendations.map(course => {
+        // Relevance reasons
+        const reasonBadges = (course.reasons || []).map(reason =>
+          `<span class="text-xs px-2 py-1 bg-burgundy-100 text-burgundy-800 rounded-full">${esc(reason)}</span>`
+        ).join('');
+
+        // Approval badges
+        const approvalBadges = (course.approvals || []).map(approval =>
+          `<span class="text-xs px-2 py-0.5 bg-hunter-100 text-hunter-700 rounded-full font-medium">
+            <i class="fas fa-check-circle mr-1"></i>${esc(approval)}
+          </span>`
+        ).join('');
+
+        // Meta info items
+        const metaItems = [];
+        if (course.ceHours) metaItems.push(`<span><i class="fas fa-clock mr-1"></i>${esc(String(course.ceHours))} CE Hours</span>`);
+        if (course.category) metaItems.push(`<span class="capitalize">${esc(course.category)}</span>`);
+        if (course.accessTier) metaItems.push(`<span class="capitalize">${esc(course.accessTier)}</span>`);
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 p-5 hover:border-burgundy-400 transition cursor-pointer"
+               onclick="window.location.href='/course-details.html?slug=${encodeURIComponent(course.slug || '')}'">
+            <div class="flex justify-between items-start">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-semibold text-gray-900 mb-1">${esc(course.title)}</h3>
+                ${metaItems.length ? `<div class="flex items-center gap-3 text-sm text-gray-500 mb-2">${metaItems.join('')}</div>` : ''}
+                ${course.summary ? `<p class="text-sm text-gray-600 mb-2">${esc(course.summary)}</p>` : ''}
+                ${course.description && !course.summary ? `<p class="text-sm text-gray-600 mb-2">${esc(course.description.substring(0, 160))}${course.description.length > 160 ? '...' : ''}</p>` : ''}
+                ${reasonBadges ? `<div class="flex flex-wrap gap-2 mb-2">${reasonBadges}</div>` : ''}
+                ${approvalBadges ? `<div class="flex flex-wrap gap-2">${approvalBadges}</div>` : ''}
+              </div>
+              <div class="ml-4 flex flex-col items-end gap-2">
+                ${course.relevanceScore != null ? `
+                  <div class="bg-burgundy-200 text-burgundy-800 rounded-full w-10 h-10 flex items-center justify-center font-bold text-sm" title="Relevance score">
+                    ${esc(String(course.relevanceScore))}
+                  </div>
+                ` : ''}
+                <a href="/course-details.html?slug=${encodeURIComponent(course.slug || '')}"
+                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-burgundy-700 text-white text-xs font-medium rounded-lg hover:bg-burgundy-800 transition-colors"
+                   onclick="event.stopPropagation()">
+                  Start Course <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

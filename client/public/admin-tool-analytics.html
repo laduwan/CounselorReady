@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Free Tool Analytics - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .bar-fill { transition: width 0.6s ease; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <select id="dateRange" onchange="loadStats()" class="bg-burgundy-700 text-white border border-burgundy-600 rounded-lg px-3 py-1.5 text-sm">
+          <option value="7">Last 7 days</option>
+          <option value="30" selected>Last 30 days</option>
+          <option value="90">Last 90 days</option>
+          <option value="365">Last year</option>
+        </select>
+        <button onclick="exportCSV()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium">
+          Export CSV
+        </button>
+        <a href="/admin-analytics.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Back to Analytics
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-tool-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-wrench w-5"></i>
+          Free Tool Analytics
+        </a>
+        <a href="/admin-funnel.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-filter w-5"></i>
+          Conversion Funnel
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h1 class="font-display text-3xl font-bold text-burgundy-800">Free Tool Analytics</h1>
+        <p class="text-stone-500 mt-1">Track which free clinical tools drive the most traffic and registrations.</p>
+      </div>
+
+      <!-- Loading -->
+      <div id="loading" class="text-center py-12">
+        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <p class="text-forest-600 mt-2">Loading tool analytics...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorMsg" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm mb-6"></div>
+
+      <!-- Dashboard -->
+      <div id="dashboard" class="hidden">
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-forest-600">Total Tool Clicks</h3>
+              <i class="fas fa-mouse-pointer text-burgundy-700"></i>
+            </div>
+            <span id="totalClicks" class="text-4xl font-bold text-burgundy-800">--</span>
+            <p class="mt-2 text-sm text-stone-400" id="clicksPeriod"></p>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-forest-600">Registrations from Tools</h3>
+              <i class="fas fa-user-plus text-forest-500"></i>
+            </div>
+            <span id="totalConversions" class="text-4xl font-bold text-burgundy-800">--</span>
+            <p class="mt-2 text-sm text-stone-400" id="conversionsPeriod"></p>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-medium text-forest-600">Overall Conversion Rate</h3>
+              <i class="fas fa-percentage text-gold-500"></i>
+            </div>
+            <span id="overallRate" class="text-4xl font-bold text-burgundy-800">--</span>
+            <span class="text-sm text-stone-400 ml-1">%</span>
+            <p class="mt-2 text-sm text-stone-400">Clicks that led to signups</p>
+          </div>
+        </div>
+
+        <!-- Tool Breakdown Table -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6 mb-8">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-burgundy-900">Tool Breakdown</h3>
+            <span class="text-xs text-stone-400">Sorted by clicks (highest first)</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-stone-200">
+                  <th class="text-left py-3 px-4 text-xs font-semibold text-stone-500 uppercase tracking-wider">Tool</th>
+                  <th class="text-right py-3 px-4 text-xs font-semibold text-stone-500 uppercase tracking-wider">Clicks</th>
+                  <th class="text-right py-3 px-4 text-xs font-semibold text-stone-500 uppercase tracking-wider">Conversions</th>
+                  <th class="text-right py-3 px-4 text-xs font-semibold text-stone-500 uppercase tracking-wider">Conv. Rate</th>
+                  <th class="py-3 px-4 text-xs font-semibold text-stone-500 uppercase tracking-wider" style="width:200px">Click Share</th>
+                </tr>
+              </thead>
+              <tbody id="toolTableBody">
+                <!-- Filled by JS -->
+              </tbody>
+            </table>
+          </div>
+          <div id="noData" class="hidden text-center py-8 text-stone-400">
+            <i class="fas fa-chart-bar text-3xl mb-2"></i>
+            <p>No tool clicks recorded yet. Data will appear once users start clicking free tools on the landing page.</p>
+          </div>
+        </div>
+
+        <!-- Daily Trend -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-burgundy-900">Daily Trend</h3>
+            <select id="trendTool" onchange="loadTrend()" class="border border-stone-300 rounded-lg px-3 py-1.5 text-sm text-stone-700">
+              <option value="">All Tools</option>
+            </select>
+          </div>
+          <div id="trendChart" class="space-y-1">
+            <!-- Filled by JS -->
+          </div>
+          <div id="noTrend" class="hidden text-center py-8 text-stone-400">
+            <p>No trend data available for this period.</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+  const TOOL_LABELS = {
+    'note-writer': 'AI Note Writer',
+    'superbill': 'Superbill Generator',
+    'safety-plan': 'Crisis Safety Plan',
+    'treatment-plan': 'Treatment Plan Builder',
+    'informed-consent': 'Informed Consent Generator',
+    'consent-generator': 'Informed Consent Generator',
+    'sliding-scale': 'Sliding Scale Calculator',
+    'diagnosis-helper': 'Diagnosis Quick Reference',
+    'diagnostic-helper': 'Diagnosis Quick Reference',
+    'hold-guide': 'Involuntary Hold Guide',
+    'startup-checklist': 'Practice Startup Checklist'
+  };
+
+  // Auth guard
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  if (!token || user.role !== 'admin') {
+    document.getElementById('loading').innerHTML = '<p class="text-red-600 font-semibold">Admin access required. <a href="/login" class="underline">Log in</a></p>';
+  } else {
+    loadStats();
+  }
+
+  let statsData = null;
+
+  async function loadStats() {
+    const days = document.getElementById('dateRange').value;
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('dashboard').classList.add('hidden');
+    document.getElementById('errorMsg').classList.add('hidden');
+
+    try {
+      const res = await fetch(`${API_URL}/api/tool-analytics/admin/stats?days=${days}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      statsData = await res.json();
+      renderStats(statsData);
+      loadTrend();
+    } catch (err) {
+      document.getElementById('loading').classList.add('hidden');
+      const errEl = document.getElementById('errorMsg');
+      errEl.textContent = 'Failed to load analytics: ' + err.message;
+      errEl.classList.remove('hidden');
+    }
+  }
+
+  function renderStats(data) {
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+
+    const { tools, totals, period } = data;
+
+    // Summary cards
+    document.getElementById('totalClicks').textContent = totals.clicks.toLocaleString();
+    document.getElementById('totalConversions').textContent = totals.conversions.toLocaleString();
+    document.getElementById('overallRate').textContent = totals.conversionRate;
+    document.getElementById('clicksPeriod').textContent = `Last ${period.days} days`;
+    document.getElementById('conversionsPeriod').textContent = `Last ${period.days} days`;
+
+    // Table
+    const tbody = document.getElementById('toolTableBody');
+    const noData = document.getElementById('noData');
+
+    if (!tools.length) {
+      tbody.innerHTML = '';
+      noData.classList.remove('hidden');
+      return;
+    }
+
+    noData.classList.add('hidden');
+    const maxClicks = tools[0]?.clicks || 1;
+
+    tbody.innerHTML = tools.map(t => {
+      const label = TOOL_LABELS[t.toolSlug] || t.toolSlug;
+      const barWidth = Math.max(2, (t.clicks / maxClicks) * 100);
+      const rateColor = t.conversionRate >= 10 ? '#4A7C59' : t.conversionRate >= 5 ? '#D4A855' : '#8b2542';
+      return `
+        <tr class="border-b border-stone-100 hover:bg-stone-50">
+          <td class="py-3 px-4">
+            <div class="font-medium text-navy-800">${label}</div>
+            <div class="text-xs text-stone-400">${t.toolSlug}</div>
+          </td>
+          <td class="py-3 px-4 text-right font-semibold text-burgundy-800">${t.clicks.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right font-semibold text-forest-600">${t.conversions.toLocaleString()}</td>
+          <td class="py-3 px-4 text-right">
+            <span class="font-semibold" style="color:${rateColor}">${t.conversionRate}%</span>
+          </td>
+          <td class="py-3 px-4">
+            <div class="w-full bg-stone-100 rounded-full h-2.5">
+              <div class="bar-fill h-2.5 rounded-full" style="width:${barWidth}%;background:#6B1D34"></div>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Populate trend dropdown
+    const trendSelect = document.getElementById('trendTool');
+    const currentVal = trendSelect.value;
+    trendSelect.innerHTML = '<option value="">All Tools</option>' +
+      tools.map(t => `<option value="${t.toolSlug}" ${t.toolSlug === currentVal ? 'selected' : ''}>${TOOL_LABELS[t.toolSlug] || t.toolSlug}</option>`).join('');
+  }
+
+  async function loadTrend() {
+    const days = document.getElementById('dateRange').value;
+    const toolSlug = document.getElementById('trendTool').value;
+    const params = `days=${days}` + (toolSlug ? `&toolSlug=${toolSlug}` : '');
+
+    try {
+      const res = await fetch(`${API_URL}/api/tool-analytics/admin/trend?${params}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      renderTrend(data.trend);
+    } catch (err) {
+      console.error('Trend load error:', err);
+    }
+  }
+
+  function renderTrend(trend) {
+    const container = document.getElementById('trendChart');
+    const noTrend = document.getElementById('noTrend');
+
+    if (!trend.length) {
+      container.innerHTML = '';
+      noTrend.classList.remove('hidden');
+      return;
+    }
+
+    noTrend.classList.add('hidden');
+    const maxVal = Math.max(...trend.map(d => d.clicks)) || 1;
+
+    container.innerHTML = trend.map(d => {
+      const clickW = Math.max(1, (d.clicks / maxVal) * 100);
+      const convW = d.conversions ? Math.max(1, (d.conversions / maxVal) * 100) : 0;
+      const dateLabel = new Date(d.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      return `
+        <div class="flex items-center gap-3 py-1.5">
+          <span class="text-xs text-stone-500 w-16 text-right flex-shrink-0">${dateLabel}</span>
+          <div class="flex-1 flex flex-col gap-0.5">
+            <div class="flex items-center gap-2">
+              <div class="bar-fill h-3 rounded" style="width:${clickW}%;background:#6B1D34;min-width:2px"></div>
+              <span class="text-xs text-stone-500">${d.clicks}</span>
+            </div>
+            ${d.conversions ? `
+            <div class="flex items-center gap-2">
+              <div class="bar-fill h-3 rounded" style="width:${convW}%;background:#4A7C59;min-width:2px"></div>
+              <span class="text-xs text-stone-500">${d.conversions}</span>
+            </div>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function exportCSV() {
+    if (!statsData?.tools?.length) return;
+    const headers = ['Tool Slug', 'Tool Name', 'Clicks', 'Conversions', 'Conversion Rate (%)'];
+    const rows = statsData.tools.map(t => [
+      t.toolSlug,
+      TOOL_LABELS[t.toolSlug] || t.toolSlug,
+      t.clicks,
+      t.conversions,
+      t.conversionRate
+    ]);
+    rows.push(['TOTAL', '', statsData.totals.clicks, statsData.totals.conversions, statsData.totals.conversionRate]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tool-analytics-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+</script>
+<div id="cr-footer"></div>
+</body>
+</html>

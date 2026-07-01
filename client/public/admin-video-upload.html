@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+    <title>Video Upload - CounselorReady Admin</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <link rel="stylesheet" href="/css/typography.css">
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <script src="/js/tailwind-config.js"></script>
+
+    <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+    <style>
+        body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Cormorant Garamond', Georgia, serif; }
+        .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s ease;
+        }
+        .upload-zone.dragover {
+            border-color: #8b2542;
+            background-color: #fdf5f6;
+        }
+        .upload-zone:hover {
+            border-color: #94a3b8;
+        }
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+    
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+    <div class="max-w-4xl mx-auto p-6">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Video Upload</h1>
+            <p class="text-gray-600">Upload workshop recordings and course videos</p>
+        </div>
+
+        <!-- Storage Usage Banner -->
+        <div id="storage-banner" class="bg-white rounded-lg shadow-sm p-4 mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-700">Storage Used</span>
+                <span id="storage-text" class="text-sm text-gray-600">Loading...</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div id="storage-bar" class="bg-burgundy-700 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+            <p id="storage-details" class="text-xs text-gray-500 mt-1"></p>
+        </div>
+
+        <!-- Upload Zone -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div 
+                id="upload-zone" 
+                class="upload-zone rounded-lg p-12 text-center cursor-pointer"
+                onclick="document.getElementById('file-input').click()"
+            >
+                <input 
+                    type="file" 
+                    id="file-input" 
+                    class="hidden" 
+                    accept="video/mp4,video/webm,video/quicktime,video/x-msvideo"
+                    onchange="handleFileSelect(event)"
+                >
+                <i class="fas fa-cloud-upload-alt text-5xl text-gray-400 mb-4"></i>
+                <p class="text-lg text-gray-600 mb-2">Drag and drop your video here</p>
+                <p class="text-sm text-gray-400">or click to browse</p>
+                <p class="text-xs text-gray-400 mt-4">Supported formats: MP4, WebM, MOV, AVI (max 5GB)</p>
+            </div>
+        </div>
+
+        <!-- Course Selection -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Associate with Course (Optional)
+            </label>
+            <select id="course-select" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-burgundy-700">
+                <option value="">-- No course selected --</option>
+            </select>
+            <p class="text-xs text-gray-500 mt-1">Selecting a course helps organize your videos</p>
+        </div>
+
+        <!-- Upload Progress (hidden by default) -->
+        <div id="upload-progress" class="bg-white rounded-lg shadow-sm p-6 mb-6 hidden">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <i class="fas fa-video text-burgundy-700 mr-3"></i>
+                    <div>
+                        <p id="upload-filename" class="font-medium text-gray-800">filename.mp4</p>
+                        <p id="upload-size" class="text-sm text-gray-500">0 MB</p>
+                    </div>
+                </div>
+                <button id="cancel-upload" class="text-red-500 hover:text-red-700" onclick="cancelUpload()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                <div id="upload-bar" class="bg-burgundy-700 h-3 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+                <span id="upload-percent">0%</span>
+                <span id="upload-status">Uploading...</span>
+            </div>
+        </div>
+
+        <!-- Upload Success (hidden by default) -->
+        <div id="upload-success" class="bg-green-50 border border-green-200 rounded-lg p-6 mb-6 hidden">
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 text-xl mr-3 mt-1"></i>
+                <div class="flex-1">
+                    <h3 class="font-medium text-green-800">Upload Complete!</h3>
+                    <p id="success-message" class="text-sm text-green-700 mt-1"></p>
+                    <div class="mt-3 p-3 bg-white rounded border">
+                        <p class="text-xs text-gray-500 mb-1">Video URL (copy to use in lesson):</p>
+                        <div class="flex items-center">
+                            <input 
+                                id="video-url" 
+                                type="text" 
+                                readonly 
+                                class="flex-1 text-sm bg-gray-50 border rounded px-2 py-1 mr-2"
+                            >
+                            <button onclick="copyUrl()" class="text-burgundy-700 hover:text-burgundy-800">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="resetUpload()" class="mt-4 text-sm text-burgundy-700 hover:underline">
+                        Upload another video
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Uploads -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4">Recent Uploads</h2>
+            <div id="recent-uploads" class="space-y-3">
+                <p class="text-gray-500 text-sm">No videos uploaded yet</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+        let currentXHR = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStorageUsage();
+            loadCourses();
+            loadRecentUploads();
+            setupDragAndDrop();
+        });
+
+        // Setup drag and drop
+        function setupDragAndDrop() {
+            const zone = document.getElementById('upload-zone');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.add('dragover'), false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                zone.addEventListener(eventName, () => zone.classList.remove('dragover'), false);
+            });
+
+            zone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            }, false);
+        }
+
+        // Load storage usage
+        async function loadStorageUsage() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_URL}/api/uploads/storage`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                document.getElementById('storage-text').textContent = 
+                    `${data.usedFormatted} / ${data.limitFormatted}`;
+                document.getElementById('storage-bar').style.width = `${data.percentUsed}%`;
+                document.getElementById('storage-details').textContent = 
+                    `${data.remainingFormatted} remaining • ${data.tier} tier • Overage: ${data.overageRate}`;
+
+                // Change color if near limit
+                if (data.percentUsed > 90) {
+                    document.getElementById('storage-bar').classList.remove('bg-burgundy-700');
+                    document.getElementById('storage-bar').classList.add('bg-red-500');
+                } else if (data.percentUsed > 75) {
+                    document.getElementById('storage-bar').classList.remove('bg-burgundy-700');
+                    document.getElementById('storage-bar').classList.add('bg-yellow-500');
+                }
+            } catch (err) {
+                console.error('Failed to load storage usage:', err);
+            }
+        }
+
+        // Load courses for dropdown
+        async function loadCourses() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_URL}/api/courses`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const courses = await res.json();
+
+                const select = document.getElementById('course-select');
+                courses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course._id;
+                    option.textContent = course.title;
+                    select.appendChild(option);
+                });
+            } catch (err) {
+                console.error('Failed to load courses:', err);
+            }
+        }
+
+        // Load recent uploads
+        async function loadRecentUploads() {
+            try {
+                const token = localStorage.getItem('token');
+                const res = await fetch(`${API_URL}/api/uploads/files?type=video`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+
+                const container = document.getElementById('recent-uploads');
+                
+                if (data.files && data.files.length > 0) {
+                    container.innerHTML = data.files.slice(0, 10).map(file => `
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-video text-gray-400 mr-3"></i>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">${file.originalName || file.key.split('/').pop()}</p>
+                                    <p class="text-xs text-gray-500">${formatBytes(file.size)} • ${new Date(file.createdAt).toLocaleDateString()}</p>
+                                </div>
+                            </div>
+                            <button onclick="copyToClipboard('${file.url}')" class="text-burgundy-700 hover:text-burgundy-800 text-sm">
+                                <i class="fas fa-copy mr-1"></i> Copy URL
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            } catch (err) {
+                console.error('Failed to load recent uploads:', err);
+            }
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        // Handle file upload
+        function handleFile(file) {
+            // Validate file type
+            const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
+            if (!validTypes.includes(file.type)) {
+                alert('Invalid file type. Please upload MP4, WebM, MOV, or AVI files.');
+                return;
+            }
+
+            // Validate file size (5GB max)
+            const maxSize = 5 * 1024 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File too large. Maximum size is 5GB.');
+                return;
+            }
+
+            // Show progress UI
+            document.getElementById('upload-progress').classList.remove('hidden');
+            document.getElementById('upload-success').classList.add('hidden');
+            document.getElementById('upload-filename').textContent = file.name;
+            document.getElementById('upload-size').textContent = formatBytes(file.size);
+
+            // Upload file
+            uploadFile(file);
+        }
+
+        // Upload file to server
+        function uploadFile(file) {
+            const token = localStorage.getItem('token');
+            const courseId = document.getElementById('course-select').value;
+
+            const formData = new FormData();
+            formData.append('video', file);
+            if (courseId) {
+                formData.append('courseId', courseId);
+            }
+
+            currentXHR = new XMLHttpRequest();
+
+            currentXHR.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('upload-bar').style.width = `${percent}%`;
+                    document.getElementById('upload-percent').textContent = `${percent}%`;
+                }
+            });
+
+            currentXHR.addEventListener('load', () => {
+                if (currentXHR.status === 201) {
+                    const response = JSON.parse(currentXHR.responseText);
+                    showSuccess(response);
+                } else {
+                    const error = JSON.parse(currentXHR.responseText);
+                    alert('Upload failed: ' + (error.error || 'Unknown error'));
+                    resetUpload();
+                }
+            });
+
+            currentXHR.addEventListener('error', () => {
+                alert('Upload failed. Please try again.');
+                resetUpload();
+            });
+
+            currentXHR.open('POST', `${API_URL}/api/uploads/video`);
+            currentXHR.setRequestHeader('Authorization', `Bearer ${token}`);
+            currentXHR.send(formData);
+        }
+
+        // Cancel upload
+        function cancelUpload() {
+            if (currentXHR) {
+                currentXHR.abort();
+                currentXHR = null;
+            }
+            resetUpload();
+        }
+
+        // Show success
+        function showSuccess(response) {
+            document.getElementById('upload-progress').classList.add('hidden');
+            document.getElementById('upload-success').classList.remove('hidden');
+            document.getElementById('success-message').textContent = 
+                `${response.video.originalName} (${response.video.sizeFormatted}) uploaded successfully.`;
+            document.getElementById('video-url').value = response.video.url;
+
+            // Refresh storage and recent uploads
+            loadStorageUsage();
+            loadRecentUploads();
+        }
+
+        // Reset upload UI
+        function resetUpload() {
+            document.getElementById('upload-progress').classList.add('hidden');
+            document.getElementById('upload-success').classList.add('hidden');
+            document.getElementById('upload-bar').style.width = '0%';
+            document.getElementById('upload-percent').textContent = '0%';
+            document.getElementById('file-input').value = '';
+        }
+
+        // Copy URL to clipboard
+        function copyUrl() {
+            const urlInput = document.getElementById('video-url');
+            urlInput.select();
+            document.execCommand('copy');
+            alert('URL copied to clipboard!');
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        // Format bytes
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+    </script>
+  </main></div>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

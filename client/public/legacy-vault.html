@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Legacy Vault | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .tab-btn{border-bottom:2px solid transparent;transition:all .15s}
+    .tab-btn.active{border-bottom-color:#6b1d34;color:#6b1d34;font-weight:600}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+    <a href="/dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4"><i class="fas fa-chevron-left text-xs"></i> Dashboard</a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Legacy Vault</h1>
+      <p class="text-gray-500 mt-1">Secure practice continuity planning for your clinical practice</p>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div style="width:36px;height:36px;border:3px solid #e7e5e4;border-top-color:#6B1D34;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px"></div>
+      <p class="text-gray-400 text-sm">Loading vault...</p>
+    </div>
+
+    <div id="content" class="hidden">
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+          <p class="text-2xl font-bold font-display text-burgundy-800" id="statDocs">0</p>
+          <p class="text-xs text-gray-500 mt-1">Documents</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+          <p class="text-2xl font-bold font-display" style="color:#4A7C59" id="statContacts">0</p>
+          <p class="text-xs text-gray-500 mt-1">Contacts</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+          <p class="text-2xl font-bold font-display text-gray-800" id="statPlan">-</p>
+          <p class="text-xs text-gray-500 mt-1">Plan Status</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+          <p class="text-2xl font-bold font-display" style="color:#D4A855" id="statCheckin">-</p>
+          <p class="text-xs text-gray-500 mt-1">Last Check-in</p>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="flex gap-1 border-b border-gray-200 mb-6">
+        <button onclick="switchTab('docs')" class="tab-btn active px-4 py-3 text-sm text-gray-600" id="tabDocs"><i class="fas fa-file-lines mr-2"></i>Documents</button>
+        <button onclick="switchTab('contacts')" class="tab-btn px-4 py-3 text-sm text-gray-600" id="tabContacts"><i class="fas fa-users mr-2"></i>Contacts</button>
+        <button onclick="switchTab('plan')" class="tab-btn px-4 py-3 text-sm text-gray-600" id="tabPlan"><i class="fas fa-clipboard-list mr-2"></i>Continuity Plan</button>
+      </div>
+
+      <!-- Documents Tab -->
+      <div id="panelDocs">
+        <div class="flex justify-end mb-4">
+          <button onclick="toggleUpload()" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold hover:bg-burgundy-900"><i class="fas fa-upload mr-2"></i>Upload Document</button>
+        </div>
+        <div id="uploadForm" class="hidden bg-white rounded-xl border border-gray-200 p-6 mb-4">
+          <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-4">Upload Document</h3>
+          <form onsubmit="uploadDoc(event)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+                <select id="docCat" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                  <option value="license">License</option><option value="insurance">Insurance</option><option value="will">Will</option>
+                  <option value="practice-agreement">Practice Agreement</option><option value="business-entity">Business Entity</option>
+                  <option value="tax-document">Tax Document</option><option value="malpractice">Malpractice</option>
+                  <option value="emergency-plan">Emergency Plan</option><option value="client-records-plan">Client Records Plan</option>
+                  <option value="power-of-attorney">Power of Attorney</option><option value="lease-agreement">Lease Agreement</option>
+                  <option value="ehr-credentials">EHR Credentials</option><option value="other">Other</option>
+                </select>
+              </div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">File *</label><input id="docFile" type="file" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+              <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Notes</label><input id="docNotes" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+            </div>
+            <div class="flex gap-2">
+              <button type="submit" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold">Upload</button>
+              <button type="button" onclick="toggleUpload()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div id="docsList"></div>
+      </div>
+
+      <!-- Contacts Tab -->
+      <div id="panelContacts" class="hidden">
+        <div class="flex justify-end mb-4">
+          <button onclick="toggleContactForm()" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold hover:bg-burgundy-900"><i class="fas fa-plus mr-2"></i>Add Contact</button>
+        </div>
+        <div id="contactForm" class="hidden bg-white rounded-xl border border-gray-200 p-6 mb-4">
+          <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-4">Add Emergency Contact</h3>
+          <form onsubmit="saveContact(event)">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Name *</label><input id="cName" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Email *</label><input id="cEmail" type="email" required class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Phone</label><input id="cPhone" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Role</label>
+                <select id="cRole" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                  <option value="clinical-executor">Clinical Executor</option><option value="business-executor">Business Executor</option>
+                  <option value="emergency-contact">Emergency Contact</option><option value="attorney">Attorney</option>
+                  <option value="accountant">Accountant</option><option value="ehr-administrator">EHR Administrator</option>
+                  <option value="supervisor">Supervisor</option><option value="colleague">Colleague</option><option value="other">Other</option>
+                </select>
+              </div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Access Level</label>
+                <select id="cAccess" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                  <option value="full">Full Access</option><option value="limited">Limited Access</option><option value="notify-only">Notify Only</option>
+                </select>
+              </div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Notes</label><input id="cNotes" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"></div>
+            </div>
+            <div class="flex gap-2">
+              <button type="submit" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold">Save Contact</button>
+              <button type="button" onclick="toggleContactForm()" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div id="contactsList"></div>
+      </div>
+
+      <!-- Continuity Plan Tab -->
+      <div id="panelPlan" class="hidden">
+        <div class="bg-white rounded-xl border border-gray-200 p-6 mb-4">
+          <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-4">Practice Continuity Plan</h3>
+          <form onsubmit="savePlan(event)">
+            <div class="space-y-4 mb-4">
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Practice Type</label>
+                <select id="pType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                  <option value="solo">Solo Practice</option><option value="group">Group Practice</option>
+                  <option value="agency">Agency</option><option value="other">Other</option>
+                </select>
+              </div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Client Notification Plan</label><textarea id="pClients" rows="3" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="How should clients be notified if you are incapacitated?"></textarea></div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Records Transfer Plan</label><textarea id="pRecords" rows="3" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="How should client records be transferred?"></textarea></div>
+              <div><label class="block text-xs font-semibold text-gray-600 mb-1">Financial Arrangements</label><textarea id="pFinancial" rows="3" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" placeholder="Outstanding billing, insurance, payroll instructions"></textarea></div>
+            </div>
+            <button type="submit" class="px-4 py-2 bg-hunter-500 text-white rounded-lg text-sm font-semibold hover:bg-hunter-600"><i class="fas fa-save mr-2"></i>Save Plan</button>
+          </form>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3">Check-in Settings</h3>
+          <div class="flex items-center gap-4">
+            <select id="pInterval" class="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+              <option value="7">Every 7 days</option><option value="14">Every 14 days</option>
+              <option value="30" selected>Every 30 days</option><option value="60">Every 60 days</option>
+              <option value="90">Every 90 days</option>
+            </select>
+            <button onclick="checkIn()" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-semibold hover:bg-burgundy-900"><i class="fas fa-check mr-2"></i>Check In Now</button>
+          </div>
+          <p class="text-xs text-gray-400 mt-2">If you miss a check-in, your emergency contacts will be notified.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="toast" class="hidden fixed bottom-6 right-6 px-4 py-3 rounded-lg text-sm font-semibold shadow-lg z-50"></div>
+
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+const T=localStorage.getItem('token');
+if(!T)location.href='/login.html';
+
+try{const p=JSON.parse(atob(T.split('.')[1]));
+document.getElementById('userName').textContent=p.name||'';
+document.getElementById('userAvatar').textContent=(p.name||'--').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+}catch(e){}
+
+let docs=[],contacts=[],plan=null;
+
+const CATEGORY_LABELS={license:'License',insurance:'Insurance',will:'Will','practice-agreement':'Practice Agreement','business-entity':'Business Entity','tax-document':'Tax Document',malpractice:'Malpractice','emergency-plan':'Emergency Plan','client-records-plan':'Client Records Plan','power-of-attorney':'Power of Attorney','lease-agreement':'Lease Agreement','ehr-credentials':'EHR Credentials',other:'Other'};
+const ROLE_LABELS={'clinical-executor':'Clinical Executor','business-executor':'Business Executor','emergency-contact':'Emergency Contact',attorney:'Attorney',accountant:'Accountant','ehr-administrator':'EHR Administrator',supervisor:'Supervisor',colleague:'Colleague',other:'Other'};
+const ACCESS_LABELS={full:'Full Access',limited:'Limited',['notify-only']:'Notify Only'};
+
+async function init(){
+  try{
+    const [summaryR,docsR,contactsR]=await Promise.all([
+      fetch(`${API}/api/legacy-vault/summary`,{headers:{Authorization:`Bearer ${T}`}}),
+      fetch(`${API}/api/legacy-vault/documents`,{headers:{Authorization:`Bearer ${T}`}}),
+      fetch(`${API}/api/legacy-vault/contacts`,{headers:{Authorization:`Bearer ${T}`}})
+    ]);
+    const summary=summaryR.ok?await summaryR.json():{};
+    docs=docsR.ok?await docsR.json():[];
+    contacts=contactsR.ok?await contactsR.json():[];
+
+    document.getElementById('statDocs').textContent=summary.documentCount||docs.length||0;
+    document.getElementById('statContacts').textContent=summary.contactCount||contacts.length||0;
+    document.getElementById('statPlan').textContent=summary.planStatus||'Not started';
+    document.getElementById('statCheckin').textContent=summary.lastCheckIn?new Date(summary.lastCheckIn).toLocaleDateString():'Never';
+
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').classList.remove('hidden');
+    renderDocs();renderContacts();
+    loadPlan();
+  }catch(e){document.getElementById('loading').innerHTML='<p style="color:#6B1D34;font-weight:600">'+e.message+'</p>';}
+}
+
+function switchTab(tab){
+  ['docs','contacts','plan'].forEach(t=>{
+    document.getElementById('panel'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('hidden',t!==tab);
+    document.getElementById('tab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active',t===tab);
+  });
+}
+
+function renderDocs(){
+  const el=document.getElementById('docsList');
+  if(!docs.length){el.innerHTML='<div class="text-center py-12 bg-white rounded-xl border border-gray-200"><p class="text-gray-400 text-sm">No documents uploaded yet.</p></div>';return;}
+  el.innerHTML='<div class="bg-white rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-50">'+docs.map(d=>{
+    const cat=CATEGORY_LABELS[d.category]||d.category;
+    const size=d.fileSize?formatBytes(d.fileSize):'';
+    return`<div class="px-5 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-9 h-9 rounded-lg bg-burgundy-50 flex items-center justify-center flex-shrink-0"><i class="fas fa-file text-burgundy-400"></i></div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">${d.originalName||d.fileName||'Document'}</p>
+          <p class="text-xs text-gray-400">${cat} ${size?' &middot; '+size:''} &middot; ${new Date(d.createdAt||d.uploadedAt).toLocaleDateString()}</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a href="${API}/api/legacy-vault/documents/${d._id}/serve" target="_blank" class="px-2 py-1 text-xs text-hunter-500 hover:bg-hunter-100 rounded"><i class="fas fa-download"></i></a>
+        <button onclick="deleteDoc('${d._id}')" class="px-2 py-1 text-xs text-red-400 hover:bg-red-50 rounded"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function renderContacts(){
+  const el=document.getElementById('contactsList');
+  if(!contacts.length){el.innerHTML='<div class="text-center py-12 bg-white rounded-xl border border-gray-200"><p class="text-gray-400 text-sm">No emergency contacts added yet.</p></div>';return;}
+  el.innerHTML=contacts.map(c=>{
+    const role=ROLE_LABELS[c.role]||c.role;
+    const access=ACCESS_LABELS[c.accessLevel]||c.accessLevel;
+    return`<div class="bg-white rounded-xl border border-gray-200 p-5 mb-3">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-sm font-semibold text-gray-800">${c.name}</p>
+          <p class="text-xs text-gray-500 mt-0.5">${role} &middot; ${access}</p>
+          ${c.email?'<p class="text-xs text-gray-400 mt-1"><i class="fas fa-envelope mr-1"></i>'+c.email+'</p>':''}
+          ${c.phone?'<p class="text-xs text-gray-400"><i class="fas fa-phone mr-1"></i>'+c.phone+'</p>':''}
+          ${c.notes?'<p class="text-xs text-gray-400 mt-1">'+c.notes+'</p>':''}
+        </div>
+        <button onclick="deleteContact('${c._id}')" class="text-gray-300 hover:text-red-500"><i class="fas fa-trash text-xs"></i></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadPlan(){
+  try{
+    const r=await fetch(`${API}/api/legacy-vault/plan`,{headers:{Authorization:`Bearer ${T}`}});
+    if(r.ok){plan=await r.json();
+      if(plan.practiceType)document.getElementById('pType').value=plan.practiceType;
+      if(plan.clientNotificationPlan)document.getElementById('pClients').value=plan.clientNotificationPlan;
+      if(plan.recordsTransferPlan)document.getElementById('pRecords').value=plan.recordsTransferPlan;
+      if(plan.financialArrangements)document.getElementById('pFinancial').value=plan.financialArrangements;
+      if(plan.checkInIntervalDays)document.getElementById('pInterval').value=plan.checkInIntervalDays;
+    }
+  }catch(e){}
+}
+
+function toggleUpload(){document.getElementById('uploadForm').classList.toggle('hidden');}
+function toggleContactForm(){document.getElementById('contactForm').classList.toggle('hidden');}
+
+async function uploadDoc(e){
+  e.preventDefault();
+  const fd=new FormData();
+  fd.append('file',document.getElementById('docFile').files[0]);
+  fd.append('category',document.getElementById('docCat').value);
+  fd.append('notes',document.getElementById('docNotes').value);
+  try{
+    const r=await fetch(`${API}/api/legacy-vault/documents`,{method:'POST',headers:{Authorization:`Bearer ${T}`},body:fd});
+    if(!r.ok)throw new Error('Upload failed');
+    const d=await r.json();docs.push(d);
+    toggleUpload();renderDocs();
+    document.getElementById('statDocs').textContent=docs.length;
+    showToast('Document uploaded','success');
+  }catch(e){showToast(e.message,'error');}
+}
+
+async function deleteDoc(id){
+  if(!confirm('Delete this document?'))return;
+  try{
+    await fetch(`${API}/api/legacy-vault/documents/${id}`,{method:'DELETE',headers:{Authorization:`Bearer ${T}`}});
+    docs=docs.filter(d=>d._id!==id);renderDocs();
+    document.getElementById('statDocs').textContent=docs.length;
+    showToast('Document deleted','success');
+  }catch(e){showToast('Failed to delete','error');}
+}
+
+async function saveContact(e){
+  e.preventDefault();
+  const body={name:document.getElementById('cName').value,email:document.getElementById('cEmail').value,phone:document.getElementById('cPhone').value,role:document.getElementById('cRole').value,accessLevel:document.getElementById('cAccess').value,notes:document.getElementById('cNotes').value};
+  try{
+    const r=await fetch(`${API}/api/legacy-vault/contacts`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error('Failed');
+    const d=await r.json();contacts.push(d);
+    toggleContactForm();renderContacts();
+    document.getElementById('statContacts').textContent=contacts.length;
+    showToast('Contact added','success');
+  }catch(e){showToast(e.message,'error');}
+}
+
+async function deleteContact(id){
+  if(!confirm('Remove this contact?'))return;
+  try{
+    await fetch(`${API}/api/legacy-vault/contacts/${id}`,{method:'DELETE',headers:{Authorization:`Bearer ${T}`}});
+    contacts=contacts.filter(c=>c._id!==id);renderContacts();
+    document.getElementById('statContacts').textContent=contacts.length;
+  }catch(e){showToast('Failed','error');}
+}
+
+async function savePlan(e){
+  e.preventDefault();
+  const body={practiceType:document.getElementById('pType').value,clientNotificationPlan:document.getElementById('pClients').value,recordsTransferPlan:document.getElementById('pRecords').value,financialArrangements:document.getElementById('pFinancial').value,checkInIntervalDays:parseInt(document.getElementById('pInterval').value)};
+  try{
+    const r=await fetch(`${API}/api/legacy-vault/plan`,{method:'PUT',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error('Failed');
+    showToast('Plan saved','success');
+    document.getElementById('statPlan').textContent='Configured';
+  }catch(e){showToast(e.message,'error');}
+}
+
+async function checkIn(){
+  try{
+    const r=await fetch(`${API}/api/legacy-vault/checkin`,{method:'POST',headers:{Authorization:`Bearer ${T}`,'Content-Type':'application/json'}});
+    if(!r.ok)throw new Error('Failed');
+    document.getElementById('statCheckin').textContent=new Date().toLocaleDateString();
+    showToast('Check-in recorded','success');
+  }catch(e){showToast(e.message,'error');}
+}
+
+function formatBytes(b){if(!b)return'';const k=1024;const s=['B','KB','MB'];const i=Math.floor(Math.log(b)/Math.log(k));return(b/Math.pow(k,i)).toFixed(1)+' '+s[i];}
+
+function showToast(msg,type){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.style.background=type==='error'?'#fee2e2':'#d1fae5';
+  t.style.color=type==='error'?'#991b1b':'#065f46';
+  t.classList.remove('hidden');setTimeout(()=>t.classList.add('hidden'),3000);
+}
+
+document.addEventListener('DOMContentLoaded',init);
+</script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

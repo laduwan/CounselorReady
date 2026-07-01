@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attachment Exploration in Session — Clinician Worksheet</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; color: #1a1a1a; background: #ffffff; padding: 0.75in 1in; max-width: 8.5in; margin: 0 auto; }
+    .branding { text-align: center; font-size: 8.5pt; color: #555; letter-spacing: 0.04em; border-bottom: 2px solid #8B2542; padding-bottom: 6px; margin-bottom: 10px; }
+    .course-header { text-align: center; margin-bottom: 18px; }
+    .course-header .code { font-size: 9pt; color: #8B2542; letter-spacing: 0.08em; font-weight: bold; }
+    .course-header h1 { font-size: 15pt; color: #8B2542; line-height: 1.3; margin-top: 4px; }
+    .course-header .meta { font-size: 9pt; color: #555; margin-top: 4px; }
+    h2 { font-size: 11pt; color: #8B2542; border-bottom: 1px solid #8B2542; padding-bottom: 3px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    h3 { font-size: 10.5pt; color: #1a1a1a; font-weight: bold; margin: 10px 0 4px 0; }
+    p { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
+    ul, ol { padding-left: 18px; margin-bottom: 8px; }
+    li { font-size: 10pt; line-height: 1.5; margin-bottom: 2px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .box { border: 1px solid #8B2542; border-radius: 4px; padding: 10px 12px; }
+    .box h3 { color: #8B2542; margin-top: 0; }
+    .highlight { background: #fff5f7; border-left: 3px solid #8B2542; padding: 4px 8px; margin-bottom: 4px; font-size: 10pt; }
+    .framework-step { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .step-num { background: #8B2542; color: white; font-weight: bold; font-size: 9pt; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-text { font-size: 10pt; line-height: 1.45; }
+    .note-box { background: #f8f4f5; border: 1px solid #c9a0a8; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+    .note-box strong { color: #8B2542; }
+    .write-line { border-bottom: 1px solid #999; margin: 6px 0 14px 0; height: 22px; }
+    .write-line-sm { border-bottom: 1px solid #999; margin: 4px 0 10px 0; height: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+    th { background: #8B2542; color: white; padding: 5px 8px; text-align: left; }
+    td { border: 1px solid #c9a0a8; padding: 5px 8px; vertical-align: top; }
+    tr:nth-child(even) td { background: #fdf8f9; }
+    .footer { border-top: 1px solid #8B2542; margin-top: 20px; padding-top: 6px; text-align: center; font-size: 8pt; color: #555; }
+    .label { font-size: 9.5pt; color: #555; font-style: italic; margin-bottom: 2px; }
+    .checkbox-group { margin: 6px 0 10px 0; }
+    .checkbox-item { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 5px; font-size: 10pt; line-height: 1.4; }
+    .cb { width: 13px; height: 13px; border: 1.5px solid #8B2542; display: inline-block; flex-shrink: 0; margin-top: 2px; }
+    .section-intro { font-size: 9.5pt; color: #555; font-style: italic; margin-bottom: 8px; }
+    .prompt-q { font-size: 10pt; font-weight: bold; margin-bottom: 3px; margin-top: 8px; }
+    .intake-row { display: flex; gap: 20px; margin-bottom: 8px; }
+    .intake-field { flex: 1; }
+    .intake-field .label { margin-bottom: 2px; }
+    @media print { body { padding: 0.5in 0.75in; } h2 { break-before: avoid; } .two-col, .three-col { break-inside: avoid; } .box { break-inside: avoid; } .footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="branding">GA Integrated Therapeutic Perspectives LLC &nbsp;|&nbsp; NBCC ACEP #7760 &nbsp;|&nbsp; CounselorReady CE</div>
+
+  <div class="course-header">
+    <div class="code">CR-CLI-601 &nbsp;|&nbsp; CLINICIAN WORKSHEET</div>
+    <h1>Attachment Exploration in Session</h1>
+    <div class="meta">For clinical use — not for distribution to clients &nbsp;|&nbsp; Attachment Theory in Adult Psychotherapy</div>
+  </div>
+
+  <!-- Client Info -->
+  <div class="intake-row">
+    <div class="intake-field">
+      <div class="label">Client ID / Initials</div>
+      <div class="write-line-sm"></div>
+    </div>
+    <div class="intake-field">
+      <div class="label">Session Date</div>
+      <div class="write-line-sm"></div>
+    </div>
+    <div class="intake-field">
+      <div class="label">Session #</div>
+      <div class="write-line-sm"></div>
+    </div>
+    <div class="intake-field">
+      <div class="label">Clinician</div>
+      <div class="write-line-sm"></div>
+    </div>
+  </div>
+
+  <!-- Section 1: Attachment History -->
+  <h2>Section 1 — Attachment History Exploration</h2>
+  <p class="section-intro">Use these questions across early sessions to build a picture of the client's attachment history. Not all questions need to be asked in a single session. Annotate responses directly on lines below.</p>
+
+  <div class="prompt-q">1. Who were your primary caregivers growing up? Who did you go to when you were upset or scared?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">2. How would you describe your relationship with your mother/primary female caregiver? Can you give me a specific memory that captures what that was like?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">3. How would you describe your relationship with your father/primary male caregiver? A specific memory?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">4. When you were distressed as a child — sad, hurt, frightened — what typically happened? What did you do, and how did caregivers respond?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">5. Were there significant separations, losses, or disruptions in early caregiving (illness, death, divorce, moves, trauma)?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">6. What five adjectives or phrases would you use to describe your childhood relationship with your primary caregiver? <em>(Note whether the client can support each with a specific memory — coherence indicator)</em></div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <!-- Section 2: IWM Exploration -->
+  <h2>Section 2 — Internal Working Model (IWM) Exploration</h2>
+  <p class="section-intro">These prompts help surface the client's implicit beliefs about self-worth and the reliability of others — the core of the IWM construct.</p>
+
+  <div class="prompt-q">7. When you need help or support, what do you usually do? Do you reach out to others, or tend to manage on your own?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">8. What do you expect to happen when you show someone you're struggling or vulnerable?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">9. Finish this sentence in your own words: "When I need someone, I expect they will ___________."</div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">10. What do you believe about yourself when a relationship ends or goes badly?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="two-col" style="margin-top:10px;">
+    <div class="box">
+      <h3>Model of Self</h3>
+      <p class="label">Client's evident self-view in attachment contexts:</p>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Worthy / Lovable</div>
+        <div class="checkbox-item"><span class="cb"></span> Unworthy / Undeserving</div>
+        <div class="checkbox-item"><span class="cb"></span> Burdensome to others</div>
+        <div class="checkbox-item"><span class="cb"></span> Competent and self-sufficient</div>
+        <div class="checkbox-item"><span class="cb"></span> Defective / Broken</div>
+        <div class="checkbox-item"><span class="cb"></span> Ambivalent / Context-dependent</div>
+      </div>
+      <div class="label">Notes:</div>
+      <div class="write-line"></div>
+    </div>
+    <div class="box">
+      <h3>Model of Others</h3>
+      <p class="label">Client's evident view of attachment figures:</p>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Trustworthy / Responsive</div>
+        <div class="checkbox-item"><span class="cb"></span> Unreliable / Inconsistent</div>
+        <div class="checkbox-item"><span class="cb"></span> Rejecting / Critical</div>
+        <div class="checkbox-item"><span class="cb"></span> Dangerous / Threatening</div>
+        <div class="checkbox-item"><span class="cb"></span> Idealized (positive view)</div>
+        <div class="checkbox-item"><span class="cb"></span> Ambivalent — want/fear closeness</div>
+      </div>
+      <div class="label">Notes:</div>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <!-- Section 3: Current Relationship Patterns -->
+  <h2>Section 3 — Current Relationship Pattern Mapping</h2>
+  <p class="section-intro">Map recurring patterns across key relationship domains. Look for consistency with historical IWMs and activation of the attachment system.</p>
+
+  <table>
+    <tr>
+      <th style="width:22%;">Domain</th>
+      <th style="width:38%;">Observed Pattern / Client Description</th>
+      <th style="width:40%;">Possible Attachment Link</th>
+    </tr>
+    <tr>
+      <td><strong>Romantic / Partner</strong></td>
+      <td style="height:38px;"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Friendships</strong></td>
+      <td style="height:38px;"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Work / Authority figures</strong></td>
+      <td style="height:38px;"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Parenting (if applicable)</strong></td>
+      <td style="height:38px;"></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td><strong>Therapeutic relationship</strong></td>
+      <td style="height:38px;"></td>
+      <td></td>
+    </tr>
+  </table>
+
+  <!-- Section 4: Attachment Style Hypothesis -->
+  <h2>Section 4 — Attachment Style Hypothesis</h2>
+  <p class="section-intro">Check all behavioral indicators observed. Dominant cluster suggests provisional attachment style. Note: styles exist on a continuum; many clients present with mixed features, especially under stress.</p>
+
+  <div class="two-col">
+    <div class="box">
+      <h3>Secure</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Comfortable discussing emotions</div>
+        <div class="checkbox-item"><span class="cb"></span> Can seek support and accept it</div>
+        <div class="checkbox-item"><span class="cb"></span> Balanced view of past caregivers</div>
+        <div class="checkbox-item"><span class="cb"></span> Stable, reciprocal relationships</div>
+        <div class="checkbox-item"><span class="cb"></span> Tolerates session endings without distress</div>
+        <div class="checkbox-item"><span class="cb"></span> Coherent, organized narrative</div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Anxious-Preoccupied</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Frequent bids for reassurance</div>
+        <div class="checkbox-item"><span class="cb"></span> Hypervigilant to therapist's reactions</div>
+        <div class="checkbox-item"><span class="cb"></span> Distressed by cancellations / vacations</div>
+        <div class="checkbox-item"><span class="cb"></span> Difficulty with self-soothing</div>
+        <div class="checkbox-item"><span class="cb"></span> Angry or clingy in relationships</div>
+        <div class="checkbox-item"><span class="cb"></span> Narrative is lengthy, emotionally tangled</div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Dismissing-Avoidant</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Minimizes distress; "I'm fine"</div>
+        <div class="checkbox-item"><span class="cb"></span> Difficulty identifying emotions</div>
+        <div class="checkbox-item"><span class="cb"></span> Values independence strongly</div>
+        <div class="checkbox-item"><span class="cb"></span> Idealizes or dismisses childhood</div>
+        <div class="checkbox-item"><span class="cb"></span> Brief, sparse narrative; few memories</div>
+        <div class="checkbox-item"><span class="cb"></span> Irregular attendance or premature endings</div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Fearful-Avoidant / Disorganized</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Approach-avoidance around closeness</div>
+        <div class="checkbox-item"><span class="cb"></span> History of relational trauma or abuse</div>
+        <div class="checkbox-item"><span class="cb"></span> Dissociative episodes in session</div>
+        <div class="checkbox-item"><span class="cb"></span> Self-sabotage when relationships improve</div>
+        <div class="checkbox-item"><span class="cb"></span> Narrative has lapses, contradictions, fear</div>
+        <div class="checkbox-item"><span class="cb"></span> Oscillates: desperate for / terrified of closeness</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label" style="margin-top:6px;">Provisional Attachment Style Hypothesis &amp; rationale:</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <!-- Section 5: Therapeutic Relationship Observations -->
+  <h2>Section 5 — Therapeutic Relationship Observations</h2>
+  <p class="section-intro">Record observations about how the attachment system is activated within the therapeutic relationship. These are clinically significant data — not just logistics.</p>
+
+  <div class="prompt-q">How does the client respond at the start and end of sessions? (Arrival behavior, leaving behavior, transitions)</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">Has there been a therapeutic rupture? If so — how did the client respond? What triggered it? How was it repaired (or not)?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">What emotions or reactions does this client evoke in me (countertransference)? Are these consistent with the client's attachment pattern?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">How does the client respond to empathic attunement? To limit-setting? To my absence / schedule changes?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <!-- Section 6: Treatment Goals -->
+  <h2>Section 6 — Attachment-Focused Treatment Goals</h2>
+  <p class="section-intro">Translate the attachment formulation into concrete, measurable treatment goals. Frame goals in terms of relational capacity, not just symptom reduction.</p>
+
+  <div class="prompt-q">Long-term attachment goal (earned security / IWM revision):</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">Mid-term goal (e.g., increase distress tolerance; practice support-seeking; reduce hyperactivating or deactivating strategies):</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">Near-term / in-session goal (e.g., name one emotion per session; stay present during rupture repair; tolerate session endings):</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="two-col">
+    <div class="box">
+      <h3>Primary Intervention Approach</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Attachment-Focused Therapy (AFT)</div>
+        <div class="checkbox-item"><span class="cb"></span> Emotionally Focused Therapy (EFT)</div>
+        <div class="checkbox-item"><span class="cb"></span> Mentalization-Based Treatment (MBT)</div>
+        <div class="checkbox-item"><span class="cb"></span> EMDR with attachment focus</div>
+        <div class="checkbox-item"><span class="cb"></span> Schema Therapy (attachment schema work)</div>
+        <div class="checkbox-item"><span class="cb"></span> Psychodynamic / Relational approach</div>
+        <div class="checkbox-item"><span class="cb"></span> Integrative / Other: <span style="border-bottom:1px solid #999;display:inline-block;width:100px;">&nbsp;</span></div>
+      </div>
+    </div>
+    <div class="box">
+      <h3>Stance Adjustments Planned</h3>
+      <div class="checkbox-group">
+        <div class="checkbox-item"><span class="cb"></span> Increase structure / predictability</div>
+        <div class="checkbox-item"><span class="cb"></span> Explicit between-session contact boundaries</div>
+        <div class="checkbox-item"><span class="cb"></span> Slow pace; respect autonomy cues</div>
+        <div class="checkbox-item"><span class="cb"></span> Trauma-informed pacing / stabilization first</div>
+        <div class="checkbox-item"><span class="cb"></span> Psychoeducation about attachment</div>
+        <div class="checkbox-item"><span class="cb"></span> Explicit processing of therapeutic relationship</div>
+        <div class="checkbox-item"><span class="cb"></span> Other: <span style="border-bottom:1px solid #999;display:inline-block;width:110px;">&nbsp;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7: Session Reflection -->
+  <h2>Section 7 — Session Reflection Prompts</h2>
+  <p class="section-intro">Complete after the session. These prompts support clinician reflexivity and attachment-informed supervision preparation.</p>
+
+  <div class="prompt-q">What attachment themes were most active in today's session?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">Was there a moment when I served as a safe haven or secure base? What did that look like?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">Did my own attachment patterns or history get activated? How might that have influenced my responses?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="prompt-q">What would I do differently in the next session to better align with this client's attachment needs?</div>
+  <div class="write-line"></div>
+  <div class="write-line"></div>
+
+  <div class="note-box">
+    <strong>Supervision Note:</strong> If scoring on avoidance dimension is high (ECR-R &gt;4.5) or disorganized features are present, consider consultation before progressing to deeper trauma processing. Therapist's own unresolved attachment around loss or abuse can create parallel process risk.
+  </div>
+
+  <div class="footer">&copy; 2026 GA Integrated Therapeutic Perspectives LLC. For licensed professional use only.<br>CR-CLI-601 | CounselorReady CE | NBCC ACEP #7760</div>
+</body>
+</html>

@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>User Management - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+  <!-- Old Admin Header (legacy) -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-course-preview.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-7xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-900">User Management</h1>
+            <p class="text-forest-600 mt-1">Manage users, subscriptions, and enrollments</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button onclick="exportUsers()" class="bg-forest-100 hover:bg-forest-200 text-forest-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-download"></i>
+              Export CSV
+            </button>
+            <button onclick="openCreateUserModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+              <i class="fas fa-user-plus"></i>
+              Create User
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-hunter-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statTotalUsers">--</p>
+                <p class="text-xs text-forest-500">Total Users</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statActiveUsers">--</p>
+                <p class="text-xs text-forest-500">Active Subscribers</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-crown text-honey-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statVipUsers">--</p>
+                <p class="text-xs text-forest-500">VIP Members</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-plus text-blue-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statNewUsers">--</p>
+                <p class="text-xs text-forest-500">New This Month</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-4 mb-6">
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[250px]">
+              <div class="relative">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-forest-400"></i>
+                <input type="text" id="searchInput" placeholder="Search by name or email..." 
+                  class="w-full pl-10 pr-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500"
+                  onkeyup="debounceSearch()">
+              </div>
+            </div>
+            <select id="filterPlan" onchange="loadUsers()" class="border border-forest-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-hunter-500">
+              <option value="">All Plans</option>
+              <option value="free">Free</option>
+              <option value="starter">Starter</option>
+              <option value="professional">Professional</option>
+              <option value="vip">VIP</option>
+            </select>
+            <select id="filterStatus" onchange="loadUsers()" class="border border-forest-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-hunter-500">
+              <option value="">All Status</option>
+              <option value="active">Active</option>
+              <option value="trial">Trial</option>
+              <option value="canceled">Canceled</option>
+              <option value="past_due">Past Due</option>
+            </select>
+            <select id="sortBy" onchange="loadUsers()" class="border border-forest-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-hunter-500">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name">Name A-Z</option>
+              <option value="lastLogin">Last Login</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-forest-50 border-b border-forest-200">
+                <tr>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">User</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Plan</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Status</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Courses</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Joined</th>
+                  <th class="text-left px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Last Login</th>
+                  <th class="text-right px-6 py-3 text-xs font-semibold text-forest-600 uppercase tracking-wide">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTableBody" class="divide-y divide-forest-100">
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading users...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="px-6 py-4 border-t border-forest-200 flex items-center justify-between bg-forest-50">
+            <p class="text-sm text-forest-600">
+              Showing <span id="showingFrom">0</span>-<span id="showingTo">0</span> of <span id="totalCount">0</span> users
+            </p>
+            <div class="flex items-center gap-2">
+              <button onclick="prevPage()" id="prevBtn" disabled class="px-3 py-1 border border-forest-300 rounded-lg text-forest-600 hover:bg-forest-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <span class="px-3 py-1 text-forest-700">Page <span id="currentPage">1</span></span>
+              <button onclick="nextPage()" id="nextBtn" class="px-3 py-1 border border-forest-300 rounded-lg text-forest-600 hover:bg-forest-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- User Detail Modal -->
+  <div id="userModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <!-- Modal Header -->
+      <div class="bg-gradient-to-r from-burgundy-800 to-hunter-700 text-white p-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div id="modalUserAvatar" class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-xl font-bold">
+              --
+            </div>
+            <div>
+              <h2 id="modalUserName" class="text-xl font-bold">User Name</h2>
+              <p id="modalUserEmail" class="text-white/80 text-sm"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3f5a525e56537f5a475e524f535a115c5052">[email&#160;protected]</a></p>
+            </div>
+          </div>
+          <button onclick="closeUserModal()"
+            style="width:36px;height:36px;min-width:36px;border-radius:50%;background:rgba(255,255,255,0.2);border:none;cursor:pointer;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0"
+            onmouseover="this.style.background='rgba(255,255,255,0.35)'"
+            onmouseout="this.style.background='rgba(255,255,255,0.2)'"
+            aria-label="Close">✕</button>
+        </div>
+      </div>
+      
+      <!-- Modal Tabs -->
+      <div class="border-b border-forest-200 bg-forest-50">
+        <nav class="flex">
+          <button onclick="showModalTab('overview')" class="modal-tab active px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="overview">
+            Overview
+          </button>
+          <button onclick="showModalTab('subscription')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="subscription">
+            Subscription
+          </button>
+          <button onclick="showModalTab('courses')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="courses">
+            Courses
+          </button>
+          <button onclick="showModalTab('credentials')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="credentials">
+            Credentials
+          </button>
+          <button onclick="showModalTab('certificates')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="certificates">
+            Certificates
+          </button>
+          <button onclick="showModalTab('actions')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="actions">
+            Admin Actions
+          </button>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+      </div>
+      
+      <!-- Modal Content -->
+      <div class="flex-1 overflow-y-auto p-6">
+        <!-- Overview Tab -->
+        <div id="tab-overview" class="modal-tab-content">
+          <div class="grid grid-cols-2 gap-6">
+            <div class="space-y-4">
+              <h3 class="font-semibold text-forest-900 border-b pb-2">Account Info</h3>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-forest-500">User ID</p>
+                  <p id="detailUserId" class="font-mono text-xs text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Role</p>
+                  <p id="detailRole" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Joined</p>
+                  <p id="detailJoined" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Last Login</p>
+                  <p id="detailLastLogin" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Primary State</p>
+                  <p id="detailState" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Phone</p>
+                  <p id="detailPhone" class="font-medium text-forest-800">--</p>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <h3 class="font-semibold text-forest-900 border-b pb-2">Activity Summary</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="bg-hunter-50 rounded-lg p-4 text-center">
+                  <p id="detailCourseCount" class="text-2xl font-bold text-hunter-700">0</p>
+                  <p class="text-xs text-hunter-600">Courses Enrolled</p>
+                </div>
+                <div class="bg-green-50 rounded-lg p-4 text-center">
+                  <p id="detailCompletedCount" class="text-2xl font-bold text-green-700">0</p>
+                  <p class="text-xs text-green-600">Completed</p>
+                </div>
+                <div class="bg-honey-50 rounded-lg p-4 text-center">
+                  <p id="detailCEHours" class="text-2xl font-bold text-honey-700">0</p>
+                  <p class="text-xs text-honey-600">CE Hours Earned</p>
+                </div>
+                <div class="bg-burgundy-50 rounded-lg p-4 text-center">
+                  <p id="detailCredentialCount" class="text-2xl font-bold text-burgundy-700">0</p>
+                  <p class="text-xs text-burgundy-600">Credentials</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Subscription Tab -->
+        <div id="tab-subscription" class="modal-tab-content hidden">
+          <div class="space-y-6">
+            <div class="bg-forest-50 rounded-lg p-4">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-forest-900">Current Plan</h3>
+                <span id="subPlanBadge" class="px-3 py-1 rounded-full text-sm font-semibold">--</span>
+              </div>
+              <div class="grid grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p class="text-forest-500">Status</p>
+                  <p id="subStatus" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Started</p>
+                  <p id="subStarted" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Renews/Ends</p>
+                  <p id="subEnds" class="font-medium text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Trial Ends</p>
+                  <p id="trialEndsAt" class="font-medium text-blue-700">--</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="font-semibold text-forest-900 mb-3">Change Subscription</h3>
+              <div class="flex items-center gap-4">
+                <select id="changePlanSelect" class="flex-1 border border-forest-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-hunter-500">
+                  <option value="free">Free</option>
+                  <option value="starter">Starter ($19.99/mo)</option>
+                  <option value="professional">Professional ($29.99/mo)</option>
+                  <option value="vip">VIP ($49.99/mo)</option>
+                </select>
+                <button onclick="changeUserPlan()" class="bg-hunter-600 hover:bg-hunter-700 text-white px-6 py-2 rounded-lg font-medium">
+                  Update Plan
+                </button>
+              </div>
+              <p class="text-xs text-forest-500 mt-2">⚠️ This bypasses Stripe billing. Use for comps/corrections only.</p>
+            </div>
+            
+            <div class="border-t pt-4">
+              <h3 class="font-semibold text-forest-900 mb-1">Trial Extension</h3>
+              <p class="text-xs text-forest-500 mb-3">Adds 3 days to the trial end date. If the trial has already expired, it reactivates from today.</p>
+              <div class="flex items-center gap-4">
+                <div class="flex-1">
+                  <p class="text-sm text-forest-700">Current trial end: <span id="trialEndsAtInline" class="font-medium text-blue-700">--</span></p>
+                </div>
+                <button
+                  onclick="extendUserTrial()"
+                  id="extendTrialBtn"
+                  class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+                >
+                  <i class="fas fa-clock"></i>
+                  Extend Trial +3 Days
+                </button>
+              </div>
+              <p id="extendTrialMsg" class="text-xs mt-2 hidden"></p>
+            </div>
+
+            <div class="border-t pt-4">
+              <h3 class="font-semibold text-forest-900 mb-3">Billing Info</h3>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-forest-500">Stripe Customer ID</p>
+                  <p id="stripeCustomerId" class="font-mono text-xs text-forest-800">--</p>
+                </div>
+                <div>
+                  <p class="text-forest-500">Stripe Subscription ID</p>
+                  <p id="stripeSubId" class="font-mono text-xs text-forest-800">--</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Courses Tab -->
+        <div id="tab-courses" class="modal-tab-content hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-forest-900">Course Enrollments</h3>
+            <button onclick="openEnrollModal()" class="bg-hunter-600 hover:bg-hunter-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+              <i class="fas fa-plus"></i>
+              Enroll in Course
+            </button>
+          </div>
+          <div id="userCoursesList" class="space-y-3">
+            <p class="text-forest-500 text-center py-8">Loading courses...</p>
+          </div>
+        </div>
+        
+        <!-- Credentials Tab -->
+        <div id="tab-credentials" class="modal-tab-content hidden">
+          <h3 class="font-semibold text-forest-900 mb-4">User Credentials</h3>
+          <div id="userCredentialsList" class="space-y-3">
+            <p class="text-forest-500 text-center py-8">Loading credentials...</p>
+          </div>
+        </div>
+
+        <!-- Certificates Tab -->
+        <div id="tab-certificates" class="modal-tab-content hidden">
+          <h3 class="font-semibold text-forest-900 mb-4">Issued Certificates</h3>
+          <div id="userCertificatesList" class="space-y-3">
+            <div class="flex items-center justify-center py-8 text-forest-500">
+              <svg class="animate-spin h-5 w-5 mr-2 text-burgundy-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+              </svg>
+              Loading certificates...
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Actions Tab -->
+        <div id="tab-actions" class="modal-tab-content hidden">
+          <div class="space-y-6">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+              <h3 class="font-semibold text-yellow-800 mb-3 flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                Admin Actions
+              </h3>
+              <p class="text-sm text-yellow-700 mb-4">These actions directly affect the user's account. Use with caution.</p>
+              
+              <div class="space-y-3">
+                <button onclick="sendPasswordReset()" class="w-full bg-white border border-yellow-300 hover:bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-medium text-left flex items-center gap-3">
+                  <i class="fas fa-key w-5"></i>
+                  <div>
+                    <p>Send Password Reset Email</p>
+                    <p class="text-xs font-normal">User will receive an email to reset their password</p>
+                  </div>
+                </button>
+                
+                <button onclick="toggleUserStatus()" id="toggleStatusBtn" class="w-full bg-white border border-yellow-300 hover:bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-medium text-left flex items-center gap-3">
+                  <i class="fas fa-user-slash w-5"></i>
+                  <div>
+                    <p id="toggleStatusText">Disable Account</p>
+                    <p class="text-xs font-normal">Prevent user from logging in</p>
+                  </div>
+                </button>
+                
+                <button onclick="impersonateUser()" class="w-full bg-white border border-yellow-300 hover:bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-medium text-left flex items-center gap-3">
+                  <i class="fas fa-user-secret w-5"></i>
+                  <div>
+                    <p>Login as User</p>
+                    <p class="text-xs font-normal">View the platform from this user's perspective</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h3 class="font-semibold text-red-800 mb-3 flex items-center gap-2">
+                <i class="fas fa-trash"></i>
+                Danger Zone
+              </h3>
+              <button onclick="deleteUser()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                <i class="fas fa-trash"></i>
+                Delete User Account
+              </button>
+              <p class="text-xs text-red-600 mt-2">This action cannot be undone. All user data will be permanently deleted.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enroll Modal -->
+  <div id="enrollModal" class="hidden fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-lg">
+      <div class="p-6 border-b border-forest-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-forest-900">Enroll User in Course</h3>
+          <button onclick="closeEnrollModal()" class="text-forest-400 hover:text-forest-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6">
+        <label class="block text-sm font-medium text-forest-700 mb-2">Select Course</label>
+        <select id="enrollCourseSelect" class="w-full p-3 border border-forest-300 rounded-lg focus:ring-2 focus:ring-hunter-500">
+          <option value="">-- Select a course --</option>
+        </select>
+      </div>
+      <div class="p-6 border-t border-forest-200 flex justify-end gap-3">
+        <button onclick="closeEnrollModal()" class="px-4 py-2 border border-forest-300 rounded-lg text-forest-700 hover:bg-forest-50">
+          Cancel
+        </button>
+        <button onclick="submitEnrollment()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg font-medium">
+          Enroll User
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    
+    let currentPage = 1;
+    let totalPages = 1;
+    let currentUserId = null;
+    let currentUserData = null;
+    let searchTimeout = null;
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadStats();
+      loadUsers();
+    });
+    
+    function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') {
+        alert('Admin access required');
+        window.location.href = '/dashboard.html';
+      }
+      document.getElementById('adminEmail').textContent = user.email || 'Admin';
+    }
+    
+    async function loadStats() {
+      try {
+        const response = await fetch(`${API_URL}/api/admin/user-stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) {
+          // Fallback to basic stats
+          const basicResponse = await fetch(`${API_URL}/api/admin/stats`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await basicResponse.json();
+          document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
+          document.getElementById('statActiveUsers').textContent = data.activeSubscribers || 0;
+          return;
+        }
+        
+        const data = await response.json();
+        document.getElementById('statTotalUsers').textContent = data.totalUsers || 0;
+        document.getElementById('statActiveUsers').textContent = data.activeUsers || 0;
+        document.getElementById('statVipUsers').textContent = data.vipUsers || 0;
+        document.getElementById('statNewUsers').textContent = data.newThisMonth || 0;
+      } catch (error) {
+        console.error('Load stats error:', error);
+      }
+    }
+    
+    function debounceSearch() {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentPage = 1;
+        loadUsers();
+      }, 300);
+    }
+    
+    async function loadUsers() {
+      const search = document.getElementById('searchInput').value;
+      const plan = document.getElementById('filterPlan').value;
+      const status = document.getElementById('filterStatus').value;
+      const sort = document.getElementById('sortBy').value;
+      
+      let url = `${API_URL}/api/admin/users?page=${currentPage}&limit=20`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (plan) url += `&plan=${plan}`;
+      if (status) url += `&status=${status}`;
+      if (sort) url += `&sort=${sort}`;
+      
+      try {
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderUsersTable(data.users || []);
+        
+        // Update pagination
+        totalPages = data.pages || 1;
+        document.getElementById('currentPage').textContent = currentPage;
+        document.getElementById('totalCount').textContent = data.total || 0;
+        document.getElementById('showingFrom').textContent = ((currentPage - 1) * 20) + 1;
+        document.getElementById('showingTo').textContent = Math.min(currentPage * 20, data.total || 0);
+        
+        document.getElementById('prevBtn').disabled = currentPage <= 1;
+        document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        
+      } catch (error) {
+        console.error('Load users error:', error);
+        document.getElementById('usersTableBody').innerHTML = `
+          <tr><td colspan="7" class="px-6 py-12 text-center text-red-500">Failed to load users</td></tr>
+        `;
+      }
+    }
+    
+    function renderUsersTable(users) {
+      const tbody = document.getElementById('usersTableBody');
+      
+      if (users.length === 0) {
+        tbody.innerHTML = `
+          <tr><td colspan="7" class="px-6 py-12 text-center text-forest-500">No users found</td></tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = users.map(user => {
+        const name = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || 'No Name';
+        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        const plan = user.subscription?.plan || 'free';
+        const status = user.subscription?.status || 'free';
+        
+        const planColors = {
+          free: 'bg-gray-100 text-gray-700',
+          starter: 'bg-blue-100 text-blue-700',
+          professional: 'bg-purple-100 text-purple-700',
+          vip: 'bg-honey-100 text-honey-700'
+        };
+        
+        const statusColors = {
+          active: 'text-green-600',
+          trial: 'text-blue-600',
+          canceled: 'text-red-600',
+          past_due: 'text-orange-600',
+          free: 'text-gray-600'
+        };
+        
+        return `
+          <tr class="hover:bg-forest-50 transition-colors">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-semibold text-sm">
+                  ${initials}
+                </div>
+                <div>
+                  <p class="font-medium text-forest-900">${name}</p>
+                  <p class="text-xs text-forest-500">${user.email}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 rounded-full text-xs font-semibold ${planColors[plan] || planColors.free}">
+                ${plan.toUpperCase()}
+              </span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="${statusColors[status] || statusColors.free} font-medium text-sm">
+                ${status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-sm text-forest-700">
+              ${user.courseCount || 0} enrolled
+            </td>
+            <td class="px-6 py-4 text-sm text-forest-600">
+              ${user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '--'}
+            </td>
+            <td class="px-6 py-4 text-sm text-forest-600">
+              ${user.lastLoginAt ? getTimeAgo(new Date(user.lastLoginAt)) : 'Never'}
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button onclick="viewUser('${user._id}')" class="text-hunter-600 hover:text-hunter-700 font-medium text-sm">
+                View Details
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        loadUsers();
+      }
+    }
+    
+    function nextPage() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadUsers();
+      }
+    }
+    
+    async function viewUser(userId) {
+      currentUserId = userId;
+      document.getElementById('userModal').classList.remove('hidden');
+      
+      // Reset to overview tab
+      showModalTab('overview');
+      
+      // Load user details
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/progress`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        currentUserData = data;
+        renderUserDetails(data);
+      } catch (error) {
+        console.error('Load user details error:', error);
+        alert('Failed to load user details');
+      }
+    }
+    
+    function renderUserDetails(data) {
+      const user = data.user || {};
+      const stats = data.stats || {};
+      
+      // Header
+      const name = user.name || 'Unknown';
+      const initials = name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      document.getElementById('modalUserAvatar').textContent = initials;
+      document.getElementById('modalUserName').textContent = name;
+      document.getElementById('modalUserEmail').textContent = user.email || '';
+      
+      // Overview tab
+      document.getElementById('detailUserId').textContent = user.id || '--';
+      document.getElementById('detailRole').textContent = user.role || 'user';
+      document.getElementById('detailJoined').textContent = user.registeredAt ? new Date(user.registeredAt).toLocaleDateString() : '--';
+      document.getElementById('detailLastLogin').textContent = user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleString() : 'Never';
+      document.getElementById('detailState').textContent = user.primaryState || '--';
+      document.getElementById('detailPhone').textContent = user.phone || '--';
+      
+      document.getElementById('detailCourseCount').textContent = stats.totalCourses || 0;
+      document.getElementById('detailCompletedCount').textContent = stats.completedCourses || 0;
+      document.getElementById('detailCEHours').textContent = stats.totalCEHoursEarned || 0;
+      document.getElementById('detailCredentialCount').textContent = stats.totalCredentials || 0;
+      
+      // Subscription tab
+      const plan = user.subscription?.plan || 'free';
+      const status = user.subscription?.status || 'free';
+      
+      const planColors = {
+        free: 'bg-gray-100 text-gray-700',
+        starter: 'bg-blue-100 text-blue-700',
+        professional: 'bg-purple-100 text-purple-700',
+        vip: 'bg-honey-100 text-honey-700'
+      };
+      
+      document.getElementById('subPlanBadge').textContent = plan.toUpperCase();
+      document.getElementById('subPlanBadge').className = `px-3 py-1 rounded-full text-sm font-semibold ${planColors[plan] || planColors.free}`;
+      document.getElementById('subStatus').textContent = status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+      document.getElementById('subStarted').textContent = user.subscription?.currentPeriodStart ? new Date(user.subscription.currentPeriodStart).toLocaleDateString() : '--';
+      document.getElementById('subEnds').textContent = user.subscription?.currentPeriodEnd ? new Date(user.subscription.currentPeriodEnd).toLocaleDateString() : '--';
+      document.getElementById('stripeCustomerId').textContent = user.subscription?.stripeCustomerId || 'Not set';
+      document.getElementById('stripeSubId').textContent = user.subscription?.stripeSubscriptionId || 'Not set';
+      document.getElementById('changePlanSelect').value = plan;
+      const trialEnd = user.subscription?.trialEndsAt
+        ? new Date(user.subscription.trialEndsAt).toLocaleDateString()
+        : '--';
+      document.getElementById('trialEndsAt').textContent = trialEnd;
+      document.getElementById('trialEndsAtInline').textContent = trialEnd;
+
+      // Courses tab
+      renderUserCourses(data.courseProgress || []);
+      
+      // Credentials tab
+      renderUserCredentials(data.credentials || []);
+      
+      // Actions tab
+      const isDisabled = user.disabled;
+      document.getElementById('toggleStatusText').textContent = isDisabled ? 'Enable Account' : 'Disable Account';
+    }
+    
+    function renderUserCourses(courses) {
+      const container = document.getElementById('userCoursesList');
+      
+      if (courses.length === 0) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No course enrollments</p>';
+        return;
+      }
+      
+      container.innerHTML = courses.map(course => `
+        <div class="border border-forest-200 rounded-lg p-4">
+          <div class="flex items-start justify-between mb-2">
+            <div>
+              <p class="font-medium text-forest-900">${course.title || 'Unknown Course'}</p>
+              <p class="text-xs text-forest-500">${course.ceHours || 0} CE Hours</p>
+            </div>
+            <span class="px-2 py-1 rounded text-xs font-medium ${course.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+              ${course.completed ? 'Completed' : `${course.progress || 0}%`}
+            </span>
+          </div>
+          <div class="w-full bg-forest-100 rounded-full h-1.5 mb-3">
+            <div class="bg-hunter-600 h-1.5 rounded-full" style="width: ${course.progress || 0}%"></div>
+          </div>
+          <div class="flex gap-2">
+            ${!course.completed ? `
+              <button onclick="adminMarkComplete('${course.courseId}')" class="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1 rounded">
+                ✓ Mark Complete
+              </button>
+            ` : ''}
+            <button onclick="adminResetProgress('${course.courseId}')" class="text-xs bg-yellow-100 hover:bg-yellow-200 text-yellow-700 px-3 py-1 rounded">
+              ↺ Reset
+            </button>
+            <button onclick="adminUnenroll('${course.courseId}', '${course.title?.replace(/'/g, "\\'")}')" class="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1 rounded">
+              ✕ Unenroll
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function renderUserCredentials(credentials) {
+      const container = document.getElementById('userCredentialsList');
+      
+      if (credentials.length === 0) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No credentials added</p>';
+        return;
+      }
+      
+      container.innerHTML = credentials.map(cred => `
+        <div class="flex items-center justify-between p-3 bg-forest-50 rounded-lg">
+          <div class="flex items-center gap-3">
+            <i class="fas fa-certificate text-honey-500"></i>
+            <div>
+              <p class="font-medium text-forest-900">${cred.name} ${cred.state ? `(${cred.state})` : ''}</p>
+              <p class="text-xs text-forest-500">License: ${cred.licenseNumber || 'Not set'}</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium ${cred.expirationDate && new Date(cred.expirationDate) < new Date(Date.now() + 30*24*60*60*1000) ? 'text-red-600' : 'text-forest-700'}">
+              ${cred.expirationDate ? new Date(cred.expirationDate).toLocaleDateString() : 'No expiration'}
+            </p>
+            <p class="text-xs text-forest-500">${cred.totalCEUsCompleted || 0} / ${cred.totalCEUsRequired || 0} CE</p>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function showModalTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('.modal-tab').forEach(btn => {
+        btn.classList.remove('active', 'border-burgundy-700', 'text-burgundy-700');
+        btn.classList.add('border-transparent');
+      });
+      const activeBtn = document.querySelector(`.modal-tab[data-tab="${tab}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'border-burgundy-700', 'text-burgundy-700');
+      }
+
+      // Show content
+      document.querySelectorAll('.modal-tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+      if (tab === 'certificates') {
+        loadUserCertificates();
+      }
+    }
+
+    function showAdminToast(message) {
+      const existing = document.getElementById('adminToast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.id = 'adminToast';
+      toast.className = 'fixed top-6 right-6 z-50 bg-hunter-700 text-white px-4 py-3 rounded-lg shadow-lg text-sm font-medium';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    async function loadUserCertificates() {
+      if (!currentUserId) return;
+      const container = document.getElementById('userCertificatesList');
+      container.innerHTML = `
+        <div class="flex items-center justify-center py-8 text-forest-500">
+          <svg class="animate-spin h-5 w-5 mr-2 text-burgundy-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          Loading certificates...
+        </div>
+      `;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/certificates`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || 'Failed to load certificates');
+        }
+        renderUserCertificates(payload.data || []);
+      } catch (error) {
+        console.error('Load user certificates error:', error);
+        container.innerHTML = `<p class="text-red-600 text-center py-8">Failed to load certificates: ${error.message}</p>`;
+      }
+    }
+
+    function renderUserCertificates(certificates) {
+      const container = document.getElementById('userCertificatesList');
+      if (!certificates.length) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No certificates for this user.</p>';
+        return;
+      }
+
+      container.innerHTML = certificates.map(cert => {
+        const certNumber = cert.certificateNumber || '—';
+        const courseTitle = (cert.courseId && cert.courseId.title) || cert.title || 'Unknown Course';
+        const ceHours = cert.ceHours != null ? cert.ceHours : (cert.courseId && cert.courseId.ceHours) || 0;
+        const completionDate = cert.completionDate ? new Date(cert.completionDate).toLocaleDateString() : '—';
+        const status = cert.isRevoked ? 'Revoked' : 'Active';
+        const statusClass = cert.isRevoked ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700';
+        const pdfUrl = cert.fileUrl || '';
+        const safeCertNumber = String(certNumber).replace(/'/g, "\\'");
+        return `
+          <div class="border border-forest-200 rounded-lg p-4" data-cert-id="${cert._id}">
+            <div class="flex items-start justify-between mb-3 gap-4">
+              <div class="flex-1 min-w-0">
+                <p class="font-medium text-forest-900 truncate">${courseTitle}</p>
+                <p class="text-xs text-forest-500 font-mono mt-0.5">${certNumber}</p>
+              </div>
+              <span class="px-2 py-1 rounded text-xs font-medium ${statusClass} whitespace-nowrap">${status}</span>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-xs mb-3">
+              <div>
+                <p class="text-forest-500">CE Hours</p>
+                <p class="font-medium text-forest-800">${ceHours}</p>
+              </div>
+              <div>
+                <p class="text-forest-500">Completion Date</p>
+                <p class="font-medium text-forest-800">${completionDate}</p>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button
+                onclick="regenerateUserCertificate('${cert._id}', '${safeCertNumber}', this)"
+                class="inline-flex items-center gap-1.5 bg-gold-600 hover:bg-gold-700 text-white text-xs font-medium px-3 py-1.5 rounded"
+              >
+                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582A7.003 7.003 0 0119 11m1 9v-5h-.581A7.003 7.003 0 015 13"/>
+                </svg>
+                Regenerate
+              </button>
+              ${pdfUrl ? `
+                <a
+                  href="${pdfUrl}"
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center gap-1.5 text-forest-600 hover:text-forest-700 text-xs font-medium px-3 py-1.5 rounded border border-forest-200 hover:border-forest-300"
+                >
+                  <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+                  </svg>
+                  Download
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function regenerateUserCertificate(certId, certNumber, btn) {
+      if (!currentUserId) return;
+      if (!confirm(`Regenerate certificate ${certNumber}? This will recreate the PDF with the user's current name.`)) {
+        return;
+      }
+
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+        Regenerating...
+      `;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/certificates/${certId}/regenerate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || 'Regeneration failed');
+        }
+        showAdminToast('Certificate regenerated');
+        loadUserCertificates();
+      } catch (error) {
+        console.error('Regenerate certificate error:', error);
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        alert(`Failed to regenerate certificate: ${error.message}`);
+      }
+    }
+    
+    function closeUserModal() {
+      document.getElementById('userModal').classList.add('hidden');
+      currentUserId = null;
+      currentUserData = null;
+    }
+    
+    // Enrollment functions
+    async function openEnrollModal() {
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        const select = document.getElementById('enrollCourseSelect');
+        select.innerHTML = '<option value="">-- Select a course --</option>' + 
+          (data.availableCourses || []).map(c => `
+            <option value="${c._id}">${c.title} (${c.ceuHours || 0} CE hrs)</option>
+          `).join('');
+        
+        document.getElementById('enrollModal').classList.remove('hidden');
+      } catch (error) {
+        console.error('Open enroll modal error:', error);
+        alert('Failed to load courses');
+      }
+    }
+    
+    function closeEnrollModal() {
+      document.getElementById('enrollModal').classList.add('hidden');
+    }
+    
+    async function submitEnrollment() {
+      const courseId = document.getElementById('enrollCourseSelect').value;
+      if (!courseId) {
+        alert('Please select a course');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enroll`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ courseId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          closeEnrollModal();
+          alert(data.message || 'User enrolled successfully');
+          viewUser(currentUserId); // Refresh
+        } else {
+          alert(data.error || 'Failed to enroll user');
+        }
+      } catch (error) {
+        console.error('Enroll error:', error);
+        alert('Failed to enroll user');
+      }
+    }
+    
+    async function adminMarkComplete(courseId) {
+      const note = prompt('Optional note for this manual completion:');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ note })
+        });
+        
+        if (response.ok) {
+          alert('Course marked as complete');
+          viewUser(currentUserId);
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to complete course');
+        }
+      } catch (error) {
+        console.error('Mark complete error:', error);
+        alert('Failed to mark course as complete');
+      }
+    }
+    
+    async function adminResetProgress(courseId) {
+      if (!confirm('Reset this user\'s progress? They will need to start the course over.')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}/reset`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('Progress reset successfully');
+          viewUser(currentUserId);
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to reset progress');
+        }
+      } catch (error) {
+        console.error('Reset progress error:', error);
+        alert('Failed to reset progress');
+      }
+    }
+    
+    async function adminUnenroll(courseId, courseTitle) {
+      if (!confirm(`Unenroll user from "${courseTitle}"? This removes all progress.`)) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('User unenrolled successfully');
+          viewUser(currentUserId);
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to unenroll user');
+        }
+      } catch (error) {
+        console.error('Unenroll error:', error);
+        alert('Failed to unenroll user');
+      }
+    }
+    
+    // Subscription functions
+    async function changeUserPlan() {
+      const plan = document.getElementById('changePlanSelect').value;
+      
+      if (!confirm(`Change this user's plan to ${plan.toUpperCase()}? This bypasses billing.`)) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/subscription`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ plan, status: 'active' })
+        });
+        
+        if (response.ok) {
+          alert('Subscription updated');
+          viewUser(currentUserId);
+          loadUsers();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to update subscription');
+        }
+      } catch (error) {
+        console.error('Change plan error:', error);
+        alert('Failed to update subscription');
+      }
+    }
+    
+    async function extendUserTrial() {
+      if (!currentUserId) return;
+      const btn = document.getElementById('extendTrialBtn');
+      const msg = document.getElementById('extendTrialMsg');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extending...';
+      msg.className = 'text-xs mt-2 hidden';
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/extend-trial`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          const newDate = new Date(data.newTrialEndsAt).toLocaleDateString();
+          document.getElementById('trialEndsAt').textContent = newDate;
+          document.getElementById('trialEndsAtInline').textContent = newDate;
+          document.getElementById('subStatus').textContent = 'trial';
+          msg.textContent = `✓ Trial extended. New end date: ${newDate}`;
+          msg.className = 'text-xs mt-2 text-green-600';
+        } else {
+          msg.textContent = `✗ ${data.error || 'Failed to extend trial'}`;
+          msg.className = 'text-xs mt-2 text-red-600';
+        }
+      } catch (err) {
+        console.error('Extend trial error:', err);
+        msg.textContent = '✗ Network error — could not extend trial';
+        msg.className = 'text-xs mt-2 text-red-600';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-clock"></i> Extend Trial +3 Days';
+        msg.classList.remove('hidden');
+      }
+    }
+
+    // Admin actions
+    async function sendPasswordReset() {
+      if (!confirm('Send password reset email to this user?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/reset-password`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('Password reset email sent');
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to send reset email');
+        }
+      } catch (error) {
+        console.error('Send reset error:', error);
+        alert('Failed to send reset email');
+      }
+    }
+    
+    async function toggleUserStatus() {
+      const isCurrentlyDisabled = currentUserData?.user?.disabled;
+      const action = isCurrentlyDisabled ? 'enable' : 'disable';
+      
+      if (!confirm(`${action.charAt(0).toUpperCase() + action.slice(1)} this user's account?`)) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/${action}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert(`Account ${action}d successfully`);
+          viewUser(currentUserId);
+          loadUsers();
+        } else {
+          const data = await response.json();
+          alert(data.error || `Failed to ${action} account`);
+        }
+      } catch (error) {
+        console.error('Toggle status error:', error);
+        alert(`Failed to ${action} account`);
+      }
+    }
+    
+    async function impersonateUser() {
+      if (!confirm('Login as this user? You will be logged out of your admin account.')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/impersonate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok && data.token) {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          localStorage.setItem('impersonating', 'true');
+          localStorage.setItem('adminToken', token);
+          window.location.href = '/dashboard.html';
+        } else {
+          alert(data.error || 'Failed to impersonate user');
+        }
+      } catch (error) {
+        console.error('Impersonate error:', error);
+        alert('Failed to impersonate user');
+      }
+    }
+    
+    async function deleteUser() {
+      const email = currentUserData?.user?.email;
+      const confirmation = prompt(`Type "${email}" to confirm deletion:`);
+      
+      if (confirmation !== email) {
+        alert('Deletion cancelled - email did not match');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('User deleted successfully');
+          closeUserModal();
+          loadUsers();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to delete user');
+        }
+      } catch (error) {
+        console.error('Delete user error:', error);
+        alert('Failed to delete user');
+      }
+    }
+    
+    async function exportUsers() {
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/export`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+          a.click();
+        } else {
+          alert('Failed to export users');
+        }
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('Failed to export users');
+      }
+    }
+    
+    function getTimeAgo(date) {
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff / 86400000)}h ago`;
+      if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+  </script>
+
+  <!-- CREATE USER MODAL -->
+  <div id="createUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-1">
+          <h2 class="font-display text-xl font-bold text-burgundy-900">Create New User</h2>
+          <button onclick="closeCreateUserModal()" class="text-gray-400 hover:text-gray-600 text-2xl leading-none">&times;</button>
+        </div>
+        <p class="text-sm text-forest-600 mb-6">Create an account manually — for test users, comped access, or migrated learners.</p>
+        <div id="cuError" class="hidden bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
+        <div id="cuSuccess" class="hidden bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 rounded-lg mb-4"></div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">First Name</label>
+            <input id="cu_firstName" type="text" placeholder="Jane" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Last Name</label>
+            <input id="cu_lastName" type="text" placeholder="Smith" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Email Address <span class="text-red-500">*</span></label>
+          <input id="cu_email" type="email" placeholder="jane@example.com" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+        </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Password <span class="text-red-500">*</span></label>
+          <input id="cu_password" type="password" placeholder="Minimum 8 characters" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Plan</label>
+            <select id="cu_plan" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+              <option value="free">Free</option>
+              <option value="starter">Starter</option>
+              <option value="professional">Professional</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">Role</label>
+            <select id="cu_role" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">License Type</label>
+            <select id="cu_licenseType" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+              <option value="">Select...</option>
+              <option>LPC</option><option>LMHC</option><option>LCSW</option>
+              <option>LMFT</option><option>Psychologist</option><option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1.5">State</label>
+            <select id="cu_state" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+              <option value="">Select...</option>
+              <option>AL</option><option>AK</option><option>AZ</option><option>AR</option><option>CA</option>
+              <option>CO</option><option>CT</option><option>DE</option><option>FL</option><option>GA</option>
+              <option>HI</option><option>ID</option><option>IL</option><option>IN</option><option>IA</option>
+              <option>KS</option><option>KY</option><option>LA</option><option>ME</option><option>MD</option>
+              <option>MA</option><option>MI</option><option>MN</option><option>MS</option><option>MO</option>
+              <option>MT</option><option>NE</option><option>NV</option><option>NH</option><option>NJ</option>
+              <option>NM</option><option>NY</option><option>NC</option><option>ND</option><option>OH</option>
+              <option>OK</option><option>OR</option><option>PA</option><option>RI</option><option>SC</option>
+              <option>SD</option><option>TN</option><option>TX</option><option>UT</option><option>VT</option>
+              <option>VA</option><option>WA</option><option>WV</option><option>WI</option><option>WY</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="closeCreateUserModal()" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50">Cancel</button>
+          <button onclick="submitCreateUser()" id="cu_submitBtn" class="flex-1 px-4 py-2.5 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold">Create User</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openCreateUserModal() {
+      document.getElementById('createUserModal').classList.remove('hidden');
+      ['cu_firstName','cu_lastName','cu_email','cu_password'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('cu_plan').value = 'free';
+      document.getElementById('cu_role').value = 'user';
+      document.getElementById('cu_licenseType').value = '';
+      document.getElementById('cu_state').value = '';
+      document.getElementById('cuError').classList.add('hidden');
+      document.getElementById('cuSuccess').classList.add('hidden');
+    }
+    function closeCreateUserModal() {
+      document.getElementById('createUserModal').classList.add('hidden');
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('createUserModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCreateUserModal();
+      });
+    });
+    async function submitCreateUser() {
+      const btn = document.getElementById('cu_submitBtn');
+      const errDiv = document.getElementById('cuError');
+      const successDiv = document.getElementById('cuSuccess');
+      errDiv.classList.add('hidden');
+      successDiv.classList.add('hidden');
+      const email = document.getElementById('cu_email').value.trim();
+      const password = document.getElementById('cu_password').value;
+      if (!email || !password) {
+        errDiv.textContent = 'Email and password are required.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+      if (password.length < 8) {
+        errDiv.textContent = 'Password must be at least 8 characters.';
+        errDiv.classList.remove('hidden');
+        return;
+      }
+      btn.textContent = 'Creating...';
+      btn.disabled = true;
+      const apiUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+      const tok = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${apiUrl}/api/admin/users/create`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}` },
+          body: JSON.stringify({
+            firstName: document.getElementById('cu_firstName').value.trim(),
+            lastName: document.getElementById('cu_lastName').value.trim(),
+            email,
+            password,
+            plan: document.getElementById('cu_plan').value,
+            role: document.getElementById('cu_role').value,
+            licenseType: document.getElementById('cu_licenseType').value,
+            state: document.getElementById('cu_state').value
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errDiv.textContent = data.error || 'Failed to create user.';
+          errDiv.classList.remove('hidden');
+        } else {
+          successDiv.textContent = `Created: ${data.user.email} — Plan: ${data.user.plan}`;
+          successDiv.classList.remove('hidden');
+          setTimeout(() => { closeCreateUserModal(); window.location.reload(); }, 1500);
+        }
+      } catch (err) {
+        errDiv.textContent = 'Network error — check connection.';
+        errDiv.classList.remove('hidden');
+      } finally {
+        btn.textContent = 'Create User';
+        btn.disabled = false;
+      }
+    }
+  </script>
+
+<script src="/js/footer.js"></script>
+  </main></div>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

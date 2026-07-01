@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Crisis Safety Plan Builder — CounselorReady</title>
+<meta name="description" content="Free safety plan builder for clinicians. Create collaborative crisis safety plans following the Stanley-Brown model.">
+<meta property="og:title" content="Safety Plan Builder — CounselorReady">
+<meta property="og:description" content="Build collaborative crisis safety plans with clients. Stanley-Brown model. Free for clinicians.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--burgundy:#6B1D34;--burgundy-light:#8B3A54;--burgundy-deep:#4A1224;--rose:#D0768A;--green:#4A7C59;--gold:#D4A855;--navy:#284157;--navy-deep:#1A2D3D;--stone:#EDEADF;--cream:#F9F6EF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-height:1.6}
+.hdr{background:linear-gradient(145deg,var(--burgundy-deep),var(--burgundy),var(--burgundy-light));padding:14px 28px 12px;border-bottom:2px solid var(--gold)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+.crisis-bar{background:var(--green);padding:10px 28px;display:flex;align-items:center;justify-content:center;gap:12px;font-size:13px;font-weight:700;color:#fff}
+.main{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+.step{background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px}
+.step-hdr{display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid #E0DBD0}
+.step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;color:#fff;flex-shrink:0}
+.step-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;color:var(--navy)}
+.step-hdr p{font-size:12px;color:#999;margin-top:2px}
+.step-body{padding:16px 20px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.field input,.field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #ddd;font-family:'Lato',sans-serif;font-size:14px;outline:none}
+.field input:focus,.field textarea:focus{border-color:var(--green)}
+.field textarea{resize:vertical;min-height:60px;line-height:1.5}
+.entry-row{display:flex;gap:8px;margin-bottom:6px}
+.entry-row input{flex:1}
+.entry-row .del{width:30px;height:38px;border:none;background:rgba(107,29,52,.06);color:var(--burgundy);border-radius:6px;cursor:pointer;font-size:16px;flex-shrink:0}
+.add{padding:6px 14px;border:1.5px dashed #bbb;background:#fff;color:#888;border-radius:6px;font-size:12px;cursor:pointer;font-family:'Lato',sans-serif}
+.add:hover{border-color:var(--green);color:var(--green)}
+.btn{padding:14px;border-radius:10px;font-family:'Lato',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.btn-gen{background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);box-shadow:0 3px 12px rgba(212,168,85,.3)}
+.output{background:#fff;border-radius:14px;border:1px solid #D5CFC0;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.08);margin-top:20px}
+.output-hdr{background:linear-gradient(135deg,var(--green),#5A9469);padding:16px 24px;color:#fff}
+.output-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px}
+.output-body{padding:24px;font-size:14px;line-height:1.7}
+.output-body .sp-step{margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #E8E4D8}
+.output-body .sp-step:last-child{border-bottom:none}
+.output-body .sp-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:13px;font-weight:800;color:#fff;margin-right:8px}
+.output-body .sp-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:16px;font-weight:700;color:var(--navy)}
+.output-body .sp-items{margin-top:6px;padding-left:36px;font-size:13.5px;color:#444}
+.output-body .sp-items div{padding:3px 0}
+.output-actions{display:flex;gap:10px;padding:14px 24px;background:var(--cream);border-top:1px solid #E0DBD0}
+.act-btn{flex:1;padding:10px;border-radius:8px;font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;border:none}
+.act-print{background:var(--navy);color:#D8E4EE}
+.act-copy{background:#fff;color:var(--navy);border:1.5px solid #D5CFC0}
+.privacy{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.5}
+.footer{text-align:center;padding:20px;font-size:12px;color:#999;line-height:1.7;margin-top:20px;background:var(--navy-deep);border-radius:12px}
+@media(max-width:600px){.entry-row{flex-direction:column}.entry-row .del{width:100%;height:auto;padding:4px}}
+@media print{.hdr,.crisis-bar,.btn,.output-actions,.privacy,.footer,.step{display:none!important}.output{box-shadow:none;border:1px solid #ccc}.output-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+<script src="/js/cr-gtag.js"></script>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb",{api_host:"https://us.i.posthog.com",autocapture:false});</script>
+</head>
+<body>
+<script>
+(async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const main = document.querySelector('main');
+          if (main) main.innerHTML = `
+            <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+              <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+              <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+              <p style="color:#4A7C59;margin-bottom:24px;">
+                This feature requires the Clinical Tools Suite add-on.
+                Contact your organization administrator to enable it.
+              </p>
+              <a href="/partner-billing.html#addons"
+                 style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+                View Add-ons
+              </a>
+            </div>
+          `;
+        });
+        return;
+      }
+      if (features && features.isPartnerUser && features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const badge = document.createElement('div');
+          badge.id = 'cr-powered-badge';
+          badge.innerHTML = `
+            <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+              <span style="font-weight:700;">Powered by</span>
+              <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+            </div>
+          `;
+          document.body.appendChild(badge);
+        });
+      }
+    }
+  } catch (e) { /* fail-open */ }
+})();
+</script>
+<div class="hdr">
+<div class="hdr-top"><span class="logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></span><span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.8px">FREE TOOL</span></div>
+<div class="hdr-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Crisis Safety Plan Builder</div>
+<div class="hdr-sub">Evidence-based Stanley-Brown Safety Planning Intervention. Complete collaboratively with your client.</div>
+</div>
+<div class="crisis-bar">If you are in immediate danger, call 988 (Suicide & Crisis Lifeline) or 911</div>
+<main class="main" id="app"></main>
+<script>
+let D={
+  clientName:"",date:new Date().toISOString().split('T')[0],clinician:"",
+  warnings:["","",""],
+  copingInternal:["","",""],
+  copingSocial:["","",""],
+  contactsHelp:[{name:"",phone:""},{name:"",phone:""}],
+  professionals:[{name:"",phone:""},{name:"",phone:""}],
+  emergencyContacts:[{name:"",phone:"",resource:""},{name:"988 Suicide & Crisis Lifeline",phone:"988",resource:"24/7"},{name:"911",phone:"911",resource:"Emergency"}],
+  envSafety:""
+};
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function addTo(arr,template){arr.push(typeof template==='string'?'':Object.assign({},template));render()}
+function delFrom(arr,i){if(arr.length>1){arr.splice(i,1);render()}}
+
+function render(){
+  const colors=['#6B1D34','#4A7C59','#D4A855','#284157','#8B3A54','#345640'];
+
+  let html=`
+  <div style="background:rgba(74,124,89,.04);border:1px solid rgba(74,124,89,.12);border-radius:10px;padding:14px 18px;margin-bottom:20px;font-size:12.5px;color:#555;line-height:1.6">
+    <strong style="color:var(--green)">About this tool:</strong> The Stanley-Brown Safety Planning Intervention (Stanley & Brown, 2012) is a brief, evidence-based intervention that reduces suicidal behavior. It's designed to be completed <strong>collaboratively</strong> — clinician and client together — not assigned as homework. The plan should be reviewed at every session and updated as needed.
+  </div>
+
+  <div class="step"><div class="step-body" style="padding:14px 20px">
+    <div class="field" style="display:flex;gap:14px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px"><label>Client Name</label><input value="${esc(D.clientName)}" oninput="D.clientName=this.value" placeholder="Full name"></div>
+      <div style="flex:0 0 150px"><label>Date</label><input type="date" value="${esc(D.date)}" oninput="D.date=this.value"></div>
+      <div style="flex:1;min-width:180px"><label>Clinician</label><input value="${esc(D.clinician)}" oninput="D.clinician=this.value" placeholder="Your name and credentials"></div>
+    </div>
+  </div></div>`;
+
+  // Step 1: Warning Signs
+  html+=buildListStep(1,colors[0],"Warning Signs","Thoughts, feelings, moods, situations, or behaviors that signal a crisis may be developing.","What are the things you notice when you start to feel worse?",D.warnings,'warnings');
+
+  // Step 2: Internal Coping
+  html+=buildListStep(2,colors[1],"Internal Coping Strategies","Things I can do on my own to take my mind off my problems — WITHOUT contacting another person.","What activities help you feel better or distract you when you're struggling?",D.copingInternal,'copingInternal');
+
+  // Step 3: People and Social Settings That Provide Distraction
+  html+=buildListStep(3,colors[2],"People & Places for Distraction","People I can contact and social settings that help distract me. Not necessarily to talk about the crisis — just to be around.","Who can you be around, or where can you go, to feel less alone?",D.copingSocial,'copingSocial');
+
+  // Step 4: People I Can Ask for Help
+  html+=buildContactStep(4,colors[3],"People I Can Ask for Help","People I can reach out to when I'm in crisis — and I'm willing to tell them I need help.",D.contactsHelp,'contactsHelp');
+
+  // Step 5: Professionals and Agencies
+  html+=buildContactStep(5,colors[4],"Professionals & Agencies I Can Contact","Clinicians, crisis lines, emergency rooms, and agencies I can reach in a crisis.",D.professionals,'professionals');
+
+  // Step 6: Making the Environment Safe
+  html+=`<div class="step">
+    <div class="step-hdr"><div class="step-num" style="background:${colors[5]}">6</div><div><h3>Making the Environment Safe</h3><p>Reducing access to lethal means is one of the most effective suicide prevention strategies.</p></div></div>
+    <div class="step-body">
+      <div class="field"><label>Means Restriction Plan</label>
+        <textarea oninput="D.envSafety=this.value" rows="3" placeholder="e.g. Firearms will be stored at [trusted person]'s house. Medications will be locked in a timed lockbox. Sharp objects removed from bedroom. [Specific plan for each identified means]">${esc(D.envSafety)}</textarea>
+      </div>
+    </div>
+  </div>`;
+
+  // Emergency Contacts (always at bottom)
+  html+=`<div class="step">
+    <div class="step-hdr"><div class="step-num" style="background:#C0392B">!</div><div><h3>Emergency Contacts</h3><p>If the above steps don't resolve the crisis — use these immediately.</p></div></div>
+    <div class="step-body">
+      ${D.emergencyContacts.map((c,i)=>`<div class="entry-row">
+        <input value="${esc(c.name)}" oninput="D.emergencyContacts[${i}].name=this.value" placeholder="Name/Resource" style="flex:2">
+        <input value="${esc(c.phone)}" oninput="D.emergencyContacts[${i}].phone=this.value" placeholder="Phone" style="flex:1">
+        <input value="${esc(c.resource)}" oninput="D.emergencyContacts[${i}].resource=this.value" placeholder="Notes" style="flex:1">
+        ${i>0?`<button class="del" onclick="delFrom(D.emergencyContacts,${i})">&times;</button>`:'<div style="width:30px"></div>'}
+      </div>`).join('')}
+      <button class="add" onclick="addTo(D.emergencyContacts,{name:'',phone:'',resource:''})">+ Add</button>
+    </div>
+  </div>`;
+
+  html+=`<button class="btn btn-gen" onclick="generate()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Generate Safety Plan</button>`;
+
+  html+=`<div id="spOutput"></div>
+  <div id="crEmailCapture" style="display:none"></div>
+  <div style="background:rgba(40,65,87,.04);border:1px solid rgba(40,65,87,.1);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:12px;color:#666;line-height:1.7"><strong style="color:#284157">This is a clinical tool, not an EHR.</strong> Print or save this safety plan in your own HIPAA-compliant record-keeping system. The client should keep a copy on their phone. CounselorReady does not store any data you enter. <a href="/tools/" style="color:#284157;font-weight:600">Record-keeping guidance →</a></div>
+  <div class="privacy">CounselorReady does not capture, transmit, or retain any information entered here. All data stays in your browser.</div>
+  <div class="footer"><span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:16px"><span style="color:var(--rose)">Counselor</span><span style="color:#5A9469">Ready</span></span> — Free clinical tools.<br>&copy; 2026 GAITP LLC. All rights reserved. | NBCC ACEP Provider #7760</div>`;
+
+  document.getElementById('app').innerHTML=html;
+}
+
+function buildListStep(num,color,title,desc,prompt,arr,key){
+  let items=arr.map((v,i)=>`<div class="entry-row"><input value="${esc(v)}" oninput="D.${key}[${i}]=this.value" placeholder="${prompt}"><button class="del" onclick="delFrom(D.${key},${i})">&times;</button></div>`).join('');
+  return`<div class="step"><div class="step-hdr"><div class="step-num" style="background:${color}">${num}</div><div><h3>${title}</h3><p>${desc}</p></div></div><div class="step-body">${items}<button class="add" onclick="addTo(D.${key},'')">+ Add</button></div></div>`;
+}
+
+function buildContactStep(num,color,title,desc,arr,key){
+  let items=arr.map((c,i)=>`<div class="entry-row"><input value="${esc(c.name)}" oninput="D.${key}[${i}].name=this.value" placeholder="Name" style="flex:2"><input value="${esc(c.phone)}" oninput="D.${key}[${i}].phone=this.value" placeholder="Phone" style="flex:1"><button class="del" onclick="delFrom(D.${key},${i})">&times;</button></div>`).join('');
+  return`<div class="step"><div class="step-hdr"><div class="step-num" style="background:${color}">${num}</div><div><h3>${title}</h3><p>${desc}</p></div></div><div class="step-body">${items}<button class="add" onclick="addTo(D.${key},{name:'',phone:''})">+ Add</button></div></div>`;
+}
+
+function generate(){if(window.posthog)posthog.capture('tool_used',{tool:'safety-plan'});
+  const colors=['#6B1D34','#4A7C59','#D4A855','#284157','#8B3A54','#345640'];
+  const steps=[
+    {n:1,c:colors[0],t:"Warning Signs",items:D.warnings.filter(Boolean)},
+    {n:2,c:colors[1],t:"Internal Coping Strategies",items:D.copingInternal.filter(Boolean)},
+    {n:3,c:colors[2],t:"People & Places for Distraction",items:D.copingSocial.filter(Boolean)},
+    {n:4,c:colors[3],t:"People I Can Ask for Help",items:D.contactsHelp.filter(c=>c.name).map(c=>c.name+(c.phone?' — '+c.phone:''))},
+    {n:5,c:colors[4],t:"Professionals & Agencies",items:D.professionals.filter(c=>c.name).map(c=>c.name+(c.phone?' — '+c.phone:''))},
+    {n:6,c:colors[5],t:"Making the Environment Safe",items:D.envSafety?[D.envSafety]:[]},
+  ];
+
+  let stepsHTML=steps.map(s=>`<div class="sp-step"><span class="sp-num" style="background:${s.c}">${s.n}</span><span class="sp-title">${s.t}</span><div class="sp-items">${s.items.length?s.items.map(i=>`<div>&bull; ${esc(i)}</div>`).join(''):'<div style="color:#ccc;font-style:italic">Not completed</div>'}</div></div>`).join('');
+
+  let emergHTML=D.emergencyContacts.filter(c=>c.name).map(c=>`<div>&bull; <strong>${esc(c.name)}</strong> — ${esc(c.phone)} ${c.resource?'('+esc(c.resource)+')':''}</div>`).join('');
+
+  document.getElementById('spOutput').innerHTML=`
+  <div class="output">
+    <div class="output-hdr"><h3>Safety Plan — ${esc(D.clientName||'Client')}</h3><span style="font-size:11px;opacity:.7">${esc(D.date)}</span></div>
+    <div class="output-body" id="spBody">
+      <div style="text-align:center;margin-bottom:16px;font-size:13px;color:#888">
+        <strong style="color:var(--navy)">${esc(D.clientName||'Client')}</strong> | Date: ${esc(D.date)} | Clinician: ${esc(D.clinician||'________')}
+      </div>
+      ${stepsHTML}
+      <div class="sp-step" style="background:rgba(192,57,43,.04);border-radius:8px;padding:12px 16px;border-left:3px solid #C0392B">
+        <span class="sp-num" style="background:#C0392B">!</span><span class="sp-title" style="color:#C0392B">Emergency — If Crisis Not Resolved</span>
+        <div class="sp-items">${emergHTML||'<div>988 Suicide & Crisis Lifeline | 911</div>'}</div>
+      </div>
+      <div style="margin-top:20px;display:flex;gap:40px;flex-wrap:wrap">
+        <div>_________________________________<br><span style="font-size:11px;color:#999">Client Signature &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Date</span></div>
+        <div>_________________________________<br><span style="font-size:11px;color:#999">Clinician Signature &nbsp;&nbsp;&nbsp; Date</span></div>
+      </div>
+      <div style="font-size:11px;color:#999;margin-top:16px;line-height:1.5;text-align:center">
+        Based on the Stanley-Brown Safety Planning Intervention (Stanley & Brown, 2012). Review and update at every session.<br>Keep a copy on your phone, give a copy to a trusted person, and bring it to every session.
+      </div>
+    </div>
+    <div class="output-actions">
+      <button class="act-btn act-print" onclick="printSP()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print for Client</button>
+      <button class="act-btn act-copy" onclick="copySP()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+    </div>
+  </div>`;
+  document.getElementById('spOutput').scrollIntoView({behavior:'smooth'});
+}
+
+function printSP(){const b=document.getElementById('spBody');const w=window.open('','','width=700,height=900');w.document.write('<html><head><title>Safety Plan — '+esc(D.clientName)+'</title><style>body{font-family:Georgia,serif;padding:32px;font-size:13px;color:#222;line-height:1.7}.sp-step{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #ddd}.sp-num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:800;color:#fff;margin-right:6px}.sp-title{font-size:15px;font-weight:700}.sp-items{margin-top:4px;padding-left:30px;font-size:13px}</style></head><body>'+b.innerHTML+'</body></html>');w.document.close();w.print()}
+function copySP(){navigator.clipboard.writeText(document.getElementById('spBody').innerText).then(()=>{const b=document.querySelector('.act-copy');const o=b.innerHTML;b.innerHTML='Copied!';setTimeout(()=>b.innerHTML=o,2000)})}
+
+render();
+</script>
+<script>
+(function(){
+  const API='https://api.counselorready.com';
+  const KEY='cr_email_captured';
+  const DISMISS_KEY='cr_email_dismissed';
+  const SHOW_AFTER=1;
+  let uses=parseInt(sessionStorage.getItem('cr_tool_uses')||'0');
+  function trackUse(){uses++;sessionStorage.setItem('cr_tool_uses',String(uses));maybeShow()}
+  window.crTrackToolUse=trackUse;
+  function maybeShow(){
+    if(localStorage.getItem(KEY)||localStorage.getItem(DISMISS_KEY))return;
+    if(uses<SHOW_AFTER)return;
+    render();
+  }
+  function render(){
+    const el=document.getElementById('crEmailCapture');
+    if(!el)return;
+    el.style.display='block';
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1A2D3D,#284157);border-radius:14px;padding:24px;margin:20px 0;text-align:center;position:relative;box-shadow:0 4px 16px rgba(26,45,61,.3)">
+      <button onclick="document.getElementById('crEmailCapture').style.display='none';localStorage.setItem('${DISMISS_KEY}','1')" style="position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer">&times;</button>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Want more tools like this?</div>
+      <p style="font-size:13px;color:#8AABBE;margin-bottom:16px;line-height:1.5;max-width:440px;margin-left:auto;margin-right:auto">Get notified when we release new free clinical tools, CE course drops, and practice-building resources. No spam — just useful stuff for clinicians.</p>
+      <div style="display:flex;gap:10px;max-width:420px;margin:0 auto">
+        <input id="crEmailInput" type="email" placeholder="you@example.com" style="flex:1;padding:11px 14px;border-radius:8px;border:2px solid #35546B;background:#1A2D3D;color:#E8E8E8;font-family:'Lato',sans-serif;font-size:14px;outline:none">
+        <button onclick="crSubmitEmail()" style="padding:11px 20px;background:linear-gradient(135deg,#D4A855,#C49A40);color:#4A1224;border:none;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap">Keep Me Posted</button>
+      </div>
+      <div id="crEmailMsg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px">No spam. Unsubscribe anytime. We respect your inbox.</div>
+    </div>`;
+  }
+  window.crSubmitEmail=async function(){
+    const input=document.getElementById('crEmailInput');
+    const msg=document.getElementById('crEmailMsg');
+    const email=input.value.trim();
+    if(!email||!email.includes('@')){msg.style.color='#E8A87C';msg.textContent='Please enter a valid email.';return}
+    msg.style.color='#8AABBE';msg.textContent='Saving...';
+    try{
+      const r=await fetch(API+'/api/tools/capture-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:document.title})});
+      if(r.ok){
+        msg.style.color='#5A9469';msg.textContent="You're in! Watch your inbox.";
+        localStorage.setItem(KEY,email);
+        setTimeout(()=>{document.getElementById('crEmailCapture').style.display='none'},2500);
+      } else {
+        const d=await r.json();
+        msg.style.color='#5A9469';msg.textContent=d.message||"You're already subscribed!";
+        localStorage.setItem(KEY,email);
+      }
+    }catch(e){
+      localStorage.setItem(KEY,email);
+      msg.style.color='#5A9469';msg.textContent="Saved! We'll be in touch.";
+    }
+  };
+  setTimeout(maybeShow,3000);
+})();
+</script>
+</body>
+</html>

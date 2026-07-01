@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+<title>Course Presentation Editor — CounselorReady Admin</title>
+<link rel="icon" href="./favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: { colors: {
+      burgundy: { 50:'#FBF0F3', 700:'#8B2542', 800:'#6B1D34' },
+      hunter:   { 50:'#EFF5F1', 700:'#4A7C59', 800:'#3D6A4A' },
+      honey:    { 700:'#D4A855', 800:'#B8903A' },
+      navy:     { 500:'#284157', 600:'#1F3345' },
+      stone:    { 50:'#F8F7F4', 100:'#EFEDE8' },
+    }, fontFamily: { display:['Cormorant Garamond','serif'], sans:['Inter','system-ui','sans-serif'] } } }
+  };
+</script>
+<style>
+  body { font-family:'Inter',system-ui,sans-serif; background:#F8F7F4; }
+  .cr-wordmark { font-family:'Cormorant Garamond',serif; font-weight:700; }
+  .thumb-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
+  .lib-thumb { cursor:pointer; border:2px solid transparent; border-radius:8px; overflow:hidden; aspect-ratio:16/10; background:#EFEDE8; }
+  .lib-thumb.sel { border-color:#4A7C59; }
+  .lib-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); padding:12px 22px; border-radius:10px; color:#fff; font-weight:600; z-index:200; opacity:0; transition:opacity .25s; pointer-events:none; }
+  .toast.show { opacity:1; }
+</style>
+</head>
+<body class="text-navy-600">
+
+<header class="bg-white border-b border-stone-100 px-6 py-3 flex items-center gap-3">
+  <span class="cr-wordmark text-xl"><span class="text-burgundy-800">Counselor</span><span class="text-hunter-700">Ready</span><sup class="text-xs text-navy-500">™</sup></span>
+  <span class="text-stone-100">|</span>
+  <span class="font-semibold text-navy-500">Course Presentation Editor</span>
+  <a href="/admin-courses.html" class="ml-auto text-sm text-hunter-700 hover:text-hunter-800">← Back to Admin</a>
+</header>
+
+<main class="max-w-4xl mx-auto px-5 py-6">
+
+  <!-- Course picker -->
+  <div class="bg-white rounded-xl border border-stone-100 p-5 mb-6 shadow-sm">
+    <label class="block text-sm font-semibold text-navy-500 mb-2">Choose a course to edit</label>
+    <select id="courseSelect" class="w-full border border-stone-100 rounded-lg px-3 py-2.5 bg-stone-50 focus:outline-none focus:ring-2 focus:ring-hunter-700">
+      <option value="">Loading courses…</option>
+    </select>
+    <p class="text-xs text-stone-400 mt-2" id="durabilityNote" style="display:none">
+      ⚠ Changes here write to the live database. If this course is reseeded, header/banner edits are overwritten — bake final URLs into the seed to make them permanent.
+    </p>
+  </div>
+
+  <div id="editor" style="display:none">
+
+    <!-- Course-level hero -->
+    <section class="bg-white rounded-xl border border-stone-100 p-5 mb-6 shadow-sm">
+      <h2 class="font-display text-2xl font-bold text-navy-500 mb-1">Course Header (Hero)</h2>
+      <p class="text-sm text-stone-400 mb-4">A full-width banner shown at the very top of the course, above Section 1.</p>
+      <div class="flex gap-4 items-start flex-wrap">
+        <div id="heroPreview" class="w-48 h-28 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400 text-xs overflow-hidden flex-shrink-0">No hero set</div>
+        <div class="flex-1 min-w-[240px] space-y-2">
+          <input id="heroTitle" placeholder="Header title (defaults to course title)" class="w-full border border-stone-100 rounded-lg px-3 py-2 text-sm">
+          <input id="heroSubtitle" placeholder="Header subtitle (optional)" class="w-full border border-stone-100 rounded-lg px-3 py-2 text-sm">
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="openPicker('hero',0)" class="px-3 py-2 text-sm rounded-lg bg-hunter-700 text-white hover:bg-hunter-800">Choose image</button>
+            <button onclick="saveHero()" class="px-3 py-2 text-sm rounded-lg bg-navy-500 text-white hover:bg-navy-600">Save header</button>
+            <button onclick="clearHero()" class="px-3 py-2 text-sm rounded-lg border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50">Remove</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sections -->
+    <div class="flex items-center gap-3 mb-3 flex-wrap">
+      <h2 class="font-display text-2xl font-bold text-navy-500">Section Banners</h2>
+      <div class="ml-auto flex gap-2">
+        <button onclick="autoFillAll()" id="autoFillBtn" class="px-3 py-2 text-sm rounded-lg bg-honey-700 text-white hover:bg-honey-800 font-medium">✨ Auto-fill all banners</button>
+        <button onclick="saveAll()" id="saveAllBtn" class="px-3 py-2 text-sm rounded-lg bg-navy-500 text-white hover:bg-navy-600 font-medium">Save all</button>
+      </div>
+    </div>
+    <p id="autoFillStatus" class="text-sm text-hunter-700 mb-3" style="display:none"></p>
+    <div id="sectionList" class="space-y-4"></div>
+  </div>
+</main>
+
+<!-- Image picker modal -->
+<div id="pickerModal" style="display:none" class="fixed inset-0 bg-black/50 z-[150] flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+    <div class="px-5 py-3 border-b border-stone-100 flex items-center gap-3">
+      <h3 class="font-semibold text-navy-500" id="pickerTitle">Choose an image</h3>
+      <button onclick="closePicker()" class="ml-auto text-stone-400 hover:text-navy-500 text-xl leading-none">&times;</button>
+    </div>
+    <div class="px-5 py-3 border-b border-stone-100 flex gap-2 items-center">
+      <div class="flex gap-1 mr-2" role="tablist">
+        <button id="tabPexels" onclick="switchTab('pexels')" class="px-3 py-1.5 text-sm rounded-lg bg-hunter-700 text-white">Search Pexels</button>
+        <button id="tabLibrary" onclick="switchTab('library')" class="px-3 py-1.5 text-sm rounded-lg border border-stone-100 text-navy-500">My library</button>
+      </div>
+      <input id="pickerSearch" placeholder="Search photos (e.g. calm office, nature path)" class="flex-1 border border-stone-100 rounded-lg px-3 py-2 text-sm">
+      <button onclick="runSearch()" class="px-3 py-2 text-sm rounded-lg bg-hunter-700 text-white">Search</button>
+      <button onclick="runSearch(true)" class="px-3 py-2 text-sm rounded-lg border border-navy-500 text-navy-500" title="Show different results">Try again</button>
+    </div>
+    <div class="px-5 py-4 overflow-y-auto flex-1">
+      <div id="suggestWrap" style="display:none"><p class="text-xs font-semibold text-hunter-700 mb-1">Suggested for this section</p><div id="suggestGrid" class="thumb-grid"></div><div class="border-b border-stone-100 my-3"></div></div>
+      <div id="libGrid" class="thumb-grid"></div>
+      <p id="libEmpty" class="text-sm text-stone-400 text-center py-6" style="display:none">No images found. Try a different search, switch tabs, or upload your own below.</p>
+      <div class="mt-4 pt-4 border-t border-stone-100">
+        <label class="block text-sm font-semibold text-navy-500 mb-2">Or upload your own</label>
+        <input type="file" id="uploadInput" accept="image/*" class="text-sm">
+        <span id="uploadStatus" class="text-xs text-stone-400 ml-2"></span>
+      </div>
+    </div>
+    <div class="px-5 py-3 border-t border-stone-100 flex justify-end gap-2">
+      <button onclick="closePicker()" class="px-4 py-2 text-sm rounded-lg border border-stone-100">Cancel</button>
+      <button onclick="usePicked()" id="useBtn" disabled class="px-4 py-2 text-sm rounded-lg bg-navy-500 text-white disabled:opacity-40">Use this image</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+const token = localStorage.getItem('token');
+if (!token) window.location.href = '/login.html';
+const authHeaders = { 'Authorization': `Bearer ${token}` };
+const BANNER_FOLDER = 'counselorready/banner-library';
+
+let currentCourse = null;          // loaded course object
+let picker = { kind: null, sectionIndex: null, candidate: null }; // kind: 'hero' | 'section'
+
+function toast(msg, ok = true) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = ok ? '#4A7C59' : '#6B1D34';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ── auth gate ──
+(async function init() {
+  try {
+    const r = await fetch(`${API_URL}/api/auth/me`, { headers: authHeaders });
+    if (!r.ok) { window.location.href = '/login.html'; return; }
+    const u = await r.json();
+    const user = u.user || u;
+    if (!user.isAdmin && user.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
+    await loadCourses();
+  } catch (e) { window.location.href = '/login.html'; }
+})();
+
+async function loadCourses() {
+  const sel = document.getElementById('courseSelect');
+  try {
+    const r = await fetch(`${API_URL}/api/interactive-courses?page=1&limit=200&status=all`, { headers: authHeaders });
+    const d = await r.json();
+    const list = (d.data || d.courses || []).filter(Boolean);
+    if (!list.length) { sel.innerHTML = '<option value="">No courses found</option>'; return; }
+    sel.innerHTML = '<option value="">— select a course —</option>' +
+      list.map(c => {
+        const tag = c.status && c.status !== 'published' ? `[${c.status}] ` : '';
+        return `<option value="${c._id}">${tag}${esc(c.title || 'Untitled')}</option>`;
+      }).join('');
+  } catch (e) {
+    sel.innerHTML = '<option value="">Failed to load courses</option>';
+    toast('Could not load courses', false);
+  }
+}
+
+document.getElementById('courseSelect').addEventListener('change', async (e) => {
+  const id = e.target.value;
+  document.getElementById('editor').style.display = 'none';
+  document.getElementById('durabilityNote').style.display = 'none';
+  if (!id) return;
+  try {
+    const r = await fetch(`${API_URL}/api/interactive-courses/${id}`, { headers: authHeaders });
+    const d = await r.json();
+    currentCourse = d.data || d.course || d;
+    renderEditor();
+    document.getElementById('editor').style.display = 'block';
+    document.getElementById('durabilityNote').style.display = 'block';
+  } catch (err) { toast('Could not load that course', false); }
+});
+
+function renderEditor() {
+  const c = currentCourse;
+  // hero
+  document.getElementById('heroTitle').value = c.headerTitle || '';
+  document.getElementById('heroSubtitle').value = c.headerSubtitle || '';
+  setHeroPreview(c.headerImage);
+  // sections
+  const sections = c.sections || [];
+  const wrap = document.getElementById('sectionList');
+  wrap.innerHTML = sections.map((s, i) => {
+    const blocks = s.contentBlocks || [];
+    const div = blocks.find(b => b && b.type === 'sectionDivider');
+    const hasDivider = !!div;
+    const dv = div || {};
+    const title = dv.title || s.title || `Section ${i + 1}`;
+    const banner = dv.bannerImage || '';
+    if (!hasDivider) {
+      return `<div class="bg-white rounded-xl border border-burgundy-800/30 p-4 shadow-sm opacity-80">
+        <p class="text-xs text-stone-400 mb-1">Section ${i + 1}</p>
+        <p class="text-sm font-semibold text-navy-500">${esc(title)}</p>
+        <p class="text-xs text-burgundy-800 mt-1">⚠ No header block — this section can't take a banner. Fix in the course seed (add a sectionDivider).</p>
+      </div>`;
+    }
+    return `<div class="bg-white rounded-xl border border-stone-100 p-4 shadow-sm">
+      <div class="flex gap-4 items-start flex-wrap">
+        <div class="w-40 h-24 rounded-lg bg-stone-100 overflow-hidden flex items-center justify-center text-stone-400 text-xs flex-shrink-0" id="secThumb${i}">
+          ${banner ? `<img src="${esc(banner)}" style="width:100%;height:100%;object-fit:cover">` : 'No banner'}
+        </div>
+        <div class="flex-1 min-w-[240px]">
+          <p class="text-xs text-stone-400 mb-1">Section ${i + 1}</p>
+          <input id="secTitle${i}" value="${esc(title)}" class="w-full border border-stone-100 rounded-lg px-2 py-1.5 text-sm font-semibold mb-1">
+          <input id="secSub${i}" value="${esc(dv.subtitle || '')}" placeholder="Subtitle (optional)" class="w-full border border-stone-100 rounded-lg px-2 py-1.5 text-sm mb-2">
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="openPicker('section',${i})" class="px-2.5 py-1.5 text-xs rounded-lg bg-hunter-700 text-white hover:bg-hunter-800">Choose banner</button>
+            <button onclick="saveSection(${i})" class="px-2.5 py-1.5 text-xs rounded-lg bg-navy-500 text-white hover:bg-navy-600">Save section</button>
+            <button onclick="clearBanner(${i})" class="px-2.5 py-1.5 text-xs rounded-lg border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50">Remove banner</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setHeroPreview(url) {
+  const el = document.getElementById('heroPreview');
+  el.innerHTML = url ? `<img src="${esc(url)}" style="width:100%;height:100%;object-fit:cover">` : 'No hero set';
+}
+
+// ── picker modal ──
+let pickerTab = 'pexels';   // 'pexels' | 'library'
+let pexelsPage = 1;
+
+function openPicker(kind, sectionIndex) {
+  picker = { kind, sectionIndex, candidate: null, fromPexels: false };
+  document.getElementById('pickerTitle').textContent = kind === 'hero' ? 'Choose course header image' : `Choose banner — Section ${sectionIndex + 1}`;
+  document.getElementById('useBtn').disabled = true;
+  document.getElementById('uploadStatus').textContent = '';
+  // prefill search from the relevant title
+  let term = '';
+  if (kind === 'section') {
+    const t = document.getElementById('secTitle' + sectionIndex)?.value || '';
+    term = t.replace(/^section\s*\d+[:.\-]?\s*/i, '').split(/\s+/).slice(0, 4).join(' ');
+  }
+  document.getElementById('pickerSearch').value = term;
+  document.getElementById('pickerModal').style.display = 'flex';
+  switchTab('pexels');
+  loadSuggestions();
+}
+function closePicker() { document.getElementById('pickerModal').style.display = 'none'; }
+
+function switchTab(tab) {
+  pickerTab = tab;
+  pexelsPage = 1;
+  const tp = document.getElementById('tabPexels'), tl = document.getElementById('tabLibrary');
+  const on = 'px-3 py-1.5 text-sm rounded-lg bg-hunter-700 text-white';
+  const off = 'px-3 py-1.5 text-sm rounded-lg border border-stone-100 text-navy-500';
+  if (tp && tl) { tp.className = tab === 'pexels' ? on : off; tl.className = tab === 'library' ? on : off; }
+  document.getElementById('pickerSearch').placeholder = tab === 'pexels'
+    ? 'Search Pexels (e.g. calm office, nature path)'
+    : 'Search your uploaded library';
+  runSearch();
+}
+
+async function runSearch(again = false) {
+  const term = document.getElementById('pickerSearch').value.trim();
+  const grid = document.getElementById('libGrid');
+  const empty = document.getElementById('libEmpty');
+  grid.innerHTML = '<p class="text-sm text-stone-400 col-span-full">Loading…</p>';
+  empty.style.display = 'none';
+  picker.candidate = null;
+  document.getElementById('useBtn').disabled = true;
+  try {
+    let images = [];
+    if (pickerTab === 'pexels') {
+      if (!term) { grid.innerHTML = ''; empty.textContent = 'Type a search term to find photos on Pexels.'; empty.style.display = 'block'; return; }
+      if (again) pexelsPage++;
+      const r = await fetch(`${API_URL}/api/images/pexels-search?q=${encodeURIComponent(term)}&page=${pexelsPage}`, { headers: authHeaders });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.error || 'Pexels search failed');
+      images = (d.data && d.data.images) || [];
+    } else {
+      const r = await fetch(`${API_URL}/api/images/browse?folder=${encodeURIComponent(BANNER_FOLDER)}&search=${encodeURIComponent(term)}&max_results=30`, { headers: authHeaders });
+      const d = await r.json();
+      images = (d.data && d.data.images) || [];
+    }
+    if (!images.length) {
+      grid.innerHTML = '';
+      empty.textContent = pickerTab === 'pexels'
+        ? 'No Pexels results — try different words or "Try again".'
+        : 'No images in your library yet. Search Pexels, or upload your own below.';
+      empty.style.display = 'block';
+      return;
+    }
+    grid.innerHTML = images.map(img =>
+      `<div class="lib-thumb" data-url="${esc(img.url)}" data-pexels="${pickerTab === 'pexels' ? '1' : '0'}" data-alt="${esc(img.alt || term)}" onclick="pickThumb(this)"><img src="${esc(img.thumbnailUrl || img.url)}"></div>`
+    ).join('');
+  } catch (e) {
+    grid.innerHTML = '';
+    empty.textContent = 'Search failed: ' + e.message;
+    empty.style.display = 'block';
+  }
+}
+
+function pickThumb(el) {
+  document.querySelectorAll('.lib-thumb').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+  picker.candidate = el.getAttribute('data-url');
+  picker.fromPexels = el.getAttribute('data-pexels') === '1';
+  picker.alt = el.getAttribute('data-alt') || '';
+  document.getElementById('useBtn').disabled = false;
+}
+
+document.getElementById('uploadInput').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('uploadStatus');
+  status.textContent = 'Uploading…';
+  try {
+    const fd = new FormData();
+    fd.append('image', file);
+    fd.append('folder', BANNER_FOLDER);
+    fd.append('context', 'banner');
+    const r = await fetch(`${API_URL}/api/images/upload`, { method: 'POST', headers: authHeaders, body: fd });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'upload failed');
+    picker.candidate = d.data.url;
+    picker.fromPexels = false;   // already a Cloudinary URL
+    document.getElementById('useBtn').disabled = false;
+    status.textContent = 'Uploaded ✓ — click "Use this image"';
+  } catch (err) { status.textContent = 'Upload failed'; toast('Upload failed', false); }
+});
+
+async function usePicked() {
+  if (!picker.candidate) return;
+  let finalUrl = picker.candidate;
+
+  // A Pexels pick is a pexels.com URL — persist it into Cloudinary first so the
+  // saved banner is served from our trusted origin (CSP) and reusable in the library.
+  if (picker.fromPexels) {
+    const btn = document.getElementById('useBtn');
+    btn.disabled = true; btn.textContent = 'Saving image…';
+    try {
+      const r = await fetch(`${API_URL}/api/images/upload-from-url`, {
+        method: 'POST',
+        headers: { ...authHeaders, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: picker.candidate, folder: BANNER_FOLDER, alt: picker.alt || '' }),
+      });
+      const d = await r.json();
+      if (!d.success) throw new Error(d.error || 'could not save image');
+      finalUrl = d.data.url;
+    } catch (err) {
+      btn.disabled = false; btn.textContent = 'Use this image';
+      toast('Could not save that image: ' + err.message, false);
+      return;
+    }
+    btn.textContent = 'Use this image';
+  }
+
+  if (picker.kind === 'hero') {
+    setHeroPreview(finalUrl);
+    currentCourse._pendingHero = finalUrl;
+  } else {
+    const i = picker.sectionIndex;
+    document.getElementById('secThumb' + i).innerHTML = `<img src="${esc(finalUrl)}" style="width:100%;height:100%;object-fit:cover">`;
+    currentCourse._pendingBanner = currentCourse._pendingBanner || {};
+    currentCourse._pendingBanner[i] = finalUrl;
+  }
+  closePicker();
+  toast('Image selected — click Save to apply');
+}
+
+// ── saves (call Phase A endpoints) ──
+async function saveHero() {
+  const body = {
+    headerImage: currentCourse._pendingHero || currentCourse.headerImage || undefined,
+    headerTitle: document.getElementById('heroTitle').value || undefined,
+    headerSubtitle: document.getElementById('heroSubtitle').value || undefined,
+  };
+  if (!body.headerImage) { toast('Choose a header image first', false); return; }
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/header`, body, () => {
+    currentCourse.headerImage = body.headerImage;
+    currentCourse.headerTitle = body.headerTitle || null;
+    currentCourse.headerSubtitle = body.headerSubtitle || null;
+    delete currentCourse._pendingHero;
+    toast('Course header saved');
+    tagImage(body.headerImage, body.headerTitle || currentCourse.title || '');
+  });
+}
+async function clearHero() {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/header`, { headerImage: null, headerTitle: null, headerSubtitle: null }, () => {
+    currentCourse.headerImage = null; delete currentCourse._pendingHero;
+    setHeroPreview(null);
+    document.getElementById('heroTitle').value = ''; document.getElementById('heroSubtitle').value = '';
+    toast('Course header removed');
+  });
+}
+async function saveSection(i) {
+  const banner = (currentCourse._pendingBanner && currentCourse._pendingBanner[i]) || undefined;
+  const body = {
+    title: document.getElementById('secTitle' + i).value || undefined,
+    subtitle: document.getElementById('secSub' + i).value || undefined,
+  };
+  if (banner) body.bannerImage = banner;
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/section/${i}`, body, () => {
+    if (currentCourse._pendingBanner) delete currentCourse._pendingBanner[i];
+    toast(`Section ${i + 1} saved`);
+    if (banner) tagImage(banner, document.getElementById('secTitle' + i).value || '');
+  });
+}
+
+// ── Auto-fill: suggest an image for every section (review before saving) ──
+// For each section WITHOUT a banner, try a tagged-library suggestion first,
+// then fall back to a Pexels search. Persists the pick to Cloudinary and stages
+// it in _pendingBanner[i] + the thumbnail. Does NOT save — review, then "Save all".
+function sectionQueryTerm(i) {
+  const t = document.getElementById('secTitle' + i)?.value || '';
+  return t.replace(/^section\s*\d+[:.\-]?\s*/i, '').split(/\s+/).slice(0, 4).join(' ');
+}
+
+async function heroCandidate(term) {
+  const ca = (currentCourse.nbccContentAreas || []).join(',');
+  const cat = (currentCourse.categories || []).join(',');
+  try {
+    const r = await fetch(`${API_URL}/api/images/suggest-images?title=${encodeURIComponent(term)}&contentAreas=${encodeURIComponent(ca)}&categories=${encodeURIComponent(cat)}`, { headers: authHeaders });
+    const d = await r.json();
+    const top = d.success && d.data && d.data.images && d.data.images[0];
+    if (top && top.url) return { url: top.url };
+  } catch (_) {}
+  if (!term) return null;
+  try {
+    const r = await fetch(`${API_URL}/api/images/pexels-search?q=${encodeURIComponent(term)}&page=1`, { headers: authHeaders });
+    const d = await r.json();
+    const pick = d.success && d.data && d.data.images && d.data.images[0];
+    if (!pick || !pick.url) return null;
+    const up = await fetch(`${API_URL}/api/images/upload-from-url`, {
+      method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: pick.url, folder: BANNER_FOLDER, alt: pick.alt || term }),
+    });
+    const ud = await up.json();
+    if (ud.success && ud.data && ud.data.url) return { url: ud.data.url };
+  } catch (_) {}
+  return null;
+}
+
+async function candidateForSection(i) {
+  const term = sectionQueryTerm(i);
+  const ca = (currentCourse.nbccContentAreas || []).join(',');
+  const cat = (currentCourse.categories || []).join(',');
+  // 1) tagged-library suggestion
+  try {
+    const r = await fetch(`${API_URL}/api/images/suggest-images?title=${encodeURIComponent(term)}&contentAreas=${encodeURIComponent(ca)}&categories=${encodeURIComponent(cat)}`, { headers: authHeaders });
+    const d = await r.json();
+    const top = d.success && d.data && d.data.images && d.data.images[0];
+    if (top && top.url) return { url: top.url, fromPexels: false, alt: term };
+  } catch (_) {}
+  // 2) Pexels fallback → persist to Cloudinary
+  if (!term) return null;
+  try {
+    const r = await fetch(`${API_URL}/api/images/pexels-search?q=${encodeURIComponent(term)}&page=1`, { headers: authHeaders });
+    const d = await r.json();
+    const pick = d.success && d.data && d.data.images && d.data.images[0];
+    if (!pick || !pick.url) return null;
+    const up = await fetch(`${API_URL}/api/images/upload-from-url`, {
+      method: 'POST', headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: pick.url, folder: BANNER_FOLDER, alt: pick.alt || term }),
+    });
+    const ud = await up.json();
+    if (ud.success && ud.data && ud.data.url) return { url: ud.data.url, fromPexels: false, alt: pick.alt || term };
+  } catch (_) {}
+  return null;
+}
+
+function sectionHasDivider(i) {
+  const s = (currentCourse.sections || [])[i];
+  return !!(s && (s.contentBlocks || []).some(b => b && b.type === 'sectionDivider'));
+}
+
+async function autoFillAll() {
+  if (!currentCourse) return;
+  const btn = document.getElementById('autoFillBtn');
+  const status = document.getElementById('autoFillStatus');
+  const sections = currentCourse.sections || [];
+  btn.disabled = true; btn.textContent = 'Filling…';
+  status.style.display = 'block';
+  currentCourse._pendingBanner = currentCourse._pendingBanner || {};
+  let filled = 0, skipped = 0, missed = 0, noDivider = 0;
+
+  // Course hero first (if not already set)
+  if (!currentCourse.headerImage && !currentCourse._pendingHero) {
+    status.textContent = 'Finding a course header image…';
+    const heroTerm = (document.getElementById('heroTitle').value || currentCourse.title || '')
+      .replace(/[:\-—].*$/, '').split(/\s+/).slice(0, 4).join(' ');
+    const cand = await heroCandidate(heroTerm);
+    if (cand) {
+      currentCourse._pendingHero = cand.url;
+      setHeroPreview(cand.url);
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  for (let i = 0; i < sections.length; i++) {
+    if (!sectionHasDivider(i)) { noDivider++; continue; }   // can't hold a banner
+    const div = (sections[i].contentBlocks || []).find(b => b && b.type === 'sectionDivider') || {};
+    if (div.bannerImage || (currentCourse._pendingBanner && currentCourse._pendingBanner[i])) { skipped++; continue; }
+    status.textContent = `Finding images… section ${i + 1} of ${sections.length} (filled ${filled})`;
+    const cand = await candidateForSection(i);
+    if (cand) {
+      currentCourse._pendingBanner[i] = cand.url;
+      const thumb = document.getElementById('secThumb' + i);
+      if (thumb) thumb.innerHTML = `<img src="${esc(cand.url)}" style="width:100%;height:100%;object-fit:cover">`;
+      filled++;
+    } else { missed++; }
+    await new Promise(r => setTimeout(r, 400));
+  }
+  btn.disabled = false; btn.textContent = '✨ Auto-fill all banners';
+  status.textContent = `Done — staged ${filled} banner${filled === 1 ? '' : 's'}` +
+    `${skipped ? `, skipped ${skipped} already set` : ''}` +
+    `${missed ? `, ${missed} found nothing` : ''}` +
+    `${noDivider ? `, ${noDivider} section${noDivider === 1 ? '' : 's'} can't take a banner (no header block — needs a seed fix)` : ''}` +
+    `. Review the thumbnails, then click “Save all”.`;
+  toast(`Staged ${filled} banners — review, then Save all`);
+}
+
+async function saveAll() {
+  if (!currentCourse) return;
+  const pending = currentCourse._pendingBanner || {};
+  const idxs = Object.keys(pending).map(Number).filter(i => pending[i]);
+  // also save any title/subtitle text edits alongside, even without a new banner
+  const sections = currentCourse.sections || [];
+  const btn = document.getElementById('saveAllBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  let saved = 0, failed = 0, noDivider = 0;
+
+  // Save staged hero first (if any)
+  if (currentCourse._pendingHero) {
+    const heroBody = {
+      headerImage: currentCourse._pendingHero,
+      headerTitle: document.getElementById('heroTitle').value || undefined,
+      headerSubtitle: document.getElementById('heroSubtitle').value || undefined,
+    };
+    try {
+      const r = await fetch(`${API_URL}/api/admin/course-presentation/${currentCourse._id}/header`, {
+        method: 'PATCH', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(heroBody),
+      });
+      const d = await r.json();
+      if (r.ok && d.success) {
+        currentCourse.headerImage = heroBody.headerImage;
+        tagImage(heroBody.headerImage, heroBody.headerTitle || currentCourse.title || '');
+        delete currentCourse._pendingHero;
+        saved++;
+      } else { failed++; }
+    } catch (e) { failed++; }
+  }
+
+  for (let i = 0; i < sections.length; i++) {
+    const banner = pending[i];
+    const title = document.getElementById('secTitle' + i)?.value;
+    const subtitle = document.getElementById('secSub' + i)?.value;
+    if (!banner && (title == null) && (subtitle == null)) continue;
+    const body = {};
+    if (banner) body.bannerImage = banner;
+    if (title) body.title = title;
+    if (subtitle) body.subtitle = subtitle;
+    if (!Object.keys(body).length) continue;
+    if (!sectionHasDivider(i)) { noDivider++; continue; }   // no header block — skip, don't error
+    try {
+      const r = await fetch(`${API_URL}/api/admin/course-presentation/${currentCourse._id}/section/${i}`, {
+        method: 'PATCH', headers: { ...authHeaders, 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const d = await r.json();
+      if (!r.ok || !d.success) throw new Error(d.error || `HTTP ${r.status}`);
+      if (banner) { tagImage(banner, title || ''); delete pending[i]; }
+      saved++;
+    } catch (e) { failed++; }
+  }
+  btn.disabled = false; btn.textContent = 'Save all';
+  const extra = noDivider ? `, skipped ${noDivider} with no header block` : '';
+  toast(`Saved ${saved} section${saved === 1 ? '' : 's'}${failed ? `, ${failed} failed` : ''}${extra}`, failed === 0);
+}
+async function clearBanner(i) {
+  await patch(`/api/admin/course-presentation/${currentCourse._id}/section/${i}`, { bannerImage: null }, () => {
+    document.getElementById('secThumb' + i).innerHTML = 'No banner';
+    if (currentCourse._pendingBanner) delete currentCourse._pendingBanner[i];
+    toast(`Section ${i + 1} banner removed`);
+  });
+}
+
+async function patch(path, body, onOk) {
+  try {
+    const r = await fetch(`${API_URL}${path}`, {
+      method: 'PATCH',
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    if (!r.ok || !d.success) throw new Error(d.error || `HTTP ${r.status}`);
+    onOk(d);
+  } catch (err) {
+    if (String(err.message).includes('401')) { window.location.href = '/login.html'; return; }
+    toast('Save failed: ' + err.message, false);
+  }
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+// ── smart library: extract Cloudinary publicId from a secure_url ──
+function parseCloudinaryPublicId(url) {
+  if (!url || typeof url !== 'string') return null;
+  const m = url.match(/\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-zA-Z0-9]+)?$/);
+  if (!m) return null;
+  return m[1];
+}
+
+// ── smart library: auto-tag an image with the section's theme (fire-and-forget) ──
+async function tagImage(url, title) {
+  try {
+    const publicId = parseCloudinaryPublicId(url);
+    if (!publicId) return;
+    const body = {
+      publicId,
+      title: title || '',
+      contentAreas: (currentCourse && currentCourse.nbccContentAreas) || [],
+      categories: (currentCourse && currentCourse.categories) || [],
+    };
+    await fetch(`${API_URL}/api/images/tag-image`, {
+      method: 'POST',
+      headers: { ...authHeaders, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (e) { /* silent — tagging is a background enhancement */ }
+}
+
+// ── smart library: load suggested images for the current section/hero ──
+async function loadSuggestions() {
+  const wrap = document.getElementById('suggestWrap');
+  const grid = document.getElementById('suggestGrid');
+  if (!wrap || !grid) return;
+  wrap.style.display = 'none';
+  grid.innerHTML = '';
+  try {
+    const title = (document.getElementById('pickerSearch').value || '').trim();
+    const contentAreas = ((currentCourse && currentCourse.nbccContentAreas) || []).join(',');
+    const categories = ((currentCourse && currentCourse.categories) || []).join(',');
+    const qs = `title=${encodeURIComponent(title)}&contentAreas=${encodeURIComponent(contentAreas)}&categories=${encodeURIComponent(categories)}`;
+    const r = await fetch(`${API_URL}/api/images/suggest-images?${qs}`, { headers: authHeaders });
+    const d = await r.json();
+    const images = (d && d.data && d.data.images) || [];
+    if (!images.length) return;
+    grid.innerHTML = images.map(img =>
+      `<div class="lib-thumb" data-url="${esc(img.url)}" data-pexels="0" data-alt="${esc(title || '')}" onclick="pickThumb(this)"><img src="${esc(img.thumbnailUrl || img.url)}"></div>`
+    ).join('');
+    wrap.style.display = 'block';
+    const first = grid.querySelector('.lib-thumb');
+    if (first) pickThumb(first);
+  } catch (e) {
+    wrap.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Sign In - CounselorReady</title>
+  <meta name="description" content="Sign in to CounselorReady to access your continuing education courses, certificates, and credential tracking.">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen flex flex-col">
+  
+  <!-- Header -->
+  <header class="border-b border-hunter-100 bg-white/80 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34); shadow-lg shadow-forest-900/20">
+          <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-semibold text-2xl tracking-wide">
+            <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          </span>
+        </div>
+      </a>
+      <a href="/register.html" class="text-forest-700 hover:text-burgundy-700 text-sm font-medium transition-colors">
+        Create Account
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+      
+      <!-- Card -->
+      <div class="bg-white rounded-2xl shadow-xl shadow-burgundy-900/10 p-8 border border-burgundy-100">
+        
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 text-center mb-2">
+          Welcome Back
+        </h1>
+        <p class="text-forest-600 text-center mb-8">
+          Sign in to continue to your dashboard
+        </p>
+
+        <!-- Form -->
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="email" class="block text-sm font-medium text-forest-700 mb-2">
+              Email Address
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required
+              placeholder="you@example.com"
+              class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none"
+            >
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <label for="password" class="block text-sm font-medium text-forest-700">
+                Password
+              </label>
+              <a href="/forgot-password.html" class="text-sm text-burgundy-700 hover:text-burgundy-800 font-medium">
+                Forgot password?
+              </a>
+            </div>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="password" 
+                name="password" 
+                required
+                placeholder="••••••••"
+                class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none pr-12"
+              >
+              <button 
+                type="button" 
+                onclick="togglePassword()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-forest-400 hover:text-forest-600"
+              >
+                <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center">
+            <input 
+              type="checkbox" 
+              id="remember" 
+              name="remember"
+              class="w-4 h-4 text-burgundy-600 border-forest-300 rounded focus:ring-burgundy-500"
+            >
+            <label for="remember" class="ml-2 text-sm text-forest-600">
+              Remember me
+            </label>
+          </div>
+
+          <button 
+            type="submit"
+            class="w-full bg-gradient-to-r from-burgundy-800 to-burgundy-700 hover:from-burgundy-900 hover:to-burgundy-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg"
+          >
+            Sign In
+          </button>
+        </form>
+
+        <!-- Error Message (hidden by default) -->
+        <div id="errorMessage" class="hidden mt-4 bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+          <p class="text-red-700 text-sm" id="errorText"></p>
+        </div>
+
+        <!-- 2FA Challenge Step (hidden until backend requests it) -->
+        <div id="twoFactorStep" class="hidden space-y-5 mt-2">
+          <div class="text-center">
+            <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Two-Step Verification</h2>
+            <p class="text-forest-600 text-sm" id="twoFactorMessage">Enter the 6-digit code from your authenticator app, or a backup code.</p>
+          </div>
+          <div>
+            <label for="twoFactorCode" class="block text-sm font-medium text-forest-700 mb-2">Verification code</label>
+            <input
+              type="text"
+              id="twoFactorCode"
+              inputmode="text"
+              autocomplete="one-time-code"
+              placeholder="123456 or XXXX-XXXX"
+              class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none text-center tracking-widest"
+            >
+          </div>
+          <button
+            type="button"
+            id="verifyBtn"
+            class="w-full bg-gradient-to-r from-burgundy-800 to-burgundy-700 hover:from-burgundy-900 hover:to-burgundy-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg"
+          >
+            Verify &amp; Sign In
+          </button>
+          <button
+            type="button"
+            id="backToLogin"
+            class="block w-full text-center text-sm text-burgundy-700 hover:text-burgundy-800 font-medium"
+          >
+            ← Back to login
+          </button>
+        </div>
+
+        <!-- Alt actions (hidden during 2FA challenge) -->
+        <div id="altActions">
+        <!-- Divider -->
+        <div class="relative my-8">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-forest-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-4 bg-white text-forest-500">New to CounselorReady?</span>
+          </div>
+        </div>
+
+        <!-- Register Link -->
+        <a 
+          href="/register.html" 
+          class="block text-center w-full py-3 border-2 border-forest-600 text-forest-700 font-semibold rounded-xl hover:bg-forest-50 transition-all"
+        >
+          Create an Account
+        </a>
+        </div><!-- /altActions -->
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const eyeIcon = document.getElementById('eye-icon');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+        `;
+      } else {
+        input.type = 'password';
+        eyeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        `;
+      }
+    }
+
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('loginForm');
+      const errorMessage = document.getElementById('errorMessage');
+      const errorText = document.getElementById('errorText');
+      const twoFactorStep = document.getElementById('twoFactorStep');
+      const altActions = document.getElementById('altActions');
+      let challengeToken = null;
+
+      function showError(msg) {
+        errorText.textContent = msg;
+        errorMessage.classList.remove('hidden');
+      }
+
+      if (!form) {
+        console.error('Login form not found');
+        return;
+      }
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        // Hide any previous errors
+        errorMessage.classList.add('hidden');
+        
+        // Disable button and show loading
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = `
+          <svg class="animate-spin h-5 w-5 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        `;
+
+        try {
+          const remember = document.getElementById('remember').checked;
+          const response = await fetch(`${API_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, remember }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.requiresTwoFactor) {
+            // 2FA enabled — show the challenge step instead of issuing a token.
+            challengeToken = data.challengeToken;
+            if (data.message) document.getElementById('twoFactorMessage').textContent = data.message;
+            errorMessage.classList.add('hidden');
+            form.classList.add('hidden');
+            if (altActions) altActions.classList.add('hidden');
+            twoFactorStep.classList.remove('hidden');
+            const codeInput = document.getElementById('twoFactorCode');
+            codeInput.value = '';
+            codeInput.focus();
+          } else if (response.ok && data.token) {
+            // Standard login — token issued.
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : ((data.user && data.user.role === 'partner_admin') ? '/partner-dashboard.html' : '/dashboard.html');
+          } else {
+            // Show error
+            showError(data.error || data.message || 'Invalid email or password.');
+          }
+        } catch (error) {
+          console.error('Login error:', error);
+          errorText.textContent = 'Unable to connect to server. Please try again.';
+          errorMessage.classList.remove('hidden');
+        }
+
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Sign In';
+      });
+
+      // ── 2FA challenge verification ──
+      const verifyBtn = document.getElementById('verifyBtn');
+      const codeInput = document.getElementById('twoFactorCode');
+      const backToLogin = document.getElementById('backToLogin');
+
+      async function verifyTwoFactor() {
+        const code = (codeInput.value || '').trim();
+        if (!code) { showError('Enter your verification code.'); return; }
+
+        errorMessage.classList.add('hidden');
+        verifyBtn.disabled = true;
+        const original = verifyBtn.innerHTML;
+        verifyBtn.innerHTML = 'Verifying…';
+
+        try {
+          const response = await fetch(`${API_URL}/api/auth/login/verify-2fa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ challengeToken, code, remember: document.getElementById('remember').checked }),
+          });
+          const data = await response.json();
+
+          if (response.ok && data.token) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data.user));
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get('redirect');
+            window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : ((data.user && data.user.role === 'partner_admin') ? '/partner-dashboard.html' : '/dashboard.html');
+            return;
+          }
+          showError(data.error || 'Invalid code. Please try again.');
+        } catch (err) {
+          console.error('2FA verify error:', err);
+          showError('Unable to connect to server. Please try again.');
+        }
+
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = original;
+      }
+
+      if (verifyBtn) verifyBtn.addEventListener('click', verifyTwoFactor);
+      if (codeInput) codeInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); verifyTwoFactor(); }
+      });
+      if (backToLogin) backToLogin.addEventListener('click', () => {
+        challengeToken = null;
+        twoFactorStep.classList.add('hidden');
+        errorMessage.classList.add('hidden');
+        form.classList.remove('hidden');
+        if (altActions) altActions.classList.remove('hidden');
+      });
+    });
+  </script>
+
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

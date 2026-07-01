@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Course Content Importer - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen" style="font-family: 'Lato', system-ui, sans-serif;">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+  <div class="max-w-5xl mx-auto p-6">
+    
+    <!-- Header -->
+    <div class="bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-gradient-to-br from-burgundy-700 to-burgundy-800 rounded-xl flex items-center justify-center">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-burgundy-900">Course Content Importer</h1>
+            <p class="text-forest-600 text-sm">Upload markdown course files to populate course content</p>
+          </div>
+        </div>
+        <a href="/admin-courses.html" class="text-forest-600 hover:text-burgundy-700 flex items-center gap-1">
+          ← Back to Courses
+        </a>
+      </div>
+    </div>
+    
+    <!-- Import Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Step 1: Upload Course Content File</h2>
+      
+      <div class="border-2 border-dashed border-burgundy-200 rounded-xl p-8 text-center hover:border-burgundy-400 hover:bg-burgundy-50 transition cursor-pointer"
+           onclick="document.getElementById('fileInput').click()"
+           ondrop="handleFileDrop(event)" ondragover="event.preventDefault()">
+        <input type="file" id="fileInput" accept=".md,.txt" class="hidden" onchange="handleFileSelect(event)">
+        <svg class="w-12 h-12 text-burgundy-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <p class="text-burgundy-700 font-medium">Drop your course markdown file here</p>
+        <p class="text-burgundy-500 text-sm mt-1">or click to browse (.md or .txt)</p>
+      </div>
+      
+      <div id="fileInfo" class="hidden mt-4 p-3 bg-burgundy-50 rounded-lg">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-burgundy-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span id="fileName" class="font-medium text-burgundy-800"></span>
+          <button onclick="clearFile()" class="ml-auto text-burgundy-500 hover:text-burgundy-700">✕</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Parsed Content Preview -->
+    <div id="previewSection" class="hidden bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Step 2: Review Parsed Content</h2>
+      
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Course Title</label>
+          <input type="text" id="parsedTitle" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">CE Hours</label>
+          <input type="number" id="parsedCEHours" step="0.5" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+        </div>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-forest-700 mb-1">Description</label>
+        <textarea id="parsedDescription" rows="3" class="w-full px-4 py-2 border border-forest-200 rounded-lg"></textarea>
+      </div>
+      
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-forest-700 mb-1">Learning Objectives</label>
+        <div id="parsedObjectives" class="bg-forest-50 rounded-lg p-3 text-sm max-h-32 overflow-y-auto"></div>
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-forest-700 mb-2">Modules & Lessons</label>
+        <div id="parsedModules" class="space-y-3 max-h-64 overflow-y-auto"></div>
+      </div>
+      
+      <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+        <p class="text-blue-800 text-sm">
+          <strong>Word Count:</strong> <span id="totalWordCount">0</span> words 
+          (<span id="wordCountStatus" class="font-medium"></span>)
+        </p>
+      </div>
+    </div>
+    
+    <!-- Import Options -->
+    <div id="importOptions" class="hidden bg-white rounded-xl shadow-sm border border-forest-100 p-6 mb-6">
+      <h2 class="font-semibold text-burgundy-900 mb-4">Step 3: Import Options</h2>
+      
+      <div class="space-y-4">
+        <label class="flex items-start gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50">
+          <input type="radio" name="importMode" value="new" checked class="mt-1">
+          <div>
+            <span class="font-medium text-forest-800">Create New Course</span>
+            <p class="text-sm text-forest-600">Import as a brand new course in the database</p>
+          </div>
+        </label>
+        
+        <label class="flex items-start gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:bg-forest-50">
+          <input type="radio" name="importMode" value="update" class="mt-1">
+          <div>
+            <span class="font-medium text-forest-800">Update Existing Course</span>
+            <p class="text-sm text-forest-600">Replace content in an existing course</p>
+          </div>
+        </label>
+        
+        <div id="existingCourseSelect" class="hidden ml-8">
+          <label class="block text-sm font-medium text-forest-700 mb-1">Select Course to Update</label>
+          <select id="courseSelect" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+            <option value="">-- Select a course --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Import Button -->
+    <div id="importActions" class="hidden flex gap-4 justify-end">
+      <button onclick="clearAll()" class="px-6 py-3 text-forest-600 hover:text-forest-800">
+        Cancel
+      </button>
+      <button onclick="importCourse()" class="bg-gradient-to-r from-burgundy-700 to-burgundy-800 hover:from-burgundy-800 hover:to-burgundy-900 text-white font-semibold px-8 py-3 rounded-xl flex items-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        </svg>
+        Import Course
+      </button>
+    </div>
+    
+    <!-- Progress/Status -->
+    <div id="importStatus" class="hidden bg-white rounded-xl shadow-sm border border-forest-100 p-6">
+      <div class="flex items-center gap-3">
+        <div id="statusSpinner" class="w-6 h-6 border-2 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <span id="statusText" class="text-forest-700">Importing...</span>
+      </div>
+    </div>
+    
+  </div>
+  
+  <script>
+    const API_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000' 
+      : 'https://api.counselorready.com';
+    
+    let parsedCourse = null;
+    let existingCourses = [];
+    
+    // Load existing courses on page load
+    document.addEventListener('DOMContentLoaded', loadExistingCourses);
+    
+    // Handle import mode change
+    document.querySelectorAll('input[name="importMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        document.getElementById('existingCourseSelect').classList.toggle('hidden', e.target.value !== 'update');
+      });
+    });
+    
+    async function loadExistingCourses() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        existingCourses = data.courses || [];
+        
+        const select = document.getElementById('courseSelect');
+        select.innerHTML = '<option value="">-- Select a course --</option>' +
+          existingCourses.map(c => `<option value="${c._id}">${c.title} (${c.ceuHours || 0} CE hrs)</option>`).join('');
+      } catch (error) {
+        console.error('Failed to load courses:', error);
+      }
+    }
+    
+    function handleFileDrop(e) {
+      e.preventDefault();
+      const file = e.dataTransfer.files[0];
+      if (file) processFile(file);
+    }
+    
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processFile(file);
+    }
+    
+    function processFile(file) {
+      document.getElementById('fileInfo').classList.remove('hidden');
+      document.getElementById('fileName').textContent = file.name;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        parseMarkdownCourse(content);
+      };
+      reader.readAsText(file);
+    }
+    
+    function clearFile() {
+      document.getElementById('fileInput').value = '';
+      document.getElementById('fileInfo').classList.add('hidden');
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('importOptions').classList.add('hidden');
+      document.getElementById('importActions').classList.add('hidden');
+      parsedCourse = null;
+    }
+    
+    function clearAll() {
+      clearFile();
+    }
+    
+    function parseMarkdownCourse(content) {
+      parsedCourse = {
+        title: '',
+        subtitle: '',
+        description: '',
+        ceuHours: 3,
+        objectives: [],
+        modules: [],
+        category: 'core'
+      };
+      
+      // Extract title
+      const titleMatch = content.match(/^#\s*Course:\s*(.+)$/m);
+      if (titleMatch) {
+        parsedCourse.title = titleMatch[1].trim();
+      }
+      
+      // Extract CE hours
+      const hoursMatch = content.match(/(\d+\.?\d*)\s*CE\s*Hours?/i);
+      if (hoursMatch) {
+        parsedCourse.ceuHours = parseFloat(hoursMatch[1]);
+      }
+      
+      // Extract category
+      const categoryMatch = content.match(/CE\s*Hours?\s*\|\s*(.+)$/m) || content.match(/Credit Hours:\s*[\d.]+\s*CE Hours?\s*\(([^)]+)\)/i);
+      if (categoryMatch) {
+        const cat = categoryMatch[1].toLowerCase();
+        if (cat.includes('ethic')) parsedCourse.category = 'ethics';
+        else if (cat.includes('telehealth')) parsedCourse.category = 'telehealth';
+        else if (cat.includes('supervision')) parsedCourse.category = 'supervision';
+        else if (cat.includes('trauma')) parsedCourse.category = 'trauma';
+        else if (cat.includes('cultural') || cat.includes('diversity')) parsedCourse.category = 'cultural';
+        else parsedCourse.category = 'core';
+      }
+      
+      // Extract description
+      const descMatch = content.match(/\*\*Course Description:\*\*\s*(.+?)(?=\n\n|\*\*Target)/s);
+      if (descMatch) {
+        parsedCourse.description = descMatch[1].trim();
+      }
+      
+      // Extract objectives
+      const objSection = content.match(/## LEARNING OBJECTIVES[\s\S]*?(?=---|\n## )/);
+      if (objSection) {
+        const objMatches = objSection[0].matchAll(/\d+\.\s*\*\*(.+?)\*\*\s*(.+?)(?=\n\d+\.|\n\n|$)/g);
+        for (const match of objMatches) {
+          parsedCourse.objectives.push(`${match[1]} ${match[2]}`.trim());
+        }
+      }
+      
+      // Extract modules
+      const moduleMatches = content.matchAll(/###\s*MODULE\s*(\d+):\s*(.+?)\s*\((\d+)\s*minutes?\)/gi);
+      let lastModuleEnd = 0;
+      let moduleStarts = [];
+      
+      for (const match of moduleMatches) {
+        moduleStarts.push({
+          index: match.index,
+          number: parseInt(match[1]),
+          title: match[2].trim(),
+          duration: parseInt(match[3])
+        });
+      }
+      
+      // Also check for INTRODUCTION as a module/lesson
+      const introMatch = content.match(/###\s*INTRODUCTION\s*\((\d+)\s*minutes?\)/i);
+      if (introMatch) {
+        moduleStarts.unshift({
+          index: introMatch.index,
+          number: 0,
+          title: 'Introduction',
+          duration: parseInt(introMatch[1])
+        });
+      }
+      
+      // Parse each module's content
+      for (let i = 0; i < moduleStarts.length; i++) {
+        const start = moduleStarts[i].index;
+        const end = i < moduleStarts.length - 1 ? moduleStarts[i + 1].index : content.length;
+        const moduleContent = content.substring(start, end);
+        
+        // Convert markdown to HTML
+        let htmlContent = convertMarkdownToHtml(moduleContent);
+        
+        const module = {
+          title: moduleStarts[i].title,
+          description: '',
+          order: i + 1,
+          lessons: [{
+            title: moduleStarts[i].title,
+            type: 'text',
+            content: htmlContent,
+            duration: moduleStarts[i].duration,
+            order: 1
+          }]
+        };
+        
+        parsedCourse.modules.push(module);
+      }
+      
+      // Check for quiz/assessment at the end
+      const quizMatch = content.match(/##\s*(?:POST-?TEST|ASSESSMENT|QUIZ|KNOWLEDGE CHECK)[\s\S]*$/i);
+      if (quizMatch) {
+        // Add as final module if not already captured
+        const quizModule = {
+          title: 'Course Assessment',
+          description: 'Final assessment',
+          order: parsedCourse.modules.length + 1,
+          lessons: [{
+            title: 'Course Assessment',
+            type: 'quiz',
+            duration: 15,
+            order: 1,
+            questions: parseQuizQuestions(quizMatch[0])
+          }]
+        };
+        
+        // Only add if we found questions
+        if (quizModule.lessons[0].questions.length > 0) {
+          parsedCourse.modules.push(quizModule);
+        }
+      }
+      
+      displayParsedCourse();
+    }
+    
+    function convertMarkdownToHtml(markdown) {
+      let html = markdown;
+      
+      // Remove the module header line (we'll use it as title)
+      html = html.replace(/^###\s*(?:MODULE\s*\d+:|INTRODUCTION).+$/m, '');
+      
+      // Convert headers
+      html = html.replace(/^####\s*(.+)$/gm, '<h4>$1</h4>');
+      html = html.replace(/^###\s*(.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^\*\*(.+?)\*\*$/gm, '<h3>$1</h3>');
+      
+      // Convert bold/italic
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      
+      // Convert lists
+      html = html.replace(/^-\s+(.+)$/gm, '<li>$1</li>');
+      html = html.replace(/^(\d+)\.\s+(.+)$/gm, '<li>$2</li>');
+      
+      // Wrap consecutive <li> in <ul>
+      html = html.replace(/(<li>.+<\/li>\n?)+/g, '<ul>$&</ul>');
+      
+      // Convert video links to embedded notice
+      html = html.replace(/📺\s*\*\*WATCH NOW:.+?\*\*\s*\n\*\*"(.+?)"\s*by\s*(.+?)\s*\((.+?)\)\*\*\s*\n(https:\/\/www\.youtube\.com\/watch\?v=[\w-]+)/g, 
+        '<div class="video-embed bg-blue-50 border border-blue-200 rounded-lg p-4 my-4"><p class="font-semibold text-blue-800">📺 Watch: $1</p><p class="text-blue-600 text-sm">By $2 ($3)</p><p class="mt-2"><a href="$4" target="_blank" class="text-blue-700 underline">Open Video →</a></p></div>');
+      
+      // Convert horizontal rules
+      html = html.replace(/^---+$/gm, '<hr class="my-6">');
+      
+      // Convert paragraphs (lines that aren't already wrapped)
+      html = html.split('\n\n').map(block => {
+        block = block.trim();
+        if (!block) return '';
+        if (block.startsWith('<')) return block;
+        return `<p>${block.replace(/\n/g, ' ')}</p>`;
+      }).join('\n\n');
+      
+      // Clean up empty paragraphs
+      html = html.replace(/<p>\s*<\/p>/g, '');
+      
+      return html.trim();
+    }
+    
+    function parseQuizQuestions(quizContent) {
+      const questions = [];
+      
+      // Try to find question patterns
+      const questionMatches = quizContent.matchAll(/(?:Question\s*)?(\d+)\.\s*(.+?)(?=\n[a-d]\)|\n[A-D]\.)/gi);
+      
+      // Simplified: look for numbered items that could be questions
+      const simpleMatches = quizContent.matchAll(/(\d+)\.\s*(.+?\?)\s*\n\s*([a-d]\)|[A-D]\.)\s*(.+?)\s*\n\s*([a-d]\)|[A-D]\.)\s*(.+?)\s*\n\s*([a-d]\)|[A-D]\.)\s*(.+?)\s*\n\s*([a-d]\)|[A-D]\.)\s*(.+?)(?=\n\d+\.|\n\n|$)/gis);
+      
+      for (const match of simpleMatches) {
+        questions.push({
+          question: match[2].trim(),
+          type: 'multiple_choice',
+          options: [match[4].trim(), match[6].trim(), match[8].trim(), match[10].trim()],
+          correctAnswer: 0, // Default to first, will need manual adjustment
+          explanation: 'Please review the lesson content for the correct answer.',
+          points: 1
+        });
+      }
+      
+      return questions;
+    }
+    
+    function displayParsedCourse() {
+      if (!parsedCourse) return;
+      
+      document.getElementById('parsedTitle').value = parsedCourse.title;
+      document.getElementById('parsedCEHours').value = parsedCourse.ceuHours;
+      document.getElementById('parsedDescription').value = parsedCourse.description;
+      
+      // Display objectives
+      const objHtml = parsedCourse.objectives.map((obj, i) => 
+        `<p class="mb-1">${i + 1}. ${obj}</p>`
+      ).join('') || '<p class="text-gray-500">No objectives found</p>';
+      document.getElementById('parsedObjectives').innerHTML = objHtml;
+      
+      // Display modules
+      let totalWords = 0;
+      const modHtml = parsedCourse.modules.map((mod, mi) => {
+        const lessonList = mod.lessons.map((les, li) => {
+          const wordCount = les.content ? les.content.replace(/<[^>]*>/g, '').split(/\s+/).length : 0;
+          totalWords += wordCount;
+          const icon = les.type === 'quiz' ? '❓' : '📄';
+          return `<div class="ml-4 py-1 text-sm text-forest-600">${icon} ${les.title} (${les.duration}m, ${wordCount.toLocaleString()} words)</div>`;
+        }).join('');
+        
+        return `
+          <div class="border border-forest-200 rounded-lg p-3">
+            <div class="font-medium text-forest-800">Module ${mi + 1}: ${mod.title}</div>
+            ${lessonList}
+          </div>
+        `;
+      }).join('');
+      document.getElementById('parsedModules').innerHTML = modHtml || '<p class="text-gray-500">No modules found</p>';
+      
+      // Word count status
+      document.getElementById('totalWordCount').textContent = totalWords.toLocaleString();
+      const requiredWords = parsedCourse.ceuHours * 6000;
+      const percentage = Math.round((totalWords / requiredWords) * 100);
+      const statusEl = document.getElementById('wordCountStatus');
+      if (totalWords >= requiredWords) {
+        statusEl.textContent = `✓ Meets NBCC requirement (${percentage}% of ${requiredWords.toLocaleString()} required)`;
+        statusEl.className = 'font-medium text-green-700';
+      } else {
+        statusEl.textContent = `⚠️ Below NBCC requirement (${percentage}% of ${requiredWords.toLocaleString()} required)`;
+        statusEl.className = 'font-medium text-yellow-700';
+      }
+      
+      // Show sections
+      document.getElementById('previewSection').classList.remove('hidden');
+      document.getElementById('importOptions').classList.remove('hidden');
+      document.getElementById('importActions').classList.remove('hidden');
+    }
+    
+    async function importCourse() {
+      if (!parsedCourse) {
+        alert('No course parsed. Please upload a file first.');
+        return;
+      }
+      
+      const token = localStorage.getItem('token');
+      const importMode = document.querySelector('input[name="importMode"]:checked').value;
+      
+      // Update parsed course with any edits
+      parsedCourse.title = document.getElementById('parsedTitle').value;
+      parsedCourse.ceuHours = parseFloat(document.getElementById('parsedCEHours').value);
+      parsedCourse.description = document.getElementById('parsedDescription').value;
+      
+      // Generate slug
+      parsedCourse.slug = parsedCourse.title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+      
+      // Set other required fields
+      parsedCourse.instructor = 'GA Integrated Therapeutic Perspectives LLC';
+      parsedCourse.accessTier = 'professional';
+      parsedCourse.status = 'draft';
+      parsedCourse.ceuCategories = [{ category: parsedCourse.category, hours: parsedCourse.ceuHours }];
+      parsedCourse.settings = {
+        linearProgression: true,
+        enforceMinTime: true,
+        minTimePercent: 80,
+        passingScore: 70,
+        requireEvaluation: true,
+        requireAttestation: true,
+        certificateEnabled: true
+      };
+      parsedCourse.approvingBody = 'NBCC';
+      parsedCourse.approvalNumber = '7760';
+      
+      document.getElementById('importStatus').classList.remove('hidden');
+      document.getElementById('statusText').textContent = 'Importing course...';
+      
+      try {
+        let response;
+        
+        if (importMode === 'new') {
+          // Create new course
+          response = await fetch(`${API_URL}/api/admin/courses`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(parsedCourse)
+          });
+        } else {
+          // Update existing course
+          const courseId = document.getElementById('courseSelect').value;
+          if (!courseId) {
+            alert('Please select a course to update');
+            document.getElementById('importStatus').classList.add('hidden');
+            return;
+          }
+          
+          response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+            method: 'PUT',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              title: parsedCourse.title,
+              description: parsedCourse.description,
+              ceuHours: parsedCourse.ceuHours,
+              modules: parsedCourse.modules,
+              objectives: parsedCourse.objectives
+            })
+          });
+        }
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          document.getElementById('statusSpinner').classList.add('hidden');
+          document.getElementById('statusText').innerHTML = `
+            <span class="text-green-700">✅ Course imported successfully!</span>
+            <a href="/admin-courses.html" class="ml-4 text-burgundy-700 hover:text-burgundy-800 underline">Go to Courses →</a>
+          `;
+        } else {
+          throw new Error(data.error || 'Import failed');
+        }
+        
+      } catch (error) {
+        console.error('Import error:', error);
+        document.getElementById('statusSpinner').classList.add('hidden');
+        document.getElementById('statusText').innerHTML = `<span class="text-red-700">❌ Error: ${error.message}</span>`;
+      }
+    }
+  </script>
+<script src="/js/footer.js"></script>
+  </main></div>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

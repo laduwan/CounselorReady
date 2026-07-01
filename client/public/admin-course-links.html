@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Course Share Links — CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <!-- QR Code library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; background: #F8F7F4; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .course-row:hover { background: #fdf5f7; }
+    .copy-btn { transition: all .15s; }
+    .copy-btn.copied { background: #4a7c59 !important; color: #fff !important; border-color: #4a7c59 !important; }
+    .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+    .pill-published { background: #e3efe8; color: #3d6849; }
+    .pill-draft { background: #fae8ec; color: #8b2542; }
+    input[type="search"]:focus { outline: 2px solid #6b1d34; outline-offset: 1px; }
+    .tab-btn { transition: all .15s; border-bottom: 2px solid transparent; }
+    .tab-btn.active { border-color: #6b1d34; color: #6b1d34; font-weight: 600; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100; display: none; align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    #qr-canvas canvas { display: block; margin: 0 auto; }
+    .skeleton { background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #284157; color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all .2s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    /* enrollment wiring banner */
+    .wiring-banner { background: #fef3cd; border: 1px solid #d4a855; border-radius: 10px; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<!-- QR Modal -->
+<div id="qr-modal" class="modal-overlay" onclick="closeQR(event)">
+  <div class="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full mx-4" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-display text-xl font-semibold text-burgundy-800" id="qr-title">Course QR Code</h3>
+      <button onclick="closeQR()" class="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+    </div>
+    <div id="qr-canvas" class="mb-4"></div>
+    <p class="text-xs text-gray-500 text-center mb-4" id="qr-url"></p>
+    <div class="flex gap-2">
+      <button onclick="downloadQR()" class="flex-1 py-2 bg-burgundy-800 text-white rounded-lg text-sm font-medium hover:bg-burgundy-900">
+        Download PNG
+      </button>
+      <button onclick="closeQR()" class="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-stone-50 border-r border-burgundy-100 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+<!-- Main -->
+<main class="flex-1 min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-stone-50 border-b border-gray-200 sticky top-0 z-30 px-6 py-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="font-display text-2xl font-bold text-burgundy-800">Course Share Links</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Quick-copy enrollment and detail links for every course</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="exportLinks()" class="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Export CSV
+        </button>
+        <button onclick="copyAllLinks()" class="flex items-center gap-2 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm hover:bg-burgundy-900">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Copy All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="p-6 max-w-7xl mx-auto space-y-5">
+
+    <!-- Enrollment Wiring Status Banner -->
+    <div class="wiring-banner p-4" id="wiring-banner">
+      <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-gold-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div class="flex-1">
+          <p class="font-semibold text-gray-800 text-sm">Enrollment Wiring Health</p>
+          <div id="wiring-checks" class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs"></div>
+        </div>
+        <button onclick="runWiringCheck()" id="wiring-btn" class="flex-shrink-0 px-3 py-1.5 bg-gold-400 text-white rounded-lg text-xs font-semibold hover:bg-gold-500">
+          Check Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-xl border border-gray-200 p-4">
+      <div class="flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+          <input type="search" id="search-input" placeholder="Search courses by title or code…"
+            class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:border-burgundy-800"
+            oninput="filterCourses()">
+        </div>
+        <div class="flex gap-2">
+          <select id="status-filter" onchange="filterCourses()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700">
+            <option value="">All Status</option>
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+          <select id="ce-filter" onchange="filterCourses()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700">
+            <option value="">All CE Hours</option>
+            <option value="1">1 CE</option>
+            <option value="2">2 CE</option>
+            <option value="3">3 CE</option>
+            <option value="6">6 CE</option>
+          </select>
+        </div>
+      </div>
+      <!-- Tab filters -->
+      <div class="flex gap-1 mt-3 border-b border-gray-100">
+        <button class="tab-btn active px-4 py-2 text-sm text-gray-600" data-tab="all" onclick="setTab('all', this)">All Courses</button>
+        <button class="tab-btn px-4 py-2 text-sm text-gray-600" data-tab="detail" onclick="setTab('detail', this)">Detail Links</button>
+        <button class="tab-btn px-4 py-2 text-sm text-gray-600" data-tab="enroll" onclick="setTab('enroll', this)">Enroll Links</button>
+        <button class="tab-btn px-4 py-2 text-sm text-gray-600" data-tab="viewer" onclick="setTab('viewer', this)">Viewer Links</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="stats-row">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <p class="text-2xl font-bold text-burgundy-800" id="stat-total">—</p>
+        <p class="text-xs text-gray-500 mt-0.5">Total Courses</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <p class="text-2xl font-bold text-hunter-500" id="stat-published">—</p>
+        <p class="text-xs text-gray-500 mt-0.5">Published</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <p class="text-2xl font-bold text-gold-400" id="stat-enrollments">—</p>
+        <p class="text-xs text-gray-500 mt-0.5">Total Enrollments</p>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <p class="text-2xl font-bold text-navy-700" id="stat-completions">—</p>
+        <p class="text-xs text-gray-500 mt-0.5">Completions</p>
+      </div>
+    </div>
+
+    <!-- Course Table -->
+    <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div class="px-6 py-3 bg-gray-50 border-b border-gray-200 grid grid-cols-12 gap-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        <div class="col-span-4">Course</div>
+        <div class="col-span-1">CE</div>
+        <div class="col-span-1">Status</div>
+        <div class="col-span-3">Enrollment Link</div>
+        <div class="col-span-2">Actions</div>
+        <div class="col-span-1">QR</div>
+      </div>
+      <div id="course-list">
+        <!-- Skeleton rows -->
+        <div class="px-6 py-4 border-b border-gray-100 grid grid-cols-12 gap-3 items-center">
+          <div class="col-span-4"><div class="skeleton h-4 w-48 mb-1"></div><div class="skeleton h-3 w-20"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-8"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-16"></div></div>
+          <div class="col-span-3"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-2"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-1"><div class="skeleton h-8 w-8"></div></div>
+        </div>
+        <div class="px-6 py-4 border-b border-gray-100 grid grid-cols-12 gap-3 items-center">
+          <div class="col-span-4"><div class="skeleton h-4 w-56 mb-1"></div><div class="skeleton h-3 w-20"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-8"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-16"></div></div>
+          <div class="col-span-3"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-2"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-1"><div class="skeleton h-8 w-8"></div></div>
+        </div>
+        <div class="px-6 py-4 grid grid-cols-12 gap-3 items-center">
+          <div class="col-span-4"><div class="skeleton h-4 w-40 mb-1"></div><div class="skeleton h-3 w-20"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-8"></div></div>
+          <div class="col-span-1"><div class="skeleton h-4 w-16"></div></div>
+          <div class="col-span-3"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-2"><div class="skeleton h-8 w-full"></div></div>
+          <div class="col-span-1"><div class="skeleton h-8 w-8"></div></div>
+        </div>
+      </div>
+      <div id="empty-state" class="hidden py-16 text-center">
+        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <p class="text-gray-500 text-sm">No courses match your filter.</p>
+      </div>
+    </div>
+
+    <!-- Enrollment Wiring Fix Guide -->
+    <details class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <summary class="px-6 py-4 cursor-pointer flex items-center justify-between hover:bg-gray-50 font-semibold text-gray-700 text-sm">
+        <span class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-burgundy-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          Enrollment Wiring Fix — Backend Patches Required
+        </span>
+        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+      </summary>
+      <div class="px-6 pb-6 text-sm text-gray-600 space-y-4 border-t border-gray-100 pt-4">
+
+        <div class="grid md:grid-cols-2 gap-4">
+
+          <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p class="font-semibold text-red-800 mb-2">🔴 Issue 1 — Admin stats miss interactivecourses enrollments</p>
+            <p class="text-xs text-red-700 mb-2">In <code>routes/admin.js</code>, the <code>GET /stats</code> handler queries <code>Course</code> but not <code>InteractiveCourse</code> or <code>UserCourseProgress</code>.</p>
+            <p class="font-medium text-red-800 text-xs">Fix — add to stats handler:</p>
+            <pre class="bg-red-100 rounded p-2 text-xs overflow-x-auto mt-1 text-red-900">const [totalEnrollments, completions] = await Promise.all([
+  UserCourseProgress.countDocuments(),
+  UserCourseProgress.countDocuments({ status: 'completed' })
+]);
+// Include in response: totalEnrollments, completions</pre>
+          </div>
+
+          <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+            <p class="font-semibold text-red-800 mb-2">🔴 Issue 2 — Assessment 404 on inline isExam blocks</p>
+            <p class="text-xs text-red-700 mb-2">In <code>routes/courseRoutes.js</code>, <code>POST /:id/assessment</code> only checks <code>course.assessment</code> top-level field — inline <code>isExam: true</code> quiz blocks are ignored.</p>
+            <p class="font-medium text-red-800 text-xs">Fix — normalize in handler:</p>
+            <pre class="bg-red-100 rounded p-2 text-xs overflow-x-auto mt-1 text-red-900">// After fetching course, normalize exam:
+const examBlock = course.assessment || 
+  course.sections?.flatMap(s => s.contentBlocks)
+    .find(b => b.type === 'quiz' && b.isExam);
+if (!examBlock) return res.status(404).json({error:'No assessment'});</pre>
+          </div>
+
+          <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+            <p class="font-semibold text-yellow-800 mb-2">🟡 Issue 3 — Activity log not fired on enrollment</p>
+            <p class="text-xs text-yellow-700 mb-2"><code>POST /:id/enroll</code> in <code>courseRoutes.js</code> creates a <code>UserCourseProgress</code> record but does not write to the admin activity log.</p>
+            <p class="font-medium text-yellow-800 text-xs">Fix — add after successful enroll:</p>
+            <pre class="bg-yellow-100 rounded p-2 text-xs overflow-x-auto mt-1 text-yellow-900">await Activity.create({
+  type: 'enrollment',
+  userId: req.user._id,
+  courseId: course._id,
+  courseTitle: course.title,
+  timestamp: new Date()
+});</pre>
+          </div>
+
+          <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+            <p class="font-semibold text-yellow-800 mb-2">🟡 Issue 4 — Admin enrollments endpoint queries wrong collection</p>
+            <p class="text-xs text-yellow-700 mb-2"><code>GET /api/admin/users/:userId/enrollments</code> likely queries legacy <code>courses</code> progress. Interactive enrollments live in <code>UserCourseProgress</code>.</p>
+            <p class="font-medium text-yellow-800 text-xs">Fix — query both:</p>
+            <pre class="bg-yellow-100 rounded p-2 text-xs overflow-x-auto mt-1 text-yellow-900">const progress = await UserCourseProgress.find({ userId })
+  .populate('courseId', 'title slug ceHours')
+  .sort({ enrolledAt: -1 });
+// merge with legacy Course enrollments if needed</pre>
+          </div>
+
+          <div class="rounded-lg border border-blue-200 bg-blue-50 p-4 md:col-span-2">
+            <p class="font-semibold text-blue-800 mb-2">🔵 Issue 5 — PostHog events not firing on enrollment / completion</p>
+            <p class="text-xs text-blue-700 mb-2">In <code>cready-viewer.js</code> (or cready-viewer.html), after successful enroll POST and after attestation POST, add PostHog captures:</p>
+            <pre class="bg-blue-100 rounded p-2 text-xs overflow-x-auto mt-1 text-blue-900">// On successful enroll:
+if (window.posthog) posthog.capture('course_enrolled', { 
+  courseId: course._id, slug: course.slug, title: course.title 
+});
+
+// On attestation complete:
+if (window.posthog) posthog.capture('course_completed', { 
+  courseId: course._id, ceHours: course.ceHours 
+});</pre>
+          </div>
+
+        </div>
+      </div>
+    </details>
+
+  </div>
+</main>
+  </div><!-- close flex wrapper -->
+
+<script>
+  const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:5000/api'
+    : 'https://api.counselorready.com/api';
+
+  const CLIENT_BASE = window.location.origin;
+
+  let allCourses = [];
+  let currentTab = 'all';
+  let activeQRData = null;
+
+  // ── URL helpers ──────────────────────────────────────────────
+  const urls = {
+    detail:  c => `${CLIENT_BASE}/course-details.html?slug=${c.slug}`,
+    enroll:  c => `${CLIENT_BASE}/courses.html?enroll=${c.slug}`,
+    viewer:  c => `${CLIENT_BASE}/interactive-course.html?slug=${c.slug}`,
+  };
+
+  function getActiveUrl(course) {
+    if (currentTab === 'detail')  return urls.detail(course);
+    if (currentTab === 'enroll')  return urls.enroll(course);
+    if (currentTab === 'viewer')  return urls.viewer(course);
+    return urls.enroll(course); // default
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2200);
+  }
+
+  // ── Copy single ───────────────────────────────────────────────
+  async function copyLink(courseId) {
+    const course = allCourses.find(c => c._id === courseId || c.id === courseId);
+    if (!course) return;
+    const url = getActiveUrl(course);
+    await navigator.clipboard.writeText(url);
+    const btn = document.getElementById(`copy-${courseId}`);
+    if (btn) {
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+    toast('Link copied!');
+  }
+
+  // ── Copy all visible ──────────────────────────────────────────
+  async function copyAllLinks() {
+    const visible = getFiltered();
+    const lines = visible.map(c => `${c.title}\t${getActiveUrl(c)}`).join('\n');
+    await navigator.clipboard.writeText(lines);
+    toast(`${visible.length} links copied to clipboard`);
+  }
+
+  // ── Export CSV ────────────────────────────────────────────────
+  function exportLinks() {
+    const visible = getFiltered();
+    const rows = [['Code','Title','CE Hours','Status','Detail URL','Enroll URL','Viewer URL']];
+    visible.forEach(c => rows.push([
+      c.courseCode || c.code || '',
+      c.title,
+      c.ceHours || '',
+      c.isPublished ? 'Published' : 'Draft',
+      urls.detail(c),
+      urls.enroll(c),
+      urls.viewer(c),
+    ]));
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `counselorready-course-links-${Date.now()}.csv`; a.click();
+    toast('CSV downloaded');
+  }
+
+  // ── QR Modal ──────────────────────────────────────────────────
+  function openQR(courseId) {
+    const course = allCourses.find(c => (c._id || c.id) === courseId);
+    if (!course) return;
+    const url = urls.enroll(course);
+    activeQRData = { url, title: course.title };
+
+    document.getElementById('qr-title').textContent = course.title;
+    document.getElementById('qr-url').textContent = url;
+    const canvas = document.getElementById('qr-canvas');
+    canvas.innerHTML = '';
+    new QRCode(canvas, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.M });
+
+    document.getElementById('qr-modal').classList.add('open');
+  }
+
+  function closeQR(e) {
+    if (!e || e.target === document.getElementById('qr-modal') || !e.target) {
+      document.getElementById('qr-modal').classList.remove('open');
+    }
+  }
+
+  function downloadQR() {
+    const img = document.querySelector('#qr-canvas img');
+    if (!img) return;
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = `qr-${activeQRData.title.replace(/[^a-z0-9]/gi,'-').toLowerCase()}.png`;
+    a.click();
+  }
+
+  // ── Tab ───────────────────────────────────────────────────────
+  function setTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderCourses(getFiltered());
+  }
+
+  // ── Filter ────────────────────────────────────────────────────
+  function getFiltered() {
+    const q = document.getElementById('search-input').value.toLowerCase();
+    const st = document.getElementById('status-filter').value;
+    const ce = document.getElementById('ce-filter').value;
+    return allCourses.filter(c => {
+      const matchQ = !q || c.title.toLowerCase().includes(q) || (c.courseCode||'').toLowerCase().includes(q);
+      const matchSt = !st || (st === 'published' ? (c.isPublished || c.status === 'published') : (!c.isPublished && c.status !== 'published'));
+      const matchCe = !ce || String(c.ceHours) === ce;
+      return matchQ && matchSt && matchCe;
+    });
+  }
+
+  function filterCourses() {
+    renderCourses(getFiltered());
+  }
+
+  // ── Render ────────────────────────────────────────────────────
+  function renderCourses(courses) {
+    const list = document.getElementById('course-list');
+    const empty = document.getElementById('empty-state');
+
+    if (!courses.length) {
+      list.innerHTML = '';
+      empty.classList.remove('hidden');
+      return;
+    }
+    empty.classList.add('hidden');
+
+    list.innerHTML = courses.map(c => {
+      const id = c._id || c.id;
+      const slug = c.slug || '';
+      const published = c.isPublished || c.status === 'published';
+      const code = c.courseCode || c.code || '—';
+      const ce = c.ceHours || '—';
+      const activeUrl = getActiveUrl(c);
+      const enrollments = c.enrollmentCount ?? '—';
+
+      return `
+      <div class="course-row px-6 py-4 border-b border-gray-100 grid grid-cols-12 gap-3 items-center last:border-0">
+        <div class="col-span-4 min-w-0">
+          <p class="font-medium text-gray-900 text-sm truncate" title="${c.title}">${c.title}</p>
+          <div class="flex items-center gap-2 mt-0.5">
+            <span class="text-xs text-gray-400">${code}</span>
+            <span class="text-gray-300">·</span>
+            <span class="text-xs text-gray-400">${enrollments} enrolled</span>
+          </div>
+        </div>
+        <div class="col-span-1">
+          <span class="text-sm font-semibold text-gray-700">${ce}</span>
+          <span class="text-xs text-gray-400 block">CE hrs</span>
+        </div>
+        <div class="col-span-1">
+          <span class="pill ${published ? 'pill-published' : 'pill-draft'}">
+            ${published ? '● Live' : '○ Draft'}
+          </span>
+        </div>
+        <div class="col-span-3">
+          <div class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-lg px-2 py-1.5">
+            <svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            <span class="text-xs text-gray-600 truncate flex-1 font-mono">${activeUrl.replace(CLIENT_BASE,'')}</span>
+          </div>
+        </div>
+        <div class="col-span-2 flex gap-1.5">
+          <button id="copy-${id}" onclick="copyLink('${id}')"
+            class="copy-btn flex-1 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50">
+            Copy
+          </button>
+          <a href="${urls.detail(c)}" target="_blank"
+            class="flex items-center justify-center w-8 h-8 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50" title="Preview">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </a>
+        </div>
+        <div class="col-span-1">
+          <button onclick="openQR('${id}')"
+            class="flex items-center justify-center w-8 h-8 border border-gray-300 rounded-lg text-gray-500 hover:border-burgundy-800 hover:text-burgundy-800" title="QR Code">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="1.5"/><path d="M14 14h2v2h-2zm4 0h3v3h-3zm-4 4h3v3h-3zm4 3v-3h3v3" stroke-width="1.5"/></svg>
+          </button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Load courses ──────────────────────────────────────────────
+  async function loadCourses() {
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const res = await fetch(`${API_BASE}/admin/courses`, { headers });
+      if (!res.ok) throw new Error(`${res.status}`);
+      const data = await res.json();
+      allCourses = Array.isArray(data) ? data : (data.courses || data.data || []);
+
+      // Stats
+      document.getElementById('stat-total').textContent = allCourses.length;
+      document.getElementById('stat-published').textContent = allCourses.filter(c => c.isPublished || c.status === 'published').length;
+
+      // Load enrollment counts
+      loadEnrollmentStats(headers);
+
+      renderCourses(allCourses);
+    } catch (err) {
+      document.getElementById('course-list').innerHTML = `
+        <div class="px-6 py-12 text-center text-sm text-gray-500">
+          <p class="font-medium text-gray-700 mb-1">Could not load courses</p>
+          <p class="text-xs text-gray-400">${err.message} — make sure you're logged in as admin</p>
+          <button onclick="loadCourses()" class="mt-3 px-4 py-2 bg-burgundy-800 text-white text-xs rounded-lg">Retry</button>
+        </div>`;
+    }
+  }
+
+  async function loadEnrollmentStats(headers) {
+    try {
+      const [statRes, progRes] = await Promise.all([
+        fetch(`${API_BASE}/admin/stats`, { headers }),
+        fetch(`${API_BASE}/admin/enrollment-stats`, { headers }).catch(() => null)
+      ]);
+
+      if (statRes.ok) {
+        const stats = await statRes.json();
+        // Try known field names from admin.js stats endpoint
+        const enroll = stats.totalEnrollments ?? stats.enrollments ?? stats.activeEnrollments ?? '—';
+        const complete = stats.completions ?? stats.completedCourses ?? stats.courseCompletions ?? '—';
+        document.getElementById('stat-enrollments').textContent = enroll;
+        document.getElementById('stat-completions').textContent = complete;
+      }
+    } catch (e) {
+      // silent — stats cards remain —
+    }
+  }
+
+  // ── Enrollment wiring health check ───────────────────────────
+  async function runWiringCheck() {
+    const btn = document.getElementById('wiring-btn');
+    btn.textContent = 'Checking…';
+    btn.disabled = true;
+
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    const headers = { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+
+    const checks = [
+      { label: 'Admin stats endpoint',     url: `${API_BASE}/admin/stats` },
+      { label: 'Enrollment search',        url: `${API_BASE}/admin/enrollments/search?limit=1` },
+      { label: 'Interactive courses list', url: `${API_BASE}/interactive-courses?limit=1` },
+      { label: 'Analytics endpoint',       url: `${API_BASE}/analytics/overview` },
+    ];
+
+    const results = await Promise.all(checks.map(async chk => {
+      try {
+        const r = await fetch(chk.url, { headers });
+        return { label: chk.label, ok: r.ok || r.status === 401, status: r.status };
+      } catch {
+        return { label: chk.label, ok: false, status: 'ERR' };
+      }
+    }));
+
+    const container = document.getElementById('wiring-checks');
+    container.innerHTML = results.map(r => `
+      <div class="flex items-center gap-1.5 rounded-lg px-2 py-1 ${r.ok ? 'bg-green-100' : 'bg-red-100'}">
+        <span>${r.ok ? '✓' : '✗'}</span>
+        <span class="${r.ok ? 'text-green-800' : 'text-red-800'} font-medium">${r.label}</span>
+        <span class="ml-auto text-gray-500 font-mono">${r.status}</span>
+      </div>`).join('');
+
+    btn.textContent = 'Recheck';
+    btn.disabled = false;
+  }
+
+  // ── Auth guard ────────────────────────────────────────────────
+  (async function() {
+    const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+    if (!token) { window.location.href = '/login.html'; return; }
+    try {
+      const res = await fetch(`${API_BASE}/auth/me`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      const user = data.user || data;
+      if (user.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
+    } catch (e) {
+      window.location.href = '/login.html'; return;
+    }
+  })();
+
+  // ── Init ──────────────────────────────────────────────────────
+  loadCourses();
+
+  // Show wiring check placeholder
+  document.getElementById('wiring-checks').innerHTML = `
+    <div class="col-span-4 text-xs text-gray-500 italic">Click "Check Now" to test enrollment endpoint wiring</div>`;
+</script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>
+

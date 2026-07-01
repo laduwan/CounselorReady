@@ -1,0 +1,6 @@
+/**
+ * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+ * All rights reserved. Proprietary and confidential.
+ * Unauthorized copying or distribution is strictly prohibited.
+ */
+printf 'import mongoose from "mongoose";\nimport dotenv from "dotenv";\ndotenv.config();\nawait mongoose.connect(process.env.MONGODB_URI);\nconst db=mongoose.connection.db;\nconst c=db.collection("interactivecourses");\nconst doc=await c.findOne({slug:"trauma-informed-care"});\nconst types={};\n(doc.sections||[]).forEach(s=>(s.contentBlocks||[]).forEach(b=>{types[b.type]=(types[b.type]||0)+1}));\nconst doc2=await c.findOne({slug:"small-warriors-big-battles-parental-incarceration"});\nconst types2={};\n(doc2.sections||[]).forEach(s=>(s.contentBlocks||[]).forEach(b=>{types2[b.type]=(types2[b.type]||0)+1}));\nconsole.log("TRAUMA:",JSON.stringify({sectionCount:doc.sections?.length,moduleCount:doc.modules?.length,blockTypes:types,assessmentQs:doc.assessment?.questions?.length||0,sectionNames:doc.sections?.map(s=>s.title)},null,2));\nconsole.log("SMALL WARRIORS:",JSON.stringify({sectionCount:doc2.sections?.length,moduleCount:doc2.modules?.length,blockTypes:types2,assessmentQs:doc2.assessment?.questions?.length||0,sectionNames:doc2.sections?.map(s=>s.title)},null,2));\nawait mongoose.disconnect();\n' > src/scripts/inspect.js

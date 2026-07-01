@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Sliding Scale Fee Calculator — CounselorReady</title>
+<meta name="description" content="Free sliding scale fee calculator for therapists in private practice. Set fair rates based on client income and household size.">
+<meta property="og:title" content="Sliding Scale Calculator — CounselorReady">
+<meta property="og:description" content="Calculate fair therapy rates based on client income. Free tool for counselors in private practice.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--burgundy:#6B1D34;--burgundy-light:#8B3A54;--burgundy-deep:#4A1224;--rose:#D0768A;--green:#4A7C59;--gold:#D4A855;--navy:#284157;--navy-deep:#1A2D3D;--stone:#EDEADF;--cream:#F9F6EF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-height:1.6}
+.hdr{background:linear-gradient(145deg,var(--burgundy-deep),var(--burgundy),var(--burgundy-light));padding:14px 28px 12px;border-bottom:2px solid var(--gold)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+.main{max-width:780px;margin:0 auto;padding:24px 20px 60px}
+.card{background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
+.card-hdr{padding:16px 24px;border-bottom:1px solid #E0DBD0;display:flex;align-items:center;justify-content:space-between}
+.card-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:var(--burgundy)}
+.card-body{padding:20px 24px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px}
+.hint{font-size:11px;color:#999;margin-bottom:6px;font-style:italic}
+.field input,.field select{width:100%;padding:10px 14px;border-radius:8px;border:1.5px solid #ddd;font-family:'Lato',sans-serif;font-size:14px;outline:none}
+.field input:focus,.field select:focus{border-color:var(--green)}
+.row{display:flex;gap:14px}
+.row .field{flex:1}
+.tg{display:flex;flex-wrap:wrap;gap:8px}
+.tg button{padding:7px 14px;border-radius:8px;border:1.5px solid #ddd;background:#fff;color:#666;font-size:12.5px;font-weight:500;cursor:pointer;font-family:'Lato',sans-serif;transition:.15s}
+.tg button.on{border-color:var(--green);background:rgba(74,124,89,.08);color:var(--green);font-weight:700}
+.btn{padding:12px 22px;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;gap:6px;transition:.15s;width:100%}
+.btn-gen{background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);box-shadow:0 2px 8px rgba(212,168,85,.3);justify-content:center}
+/* TABLE */
+.fee-table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13px}
+.fee-table th{background:var(--burgundy);color:#fff;padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.fee-table td{padding:10px 14px;border-bottom:1px solid #E8E4D8}
+.fee-table tr:nth-child(even){background:rgba(74,124,89,.03)}
+.fee-table .fee-amt{font-weight:700;color:var(--burgundy);font-size:15px}
+.fee-table .pct{font-size:11px;color:#999}
+.output{background:#fff;border-radius:14px;border:1px solid #D5CFC0;overflow:hidden;box-shadow:0 3px 14px rgba(0,0,0,.08);margin-top:20px}
+.output-hdr{background:linear-gradient(135deg,var(--burgundy-deep),var(--burgundy));padding:16px 24px;color:#fff;display:flex;justify-content:space-between;align-items:center}
+.output-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px}
+.output-body{padding:24px}
+.output-actions{display:flex;gap:10px;padding:14px 24px;background:var(--cream);border-top:1px solid #E0DBD0}
+.act-btn{flex:1;padding:10px;border-radius:8px;font-family:'Lato',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;display:flex;align-items:center;justify-content:center;gap:6px;border:none;transition:.15s}
+.act-print{background:var(--navy);color:#D8E4EE}
+.act-copy{background:#fff;color:var(--navy);border:1.5px solid #D5CFC0}
+.privacy{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.5}
+.ehr-note{background:rgba(40,65,87,.04);border:1px solid rgba(40,65,87,.1);border-radius:10px;padding:12px 16px;margin-top:16px;font-size:12px;color:#666;line-height:1.7}
+.footer{text-align:center;padding:20px;font-size:12px;color:#999;line-height:1.7;margin-top:20px;background:var(--navy-deep);border-radius:12px}
+@media(max-width:600px){.row{flex-direction:column;gap:0}}
+@media print{.hdr,.card,.output-actions,.privacy,.ehr-note,.footer{display:none!important}.output{box-shadow:none;border:1px solid #ccc}.output-hdr{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+<script src="/js/cr-gtag.js"></script>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb",{api_host:"https://us.i.posthog.com",autocapture:false});</script>
+</head>
+<body>
+<script>
+(async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const main = document.querySelector('main');
+          if (main) main.innerHTML = `
+            <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+              <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+              <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+              <p style="color:#4A7C59;margin-bottom:24px;">
+                This feature requires the Clinical Tools Suite add-on.
+                Contact your organization administrator to enable it.
+              </p>
+              <a href="/partner-billing.html#addons"
+                 style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+                View Add-ons
+              </a>
+            </div>
+          `;
+        });
+        return;
+      }
+      if (features && features.isPartnerUser && features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const badge = document.createElement('div');
+          badge.id = 'cr-powered-badge';
+          badge.innerHTML = `
+            <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+              <span style="font-weight:700;">Powered by</span>
+              <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+            </div>
+          `;
+          document.body.appendChild(badge);
+        });
+      }
+    }
+  } catch (e) { /* fail-open */ }
+})();
+</script>
+<div class="hdr">
+<div class="hdr-top"><span class="logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></span><span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.8px">FREE TOOL</span></div>
+<div class="hdr-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Sliding Scale Fee Calculator</div>
+<div class="hdr-sub">Generate a tiered fee schedule based on federal poverty guidelines. Printable handout for your office.</div>
+</div>
+<main class="main">
+<div class="card">
+<div class="card-hdr"><h3>Your Practice Rates</h3></div>
+<div class="card-body">
+<div class="row">
+<div class="field"><label>Full Session Fee ($)</label><input type="number" id="fullFee" value="150" min="50" max="500" oninput="calculate()"></div>
+<div class="field"><label>Minimum Viable Fee ($)</label><input type="number" id="minFee" value="50" min="0" max="500" oninput="calculate()"><div class="hint">The lowest you can accept and still cover your overhead.</div></div>
+</div>
+<div class="row">
+<div class="field"><label>Session Length</label>
+<div class="tg" id="sessionLen">
+<button class="on" onclick="setLen(this,'53min')">53-min (90837)</button>
+<button onclick="setLen(this,'38min')">38-min (90834)</button>
+<button onclick="setLen(this,'Intake')">Intake (90791)</button>
+</div></div>
+</div>
+<div class="field"><label>Practice Name (for handout header)</label><input type="text" id="practiceName" value="" placeholder="e.g. Mindful Pathways Counseling" oninput="calculate()"></div>
+<button class="btn btn-gen" onclick="calculate()" style="margin-top:8px">Generate Fee Schedule</button>
+</div>
+</div>
+<div id="output"></div>
+<div class="ehr-note"><strong style="color:#284157">This is a clinical tool, not an EHR.</strong> Print or save this fee schedule for your records. CounselorReady does not store any data you enter. <a href="/tools/" style="color:#284157;font-weight:600">Record-keeping guidance →</a></div>
+<div class="privacy">CounselorReady does not capture, transmit, or retain any information entered here.</div>
+<div class="footer"><span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:16px"><span style="color:var(--rose)">Counselor</span><span style="color:#5A9469">Ready</span></span> — Free clinical tools.<br>&copy; 2026 GAITP LLC. All rights reserved. | NBCC ACEP Provider #7760</div>
+</main>
+<script>
+// 2024 Federal Poverty Guidelines (48 contiguous states)
+const FPL=[{size:1,amt:15060},{size:2,amt:20440},{size:3,amt:25820},{size:4,amt:31200},{size:5,amt:36580},{size:6,amt:41960},{size:7,amt:47340},{size:8,amt:52720}];
+
+let sessionType='53min';
+function setLen(el,v){sessionType=v;document.querySelectorAll('#sessionLen button').forEach(b=>b.classList.remove('on'));el.classList.add('on');calculate()}
+
+function calculate(){if(window.posthog)posthog.capture('tool_used',{tool:'sliding-scale'});
+  const full=parseFloat(document.getElementById('fullFee').value)||150;
+  const min=parseFloat(document.getElementById('minFee').value)||50;
+  const practice=document.getElementById('practiceName').value||'[Practice Name]';
+  const today=new Date().toLocaleDateString();
+  const cpt=sessionType==='53min'?'90837':sessionType==='38min'?'90834':'90791';
+
+  // 5-tier sliding scale based on FPL — lowest income = lowest fee
+  const tierPcts = [
+    {label:'Tier A',maxPct:150,pct:.33},
+    {label:'Tier B',maxPct:200,pct:.5},
+    {label:'Tier C',maxPct:300,pct:.65},
+    {label:'Tier D',maxPct:400,pct:.8},
+    {label:'Full Fee',maxPct:999,pct:1}
+  ];
+
+  let rows='';
+  tierPcts.forEach((t,i)=>{
+    const fee=Math.max(min,Math.round(full*t.pct));
+    const prevPct=i===0?0:tierPcts[i-1].maxPct;
+    const incomeRange4=t.maxPct===999
+      ? `Over $${(FPL[3].amt*(prevPct/100)).toLocaleString()}`
+      : `$${(FPL[3].amt*(prevPct/100)).toLocaleString()} – $${(FPL[3].amt*(t.maxPct/100)).toLocaleString()}`;
+    const fplRange=t.maxPct===999?`${prevPct}%+ FPL`:`${prevPct}–${t.maxPct}% FPL`;
+    rows+=`<tr><td><strong>${t.label}</strong></td><td>${fplRange}</td><td>${incomeRange4}</td><td class="fee-amt">$${fee}</td><td class="pct">${Math.round(t.pct*100)}% of full fee</td></tr>`;
+  });
+
+  document.getElementById('output').innerHTML=`
+  <div class="output" id="feeDoc">
+    <div class="output-hdr"><h3>Sliding Scale Fee Schedule</h3><span style="font-size:11px;opacity:.7">${today}</span></div>
+    <div class="output-body" id="feeBody">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:var(--navy)">${practice}</div>
+        <div style="font-size:13px;color:#888">Sliding Scale Fee Schedule — ${sessionType} session (CPT ${cpt})</div>
+        <div style="font-size:12px;color:#999">Full fee: $${full} | Based on 2024 Federal Poverty Guidelines, household size of 4</div>
+      </div>
+      <table class="fee-table">
+        <tr><th>Tier</th><th>FPL Range</th><th>Annual Income (HH of 4)</th><th>Session Fee</th><th>Discount</th></tr>
+        ${rows}
+      </table>
+      <div style="font-size:12px;color:#666;line-height:1.7;margin-top:16px;padding:12px 16px;background:var(--cream);border-radius:8px">
+        <strong style="color:var(--navy)">How to use this schedule:</strong> Clients self-report their household size and annual gross income. Match to the appropriate tier using the Federal Poverty Level (FPL) percentages above. Income examples are based on a household of 4 — adjust using the <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" style="color:var(--burgundy)">current FPL guidelines</a> for other household sizes.
+      </div>
+      <div style="font-size:11px;color:#999;margin-top:12px;line-height:1.6">
+        <strong>Documentation note:</strong> When using a sliding scale, document in the client's financial record: household size, income bracket (not exact income), tier assigned, and fee agreed upon. Retain a signed fee agreement. This protects you in the event of an audit.
+      </div>
+    </div>
+    <div class="output-actions">
+      <button class="act-btn act-print" onclick="printFee()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print</button>
+      <button class="act-btn act-copy" onclick="copyFee()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy</button>
+    </div>
+  </div>`;
+}
+
+function printFee(){const b=document.getElementById('feeBody');const w=window.open('','','width:700,height:900');w.document.write('<html><head><title>Fee Schedule</title><style>body{font-family:Georgia,serif;padding:40px;font-size:13px;color:#222}table{width:100%;border-collapse:collapse;margin:16px 0}th{background:#6B1D34;color:#fff;padding:8px 12px;text-align:left;font-size:11px}td{padding:8px 12px;border-bottom:1px solid #ddd}.fee-amt{font-weight:700;color:#6B1D34;font-size:15px}.pct{font-size:11px;color:#999}</style></head><body>'+b.innerHTML+'</body></html>');w.document.close();w.print()}
+function copyFee(){const b=document.getElementById('feeBody');navigator.clipboard.writeText(b.innerText).then(()=>{const btn=document.querySelector('.act-copy');const o=btn.innerHTML;btn.innerHTML='Copied!';setTimeout(()=>btn.innerHTML=o,2000)})}
+
+calculate();
+</script>
+<!-- CR Email Capture -->
+<div id="crEmailCapture" style="display:none"></div>
+<script>
+(function(){
+  const API='https://api.counselorready.com';
+  const KEY='cr_email_captured';
+  const DISMISS_KEY='cr_email_dismissed';
+  const SHOW_AFTER=1;
+  let uses=parseInt(sessionStorage.getItem('cr_tool_uses')||'0');
+  function trackUse(){uses++;sessionStorage.setItem('cr_tool_uses',String(uses));maybeShow()}
+  window.crTrackToolUse=trackUse;
+  function maybeShow(){
+    if(localStorage.getItem(KEY)||localStorage.getItem(DISMISS_KEY))return;
+    if(uses<SHOW_AFTER)return;
+    render();
+  }
+  function render(){
+    const el=document.getElementById('crEmailCapture');
+    if(!el)return;
+    el.style.display='block';
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1A2D3D,#284157);border-radius:14px;padding:24px;margin:20px 0;text-align:center;position:relative;box-shadow:0 4px 16px rgba(26,45,61,.3)">
+      <button onclick="document.getElementById('crEmailCapture').style.display='none';localStorage.setItem('${DISMISS_KEY}','1')" style="position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer">&times;</button>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Want more tools like this?</div>
+      <p style="font-size:13px;color:#8AABBE;margin-bottom:16px;line-height:1.5;max-width:440px;margin-left:auto;margin-right:auto">Get notified when we release new free clinical tools, CE course drops, and practice-building resources. No spam — just useful stuff for clinicians.</p>
+      <div style="display:flex;gap:10px;max-width:420px;margin:0 auto">
+        <input id="crEmailInput" type="email" placeholder="you@example.com" style="flex:1;padding:11px 14px;border-radius:8px;border:2px solid #35546B;background:#1A2D3D;color:#E8E8E8;font-family:'Lato',sans-serif;font-size:14px;outline:none">
+        <button onclick="crSubmitEmail()" style="padding:11px 20px;background:linear-gradient(135deg,#D4A855,#C49A40);color:#4A1224;border:none;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap">Keep Me Posted</button>
+      </div>
+      <div id="crEmailMsg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px">No spam. Unsubscribe anytime. We respect your inbox.</div>
+    </div>`;
+  }
+  window.crSubmitEmail=async function(){
+    const input=document.getElementById('crEmailInput');
+    const msg=document.getElementById('crEmailMsg');
+    const email=input.value.trim();
+    if(!email||!email.includes('@')){msg.style.color='#E8A87C';msg.textContent='Please enter a valid email.';return}
+    msg.style.color='#8AABBE';msg.textContent='Saving...';
+    try{
+      const r=await fetch(API+'/api/tools/capture-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:document.title})});
+      if(r.ok){
+        msg.style.color='#5A9469';msg.textContent="You're in! Watch your inbox.";
+        localStorage.setItem(KEY,email);
+        setTimeout(()=>{document.getElementById('crEmailCapture').style.display='none'},2500);
+      } else {
+        const d=await r.json();
+        msg.style.color='#5A9469';msg.textContent=d.message||"You're already subscribed!";
+        localStorage.setItem(KEY,email);
+      }
+    }catch(e){
+      localStorage.setItem(KEY,email);
+      msg.style.color='#5A9469';msg.textContent="Saved! We'll be in touch.";
+    }
+  };
+  setTimeout(maybeShow,3000);
+})();
+</script>
+<!-- /CR Email Capture -->
+</body>
+</html>

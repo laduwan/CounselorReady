@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+<title>Rewards Queue · Admin · CounselorReady</title>
+<link rel="stylesheet" href="/css/design-tokens.css">
+<link rel="stylesheet" href="/css/typography.css">
+<style>
+  body {
+    font-family: 'Lato', system-ui, sans-serif;
+    background: #F8F7F4;
+    color: #2A2620;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  .ar-page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px 20px 60px;
+  }
+  .ar-header {
+    margin-bottom: 24px;
+  }
+  .ar-back {
+    color: #4A7C59;
+    text-decoration: none;
+    font-size: 13px;
+    display: inline-block;
+    margin-bottom: 12px;
+  }
+  .ar-back:hover { text-decoration: underline; }
+  .ar-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 30px;
+    color: #6B1D34;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .ar-subtitle {
+    color: #284157;
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .ar-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin: 24px 0;
+  }
+  .ar-stat-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(40,65,87,0.12);
+    border-radius: 10px;
+    padding: 14px 18px;
+  }
+  .ar-stat-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: rgba(40,65,87,0.55);
+  }
+  .ar-stat-value {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 26px;
+    color: #6B1D34;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .ar-stat-value.neutral { color: #284157; }
+  .ar-stat-value.success { color: #4A7C59; }
+  .ar-stat-value.warn { color: #8C6A1F; }
+
+  .ar-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid rgba(40,65,87,0.12);
+    margin-bottom: 16px;
+  }
+  .ar-tab {
+    background: transparent;
+    border: none;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: rgba(40,65,87,0.55);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    font-family: 'Lato', sans-serif;
+  }
+  .ar-tab:hover { color: #284157; }
+  .ar-tab.active {
+    color: #6B1D34;
+    border-bottom-color: #6B1D34;
+  }
+  .ar-tab-count {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    background: rgba(40,65,87,0.08);
+    border-radius: 10px;
+    font-size: 11px;
+    color: #284157;
+  }
+  .ar-tab.active .ar-tab-count {
+    background: rgba(107,29,52,0.10);
+    color: #6B1D34;
+  }
+
+  .ar-list {
+    display: grid;
+    gap: 12px;
+  }
+  .ar-empty {
+    background: #FFFFFF;
+    border: 1px dashed rgba(40,65,87,0.24);
+    border-radius: 8px;
+    padding: 32px;
+    text-align: center;
+    color: rgba(40,65,87,0.55);
+    font-size: 14px;
+  }
+  .ar-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(40,65,87,0.12);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .ar-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .ar-card-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 20px;
+    color: #6B1D34;
+    margin: 0 0 4px;
+    font-weight: 600;
+  }
+  .ar-card-user {
+    font-size: 13px;
+    color: #284157;
+  }
+  .ar-card-user strong { color: #2A2620; }
+  .ar-card-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: rgba(40,65,87,0.55);
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .ar-card-meta strong { color: #284157; font-weight: 700; }
+  .ar-status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .ar-status-pending   { background: rgba(212,168,85,0.18); color: #8C6A1F; }
+  .ar-status-fulfilled { background: rgba(74,124,89,0.18);  color: #2D5238; }
+  .ar-status-cancelled { background: rgba(40, 65, 87, 0.10); color: #284157; }
+
+  .ar-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(40,65,87,0.06);
+  }
+  .ar-btn-primary {
+    background: #4A7C59;
+    color: #FFFFFF;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .ar-btn-primary:hover { background: #3D6A4A; }
+  .ar-btn-danger {
+    background: transparent;
+    color: #C0392B;
+    border: 1px solid rgba(192,57,43,0.40);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .ar-btn-danger:hover { background: rgba(192,57,43,0.04); }
+  .ar-btn-secondary {
+    background: transparent;
+    color: #284157;
+    border: 1px solid rgba(40,65,87,0.24);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .ar-btn-secondary:hover { background: rgba(40,65,87,0.04); }
+
+  .ar-fulfilled-info,
+  .ar-cancelled-info {
+    background: rgba(40, 65, 87, 0.04);
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #284157;
+  }
+  .ar-fulfilled-info code {
+    background: rgba(40, 65, 87, 0.10);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    word-break: break-all;
+  }
+
+  /* Modal */
+  .ar-modal-bg {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(40, 65, 87, 0.55);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .ar-modal-bg.open { display: flex; }
+  .ar-modal {
+    background: #FFFFFF;
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .ar-modal-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px;
+    color: #6B1D34;
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .ar-modal-text {
+    color: #284157;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 16px;
+  }
+  .ar-form-group {
+    margin-bottom: 14px;
+  }
+  .ar-form-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+    color: #284157;
+    margin-bottom: 6px;
+  }
+  .ar-form-input,
+  .ar-form-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid rgba(40,65,87,0.24);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+    color: #2A2620;
+    box-sizing: border-box;
+  }
+  .ar-form-input:focus,
+  .ar-form-textarea:focus {
+    outline: none;
+    border-color: #6B1D34;
+  }
+  .ar-form-textarea {
+    min-height: 70px;
+    resize: vertical;
+  }
+  .ar-form-hint {
+    font-size: 11px;
+    color: rgba(40,65,87,0.55);
+    margin-top: 4px;
+  }
+  .ar-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+
+  .ar-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4A7C59;
+    color: #FFFFFF;
+    padding: 14px 24px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    z-index: 1100;
+    font-size: 14px;
+    max-width: calc(100vw - 40px);
+    text-align: center;
+    display: none;
+  }
+  .ar-toast.show { display: block; }
+  .ar-toast-error { background: #C0392B; }
+
+  .ar-loading {
+    text-align: center;
+    padding: 40px;
+    color: rgba(40,65,87,0.55);
+  }
+</style>
+</head>
+<body>
+<div id="ar-toast" class="ar-toast"></div>
+
+<div class="ar-page">
+  <div class="ar-header">
+    <a href="/admin.html" class="ar-back">← Back to Admin</a>
+    <h1 class="ar-title">Rewards Queue</h1>
+    <p class="ar-subtitle">Mastery Mark Points redemption fulfillment & history</p>
+  </div>
+
+  <div id="ar-stats" class="ar-stats"></div>
+
+  <div class="ar-tabs">
+    <button class="ar-tab active" data-status="pending">Pending <span class="ar-tab-count" id="ar-count-pending">—</span></button>
+    <button class="ar-tab" data-status="fulfilled">Fulfilled <span class="ar-tab-count" id="ar-count-fulfilled">—</span></button>
+    <button class="ar-tab" data-status="cancelled">Cancelled <span class="ar-tab-count" id="ar-count-cancelled">—</span></button>
+  </div>
+
+  <div id="ar-list" class="ar-list">
+    <div class="ar-loading">Loading…</div>
+  </div>
+</div>
+
+<!-- Fulfill modal -->
+<div id="ar-fulfill-modal" class="ar-modal-bg">
+  <div class="ar-modal">
+    <h3 class="ar-modal-title">Fulfill Gift Card</h3>
+    <p class="ar-modal-text" id="ar-fulfill-summary"></p>
+    <div class="ar-form-group">
+      <label class="ar-form-label">Gift card code <span style="color:#C0392B;">*</span></label>
+      <input type="text" class="ar-form-input" id="ar-fulfill-code" placeholder="e.g. AMZN-XXXX-XXXX-XXXX-XXXX">
+      <div class="ar-form-hint">Required. Min 4 characters. The user will receive this code by email.</div>
+    </div>
+    <div class="ar-form-group">
+      <label class="ar-form-label">Code notes (optional)</label>
+      <textarea class="ar-form-textarea" id="ar-fulfill-notes" placeholder="Expiration, redemption instructions, etc."></textarea>
+      <div class="ar-form-hint">Shown to user under the gift card code.</div>
+    </div>
+    <div class="ar-form-group">
+      <label class="ar-form-label">Internal admin notes (optional)</label>
+      <textarea class="ar-form-textarea" id="ar-fulfill-admin-notes" placeholder="Where you bought the card, etc. (Not visible to user.)"></textarea>
+    </div>
+    <div class="ar-modal-actions">
+      <button class="ar-btn-secondary" id="ar-fulfill-cancel">Cancel</button>
+      <button class="ar-btn-primary" id="ar-fulfill-submit">Send code & mark fulfilled</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel modal -->
+<div id="ar-cancel-modal" class="ar-modal-bg">
+  <div class="ar-modal">
+    <h3 class="ar-modal-title">Cancel Redemption</h3>
+    <p class="ar-modal-text" id="ar-cancel-summary"></p>
+    <div class="ar-form-group">
+      <label class="ar-form-label">Reason <span style="color:#C0392B;">*</span></label>
+      <textarea class="ar-form-textarea" id="ar-cancel-reason" placeholder="e.g. Vendor unavailable; out of stock; user requested cancellation"></textarea>
+      <div class="ar-form-hint">Min 3 characters. Points will be refunded with this reason in the user's transaction log.</div>
+    </div>
+    <div class="ar-modal-actions">
+      <button class="ar-btn-secondary" id="ar-cancel-cancel">Back</button>
+      <button class="ar-btn-danger" id="ar-cancel-submit">Cancel & refund points</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var API_BASE = location.origin.includes('localhost')
+    ? 'http://localhost:5000'
+    : 'https://api.counselorready.com';
+
+  var TOKEN = localStorage.getItem('token');
+  if (!TOKEN) {
+    location.href = '/login.html?redirect=/admin-rewards.html';
+    return;
+  }
+
+  var VENDOR_NAMES = {
+    amazon: 'Amazon',
+    doordash: 'DoorDash',
+    celestial_spa_atlanta: 'Celestial Spa (Atlanta)',
+    wellness_spot_college_park: 'The Wellness Spot (College Park)',
+    noir_pearl_smyrna: 'Noir Pearl Spa (Smyrna)',
+    healing_oasis_augusta: 'A Healing Oasis (Augusta)',
+    blessed_hands_augusta: 'Blessed Hands (Augusta)',
+    hetep_retreat_columbus: 'Hetep Retreat (Columbus)',
+    honey_pot_macon: 'Honey Pot (Macon)',
+    culler_massage_macon: 'Culler Massage (Macon)',
+    odomi_medical_savannah: 'Odomí Medical Spa (Savannah)',
+  };
+
+  var state = {
+    activeTab: 'pending',
+    pendingFulfillId: null,
+    pendingCancelId: null,
+  };
+
+  function esc(s) {
+    if (s == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(s);
+    return d.innerHTML;
+  }
+
+  function toast(msg, isError) {
+    var el = document.getElementById('ar-toast');
+    el.textContent = msg;
+    el.className = 'ar-toast show' + (isError ? ' ar-toast-error' : '');
+    setTimeout(function() { el.className = 'ar-toast'; }, 4500);
+  }
+
+  function fmtType(type, vendor) {
+    if (type === 'stripe_credit_10') return '$10 Subscription Credit';
+    if (type === 'stripe_credit_25') return '$25 Subscription Credit';
+    if (type === 'giftcard_25') return '$25 ' + (VENDOR_NAMES[vendor] || vendor || 'Gift Card');
+    return type;
+  }
+
+  function fmtTime(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleString();
+  }
+
+  function fmtRelative(d) {
+    if (!d) return '';
+    var diff = Date.now() - new Date(d).getTime();
+    if (diff < 60000) return 'just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + ' min ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + ' days ago';
+    return new Date(d).toLocaleDateString();
+  }
+
+  function loadStats() {
+    fetch(API_BASE + '/api/admin/rewards/stats', {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    })
+      .then(function(r) {
+        if (r.status === 401 || r.status === 403) {
+          location.href = '/login.html?redirect=/admin-rewards.html';
+          return null;
+        }
+        return r.json();
+      })
+      .then(function(s) {
+        if (!s) return;
+        var statsEl = document.getElementById('ar-stats');
+        statsEl.innerHTML =
+          '<div class="ar-stat-card"><div class="ar-stat-label">Pending</div><div class="ar-stat-value warn">' + s.pending + '</div></div>' +
+          '<div class="ar-stat-card"><div class="ar-stat-label">Fulfilled (Lifetime)</div><div class="ar-stat-value success">' + s.fulfilled + '</div></div>' +
+          '<div class="ar-stat-card"><div class="ar-stat-label">Cancelled</div><div class="ar-stat-value neutral">' + s.cancelled + '</div></div>' +
+          '<div class="ar-stat-card"><div class="ar-stat-label">Total $ Distributed</div><div class="ar-stat-value">$' + (s.totalFulfilledValue || 0) + '</div></div>';
+
+        document.getElementById('ar-count-pending').textContent = s.pending;
+        document.getElementById('ar-count-fulfilled').textContent = s.fulfilled;
+        document.getElementById('ar-count-cancelled').textContent = s.cancelled;
+      })
+      .catch(function(err) {
+        console.error('[ADMIN REWARDS]', err);
+      });
+  }
+
+  function loadQueue(status) {
+    var listEl = document.getElementById('ar-list');
+    listEl.innerHTML = '<div class="ar-loading">Loading…</div>';
+
+    fetch(API_BASE + '/api/admin/rewards/queue?status=' + status, {
+      headers: { 'Authorization': 'Bearer ' + TOKEN }
+    })
+      .then(function(r) {
+        if (r.status === 401 || r.status === 403) {
+          location.href = '/login.html?redirect=/admin-rewards.html';
+          return null;
+        }
+        return r.json();
+      })
+      .then(function(data) {
+        if (!data) return;
+        renderList(data.redemptions || [], status);
+      })
+      .catch(function(err) {
+        listEl.innerHTML = '<div class="ar-empty">Failed to load. Refresh to retry.</div>';
+        console.error('[ADMIN REWARDS]', err);
+      });
+  }
+
+  function renderList(redemptions, status) {
+    var listEl = document.getElementById('ar-list');
+    if (redemptions.length === 0) {
+      var msg = status === 'pending'
+        ? 'No pending redemptions. All caught up.'
+        : status === 'fulfilled'
+          ? 'No fulfilled redemptions yet.'
+          : 'No cancelled redemptions.';
+      listEl.innerHTML = '<div class="ar-empty">' + msg + '</div>';
+      return;
+    }
+
+    listEl.innerHTML = redemptions.map(function(r) {
+      var user = r.userId || {};
+      var userName = (user.profile?.firstName || '') + ' ' + (user.profile?.lastName || '');
+      userName = userName.trim() || user.email || '(deleted user)';
+
+      var fulfillment = '';
+      if (r.status === 'fulfilled' && r.giftcardCode) {
+        fulfillment =
+          '<div class="ar-fulfilled-info">' +
+            '<strong>Code sent:</strong> <code>' + esc(r.giftcardCode) + '</code><br>' +
+            (r.giftcardCodeNotes ? '<em>' + esc(r.giftcardCodeNotes) + '</em><br>' : '') +
+            '<small>Fulfilled ' + fmtTime(r.fulfilledAt) + (r.fulfilledBy?.email ? ' by ' + esc(r.fulfilledBy.email) : '') + '</small>' +
+          '</div>';
+      } else if (r.status === 'fulfilled' && r.stripeBalanceTransactionId) {
+        fulfillment =
+          '<div class="ar-fulfilled-info">' +
+            '<strong>Stripe credit applied:</strong> <code>' + esc(r.stripeBalanceTransactionId) + '</code><br>' +
+            '<small>' + fmtTime(r.fulfilledAt) + '</small>' +
+          '</div>';
+      } else if (r.status === 'cancelled') {
+        fulfillment =
+          '<div class="ar-cancelled-info">' +
+            '<strong>Reason:</strong> ' + esc(r.cancelReason || '(none)') + '<br>' +
+            '<small>Cancelled ' + fmtTime(r.cancelledAt) + (r.cancelledBy?.email ? ' by ' + esc(r.cancelledBy.email) : '') + '</small>' +
+          '</div>';
+      }
+
+      var actionsHtml = '';
+      if (r.status === 'pending') {
+        if (r.type === 'giftcard_25') {
+          actionsHtml =
+            '<div class="ar-card-actions">' +
+              '<button class="ar-btn-primary" data-fulfill="' + r._id + '">Fulfill</button>' +
+              '<button class="ar-btn-danger" data-cancel="' + r._id + '">Cancel</button>' +
+            '</div>';
+        } else {
+          // Stripe credit pending = something went wrong, allow cancel only
+          actionsHtml =
+            '<div class="ar-card-actions">' +
+              '<button class="ar-btn-danger" data-cancel="' + r._id + '">Cancel & Refund</button>' +
+            '</div>';
+        }
+      }
+
+      return '<div class="ar-card" data-rid="' + r._id + '">' +
+        '<div class="ar-card-header">' +
+          '<div>' +
+            '<div class="ar-card-title">' + esc(fmtType(r.type, r.vendor)) + '</div>' +
+            '<div class="ar-card-user"><strong>' + esc(userName) + '</strong> · ' + esc(user.email || '') + '</div>' +
+            '<div class="ar-card-meta">' +
+              '<span><strong>' + r.pointsCost + '</strong> MMP</span>' +
+              '<span><strong>$' + r.dollarValue + '</strong></span>' +
+              '<span>' + fmtRelative(r.createdAt) + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<span class="ar-status-pill ar-status-' + r.status + '">' + r.status + '</span>' +
+        '</div>' +
+        fulfillment +
+        actionsHtml +
+      '</div>';
+    }).join('');
+
+    listEl.querySelectorAll('[data-fulfill]').forEach(function(btn) {
+      btn.addEventListener('click', function() { openFulfillModal(btn.dataset.fulfill); });
+    });
+    listEl.querySelectorAll('[data-cancel]').forEach(function(btn) {
+      btn.addEventListener('click', function() { openCancelModal(btn.dataset.cancel); });
+    });
+  }
+
+  function openFulfillModal(id) {
+    state.pendingFulfillId = id;
+    var card = document.querySelector('[data-rid="' + id + '"]');
+    var title = card?.querySelector('.ar-card-title')?.textContent || 'this redemption';
+    var user = card?.querySelector('.ar-card-user')?.textContent || '';
+    document.getElementById('ar-fulfill-summary').innerHTML =
+      'Fulfilling <strong>' + esc(title) + '</strong> for ' + esc(user.split(' · ')[0] || '') + '.';
+    document.getElementById('ar-fulfill-code').value = '';
+    document.getElementById('ar-fulfill-notes').value = '';
+    document.getElementById('ar-fulfill-admin-notes').value = '';
+    document.getElementById('ar-fulfill-modal').classList.add('open');
+  }
+
+  function openCancelModal(id) {
+    state.pendingCancelId = id;
+    var card = document.querySelector('[data-rid="' + id + '"]');
+    var title = card?.querySelector('.ar-card-title')?.textContent || 'this redemption';
+    document.getElementById('ar-cancel-summary').innerHTML =
+      'Cancel <strong>' + esc(title) + '</strong>? Points will be refunded to the user.';
+    document.getElementById('ar-cancel-reason').value = '';
+    document.getElementById('ar-cancel-modal').classList.add('open');
+  }
+
+  document.getElementById('ar-fulfill-cancel').addEventListener('click', function() {
+    document.getElementById('ar-fulfill-modal').classList.remove('open');
+    state.pendingFulfillId = null;
+  });
+
+  document.getElementById('ar-cancel-cancel').addEventListener('click', function() {
+    document.getElementById('ar-cancel-modal').classList.remove('open');
+    state.pendingCancelId = null;
+  });
+
+  document.getElementById('ar-fulfill-submit').addEventListener('click', function() {
+    var id = state.pendingFulfillId;
+    if (!id) return;
+    var code = document.getElementById('ar-fulfill-code').value.trim();
+    var notes = document.getElementById('ar-fulfill-notes').value.trim();
+    var adminNotes = document.getElementById('ar-fulfill-admin-notes').value.trim();
+    if (code.length < 4) {
+      toast('Gift card code must be at least 4 characters', true);
+      return;
+    }
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+
+    fetch(API_BASE + '/api/admin/rewards/' + id + '/fulfill', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ giftcardCode: code, giftcardCodeNotes: notes, adminNotes: adminNotes }),
+    })
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+      .then(function(r) {
+        btn.disabled = false;
+        btn.textContent = 'Send code & mark fulfilled';
+        if (r.status === 200 && r.data.success) {
+          toast('Code sent. Marked fulfilled.');
+          document.getElementById('ar-fulfill-modal').classList.remove('open');
+          state.pendingFulfillId = null;
+          refresh();
+        } else {
+          toast(r.data.error || 'Fulfill failed', true);
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Send code & mark fulfilled';
+        toast('Network error', true);
+        console.error(err);
+      });
+  });
+
+  document.getElementById('ar-cancel-submit').addEventListener('click', function() {
+    var id = state.pendingCancelId;
+    if (!id) return;
+    var reason = document.getElementById('ar-cancel-reason').value.trim();
+    if (reason.length < 3) {
+      toast('Reason must be at least 3 characters', true);
+      return;
+    }
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Cancelling…';
+
+    fetch(API_BASE + '/api/admin/rewards/' + id + '/cancel', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: reason }),
+    })
+      .then(function(r) { return r.json().then(function(d) { return { status: r.status, data: d }; }); })
+      .then(function(r) {
+        btn.disabled = false;
+        btn.textContent = 'Cancel & refund points';
+        if (r.status === 200 && r.data.success) {
+          toast('Cancelled. Points refunded.');
+          document.getElementById('ar-cancel-modal').classList.remove('open');
+          state.pendingCancelId = null;
+          refresh();
+        } else {
+          toast(r.data.error || 'Cancel failed', true);
+        }
+      })
+      .catch(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Cancel & refund points';
+        toast('Network error', true);
+        console.error(err);
+      });
+  });
+
+  // Tab switching
+  document.querySelectorAll('.ar-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.ar-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      state.activeTab = tab.dataset.status;
+      loadQueue(state.activeTab);
+    });
+  });
+
+  function refresh() {
+    loadStats();
+    loadQueue(state.activeTab);
+  }
+
+  refresh();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Blog — CounselorReady | CE Insights for Licensed Counselors</title>
+  <meta name="description" content="Practical guides on CE requirements, license renewal, and clinical practice from CounselorReady — NBCC Approved CE Provider (ACEP #7760).">
+  <link rel="canonical" href="https://counselorready.com/blog">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Blog — CounselorReady">
+  <meta property="og:description" content="CE requirements, renewal guides, and clinical insights for licensed counselors.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://counselorready.com/blog.html">
+
+  <!-- JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "CounselorReady Blog",
+    "description": "Continuing education guides and clinical insights for licensed counselors",
+    "url": "https://counselorready.com/blog.html",
+    "publisher": {
+      "@type": "Organization",
+      "name": "CounselorReady",
+      "url": "https://counselorready.com"
+    }
+  }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body { font-family: 'Lato', sans-serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-cream min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-200">
+    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-burgundy rounded-lg flex items-center justify-center">
+          <span class="text-white font-bold text-xs">CR</span>
+        </div>
+        <span class="font-display text-lg font-semibold text-gray-900">CounselorReady</span>
+      </a>
+      <nav class="flex items-center gap-4">
+        <a href="/courses.html" class="text-gray-600 hover:text-burgundy text-sm font-medium hidden sm:inline">Courses</a>
+        <a href="/blog.html" class="text-burgundy text-sm font-medium border-b-2 border-burgundy pb-0.5">Blog</a>
+        <a href="/login.html" class="text-gray-600 hover:text-burgundy text-sm font-medium">Sign In</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-white border-b border-gray-100">
+    <div class="max-w-5xl mx-auto px-4 py-10 text-center">
+      <h1 class="font-display text-3xl md:text-4xl font-bold text-burgundy mb-3">The CounselorReady Blog</h1>
+      <p class="text-gray-600 max-w-xl mx-auto">CE requirements, renewal guides, and clinical insights — written by a Georgia LPC who actually does this work.</p>
+    </div>
+  </section>
+
+  <!-- Category filter -->
+  <div class="max-w-5xl mx-auto px-4 pt-6">
+    <div class="flex flex-wrap gap-2">
+      <button onclick="filterCategory('all')" class="cat-btn active px-3 py-1.5 text-sm rounded-full border border-burgundy bg-burgundy text-white font-medium" data-cat="all">All Posts</button>
+      <button onclick="filterCategory('state-guide')" class="cat-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600 font-medium" data-cat="state-guide">State Guides</button>
+      <button onclick="filterCategory('problem-solution')" class="cat-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600 font-medium" data-cat="problem-solution">How-To</button>
+      <button onclick="filterCategory('authority')" class="cat-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600 font-medium" data-cat="authority">Insights</button>
+      <button onclick="filterCategory('clinical')" class="cat-btn px-3 py-1.5 text-sm rounded-full border border-gray-300 bg-white text-gray-600 font-medium" data-cat="clinical">Clinical</button>
+    </div>
+  </div>
+
+  <!-- Posts grid -->
+  <main class="max-w-5xl mx-auto px-4 py-6">
+    <div id="posts-grid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="col-span-full text-center py-12 text-gray-400">Loading posts...</div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="flex justify-center gap-2 mt-8 hidden">
+      <button onclick="prevPage()" id="btn-prev" class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 disabled:opacity-40" disabled>Previous</button>
+      <span id="page-info" class="px-4 py-2 text-sm text-gray-500"></span>
+      <button onclick="nextPage()" id="btn-next" class="px-4 py-2 text-sm font-medium bg-white border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 disabled:opacity-40" disabled>Next</button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+
+  <script>
+    const API = window.location.hostname === 'localhost'
+      ? 'http://localhost:5000/api/blog'
+      : 'https://api.counselorready.com/api/blog';
+
+    let currentPage = 1;
+    let currentCategory = 'all';
+    let totalPages = 1;
+
+    async function loadPosts() {
+      const grid = document.getElementById('posts-grid');
+      try {
+        let url = `${API}?page=${currentPage}&limit=12`;
+        if (currentCategory !== 'all') url += `&category=${currentCategory}`;
+
+        const res = await fetch(url);
+        const data = await res.json();
+        const posts = data.posts || [];
+        totalPages = data.pagination?.pages || 1;
+
+        if (posts.length === 0) {
+          grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-400">No posts yet — check back soon!</div>';
+          document.getElementById('pagination').classList.add('hidden');
+          return;
+        }
+
+        grid.innerHTML = posts.map(post => {
+          const date = post.publishedAt ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+          const catLabel = { 'state-guide': 'State Guide', 'problem-solution': 'How-To', 'authority': 'Insights', 'clinical': 'Clinical', 'news': 'News' }[post.category] || '';
+          const catColor = {
+            'state-guide': 'bg-blue-100 text-blue-700',
+            'problem-solution': 'bg-green-100 text-green-700',
+            'authority': 'bg-purple-100 text-purple-700',
+            'clinical': 'bg-amber-100 text-amber-700',
+            'news': 'bg-gray-100 text-gray-700'
+          }[post.category] || 'bg-gray-100 text-gray-700';
+
+          return `
+            <a href="/blog-post.html?slug=${post.slug}" class="bg-white rounded-xl border border-gray-200 hover:border-burgundy/40 hover:shadow-md transition-all overflow-hidden flex flex-col">
+              ${post.featuredImage ? `<img src="${post.featuredImage}" alt="" class="w-full h-40 object-cover">` : `<div class="w-full h-2 bg-gradient-to-r from-burgundy to-honey"></div>`}
+              <div class="p-4 flex flex-col flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-xs px-2 py-0.5 rounded-full ${catColor} font-medium">${catLabel}</span>
+                  <span class="text-xs text-gray-400">${post.readingTime || 1} min read</span>
+                </div>
+                <h2 class="font-display text-lg font-semibold text-gray-900 mb-2 leading-tight">${post.title}</h2>
+                <p class="text-sm text-gray-500 flex-1 line-clamp-3 mb-3">${post.excerpt || ''}</p>
+                <p class="text-xs text-gray-400 mt-auto">${date}</p>
+              </div>
+            </a>`;
+        }).join('');
+
+        // Pagination
+        if (totalPages > 1) {
+          document.getElementById('pagination').classList.remove('hidden');
+          document.getElementById('page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+          document.getElementById('btn-prev').disabled = currentPage <= 1;
+          document.getElementById('btn-next').disabled = currentPage >= totalPages;
+        } else {
+          document.getElementById('pagination').classList.add('hidden');
+        }
+      } catch (err) {
+        console.error('Blog load error:', err);
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-red-400">Failed to load posts</div>';
+      }
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      currentPage = 1;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        const isActive = btn.dataset.cat === cat;
+        btn.classList.toggle('bg-burgundy', isActive);
+        btn.classList.toggle('text-white', isActive);
+        btn.classList.toggle('border-burgundy', isActive);
+        btn.classList.toggle('bg-white', !isActive);
+        btn.classList.toggle('text-gray-600', !isActive);
+        btn.classList.toggle('border-gray-300', !isActive);
+      });
+      loadPosts();
+    }
+
+    function prevPage() { if (currentPage > 1) { currentPage--; loadPosts(); } }
+    function nextPage() { if (currentPage < totalPages) { currentPage++; loadPosts(); } }
+
+    loadPosts();
+  </script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

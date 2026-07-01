@@ -1,0 +1,18 @@
+# CounselorReady — https://counselorready.com
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /partner-
+Disallow: /settings
+Disallow: /dashboard
+Disallow: /credentials
+Disallow: /certificates
+Disallow: /checkout
+Disallow: /messages
+Disallow: /supervision
+Disallow: /achievements
+Disallow: /legacy-vault
+Disallow: /ce-planner
+
+Sitemap: https://counselorready.com/sitemap.xml

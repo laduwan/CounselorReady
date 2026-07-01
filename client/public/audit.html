@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>CE Audit Report - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    @media print {
+      .no-print { display: none !important; }
+      body{background:#F8F7F4; background: white; }
+      .print-break { page-break-before: always; }
+    }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+    
+    <!-- Report Controls -->
+    <section class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mb-8 no-print">
+      <h1 class="font-display text-2xl font-semibold text-burgundy-900 mb-4">CE Audit Report Generator</h1>
+      <p class="text-forest-600 mb-6">Generate a comprehensive report of your continuing education credits for license renewal or audit purposes.</p>
+      
+      <div class="grid md:grid-cols-3 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Report Period</label>
+          <select id="reportPeriod" onchange="updateDateRange()" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <option value="current">Current Renewal Period</option>
+            <option value="1year">Last 12 Months</option>
+            <option value="2year">Last 24 Months</option>
+            <option value="custom">Custom Date Range</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Start Date</label>
+          <input type="date" id="startDate" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">End Date</label>
+          <input type="date" id="endDate" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">License/Credential</label>
+          <select id="credentialFilter" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <option value="all">All Credentials</option>
+            <!-- Populated dynamically -->
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">CE Category</label>
+          <select id="categoryFilter" class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-burgundy-500 outline-none">
+            <option value="all">All Categories</option>
+            <option value="ethics">Ethics</option>
+            <option value="core">Core/General</option>
+            <option value="supervision">Supervision</option>
+            <option value="telehealth">Telehealth</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-4">
+        <button onclick="generateReport()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+          Generate Report
+        </button>
+        <button onclick="printReport()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-6 py-2 rounded-lg transition-colors">
+          🖨️ Print Report
+        </button>
+        <button onclick="downloadPDF()" class="bg-forest-100 hover:bg-forest-200 text-forest-800 font-medium px-6 py-2 rounded-lg transition-colors">
+          📄 Download PDF
+        </button>
+      </div>
+    </section>
+
+    <!-- Report Output -->
+    <div id="reportOutput" class="hidden">
+      
+      <!-- Report Header -->
+      <section class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-8 mb-6">
+        <div class="text-center mb-8">
+          <div class="flex justify-center mb-4">
+            <div class="w-16 h-16 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+              <span class="text-gold-400 font-display font-bold text-2xl">CR</span>
+            </div>
+          </div>
+          <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">Continuing Education Audit Report</h1>
+          <p class="text-forest-600">Generated by CounselorReady • NBCC ACEP Provider #7760</p>
+        </div>
+
+        <!-- Licensee Information -->
+        <div class="bg-stone-50 rounded-lg p-6 mb-8">
+          <h2 class="font-semibold text-burgundy-900 mb-4">Licensee Information</h2>
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-forest-500">Name</p>
+              <p class="font-semibold text-forest-900" id="reportName">-</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Email</p>
+              <p class="font-semibold text-forest-900" id="reportEmail">-</p>
+            </div>
+            <div>
+              <p class="text-forest-500">License Number</p>
+              <p class="font-semibold text-forest-900" id="reportLicense">-</p>
+            </div>
+            <div>
+              <p class="text-forest-500">License State</p>
+              <p class="font-semibold text-forest-900" id="reportState">-</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Report Period</p>
+              <p class="font-semibold text-forest-900" id="reportPeriodDisplay">-</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Report Generated</p>
+              <p class="font-semibold text-forest-900" id="reportDate">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mb-8">
+          <h2 class="font-semibold text-burgundy-900 mb-4">CE Hours Summary</h2>
+          <div class="grid md:grid-cols-4 gap-4">
+            <div class="bg-burgundy-50 rounded-lg p-4 text-center">
+              <p class="text-3xl font-bold text-burgundy-900" id="totalHours">0</p>
+              <p class="text-sm text-burgundy-700">Total Hours</p>
+            </div>
+            <div class="bg-forest-50 rounded-lg p-4 text-center">
+              <p class="text-3xl font-bold text-forest-900" id="ethicsHours">0</p>
+              <p class="text-sm text-forest-700">Ethics Hours</p>
+            </div>
+            <div class="bg-gold-50 rounded-lg p-4 text-center">
+              <p class="text-3xl font-bold text-gold-700" id="coreHours">0</p>
+              <p class="text-sm text-gold-600">Core Hours</p>
+            </div>
+            <div class="bg-stone-100 rounded-lg p-4 text-center">
+              <p class="text-3xl font-bold text-stone-700" id="courseCount">0</p>
+              <p class="text-sm text-stone-600">Courses</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div class="mb-8">
+          <h2 class="font-semibold text-burgundy-900 mb-4">Hours by Category</h2>
+          <div id="categoryBreakdown" class="space-y-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Course Details -->
+      <section class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-8 print-break">
+        <h2 class="font-semibold text-burgundy-900 mb-6">Course Completion Details</h2>
+        
+        <div id="courseList" class="space-y-4">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Certificate Attachments Note -->
+      <section class="bg-stone-100 rounded-xl border border-stone-200 p-6 mt-6 no-print">
+        <h3 class="font-semibold text-stone-800 mb-2">📎 Certificate Attachments</h3>
+        <p class="text-sm text-stone-600 mb-4">Individual certificates for each course are available for download from your <a href="/credentials.html#certifications" class="text-burgundy-700 hover:underline">Certificates page</a>.</p>
+        <button onclick="downloadAllCertificates()" class="bg-burgundy-100 hover:bg-burgundy-200 text-burgundy-800 font-medium px-4 py-2 rounded-lg transition-colors">
+          Download All Certificates (ZIP)
+        </button>
+      </section>
+
+      <!-- Verification Footer -->
+      <section class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-6 mt-6">
+        <div class="text-center text-sm text-forest-600">
+          <p class="mb-2">This report was generated by CounselorReady, an NBCC Approved Continuing Education Provider (ACEP #7760).</p>
+          <p class="mb-2">For verification of CE credits, contact: <a href="mailto:support@counselorready.com" class="text-burgundy-700">support@counselorready.com</a></p>
+          <p class="text-xs text-forest-500 mt-4">
+            Report ID: <span id="reportId">-</span> • 
+            Generated: <span id="reportTimestamp">-</span>
+          </p>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="hidden text-center py-12">
+      <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mb-4"></div>
+      <p class="text-forest-600">Generating report...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden bg-white rounded-xl border border-burgundy-100 shadow-sm p-12 text-center">
+      <div class="w-16 h-16 bg-forest-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-2xl">📋</span>
+      </div>
+      <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No CE Records Found</h3>
+      <p class="text-forest-600 mb-6">No completed courses found for the selected date range.</p>
+      <a href="/courses.html" class="inline-block bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+        Browse Courses
+      </a>
+    </div>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let user = null;
+    let reportData = null;
+
+    // Initialize
+    async function init() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+
+      await
+    loadCredentials();
+      setDefaultDates();
+    }
+
+    async function loadUser() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        user = await response.json();
+      } catch (error) {
+        console.error('Load user error:', error);
+      }
+    }
+
+    async function loadCredentials() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/credentials/user`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (data.credentials && data.credentials.length > 0) {
+          const select = document.getElementById('credentialFilter');
+          data.credentials.forEach(cred => {
+            const option = document.createElement('option');
+            option.value = cred._id;
+            option.textContent = `${cred.type} - ${cred.state}`;
+            select.appendChild(option);
+          });
+        }
+      } catch (error) {
+        console.error('Load credentials error:', error);
+      }
+    }
+
+    function setDefaultDates() {
+      const today = new Date();
+      const twoYearsAgo = new Date(today);
+      twoYearsAgo.setFullYear(today.getFullYear() - 2);
+      
+      document.getElementById('endDate').value = today.toISOString().split('T')[0];
+      document.getElementById('startDate').value = twoYearsAgo.toISOString().split('T')[0];
+    }
+
+    function updateDateRange() {
+      const period = document.getElementById('reportPeriod').value;
+      const today = new Date();
+      let startDate = new Date();
+
+      switch (period) {
+        case '1year':
+          startDate.setFullYear(today.getFullYear() - 1);
+          break;
+        case '2year':
+          startDate.setFullYear(today.getFullYear() - 2);
+          break;
+        case 'current':
+          // Assume 2-year renewal cycle
+          startDate.setFullYear(today.getFullYear() - 2);
+          break;
+        case 'custom':
+          return; // Don't change dates
+      }
+
+      document.getElementById('endDate').value = today.toISOString().split('T')[0];
+      document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+    }
+
+    async function generateReport() {
+      const token = localStorage.getItem('token');
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      const credentialFilter = document.getElementById('credentialFilter').value;
+      const categoryFilter = document.getElementById('categoryFilter').value;
+
+      // Show loading
+      document.getElementById('loadingState').classList.remove('hidden');
+      document.getElementById('reportOutput').classList.add('hidden');
+      document.getElementById('emptyState').classList.add('hidden');
+
+      try {
+        // Get certificates in date range
+        const response = await fetch(`${API_URL}/api/certificates?startDate=${startDate}&endDate=${endDate}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        let data = await response.json();
+        let certificates = data.certificates || [];
+
+        // Filter by category if specified
+        if (categoryFilter !== 'all') {
+          certificates = certificates.filter(cert => 
+            cert.courseId?.ceuCategories?.some(c => c.category.toLowerCase() === categoryFilter)
+          );
+        }
+
+        if (certificates.length === 0) {
+          document.getElementById('loadingState').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+
+        reportData = processReportData(certificates, startDate, endDate);
+        displayReport(reportData);
+
+      } catch (error) {
+        console.error('Generate report error:', error);
+        alert('Failed to generate report');
+      }
+
+      document.getElementById('loadingState').classList.add('hidden');
+    }
+
+    function processReportData(certificates, startDate, endDate) {
+      const data = {
+        certificates: certificates,
+        totalHours: 0,
+        ethicsHours: 0,
+        coreHours: 0,
+        otherHours: 0,
+        categories: {},
+        startDate: startDate,
+        endDate: endDate
+      };
+
+      certificates.forEach(cert => {
+        const hours = cert.ceuHours || cert.courseId?.ceuHours || 0;
+        data.totalHours += hours;
+
+        const categories = cert.courseId?.ceuCategories || [];
+        categories.forEach(cat => {
+          const catName = cat.category.toLowerCase();
+          data.categories[catName] = (data.categories[catName] || 0) + cat.hours;
+
+          if (catName === 'ethics') {
+            data.ethicsHours += cat.hours;
+          } else if (catName === 'core' || catName === 'general') {
+            data.coreHours += cat.hours;
+          } else {
+            data.otherHours += cat.hours;
+          }
+        });
+      });
+
+      return data;
+    }
+
+    function displayReport(data) {
+      // User info
+      document.getElementById('reportName').textContent = user?.name || '-';
+      document.getElementById('reportEmail').textContent = user?.email || '-';
+      document.getElementById('reportLicense').textContent = user?.licenseNumber || 'Not provided';
+      document.getElementById('reportState').textContent = user?.licenseState || 'Not provided';
+      document.getElementById('reportPeriodDisplay').textContent = `${formatDate(data.startDate)} - ${formatDate(data.endDate)}`;
+      document.getElementById('reportDate').textContent = formatDate(new Date().toISOString());
+
+      // Summary
+      document.getElementById('totalHours').textContent = data.totalHours;
+      document.getElementById('ethicsHours').textContent = data.ethicsHours;
+      document.getElementById('coreHours').textContent = data.coreHours;
+      document.getElementById('courseCount').textContent = data.certificates.length;
+
+      // Category breakdown
+      const breakdownHtml = Object.entries(data.categories).map(([cat, hours]) => `
+        <div class="flex items-center justify-between bg-stone-50 rounded-lg p-3">
+          <span class="font-medium text-forest-800 capitalize">${cat}</span>
+          <span class="font-semibold text-burgundy-900">${hours} hours</span>
+        </div>
+      `).join('');
+      document.getElementById('categoryBreakdown').innerHTML = breakdownHtml || '<p class="text-forest-500">No categories recorded</p>';
+
+      // Course list
+      const courseHtml = data.certificates.map((cert, index) => `
+        <div class="border border-forest-100 rounded-lg p-4">
+          <div class="flex items-start justify-between">
+            <div class="flex-1">
+              <h3 class="font-semibold text-burgundy-900">${cert.courseTitle || cert.courseId?.title || 'Course'}</h3>
+              <p class="text-sm text-forest-600 mt-1">${cert.courseId?.description || ''}</p>
+            </div>
+            <div class="text-right ml-4">
+              <p class="font-bold text-burgundy-900">${cert.ceuHours || cert.courseId?.ceuHours || 0} CE Hours</p>
+              <p class="text-xs text-forest-500">${cert.courseId?.ceuCategories?.map(c => c.category).join(', ') || 'General'}</p>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-forest-100 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+            <div>
+              <p class="text-forest-500">Completion Date</p>
+              <p class="font-medium text-forest-800">${formatDate(cert.issuedAt)}</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Certificate #</p>
+              <p class="font-medium text-forest-800">${cert.certificateNumber || `CR-${cert._id?.slice(-8) || index}`}</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Provider</p>
+              <p class="font-medium text-forest-800">NBCC ACEP #7760</p>
+            </div>
+            <div>
+              <p class="text-forest-500">Verification Status</p>
+              <p class="font-medium text-green-600">✓ Verified</p>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      document.getElementById('courseList').innerHTML = courseHtml;
+
+      // Report metadata
+      document.getElementById('reportId').textContent = `RPT-${Date.now().toString(36).toUpperCase()}`;
+      document.getElementById('reportTimestamp').textContent = new Date().toISOString();
+
+      // Show report
+      document.getElementById('reportOutput').classList.remove('hidden');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      return new Date(dateStr).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    function printReport() {
+      window.print();
+    }
+
+    async function downloadPDF() {
+      // For now, use print to PDF
+      alert('Use your browser\'s "Print to PDF" feature to save this report.\n\nPress Ctrl+P (or Cmd+P on Mac) and select "Save as PDF" as the printer.');
+      window.print();
+    }
+
+    async function downloadAllCertificates() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/certificates/download-all`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          throw new Error(data.error || 'Download failed');
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'CounselorReady_Certificates.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('Certificate download error:', err);
+        alert(err.message || 'Failed to download certificates.');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

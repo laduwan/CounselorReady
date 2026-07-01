@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Courses - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+        <nav class="flex items-center gap-1 ml-4">
+          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Credentials</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">CE</a>
+          <a href="/credentials.html#certifications" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Certificates</a>
+          <a href="/messages.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Messages</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <i class="fas fa-book w-4 text-burgundy-600"></i> Courses
+        </a>
+        <a href="/admin-course-banners.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-image w-4"></i> Course Banners
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+      <!-- Header Row -->
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Manage Courses</h1>
+        <div class="flex gap-2 flex-wrap">
+          <a href="/admin-users.html" class="bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-users text-xs"></i> Users
+          </a>
+          <button onclick="showToast('Bulk pricing coming soon','#284157')" class="bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-tag text-xs"></i> Bulk Pricing
+          </button>
+          <button onclick="openAIModal()" class="bg-forest-500 hover:bg-forest-600 text-white font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-wand-magic-sparkles text-xs"></i> Create with AI
+          </button>
+          <a href="/admin-course-editor.html" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-plus text-xs"></i> New Course
+          </a>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingState" class="text-center py-16">
+        <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-forest-600">Loading courses...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorState" class="hidden text-center py-16 bg-white rounded-xl border border-burgundy-100">
+        <i class="fas fa-exclamation-triangle text-3xl text-burgundy-300 mb-3"></i>
+        <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load courses</p>
+        <button onclick="loadCourses()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
+      </div>
+
+      <!-- Content (shown after load) -->
+      <div id="mainContent" class="hidden">
+
+        <!-- Content Health Dashboard -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+          <!-- Overview bar -->
+          <div class="col-span-2 md:col-span-4 bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-display text-xl font-semibold text-burgundy-900">Content Health Overview</h3>
+                <p class="text-sm text-forest-500 mt-0.5" id="healthSubtitle">Loading...</p>
+              </div>
+              <div class="text-right">
+                <div class="text-2xl font-bold text-burgundy-800" id="healthPct">—</div>
+                <div class="text-xs text-forest-500">NBCC compliant</div>
+              </div>
+            </div>
+            <div class="mt-3 flex gap-0.5 h-2.5 rounded-full overflow-hidden bg-gray-100" id="healthBar">
+              <div class="bg-green-500 transition-all" id="hbComplete" style="width:0%"></div>
+              <div class="bg-yellow-400 transition-all" id="hbNearly" style="width:0%"></div>
+              <div class="bg-blue-400 transition-all" id="hbProgress" style="width:0%"></div>
+              <div class="bg-gray-300 transition-all" id="hbNeeds" style="width:0%"></div>
+            </div>
+            <div class="flex gap-4 mt-2 text-xs text-forest-500" id="healthLegend"></div>
+          </div>
+
+          <!-- Stat cards -->
+          <div onclick="setFilter('complete')" class="bg-white rounded-xl border border-green-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-green-300 transition-all group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-green-600">Complete</span>
+              <span class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform">✅</span>
+            </div>
+            <div class="text-3xl font-bold text-green-700" id="countComplete">0</div>
+            <div class="text-xs text-green-600 mt-1">≥90% of 6,000 words/CE hr</div>
+          </div>
+          <div onclick="setFilter('nearly')" class="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-yellow-300 transition-all group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-yellow-600">Nearly There</span>
+              <span class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center group-hover:scale-110 transition-transform">🟡</span>
+            </div>
+            <div class="text-3xl font-bold text-yellow-700" id="countNearly">0</div>
+            <div class="text-xs text-yellow-600 mt-1">50–89% of word target</div>
+          </div>
+          <div onclick="setFilter('progress')" class="bg-white rounded-xl border border-blue-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">In Progress</span>
+              <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform">🔨</span>
+            </div>
+            <div class="text-3xl font-bold text-blue-700" id="countProgress">0</div>
+            <div class="text-xs text-blue-600 mt-1">&lt;50% of word target</div>
+          </div>
+          <div onclick="setFilter('needs')" class="bg-white rounded-xl border border-amber-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-amber-300 transition-all group">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-amber-600">Needs Attention</span>
+              <span class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">⚠️</span>
+            </div>
+            <div class="text-3xl font-bold text-amber-700" id="countNeeds">0</div>
+            <div class="text-xs text-amber-600 mt-1">No CE hrs or empty content</div>
+          </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="flex flex-wrap items-center gap-3 mb-5 bg-white p-3 rounded-xl border border-burgundy-100 shadow-sm">
+          <div class="relative flex-1 min-w-48">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-forest-400 text-sm"></i>
+            <input type="text" id="searchInput" placeholder="Search courses..." oninput="renderCourses()"
+              class="w-full pl-9 pr-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400 placeholder:text-forest-300">
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Status</label>
+            <select id="statusFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+              <option value="">All</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Content</label>
+            <select id="contentFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+              <option value="">All</option>
+              <option value="complete">✅ Complete</option>
+              <option value="nearly">🟡 Nearly There</option>
+              <option value="progress">🔨 In Progress</option>
+              <option value="needs">⚠️ Needs Attention</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">CE Hrs</label>
+            <select id="ceHoursFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+              <option value="">All</option>
+              <option value="1">1 hr</option>
+              <option value="2">2 hrs</option>
+              <option value="3">3 hrs</option>
+              <option value="4">4 hrs</option>
+              <option value="5">5 hrs</option>
+              <option value="6">6 hrs</option>
+              <option value="6+">6+ hrs</option>
+            </select>
+          </div>
+          <div class="h-8 w-px bg-forest-200"></div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
+              <i class="fas fa-check w-3.5"></i> Publish All
+            </button>
+            <button onclick="bulkPublish(false)" class="inline-flex items-center gap-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
+              <i class="fas fa-eye-slash w-3.5"></i> Unpublish All
+            </button>
+          </div>
+          <div class="text-xs font-medium text-forest-400 ml-auto" id="courseCount"></div>
+        </div>
+
+        <!-- Course Cards -->
+        <div id="courseCards" class="space-y-3"></div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4 py-3" id="paginationRow">
+          <span class="text-sm text-forest-500" id="pageInfo"></span>
+          <div class="flex gap-2">
+            <button onclick="changePage(-1)" id="prevBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">← Prev</button>
+            <button onclick="changePage(1)" id="nextBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">Next →</button>
+          </div>
+        </div>
+
+      </div><!-- /mainContent -->
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toastMsg" class="px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium"></div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 items-center justify-center" style="display:none">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+      <h3 class="font-semibold text-burgundy-800 mb-2" id="confirmTitle">Confirm</h3>
+      <p class="text-sm text-forest-600 mb-5" id="confirmMsg"></p>
+      <div class="flex gap-3 justify-end">
+        <button onclick="closeConfirm()" class="px-4 py-2 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50">Cancel</button>
+        <button onclick="doConfirm()" id="confirmOk" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm hover:bg-burgundy-900">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Modal -->
+  <div id="aiModal" class="fixed inset-0 bg-black/50 z-50 items-center justify-center" style="display:none">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-lg w-full mx-4">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-display text-xl font-semibold text-burgundy-900">Create Course with AI</h3>
+        <button onclick="closeAIModal()" class="text-forest-400 hover:text-forest-600 text-lg"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Course Topic *</label>
+          <input type="text" id="aiTopic" placeholder="e.g., Motivational Interviewing for Addiction Counselors"
+            class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">CE Hours</label>
+            <select id="aiHours" class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm">
+              <option value="1">1 Hour</option>
+              <option value="2">2 Hours</option>
+              <option value="3" selected>3 Hours</option>
+              <option value="4">4 Hours</option>
+              <option value="6">6 Hours</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Category</label>
+            <select id="aiCategory" class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm">
+              <option value="ethics">Ethics</option>
+              <option value="clinical">Clinical Practice</option>
+              <option value="trauma">Trauma</option>
+              <option value="cultural">Cultural Competence</option>
+              <option value="assessment">Assessment</option>
+              <option value="supervision">Supervision</option>
+              <option value="special">Special Populations</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Notes (optional)</label>
+          <textarea id="aiNotes" rows="2" placeholder="Target audience, state requirements..."
+            class="w-full px-3 py-2 border border-burgundy-200 rounded-lg text-sm resize-none focus:outline-none focus:ring-2 focus:ring-burgundy-300"></textarea>
+        </div>
+      </div>
+      <div class="flex gap-3 justify-end mt-5">
+        <button onclick="closeAIModal()" class="px-4 py-2 border border-burgundy-200 rounded-lg text-sm">Cancel</button>
+        <button onclick="runAI()" id="aiBtn" class="px-4 py-2 bg-forest-500 hover:bg-forest-600 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+          <i class="fas fa-wand-magic-sparkles"></i> Generate Course
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login.html';
+
+    const WORDS_PER_CE_HOUR = 6000;
+    let allCourses = [];
+    let filtered = [];
+    let page = 1;
+    const PER_PAGE = 20;
+    let pendingFn = null;
+
+    // ── Health classification ──
+    function wordCount(course) {
+      // Use pre-computed wordCount field from DB
+      if (course.wordCount && course.wordCount > 0) return course.wordCount;
+      // Fallback: calculate from full course data if available
+      let count = 0;
+      const sections = course.sections || course.modules || [];
+      sections.forEach(sec => {
+        const blocks = sec.contentBlocks || sec.lessons || [];
+        blocks.forEach(b => {
+          const text = b.textContent || b.content || b.body || '';
+          const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          if (plain) count += plain.split(' ').length;
+        });
+      });
+      return count;
+    }
+
+    function healthStatus(course) {
+      const ceHours = course.ceHours || course.ceuHours || 0;
+      if (!ceHours) return 'needs';
+      const words = wordCount(course);
+      if (words === 0) return 'needs';
+      const target = ceHours * WORDS_PER_CE_HOUR;
+      const pct = Math.round((words / target) * 100);
+      if (pct >= 90) return 'complete';
+      if (pct >= 50) return 'nearly';
+      return 'progress';
+    }
+
+    function healthInfo(status) {
+      const map = {
+        complete:  { label: '✅ Complete',     bg: 'bg-green-50',  border: 'border-green-200',  text: 'text-green-700',  bar: 'bg-green-500',  pct: '≥90%' },
+        nearly:    { label: '🟡 Nearly There', bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-700', bar: 'bg-yellow-400', pct: '50–89%' },
+        progress:  { label: '🔨 In Progress',  bg: 'bg-blue-50',   border: 'border-blue-200',   text: 'text-blue-700',   bar: 'bg-blue-400',   pct: '<50%' },
+        needs:     { label: '⚠️ Needs Attention', bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', bar: 'bg-amber-400',  pct: '0%' },
+      };
+      return map[status] || map.needs;
+    }
+
+    async function init() {
+      try {
+        const r = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) {
+          const d = await r.json();
+          const u = d.user || d;
+          document.getElementById('adminEmail').textContent = u.email || 'Admin';
+          if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
+        }
+      } catch(e) {}
+      loadCourses();
+    }
+
+    async function loadCourses() {
+      show('loadingState'); hide('mainContent'); hide('errorState');
+      try {
+        let courses = [];
+
+        // 1. Admin endpoint (old courses collection - has drafts + enrollment counts)
+        try {
+          const r = await fetch(`${API_URL}/api/admin/courses`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (r.ok) {
+            const d = await r.json();
+            // Use _collection from backend to correctly identify InteractiveCourse docs.
+            // Without this, draft InteractiveCourses (not returned by /api/interactive-courses
+            // which filters to published only) keep _source:'courses' and route to the wrong
+            // publish endpoint, returning 404.
+            courses = (d.courses || []).map(c => ({
+              ...c,
+              _source: c._collection === 'interactivecourses' ? 'interactivecourses' : 'courses'
+            }));
+          }
+        } catch(e) {}
+
+        // 2. Interactive courses (Architecture A - interactivecourses collection)
+        try {
+          let p = 1;
+          while (true) {
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!r.ok) break;
+            const d = await r.json();
+            const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
+            // Prefer interactivecourses version (deduplicate by slug)
+            batch.forEach(ic => {
+              const idx = courses.findIndex(c => c.slug === ic.slug);
+              if (idx >= 0) courses[idx] = ic;
+              else courses.push(ic);
+            });
+            if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
+            p++;
+          }
+        } catch(e) {}
+
+        // Annotate with health
+        allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
+
+        updateHealthDashboard();
+        renderCourses();
+        hide('loadingState');
+        show('mainContent');
+      } catch(e) {
+        hide('loadingState');
+        show('errorState');
+        document.getElementById('errorMsg').textContent = 'Failed to load: ' + e.message;
+      }
+    }
+
+    function updateHealthDashboard() {
+      const total = allCourses.length;
+      const counts = { complete: 0, nearly: 0, progress: 0, needs: 0 };
+      let totalWords = 0, totalHours = 0;
+      allCourses.forEach(c => { counts[c._health]++; totalWords += c._words; totalHours += (c.ceHours || c.ceuHours || 0); });
+
+      document.getElementById('countComplete').textContent = counts.complete;
+      document.getElementById('countNearly').textContent = counts.nearly;
+      document.getElementById('countProgress').textContent = counts.progress;
+      document.getElementById('countNeeds').textContent = counts.needs;
+
+      const compliantPct = total > 0 ? Math.round((counts.complete / total) * 100) : 0;
+      document.getElementById('healthPct').textContent = compliantPct + '%';
+      document.getElementById('healthSubtitle').textContent =
+        `${totalWords.toLocaleString()} total words across ${total} courses · ${totalHours} CE hours`;
+
+      const pct = n => total > 0 ? Math.round((n / total) * 100) : 0;
+      document.getElementById('hbComplete').style.width = pct(counts.complete) + '%';
+      document.getElementById('hbNearly').style.width = pct(counts.nearly) + '%';
+      document.getElementById('hbProgress').style.width = pct(counts.progress) + '%';
+      document.getElementById('hbNeeds').style.width = pct(counts.needs) + '%';
+
+      document.getElementById('healthLegend').innerHTML = [
+        ['bg-green-500', `Complete ${counts.complete}`],
+        ['bg-yellow-400', `Nearly There ${counts.nearly}`],
+        ['bg-blue-400', `In Progress ${counts.progress}`],
+        ['bg-gray-300', `Needs Attention ${counts.needs}`],
+      ].map(([bg, label]) => `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full ${bg} inline-block"></span>${label}</span>`).join('');
+    }
+
+    function setFilter(health) {
+      document.getElementById('contentFilter').value = health;
+      renderCourses();
+    }
+
+    function renderCourses() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      const st = document.getElementById('statusFilter').value;
+      const ct = document.getElementById('contentFilter').value;
+      const ch = document.getElementById('ceHoursFilter').value;
+
+      filtered = allCourses.filter(c => {
+        const mQ = !q || (c.title || '').toLowerCase().includes(q) || (c.slug || '').includes(q);
+        const mS = !st || c.status === st;
+        const mC = !ct || c._health === ct;
+        const hrs = c.ceHours || c.ceuHours || 0;
+        const mH = !ch || (ch === '6+' ? hrs > 6 : Math.round(hrs) === parseInt(ch));
+        return mQ && mS && mC && mH;
+      });
+
+      // Sort: published first, then by health status priority, then title
+      const hOrder = { complete: 0, nearly: 1, progress: 2, needs: 3 };
+      filtered.sort((a, b) => {
+        if (a.status === 'published' && b.status !== 'published') return -1;
+        if (a.status !== 'published' && b.status === 'published') return 1;
+        return (hOrder[a._health] || 0) - (hOrder[b._health] || 0) || (a.title || '').localeCompare(b.title || '');
+      });
+
+      page = 1;
+      renderPage();
+    }
+
+    function renderPage() {
+      const start = (page - 1) * PER_PAGE;
+      const items = filtered.slice(start, start + PER_PAGE);
+      const total = filtered.length;
+
+      document.getElementById('courseCount').textContent = `${total} courses`;
+      document.getElementById('pageInfo').textContent = total > PER_PAGE
+        ? `Showing ${start + 1}–${Math.min(start + PER_PAGE, total)} of ${total}` : '';
+      document.getElementById('prevBtn').disabled = page <= 1;
+      document.getElementById('nextBtn').disabled = page >= Math.ceil(total / PER_PAGE);
+      document.getElementById('paginationRow').style.display = total > PER_PAGE ? 'flex' : 'none';
+
+      document.getElementById('courseCards').innerHTML = items.length === 0
+        ? '<div class="text-center py-12 text-forest-500 bg-white rounded-xl border border-burgundy-100">No courses found</div>'
+        : items.map(courseCard).join('');
+      wireCardActions();
+    }
+
+    // Delegated handler for card action buttons. Replaces inline onclick="" so that
+    // course titles containing apostrophes/quotes can't break the handler (the old
+    // inline pattern silently failed on such titles — clicks did nothing).
+    let _cardActionsWired = false;
+    function wireCardActions() {
+      if (_cardActionsWired) return;
+      _cardActionsWired = true;
+      document.getElementById('courseCards').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cr-act]');
+        if (!btn) return;
+        const d = btn.dataset;
+        console.log('[admin-courses] action click:', d.crAct, d.id);
+        switch (d.crAct) {
+          case 'publish':   togglePublish(d.id, d.status, d.title, d.src); break;
+          case 'meta':      openMetaModal(d.id, d.title, d.src, btn); break;
+          case 'duplicate': duplicateCourse(d.id, d.title); break;
+          case 'delete':    deleteCourse(d.id, d.title, d.src); break;
+        }
+      });
+    }
+
+    function courseCard(c) {
+      const pub = c.status === 'published';
+      const h = healthInfo(c._health);
+      const ceHours = c.ceHours || c.ceuHours || 0;
+      const target = ceHours * WORDS_PER_CE_HOUR;
+      const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
+      const modules = c.moduleCount || 0;
+      const sections = c.sectionCount || (c.sections || c.modules || []).length;
+      const price = c.price ? `$${c.price}` : null;
+      const tier = c.accessTier || c.pricingTier || null;
+
+      const barColor = { complete: 'bg-green-500', nearly: 'bg-yellow-400', progress: 'bg-blue-400', needs: 'bg-gray-300' }[c._health];
+      const barTextColor = { complete: 'text-green-600', nearly: 'text-yellow-600', progress: 'text-blue-500', needs: 'text-gray-400' }[c._health];
+      const src = c._source || 'interactivecourses';
+
+      return `
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm hover:shadow-md transition-all p-5">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-display text-lg font-semibold text-burgundy-900">${esc(c.title || 'Untitled')}</h3>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${h.bg} ${h.text} ${h.border} whitespace-nowrap">
+                  ${h.label}
+                </span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${pub ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}">
+                  ${pub ? 'published' : 'draft'}
+                </span>
+                ${tier ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200">${tier}</span>` : ''}
+              </div>
+            </div>
+            <div class="flex gap-1.5 shrink-0">
+              <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
+                title="${pub ? 'Unpublish' : 'Publish'}">
+                ${pub ? '📤' : '📥'}
+              </button>
+              <a href="/interactive-course.html?id=${c._id}" target="_blank"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
+              <button onclick="copyLink('${c.slug || c._id}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>
+              <a href="/admin-course-preview.html?id=${c._id}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
+              <button onclick="openQuickEdit('${c._id}','${src}')"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
+              <a href="/admin-course-editor.html?id=${c._id}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
+              <button data-cr-act="meta" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
+              <button data-cr-act="duplicate" data-id="${c._id}" data-title="${esc(c.title)}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
+              <button data-cr-act="delete" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
+                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 text-sm flex-wrap">
+            <span class="text-forest-600"><strong class="text-burgundy-800 text-base">${ceHours}</strong> CE hrs</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
+            <span class="text-forest-300">·</span>
+            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
+            ${target > 0 ? `
+            <span class="text-forest-300">·</span>
+            <span class="inline-flex items-center gap-2">
+              <span class="w-24 bg-gray-100 rounded-full h-2 inline-block overflow-hidden">
+                <span class="block h-2 rounded-full ${barColor} transition-all" style="width:${wordPct}%"></span>
+              </span>
+              <span class="text-xs font-medium ${barTextColor}">${wordPct}%</span>
+            </span>` : ''}
+            ${price ? `<span class="text-forest-300">·</span><span class="font-medium text-green-700">${price}</span>` : ''}
+            ${c.enrollmentCount !== undefined ? `<span class="text-forest-300">·</span><span class="text-forest-500 text-xs">${c.enrollmentCount} enrolled</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function changePage(d) { page += d; renderPage(); window.scrollTo(0, 0); }
+
+    // ── Publish ──
+    function togglePublish(id, status, title, src) {
+      const pub = status !== 'published';
+      confirm2(pub ? 'Publish Course' : 'Unpublish Course',
+        pub ? `"${title}" will be visible to all users.` : `"${title}" will be hidden from users.`,
+        async () => {
+          try {
+            let r;
+            if (src === 'courses') {
+              r = await fetch(`${API_URL}/api/admin/courses/${id}/publish`, {
+                method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publish: pub })
+              });
+            } else {
+              r = await fetch(`${API_URL}/api/admin/course-presentation/${id}/status`, {
+                method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publish: pub })
+              });
+            }
+            if (!r.ok) {
+              let detail = `HTTP ${r.status}`;
+              try { const j = await r.json(); if (j && (j.error || j.message)) detail = j.error || j.message; } catch(_) {}
+              throw new Error(detail);
+            }
+            showToast(pub ? '✓ Published' : '✓ Unpublished', pub ? '#4A7C59' : '#b8893f');
+            loadCourses();
+          } catch(e) { showToast('Error: ' + e.message, '#dc2626'); }
+        });
+    }
+
+    async function bulkPublish(pub) {
+      const targets = filtered.filter(c => pub ? c.status !== 'published' : c.status === 'published');
+      if (!targets.length) { showToast('No courses to update', '#284157'); return; }
+      confirm2(`${pub ? 'Publish' : 'Unpublish'} ${targets.length} Courses`,
+        `This will ${pub ? 'publish' : 'unpublish'} ${targets.length} courses currently shown.`,
+        async () => {
+          let done = 0, failed = 0, lastErr = '';
+          for (const c of targets) {
+            try {
+              const r = (c._source === 'courses')
+                ? await fetch(`${API_URL}/api/admin/courses/${c._id}/publish`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ publish: pub }) })
+                : await fetch(`${API_URL}/api/admin/course-presentation/${c._id}/status`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ publish: pub }) });
+              if (!r.ok) {
+                failed++;
+                try { const j = await r.json(); if (j && (j.error || j.message)) lastErr = j.error || j.message; } catch(_) { lastErr = `HTTP ${r.status}`; }
+              } else { done++; }
+            } catch(e) { failed++; lastErr = e.message; }
+          }
+          if (failed === 0) showToast(`✓ ${done} courses updated`, '#4A7C59');
+          else showToast(`${done} updated, ${failed} failed: ${lastErr}`, '#dc2626');
+          loadCourses();
+        });
+    }
+
+    // ── Delete ──
+    function deleteCourse(id, title, src) {
+      confirm2('Delete Course', `Permanently delete "${title}"? This cannot be undone.`, async () => {
+        try {
+          const url = src === 'courses'
+            ? `${API_URL}/api/admin/courses/${id}`
+            : `${API_URL}/api/interactive-courses/${id}`;
+          const r = await fetch(url, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+          if (!r.ok) throw new Error('Delete failed');
+          showToast('✓ Course deleted', '#6b1d34');
+          loadCourses();
+        } catch(e) { showToast('Error: ' + e.message, '#dc2626'); }
+      });
+    }
+
+    // ── Duplicate ──
+    async function duplicateCourse(id, title) {
+      try {
+        showToast('Duplicating...', '#284157');
+        const r = await fetch(`${API_URL}/api/interactive-courses/${id}/duplicate`, {
+          method: 'POST', headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!r.ok) throw new Error('Not supported by API');
+        showToast('✓ Duplicated', '#4A7C59');
+        loadCourses();
+      } catch(e) { showToast('Duplicate: ' + e.message, '#dc2626'); }
+    }
+
+    // ── AI Generate ──
+    function openAIModal() { document.getElementById('aiModal').style.display = 'flex'; }
+    function closeAIModal() { document.getElementById('aiModal').style.display = 'none'; }
+
+    async function runAI() {
+      const topic = document.getElementById('aiTopic').value.trim();
+      if (!topic) { showToast('Please enter a topic', '#dc2626'); return; }
+      const btn = document.getElementById('aiBtn');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+      try {
+        const r = await fetch(`${API_URL}/api/ai-course-generator/generate`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            topic,
+            ceHours: parseInt(document.getElementById('aiHours').value),
+            category: document.getElementById('aiCategory').value,
+            notes: document.getElementById('aiNotes').value
+          })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || d.message || 'Failed');
+        closeAIModal();
+        showToast('✓ Generated! Opening editor...', '#4A7C59');
+        const cid = d.data?._id || d.course?._id || d._id;
+        setTimeout(() => { window.location.href = cid ? `/admin-course-editor.html?id=${cid}` : '/admin-courses.html'; }, 1500);
+      } catch(e) {
+        showToast('Error: ' + e.message, '#dc2626');
+      } finally {
+        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Course';
+        btn.disabled = false;
+      }
+    }
+
+    // ── Helpers ──
+    function confirm2(title, msg, fn) {
+      pendingFn = fn;
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMsg').textContent = msg;
+      document.getElementById('confirmModal').style.display = 'flex';
+    }
+    function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; pendingFn = null; }
+    function doConfirm() { const fn = pendingFn; closeConfirm(); if (fn) fn(); }
+
+    function showToast(msg, bg = '#6b1d34') {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      el.style.background = bg;
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
+    }
+
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    init();
+  </script>
+<!-- Metadata Modal -->
+<div id="metaModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:16px;max-width:520px;width:90%;max-height:85vh;overflow-y:auto;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#6B1D34" id="metaModalTitle">Course Metadata</h3>
+      <button onclick="closeMetaModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <input type="hidden" id="metaCourseId">
+
+    <!-- Delivery Format -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Delivery Format</label>
+    <select id="metaDeliveryFormat" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="async">Async (self-paced)</option>
+      <option value="live">Live</option>
+      <option value="hybrid">Hybrid</option>
+    </select>
+
+    <!-- Access Type -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Access Type</label>
+    <select id="metaAccessType" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="free">Free</option>
+      <option value="subscription">Subscription</option>
+      <option value="purchase">One-time Purchase</option>
+    </select>
+
+    <!-- Approval Body -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Approval Body</label>
+    <select id="metaApprovalBody" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="NBCC">NBCC</option>
+      <option value="LPC-GA">LPC-GA</option>
+      <option value="GCSW">GCSW</option>
+      <option value="LMFT">LMFT</option>
+      <option value="APA">APA</option>
+      <option value="ACA">ACA</option>
+      <option value="NASW">NASW</option>
+    </select>
+
+    <!-- Level -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:6px">Level</label>
+    <select id="metaLevel" style="width:100%;padding:10px 14px;border:1px solid #E5E2DC;border-radius:10px;font-family:inherit;font-size:14px;margin-bottom:16px;outline:none">
+      <option value="Beginner">Beginner</option>
+      <option value="Intermediate">Intermediate</option>
+      <option value="Advanced">Advanced</option>
+      <option value="All Levels">All Levels</option>
+    </select>
+
+    <!-- NBCC Content Areas (checkboxes) -->
+    <label style="display:block;font-size:13px;font-weight:600;color:#284157;margin-bottom:8px">NBCC Content Areas <span style="font-weight:400;color:#9CA3AF">(select up to 3)</span></label>
+    <div id="metaContentAreas" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:20px">
+    </div>
+
+    <!-- Save -->
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button onclick="closeMetaModal()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
+      <button onclick="saveMetadata()" id="metaSaveBtn" style="padding:10px 24px;border:none;border-radius:10px;background:#4A7C59;color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const NBCC_AREAS = [
+    'Counseling Theory/Practice',
+    'Human Growth and Development',
+    'Social and Cultural Foundations',
+    'Group Dynamics',
+    'Career Development',
+    'Assessment',
+    'Research/Program Evaluation',
+    'Professional Identity',
+    'Wellness and Prevention'
+  ];
+
+  // Build checkboxes once
+  (function() {
+    const container = document.getElementById('metaContentAreas');
+    container.innerHTML = NBCC_AREAS.map((area, i) => `
+      <label style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#F8F7F4;cursor:pointer;font-size:12px;color:#2C2C2C">
+        <input type="checkbox" name="nbccArea" value="${area}" 
+          style="accent-color:#4A7C59;width:16px;height:16px;cursor:pointer"
+          onchange="limitContentAreas(this)">
+        ${area}
+      </label>
+    `).join('');
+  })();
+
+  function limitContentAreas(el) {
+    const checked = document.querySelectorAll('input[name=nbccArea]:checked');
+    if (checked.length > 3) {
+      el.checked = false;
+      showToast('Max 3 content areas', '#b8893f');
+    }
+  }
+
+  function openMetaModal(courseId, title) {
+    document.getElementById('metaCourseId').value = courseId;
+    document.getElementById('metaModalTitle').textContent = title;
+
+    // Find course data
+    const course = allCourses.find(c => c._id === courseId);
+    if (course) {
+      document.getElementById('metaDeliveryFormat').value = course.deliveryFormat || 'async';
+      document.getElementById('metaAccessType').value = course.accessType || 'subscription';
+      document.getElementById('metaApprovalBody').value = course.approvalBody || course.approvingBody || 'NBCC';
+      document.getElementById('metaLevel').value = course.level || course.difficulty || 'Intermediate';
+
+      // Check content area boxes
+      const areas = course.nbccContentAreas || [];
+      document.querySelectorAll('input[name=nbccArea]').forEach(cb => {
+        cb.checked = areas.includes(cb.value);
+      });
+    }
+
+    const modal = document.getElementById('metaModal');
+    modal.style.display = 'flex';
+  }
+
+  function closeMetaModal() {
+    document.getElementById('metaModal').style.display = 'none';
+  }
+
+  async function saveMetadata() {
+    const courseId = document.getElementById('metaCourseId').value;
+    const btn = document.getElementById('metaSaveBtn');
+    btn.textContent = 'Saving...';
+    btn.disabled = true;
+
+    const checkedAreas = Array.from(document.querySelectorAll('input[name=nbccArea]:checked')).map(cb => cb.value);
+
+    const payload = {
+      deliveryFormat: document.getElementById('metaDeliveryFormat').value,
+      accessType: document.getElementById('metaAccessType').value,
+      approvalBody: document.getElementById('metaApprovalBody').value,
+      level: document.getElementById('metaLevel').value,
+      nbccContentAreas: checkedAreas
+    };
+
+    try {
+      const course = allCourses.find(c => c._id === courseId);
+      // Both course types use the admin PUT endpoint.
+      // PUT /api/interactive-courses/:id doesn't exist; /api/admin/courses/:id handles both.
+      const endpoint = `${API_URL}/api/admin/courses/${courseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!r.ok) {
+        const d = await r.json();
+        throw new Error(d.error || 'Save failed');
+      }
+
+      showToast('Metadata saved', '#4A7C59');
+      closeMetaModal();
+      loadCourses(); // Refresh cards
+    } catch(e) {
+      showToast('Error: ' + e.message, '#dc2626');
+    } finally {
+      btn.textContent = 'Save';
+      btn.disabled = false;
+    }
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('metaModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMetaModal();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // QUICK EDIT MODAL — title, CE hours, status, price
+  // ═══════════════════════════════════════════════════════════════
+  let qeCourseId = '', qeSrc = '';
+
+  async function openQuickEdit(courseId, src) {
+    qeCourseId = courseId; qeSrc = src;
+    const modal = document.getElementById('quickEditModal');
+    modal.style.display = 'flex';
+    document.getElementById('qeForm').style.display = 'none';
+    document.getElementById('qeLoading').style.display = 'block';
+
+    try {
+      const endpoint = src !== 'courses'
+        ? `${API_URL}/api/interactive-courses/${courseId}`
+        : `${API_URL}/api/admin/courses/${courseId}`;
+      const r = await fetch(endpoint, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } });
+      const data = await r.json();
+      const c = data.course || data;
+
+      document.getElementById('qeTitle').value = c.title || '';
+      document.getElementById('qeCeHours').value = c.ceHours || 0;
+      document.getElementById('qeStatus').value = c.status || 'draft';
+      document.getElementById('qePrice').value = c.price || 0;
+      document.getElementById('qeModalLabel').textContent = (c.title || '').substring(0, 50);
+
+      document.getElementById('qeLoading').style.display = 'none';
+      document.getElementById('qeForm').style.display = 'block';
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to load course', '#DC2626');
+      closeQuickEdit();
+    }
+  }
+
+  function closeQuickEdit() {
+    document.getElementById('quickEditModal').style.display = 'none';
+  }
+
+  async function saveQuickEdit() {
+    const payload = {
+      title: document.getElementById('qeTitle').value.trim(),
+      ceHours: parseFloat(document.getElementById('qeCeHours').value) || 0,
+      status: document.getElementById('qeStatus').value,
+      price: parseFloat(document.getElementById('qePrice').value) || 0
+    };
+    if (payload.status === 'published') payload.isPublished = true;
+    if (payload.status === 'draft') payload.isPublished = false;
+
+    try {
+      // Both course types use the admin PUT endpoint.
+      // PUT /api/interactive-courses/:id doesn't exist; /api/admin/courses/:id handles both.
+      const endpoint = `${API_URL}/api/admin/courses/${qeCourseId}`;
+      const r = await fetch(endpoint, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) throw new Error('Save failed');
+      showToast('✓ Saved', '#4A7C59');
+      closeQuickEdit();
+      loadCourses();
+    } catch (err) {
+      console.error(err);
+      showToast('Save failed', '#DC2626');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('quickEditModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeQuickEdit();
+    });
+  });
+
+  function copyLink(slugOrId) {
+    const url = `${window.location.origin}/course-details.html?slug=${slugOrId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('✓ Link copied', '#4A7C59');
+    }).catch(() => {
+      prompt('Copy this link:', url);
+    });
+  }
+</script>
+
+<!-- Quick Edit Modal -->
+<div id="quickEditModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;font-family:inherit">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <h3 style="font-size:16px;font-weight:700;color:#1a1a1a;margin:0">Quick Edit</h3>
+        <p id="qeModalLabel" style="font-size:12px;color:#6B7280;margin:2px 0 0"></p>
+      </div>
+      <button onclick="closeQuickEdit()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#6B7280">&times;</button>
+    </div>
+    <div id="qeLoading" style="text-align:center;padding:2rem;color:#6B7280;font-size:13px">Loading...</div>
+    <div id="qeForm" style="display:none">
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Title</label>
+        <input id="qeTitle" type="text" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">CE Hours</label>
+          <input id="qeCeHours" type="number" step="0.5" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Status</label>
+          <select id="qeStatus" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Price ($)</label>
+          <input id="qePrice" type="number" step="0.01" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button onclick="closeQuickEdit()" style="padding:10px 20px;border:1px solid #E5E2DC;border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:600;color:#6B7280;cursor:pointer">Cancel</button>
+        <button onclick="saveQuickEdit()" style="padding:10px 20px;border:none;border-radius:10px;background:#4A7C59;font-family:inherit;font-size:14px;font-weight:600;color:#fff;cursor:pointer">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>

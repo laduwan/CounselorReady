@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Billing | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-semibold text-burgundy-900">Billing</h1>
+      <p class="text-gray-500 mt-1">Manage your partner plan and usage</p>
+    </div>
+
+    <div id="banner" class="hidden mb-6"></div>
+
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading billing...</p>
+    </div>
+
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <div id="addonBanner" class="hidden mb-6 bg-white border border-hunter-200 rounded-xl p-4 flex items-center gap-3" style="background:#f0fdf4">
+      <i class="fas fa-check-circle text-hunter-600"></i>
+      <p class="text-sm text-stone-700">Add-on activated successfully. It may take a moment to reflect.</p>
+    </div>
+
+    <div id="content" class="hidden space-y-6">
+
+      <!-- Current plan + usage -->
+      <div class="bg-white rounded-xl border border-gray-200 p-6">
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p class="text-xs font-semibold text-stone-500 uppercase tracking-wide">Current Plan</p>
+            <div class="flex items-center gap-3 mt-1">
+              <h2 id="curPlanName" class="font-display text-2xl font-bold text-burgundy-900">Free</h2>
+              <span id="curStatus" class="text-xs font-medium px-2 py-0.5 rounded-full"></span>
+            </div>
+          </div>
+          <button onclick="openPortal()" id="portalBtn" class="hidden px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-50 font-medium">
+            <i class="fas fa-external-link-alt mr-1"></i> Manage Billing
+          </button>
+        </div>
+
+        <div class="grid sm:grid-cols-2 gap-5 mt-5">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-medium text-stone-500">Courses</span>
+              <span id="courseUsage" class="text-xs text-stone-600"></span>
+            </div>
+            <div class="w-full bg-stone-200 rounded-full h-2"><div id="courseBar" class="h-2 rounded-full" style="background:#6B1D34;width:0%"></div></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-medium text-stone-500">Users</span>
+              <span id="userUsage" class="text-xs text-stone-600"></span>
+            </div>
+            <div class="w-full bg-stone-200 rounded-full h-2"><div id="userBar" class="h-2 rounded-full" style="background:#4A7C59;width:0%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Plans -->
+      <div>
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Available Plans</h2>
+        <div id="plansGrid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        <p id="checkoutMsg" class="text-xs mt-3 text-red-600"></p>
+      </div>
+
+      <!-- Premium Add-Ons -->
+      <div id="addons">
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Premium Add-Ons</h2>
+        <div id="addonsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="addonMsg" class="text-xs mt-3 text-red-600"></p>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      const un = document.getElementById('userName'); if (un) un.textContent = p.name || '';
+      const av = document.getElementById('userAvatar'); if (av) av.textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    const PLAN_ORDER = ['starter', 'growth', 'professional', 'enterprise'];
+
+    function esc(s){ if(s==null) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+    function fmtLimit(n){ return n === -1 ? 'Unlimited' : n; }
+
+    // Success / cancel banner from Stripe redirect
+    (function(){
+      const params = new URLSearchParams(location.search);
+      if (params.get('status') === 'success' && params.get('addon')) {
+        document.getElementById('addonBanner').classList.remove('hidden');
+        return;
+      }
+      const b = document.getElementById('banner');
+      if (params.get('success') === 'true') {
+        b.className = 'mb-6 bg-white border border-hunter-200 rounded-xl p-4 flex items-center gap-3';
+        b.style.background = '#f0fdf4';
+        b.innerHTML = '<i class="fas fa-check-circle text-hunter-600"></i><p class="text-sm text-stone-700">Subscription updated. It may take a moment to reflect below.</p>';
+        b.classList.remove('hidden');
+      } else if (params.get('canceled') === 'true') {
+        b.className = 'mb-6 bg-white border border-amber-200 rounded-xl p-4 flex items-center gap-3';
+        b.style.background = '#fffbeb';
+        b.innerHTML = '<i class="fas fa-info-circle text-amber-600"></i><p class="text-sm text-stone-700">Checkout canceled. No changes were made.</p>';
+        b.classList.remove('hidden');
+      }
+    })();
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const [billingRes, partnerRes] = await Promise.all([
+          fetch(`${API}/api/partners/my/billing`, { headers: AUTH }).catch(() => null),
+          fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null)
+        ]);
+        if (!billingRes || billingRes.status === 400 || billingRes.status === 403 || billingRes.status === 404) {
+          if (!partnerRes || !partnerRes.ok) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('emptyState').classList.remove('hidden');
+            return;
+          }
+        }
+        if (!billingRes || !billingRes.ok) throw new Error('Failed to load billing');
+        const data = await billingRes.json();
+        const partnerData = partnerRes && partnerRes.ok ? await partnerRes.json() : {};
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        render(data);
+        renderAddons(partnerData.partner?.premiumAddons || partnerData.premiumAddons || {});
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load billing';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function render(data) {
+      const billing = data.billing || { plan: 'free', status: 'trial' };
+      const plans = data.plans || {};
+      const usage = data.usage || {};
+      const current = billing.plan || 'free';
+
+      // Current plan header
+      document.getElementById('curPlanName').textContent = plans[current]?.name || (current.charAt(0).toUpperCase() + current.slice(1));
+      const st = billing.status || 'trial';
+      const stEl = document.getElementById('curStatus');
+      const map = { active: ['#f0fdf4', '#4A7C59'], trial: ['#eff6ff', '#2563eb'], past_due: ['#fef2f2', '#dc2626'], canceled: ['#fef2f2', '#dc2626'], inactive: ['#f5f5f4', '#78716c'] };
+      const [bg, col] = map[st] || map.inactive;
+      stEl.style.background = bg; stEl.style.color = col;
+      stEl.className = 'text-xs font-medium px-2 py-0.5 rounded-full capitalize';
+      stEl.textContent = st.replace('_', ' ');
+
+      if (billing.stripeCustomerId) document.getElementById('portalBtn').classList.remove('hidden');
+
+      // Usage bars
+      const cMax = usage.maxCourses, uMax = usage.maxUsers;
+      document.getElementById('courseUsage').textContent = `${usage.courses ?? 0} / ${fmtLimit(cMax)}`;
+      document.getElementById('userUsage').textContent = `${usage.users ?? 0} / ${fmtLimit(uMax)}`;
+      if (cMax > 0) document.getElementById('courseBar').style.width = Math.min(100, Math.round((usage.courses / cMax) * 100)) + '%';
+      if (uMax > 0) document.getElementById('userBar').style.width = Math.min(100, Math.round((usage.users / uMax) * 100)) + '%';
+
+      // Plan cards
+      const curIdx = PLAN_ORDER.indexOf(current);
+      const grid = document.getElementById('plansGrid');
+      grid.innerHTML = PLAN_ORDER.map(key => {
+        const p = plans[key]; if (!p) return '';
+        const isCurrent = key === current;
+        const idx = PLAN_ORDER.indexOf(key);
+        const featured = key === 'professional';
+        const intro = p.introPrice ? `<p class="text-xs text-hunter-700 mt-0.5">$${p.introPrice}/mo for first ${p.introMonths} mo</p>` : '<p class="text-xs text-transparent mt-0.5">.</p>';
+        let btn;
+        if (isCurrent) {
+          btn = `<button disabled class="w-full py-2 rounded-lg text-sm font-medium bg-stone-100 text-stone-500">Current Plan</button>`;
+        } else if (idx < curIdx) {
+          btn = `<button onclick="checkout('${key}', this)" class="w-full py-2 rounded-lg text-sm font-medium border border-stone-300 text-stone-700 hover:bg-stone-50">Switch</button>`;
+        } else {
+          btn = `<button onclick="checkout('${key}', this)" class="w-full py-2 rounded-lg text-sm font-medium text-white bg-burgundy-800 hover:bg-burgundy-900">Upgrade</button>`;
+        }
+        return `
+          <div class="bg-white rounded-xl border ${featured ? 'border-honey-400 shadow-md' : 'border-gray-200'} p-5 relative flex flex-col">
+            ${featured ? '<span class="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-honey-400 text-burgundy-900 text-[10px] font-bold px-2 py-0.5 rounded-full">POPULAR</span>' : ''}
+            <p class="font-display text-lg font-bold text-burgundy-900">${esc(p.name)}</p>
+            <div class="mt-1"><span class="text-2xl font-bold text-stone-900">$${p.price}</span><span class="text-stone-500 text-sm">/mo</span></div>
+            ${intro}
+            <ul class="mt-3 space-y-1.5 text-xs text-stone-600 flex-1">
+              <li><i class="fas fa-check text-hunter-500 mr-1.5"></i>${fmtLimit(p.maxCourses)} courses</li>
+              <li><i class="fas fa-check text-hunter-500 mr-1.5"></i>${fmtLimit(p.maxUsers)} users</li>
+              <li class="${p.customDomain ? '' : 'opacity-40'}"><i class="fas fa-${p.customDomain ? 'check text-hunter-500' : 'minus text-stone-400'} mr-1.5"></i>Custom domain</li>
+              <li class="${p.bulkUpload ? '' : 'opacity-40'}"><i class="fas fa-${p.bulkUpload ? 'check text-hunter-500' : 'minus text-stone-400'} mr-1.5"></i>Bulk upload</li>
+            </ul>
+            <div class="mt-4">${btn}</div>
+          </div>`;
+      }).join('');
+    }
+
+    async function checkout(plan, btn) {
+      const msg = document.getElementById('checkoutMsg'); msg.textContent = '';
+      btn.disabled = true; btn.textContent = 'Redirecting...';
+      try {
+        const res = await fetch(`${API}/api/partners/my/billing/checkout`, { method: 'POST', headers: AUTH, body: JSON.stringify({ plan }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not start checkout');
+        if (data.url) { location.href = data.url; return; }
+        throw new Error('No checkout URL returned');
+      } catch (err) {
+        msg.textContent = err.message; btn.disabled = false; btn.textContent = 'Upgrade';
+      }
+    }
+
+    async function openPortal() {
+      const btn = document.getElementById('portalBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/api/partners/my/billing/portal`, { method: 'POST', headers: AUTH });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not open billing portal');
+        if (data.url) { location.href = data.url; return; }
+        throw new Error('No portal URL returned');
+      } catch (err) {
+        document.getElementById('checkoutMsg').textContent = err.message;
+        btn.disabled = false;
+      }
+    }
+
+    const ADDON_DEFS = [
+      { key: 'certTracking',         name: 'Certificate Tracking',  price: '$25/mo', icon: 'fa-certificate' },
+      { key: 'credentialManagement', name: 'Credential Management', price: '$20/mo', icon: 'fa-id-card' },
+      { key: 'complianceTracking',   name: 'Compliance Tracking',   price: '$25/mo', icon: 'fa-clipboard-check' },
+      { key: 'clinicalTools',        name: 'Clinical Tools Suite',  price: '$30/mo', icon: 'fa-stethoscope' },
+      { key: 'bundle',               name: 'Full Bundle (All 4)',   price: '$100/mo', icon: 'fa-layer-group' }
+    ];
+
+    function renderAddons(premiumAddons) {
+      const grid = document.getElementById('addonsGrid');
+      grid.innerHTML = ADDON_DEFS.map(a => {
+        const enabled = a.key === 'bundle'
+          ? ['certTracking','credentialManagement','complianceTracking','clinicalTools'].every(k => premiumAddons[k]?.enabled)
+          : !!premiumAddons[a.key]?.enabled;
+        const badge = enabled
+          ? '<span class="inline-flex items-center gap-1 text-xs font-medium text-hunter-700 bg-hunter-50 border border-hunter-200 rounded-full px-2 py-0.5"><i class="fas fa-check text-[10px]"></i> Active</span>'
+          : '';
+        const btn = enabled
+          ? `<button disabled class="w-full py-2 rounded-lg text-sm font-medium bg-stone-100 text-stone-400 cursor-default">Active</button>`
+          : `<button onclick="addonCheckout('${a.key}', this)" class="w-full py-2 rounded-lg text-sm font-medium text-white bg-burgundy-800 hover:bg-burgundy-900">Subscribe ${a.price}</button>`;
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-hunter-600"><i class="fas ${a.icon} text-sm"></i></span>
+                <div>
+                  <p class="text-sm font-semibold text-stone-900">${esc(a.name)}</p>
+                  <p class="text-xs text-stone-500">${a.price}</p>
+                </div>
+              </div>
+              ${badge}
+            </div>
+            ${btn}
+          </div>`;
+      }).join('');
+    }
+
+    async function addonCheckout(addonKey, btn) {
+      const msg = document.getElementById('addonMsg'); msg.textContent = '';
+      btn.disabled = true; btn.textContent = 'Redirecting...';
+      try {
+        const res = await fetch(`${API}/api/payments/addon-checkout`, { method: 'POST', headers: AUTH, body: JSON.stringify({ addonKey }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not start checkout');
+        if (data.url) { location.href = data.url; return; }
+        throw new Error('No checkout URL returned');
+      } catch (err) {
+        msg.textContent = err.message; btn.disabled = false; btn.textContent = `Subscribe`;
+      }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

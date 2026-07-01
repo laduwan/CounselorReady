@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Help Articles - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <!-- Markdown Editor -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <!-- Marked for rendering markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .editor-toolbar { border-radius: 8px 8px 0 0; }
+    .CodeMirror { border-radius: 0 0 8px 8px; min-height: 300px; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+        <a href="/admin-help-articles.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-newspaper w-5"></i>
+          Help Articles
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-900">Help Articles</h1>
+            <p class="text-forest-600 mt-1">Manage user-facing FAQ and help documentation</p>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="seedArticles()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+              <i class="fas fa-seedling mr-2"></i>
+              Seed Defaults
+            </button>
+            <button onclick="showAnalytics()" class="px-4 py-2 bg-forest-100 text-forest-700 rounded-lg hover:bg-forest-200 transition-colors">
+              <i class="fas fa-chart-bar mr-2"></i>
+              Analytics
+            </button>
+            <button onclick="openEditor()" class="px-4 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700 transition-colors">
+              <i class="fas fa-plus mr-2"></i>
+              New Article
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-4 mb-6">
+          <div class="grid grid-cols-4 gap-4">
+            <div>
+              <label class="text-sm text-forest-600 mb-1 block">Search</label>
+              <input type="text" id="searchInput" placeholder="Search articles..." 
+                class="w-full px-3 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500"
+                onkeyup="filterArticles()">
+            </div>
+            <div>
+              <label class="text-sm text-forest-600 mb-1 block">Category</label>
+              <select id="categoryFilter" class="w-full px-3 py-2 border border-forest-200 rounded-lg" onchange="filterArticles()">
+                <option value="">All Categories</option>
+                <option value="getting-started">Getting Started</option>
+                <option value="courses">Courses</option>
+                <option value="certificates">Certificates</option>
+                <option value="credentials">Credentials</option>
+                <option value="subscriptions">Subscriptions</option>
+                <option value="account">Account</option>
+                <option value="technical">Technical</option>
+                <option value="integrations">Integrations</option>
+                <option value="admin">Admin</option>
+                <option value="troubleshooting">Troubleshooting</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-forest-600 mb-1 block">Audience</label>
+              <select id="audienceFilter" class="w-full px-3 py-2 border border-forest-200 rounded-lg" onchange="filterArticles()">
+                <option value="">All Audiences</option>
+                <option value="user">Users Only</option>
+                <option value="admin">Admin Only</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-sm text-forest-600 mb-1 block">Status</label>
+              <select id="statusFilter" class="w-full px-3 py-2 border border-forest-200 rounded-lg" onchange="filterArticles()">
+                <option value="">All Status</option>
+                <option value="published">Published</option>
+                <option value="draft">Draft</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Articles Table -->
+        <div class="bg-white rounded-xl border border-burgundy-100 overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-burgundy-50">
+              <tr>
+                <th class="text-left px-6 py-3 text-sm font-semibold text-burgundy-800">Article</th>
+                <th class="text-left px-4 py-3 text-sm font-semibold text-burgundy-800">Category</th>
+                <th class="text-left px-4 py-3 text-sm font-semibold text-burgundy-800">Audience</th>
+                <th class="text-center px-4 py-3 text-sm font-semibold text-burgundy-800">Views</th>
+                <th class="text-center px-4 py-3 text-sm font-semibold text-burgundy-800">Helpful</th>
+                <th class="text-center px-4 py-3 text-sm font-semibold text-burgundy-800">Status</th>
+                <th class="text-right px-6 py-3 text-sm font-semibold text-burgundy-800">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="articlesTableBody">
+              <tr>
+                <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+                  <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                  <p>Loading articles...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Article Editor Modal -->
+  <div id="editorModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8 mx-4">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 id="editorTitle" class="font-display text-xl font-bold text-burgundy-900">New Article</h2>
+        <button onclick="closeEditor()" class="text-forest-400 hover:text-forest-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <form id="articleForm" class="p-6 max-h-[80vh] overflow-y-auto">
+        <input type="hidden" id="articleId">
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Title *</label>
+            <input type="text" id="articleTitle" required
+              class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500"
+              placeholder="Article title">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Slug</label>
+            <input type="text" id="articleSlug"
+              class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500"
+              placeholder="auto-generated-from-title">
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-forest-700 mb-1">Summary</label>
+          <input type="text" id="articleSummary"
+            class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500"
+            placeholder="Brief description for listings">
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Category *</label>
+            <select id="articleCategory" required class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+              <option value="">Select category</option>
+              <option value="getting-started">Getting Started</option>
+              <option value="courses">Courses</option>
+              <option value="certificates">Certificates</option>
+              <option value="credentials">Credentials</option>
+              <option value="subscriptions">Subscriptions</option>
+              <option value="account">Account</option>
+              <option value="technical">Technical</option>
+              <option value="integrations">Integrations</option>
+              <option value="admin">Admin</option>
+              <option value="troubleshooting">Troubleshooting</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Audience</label>
+            <select id="articleAudience" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+              <option value="user">Users</option>
+              <option value="admin">Admin</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Status</label>
+            <select id="articleStatus" class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+              <option value="draft">Draft</option>
+              <option value="published">Published</option>
+              <option value="archived">Archived</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Icon</label>
+            <input type="text" id="articleIcon" value="fa-circle-question"
+              class="w-full px-4 py-2 border border-forest-200 rounded-lg"
+              placeholder="fa-icon-name">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Order</label>
+            <input type="number" id="articleOrder" value="0"
+              class="w-full px-4 py-2 border border-forest-200 rounded-lg">
+          </div>
+          <div class="flex items-end">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="articleFeatured" class="w-5 h-5 rounded border-forest-300 text-hunter-600">
+              <span class="text-sm text-forest-700">Featured on help page</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-forest-700 mb-1">Search Tags (comma-separated)</label>
+          <input type="text" id="articleTags"
+            class="w-full px-4 py-2 border border-forest-200 rounded-lg"
+            placeholder="help, faq, getting started">
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-forest-700 mb-1">Content (Markdown) *</label>
+          <textarea id="articleContent" rows="15"></textarea>
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4 border-t border-forest-100">
+          <button type="button" onclick="closeEditor()" class="px-4 py-2 text-forest-600 hover:bg-forest-50 rounded-lg">
+            Cancel
+          </button>
+          <button type="submit" class="px-6 py-2 bg-hunter-600 text-white rounded-lg hover:bg-hunter-700">
+            <i class="fas fa-save mr-2"></i>
+            Save Article
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Analytics Modal -->
+  <div id="analyticsModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8 mx-4">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 class="font-display text-xl font-bold text-burgundy-900">Help Article Analytics</h2>
+        <button onclick="closeAnalytics()" class="text-forest-400 hover:text-forest-600">
+          <i class="fas fa-times text-xl"></i>
+        </button>
+      </div>
+      
+      <div class="p-6 max-h-[80vh] overflow-y-auto">
+        <div id="analyticsContent">
+          <div class="text-center py-8">
+            <i class="fas fa-spinner fa-spin text-2xl text-forest-500"></i>
+            <p class="text-forest-600 mt-2">Loading analytics...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' 
+      ? 'http://localhost:5000/api' 
+      : 'https://api.counselorready.com/api';
+    
+    let articles = [];
+    let markdownEditor = null;
+    
+    // Get auth token
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+    
+    // Check admin access
+    document.addEventListener('DOMContentLoaded', async () => {
+      const token = getToken();
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.role !== 'admin') {
+        window.location.href = '/dashboard.html';
+        return;
+      }
+      
+      document.getElementById('adminEmail').textContent = user.email;
+      loadArticles();
+    });
+    
+    // Load articles
+    async function loadArticles() {
+      try {
+        const response = await fetch(`${API_URL}/help/admin/articles`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load articles');
+        
+        const data = await response.json();
+        articles = data.articles || [];
+        renderArticles();
+      } catch (error) {
+        console.error('Error loading articles:', error);
+        document.getElementById('articlesTableBody').innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-red-500">
+              <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+              <p>Failed to load articles. <button onclick="loadArticles()" class="underline">Retry</button></p>
+            </td>
+          </tr>
+        `;
+      }
+    }
+    
+    // Render articles table
+    function renderArticles() {
+      const filtered = filterArticlesList();
+      const tbody = document.getElementById('articlesTableBody');
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+              <i class="fas fa-inbox text-4xl mb-3 text-forest-300"></i>
+              <p class="text-lg">No articles found</p>
+              <p class="text-sm mt-1">Create your first article or seed the defaults</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = filtered.map(article => {
+        const statusColors = {
+          published: 'bg-green-100 text-green-700',
+          draft: 'bg-yellow-100 text-yellow-700',
+          archived: 'bg-gray-100 text-gray-600'
+        };
+        
+        const audienceLabels = {
+          user: 'Users',
+          admin: 'Admin',
+          both: 'Both'
+        };
+        
+        const helpfulness = article.helpfulYes + article.helpfulNo > 0
+          ? Math.round((article.helpfulYes / (article.helpfulYes + article.helpfulNo)) * 100)
+          : null;
+        
+        return `
+          <tr class="border-t border-burgundy-50 hover:bg-burgundy-50/50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+                  <i class="fas ${article.icon || 'fa-circle-question'} text-hunter-600"></i>
+                </div>
+                <div>
+                  <p class="font-medium text-forest-900">${article.title}</p>
+                  <p class="text-xs text-forest-500">/${article.slug}</p>
+                </div>
+                ${article.featured ? '<span class="ml-2 px-2 py-0.5 bg-honey-100 text-honey-700 rounded-full text-xs">Featured</span>' : ''}
+              </div>
+            </td>
+            <td class="px-4 py-4">
+              <span class="text-sm text-forest-600 capitalize">${article.category.replace('-', ' ')}</span>
+            </td>
+            <td class="px-4 py-4">
+              <span class="text-sm text-forest-600">${audienceLabels[article.audience]}</span>
+            </td>
+            <td class="px-4 py-4 text-center">
+              <span class="text-sm font-medium text-forest-700">${article.views || 0}</span>
+            </td>
+            <td class="px-4 py-4 text-center">
+              ${helpfulness !== null 
+                ? `<span class="text-sm font-medium ${helpfulness >= 70 ? 'text-green-600' : helpfulness >= 50 ? 'text-yellow-600' : 'text-red-600'}">${helpfulness}%</span>`
+                : '<span class="text-xs text-forest-400">No data</span>'
+              }
+            </td>
+            <td class="px-4 py-4 text-center">
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${statusColors[article.status]}">${article.status}</span>
+            </td>
+            <td class="px-6 py-4 text-right">
+              <button onclick="editArticle('${article._id}')" class="text-hunter-600 hover:text-hunter-800 mr-3" title="Edit">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button onclick="duplicateArticle('${article._id}')" class="text-blue-600 hover:text-blue-800 mr-3" title="Duplicate">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button onclick="deleteArticle('${article._id}')" class="text-red-500 hover:text-red-700" title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Filter articles
+    function filterArticlesList() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+      const audience = document.getElementById('audienceFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      
+      return articles.filter(article => {
+        if (search && !article.title.toLowerCase().includes(search) && !article.slug.includes(search)) return false;
+        if (category && article.category !== category) return false;
+        if (audience && article.audience !== audience) return false;
+        if (status && article.status !== status) return false;
+        return true;
+      });
+    }
+    
+    function filterArticles() {
+      renderArticles();
+    }
+    
+    // Open editor modal
+    function openEditor(articleData = null) {
+      document.getElementById('editorModal').classList.remove('hidden');
+      document.getElementById('editorModal').classList.add('flex');
+      
+      // Initialize markdown editor if not already
+      if (!markdownEditor) {
+        markdownEditor = new EasyMDE({
+          element: document.getElementById('articleContent'),
+          spellChecker: false,
+          autosave: { enabled: false },
+          toolbar: ['bold', 'italic', 'heading', '|', 'quote', 'unordered-list', 'ordered-list', '|', 'link', 'image', '|', 'preview', 'side-by-side', 'fullscreen', '|', 'guide']
+        });
+      }
+      
+      if (articleData) {
+        document.getElementById('editorTitle').textContent = 'Edit Article';
+        document.getElementById('articleId').value = articleData._id;
+        document.getElementById('articleTitle').value = articleData.title;
+        document.getElementById('articleSlug').value = articleData.slug;
+        document.getElementById('articleSummary').value = articleData.summary || '';
+        document.getElementById('articleCategory').value = articleData.category;
+        document.getElementById('articleAudience').value = articleData.audience;
+        document.getElementById('articleStatus').value = articleData.status;
+        document.getElementById('articleIcon').value = articleData.icon || 'fa-circle-question';
+        document.getElementById('articleOrder').value = articleData.order || 0;
+        document.getElementById('articleFeatured').checked = articleData.featured;
+        document.getElementById('articleTags').value = (articleData.searchTags || []).join(', ');
+        markdownEditor.value(articleData.content || '');
+      } else {
+        document.getElementById('editorTitle').textContent = 'New Article';
+        document.getElementById('articleForm').reset();
+        document.getElementById('articleId').value = '';
+        document.getElementById('articleIcon').value = 'fa-circle-question';
+        markdownEditor.value('');
+      }
+    }
+    
+    // Close editor
+    function closeEditor() {
+      document.getElementById('editorModal').classList.add('hidden');
+      document.getElementById('editorModal').classList.remove('flex');
+    }
+    
+    // Edit article
+    async function editArticle(id) {
+      try {
+        const response = await fetch(`${API_URL}/help/admin/article/${id}`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load article');
+        
+        const data = await response.json();
+        openEditor(data.article);
+      } catch (error) {
+        console.error('Error loading article:', error);
+        alert('Failed to load article');
+      }
+    }
+    
+    // Save article
+    document.getElementById('articleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('articleId').value;
+      const articleData = {
+        title: document.getElementById('articleTitle').value,
+        slug: document.getElementById('articleSlug').value || undefined,
+        summary: document.getElementById('articleSummary').value,
+        category: document.getElementById('articleCategory').value,
+        audience: document.getElementById('articleAudience').value,
+        status: document.getElementById('articleStatus').value,
+        icon: document.getElementById('articleIcon').value,
+        order: parseInt(document.getElementById('articleOrder').value) || 0,
+        featured: document.getElementById('articleFeatured').checked,
+        searchTags: document.getElementById('articleTags').value.split(',').map(t => t.trim()).filter(Boolean),
+        content: markdownEditor.value()
+      };
+      
+      try {
+        const url = id 
+          ? `${API_URL}/help/admin/article/${id}`
+          : `${API_URL}/help/admin/article`;
+        
+        const response = await fetch(url, {
+          method: id ? 'PUT' : 'POST',
+          headers: {
+            'Authorization': `Bearer ${getToken()}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(articleData)
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to save article');
+        }
+        
+        closeEditor();
+        loadArticles();
+      } catch (error) {
+        console.error('Error saving article:', error);
+        alert(error.message);
+      }
+    });
+    
+    // Delete article
+    async function deleteArticle(id) {
+      if (!confirm('Are you sure you want to delete this article?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/help/admin/article/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to delete article');
+        
+        loadArticles();
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        alert('Failed to delete article');
+      }
+    }
+    
+    // Duplicate article
+    async function duplicateArticle(id) {
+      const article = articles.find(a => a._id === id);
+      if (!article) return;
+      
+      const duplicated = {
+        ...article,
+        _id: null,
+        title: `${article.title} (Copy)`,
+        slug: `${article.slug}-copy`,
+        status: 'draft',
+        views: 0,
+        helpfulYes: 0,
+        helpfulNo: 0
+      };
+      
+      openEditor(duplicated);
+    }
+    
+    // Seed default articles
+    async function seedArticles() {
+      if (!confirm('This will add default help articles. Continue?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/help/admin/seed`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          alert(data.error || 'Failed to seed articles');
+          return;
+        }
+        
+        alert(data.message);
+        loadArticles();
+      } catch (error) {
+        console.error('Error seeding articles:', error);
+        alert('Failed to seed articles');
+      }
+    }
+    
+    // Show analytics
+    async function showAnalytics() {
+      document.getElementById('analyticsModal').classList.remove('hidden');
+      document.getElementById('analyticsModal').classList.add('flex');
+      
+      try {
+        const response = await fetch(`${API_URL}/help/admin/analytics`, {
+          headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load analytics');
+        
+        const data = await response.json();
+        renderAnalytics(data.analytics);
+      } catch (error) {
+        console.error('Error loading analytics:', error);
+        document.getElementById('analyticsContent').innerHTML = `
+          <div class="text-center py-8 text-red-500">
+            <p>Failed to load analytics</p>
+          </div>
+        `;
+      }
+    }
+    
+    function renderAnalytics(analytics) {
+      const { topViewed, needsImprovement, categoryStats, recentFeedback } = analytics;
+      
+      document.getElementById('analyticsContent').innerHTML = `
+        <div class="grid grid-cols-2 gap-6">
+          <!-- Top Viewed -->
+          <div class="bg-green-50 rounded-xl p-4">
+            <h3 class="font-semibold text-green-800 mb-3"><i class="fas fa-eye mr-2"></i>Most Viewed Articles</h3>
+            ${topViewed.length > 0 ? `
+              <ul class="space-y-2">
+                ${topViewed.map(a => `
+                  <li class="flex justify-between text-sm">
+                    <span class="text-green-700 truncate">${a.title}</span>
+                    <span class="font-medium text-green-800">${a.views} views</span>
+                  </li>
+                `).join('')}
+              </ul>
+            ` : '<p class="text-green-600 text-sm">No data yet</p>'}
+          </div>
+          
+          <!-- Needs Improvement -->
+          <div class="bg-red-50 rounded-xl p-4">
+            <h3 class="font-semibold text-red-800 mb-3"><i class="fas fa-exclamation-triangle mr-2"></i>Needs Improvement</h3>
+            ${needsImprovement.length > 0 ? `
+              <ul class="space-y-2">
+                ${needsImprovement.map(a => {
+                  const score = Math.round((a.helpfulYes / (a.helpfulYes + a.helpfulNo)) * 100);
+                  return `
+                    <li class="flex justify-between text-sm">
+                      <span class="text-red-700 truncate">${a.title}</span>
+                      <span class="font-medium text-red-800">${score}% helpful</span>
+                    </li>
+                  `;
+                }).join('')}
+              </ul>
+            ` : '<p class="text-red-600 text-sm">All articles performing well!</p>'}
+          </div>
+        </div>
+        
+        <!-- Category Stats -->
+        <div class="mt-6 bg-blue-50 rounded-xl p-4">
+          <h3 class="font-semibold text-blue-800 mb-3"><i class="fas fa-folder mr-2"></i>Category Performance</h3>
+          ${categoryStats.length > 0 ? `
+            <div class="grid grid-cols-2 gap-4">
+              ${categoryStats.map(cat => `
+                <div class="flex justify-between items-center bg-white rounded-lg px-3 py-2">
+                  <span class="text-blue-700 capitalize">${cat._id.replace('-', ' ')}</span>
+                  <div class="text-right">
+                    <span class="text-sm text-blue-600">${cat.articles} articles</span>
+                    <span class="text-xs text-blue-500 ml-2">${cat.totalViews} views</span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : '<p class="text-blue-600 text-sm">No data yet</p>'}
+        </div>
+        
+        <!-- Recent Feedback -->
+        <div class="mt-6 bg-purple-50 rounded-xl p-4">
+          <h3 class="font-semibold text-purple-800 mb-3"><i class="fas fa-comments mr-2"></i>Recent Feedback</h3>
+          ${recentFeedback.length > 0 ? `
+            <ul class="space-y-3 max-h-48 overflow-y-auto">
+              ${recentFeedback.slice(0, 10).map(f => `
+                <li class="bg-white rounded-lg p-3">
+                  <div class="flex items-center gap-2 mb-1">
+                    <i class="fas ${f.feedback.helpful ? 'fa-thumbs-up text-green-500' : 'fa-thumbs-down text-red-500'}"></i>
+                    <span class="text-sm font-medium text-purple-800">${f.title}</span>
+                  </div>
+                  ${f.feedback.comment ? `<p class="text-xs text-purple-600 ml-6">"${f.feedback.comment}"</p>` : ''}
+                </li>
+              `).join('')}
+            </ul>
+          ` : '<p class="text-purple-600 text-sm">No feedback yet</p>'}
+        </div>
+      `;
+    }
+    
+    function closeAnalytics() {
+      document.getElementById('analyticsModal').classList.add('hidden');
+      document.getElementById('analyticsModal').classList.remove('flex');
+    }
+  </script>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

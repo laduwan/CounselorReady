@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Live Room - CounselorReady</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    #roomFrame, #replayVideo{width:100%;aspect-ratio:16/10;border:0;border-radius:12px;background:#1a1a1a;}
+    #clipPlayer{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;display:none;}
+    .clip-active #roomFrame{aspect-ratio:auto;height:140px;margin-top:12px;}
+    .clip-active #clipPlayer{display:block;}
+    .handout-link{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;color:#284157;font-size:14px;text-decoration:none;transition:background .1s;}
+    .handout-link:hover{background:#F2F7F4;}
+    .handout-link.locked{opacity:.5;cursor:not-allowed;}
+    #nowCard{background:#F2F7F4;border:1px solid #C7DDD0;border-radius:12px;padding:14px;margin-bottom:12px;}
+    #nowCard h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4A7C59;margin-bottom:4px;}
+    #nowSegTitle{font-size:15px;font-weight:600;color:#284157;margin-bottom:6px;}
+    #nowPrompt{font-size:13px;color:#44403c;line-height:1.5;margin-bottom:6px;}
+    #nowCountdown{font-size:12px;color:#7a5c1e;font-weight:600;}
+    #breakoutBadge{display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;}
+  </style>
+</head>
+<body>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-6xl mx-auto px-4 py-8">
+    <div id="gate" class="text-center py-20" style="color:#284157;">Checking your registration…</div>
+
+    <div id="room" class="hidden">
+      <div class="mb-4">
+        <h1 id="title" class="font-display text-3xl font-bold" style="color:#6B1D34;"></h1>
+        <p id="meta" class="text-sm mt-1" style="color:#284157;"></p>
+      </div>
+      <div class="grid lg:grid-cols-4 gap-6">
+        <div id="mainCol" class="lg:col-span-3">
+          <video id="clipPlayer" playsinline></video>
+          <iframe id="roomFrame" class="hidden"
+                  allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
+          <video id="replayVideo" class="hidden" controls playsinline></video>
+          <p id="muteReminder" class="hidden text-xs mt-2 text-center" style="color:#7a5c1e;">🔇 Mute your mic in the video call while watching the clip.</p>
+        </div>
+        <aside class="lg:col-span-1">
+          <div id="nowCard" class="hidden">
+            <h3>Now</h3>
+            <div id="breakoutBadge">Breakout</div>
+            <div id="nowSegTitle"></div>
+            <div id="nowPrompt"></div>
+            <div id="nowCountdown"></div>
+          </div>
+          <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Handouts</h2>
+            <div id="handouts" class="flex flex-col gap-2">
+              <p class="text-sm" style="color:#57534e;">No handouts for this session.</p>
+            </div>
+          </div>
+          <div id="ceNote" class="hidden mt-4 rounded-xl p-4 text-xs leading-relaxed" style="background:#FBF6EC;color:#7a5c1e;border:1px solid #EFE0C2;">
+            <strong>CE credit requires live attendance.</strong> Your join and leave times are verified automatically. Stay for at least the required portion of the session and your certificate will be issued after the webinar ends — no quiz required for live credit.
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('session');
+    const wantReplay = params.get('replay') === '1';
+    const seekTo = params.get('t') ? parseFloat(params.get('t')) : null;
+
+    function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
+
+    async function init() {
+      if (!slug) return gateMsg('Missing session. <a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Browse live sessions</a>.');
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+
+      if (wantReplay) return loadReplay();
+
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/join`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          if (data.opensAt) {
+            const opens = new Date(data.opensAt);
+            return gateMsg(`The room opens at <strong>${opens.toLocaleString()}</strong>.<br><span class="text-sm">This page will let you in 15 minutes before the scheduled start.</span>`);
+          }
+          return gateMsg(`${data.error || 'Unable to join this session.'}<br><a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Back to live sessions</a>`);
+        }
+
+        showSession(data.session);
+        const frame = document.getElementById('roomFrame');
+        frame.src = data.roomUrl;
+        frame.classList.remove('hidden');
+        if (data.session.sessionType === 'live-course') document.getElementById('ceNote').classList.remove('hidden');
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('room').classList.remove('hidden');
+        loadHandouts(data.session);
+        if (data.session.sessionType === 'live-course') {
+          startSyncLoop(data.session._id);
+          loadCatchupBanner(data.session);
+        }
+      } catch {
+        gateMsg('Connection problem. Please refresh.');
+      }
+    }
+
+    async function loadReplay() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/replay`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) return gateMsg(data.error || 'No replay available.');
+
+        const detail = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`).then(r => r.json());
+        if (detail.session) { showSession(detail.session); loadHandouts(detail.session); }
+        document.getElementById('title').textContent = data.title + ' — Replay';
+
+        const video = document.getElementById('replayVideo');
+        video.src = data.replayUrl;
+        if (seekTo != null) {
+          video.addEventListener('loadedmetadata', () => { video.currentTime = seekTo; }, { once: true });
+        }
+        video.classList.remove('hidden');
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('room').classList.remove('hidden');
+        // Show rejoin banner if user has prior gaps this session (live-course only)
+        if (detail.session?.sessionType === 'live-course') loadCatchupBanner(detail.session);
+      } catch {
+        gateMsg('Could not load the replay. Please refresh.');
+      }
+    }
+
+    async function loadCatchupBanner(session) {
+      if (!token) return;
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/catchup`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.queued || !data.gaps || data.gaps.length === 0) return;
+
+        // Check if any gap ≥ 3 min
+        const meaningful = data.gaps.filter(g => g.gapMin >= 3);
+        if (meaningful.length === 0) return;
+
+        const totalMin = meaningful.reduce((s, g) => s + g.gapMin, 0);
+        const banner = document.createElement('div');
+        banner.id = 'catchupBanner';
+        banner.style.cssText = 'background:#FBF6EC;border:1px solid #EFE0C2;border-radius:10px;padding:14px 16px;margin-top:12px;';
+        banner.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <span style="font-size:14px;color:#7a5c1e;">You were away ~${totalMin} min during this session.</span>
+          <button id="catchupBtn" style="background:#6B1D34;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;">View Recap</button>
+        </div>
+        <div id="catchupContent" style="display:none;margin-top:12px;"></div>`;
+        document.getElementById('mainCol').after(banner);
+
+        document.getElementById('catchupBtn').addEventListener('click', () => {
+          const content = document.getElementById('catchupContent');
+          const btn = document.getElementById('catchupBtn');
+          if (content.style.display === 'none') {
+            content.style.display = 'block';
+            btn.textContent = 'Hide Recap';
+            renderCatchup(content, meaningful);
+          } else {
+            content.style.display = 'none';
+            btn.textContent = 'View Recap';
+          }
+        });
+      } catch { /* non-fatal */ }
+    }
+
+    function renderCatchup(container, gaps) {
+      let html = '';
+      for (const gap of gaps) {
+        html += `<div style="margin-bottom:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #EDE9E3;">
+          <p style="font-size:13px;color:#57534e;margin:0 0 6px;">~${gap.gapMin} min gap</p>`;
+        if (gap.summary && gap.summary.length > 0) {
+          html += `<ul style="margin:0 0 6px;padding-left:18px;font-size:14px;color:#284157;">`;
+          for (const b of gap.summary) html += `<li>${esc(b)}</li>`;
+          html += `</ul>`;
+        }
+        html += `<a href="${gap.replayUrl}" style="font-size:13px;color:#4A7C59;">▶ Jump to this segment</a></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function showSession(s) {
+      document.getElementById('title').textContent = s.title;
+      document.getElementById('meta').textContent =
+        (s.sessionType === 'supervision' ? 'Clinical Supervision Session' : `${s.ceuHours} CE Hours · Live Webinar`) +
+        ' · ' + new Date(s.scheduledStart).toLocaleString();
+    }
+
+    function loadHandouts(s) {
+      const wrap = document.getElementById('handouts');
+      if (!s.handouts || s.handouts.length === 0) return;
+      wrap.innerHTML = '';
+      for (const h of s.handouts) {
+        const a = document.createElement('a');
+        a.className = 'handout-link';
+        a.href = '#';
+        a.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>${esc(h.title)}</span>`;
+        a.onclick = async (e) => {
+          e.preventDefault();
+          const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/handouts/${h._id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await res.json();
+          if (res.ok && data.fileUrl) window.open(data.fileUrl, '_blank');
+          else alert(data.error || 'This handout is not available yet.');
+        };
+        wrap.appendChild(a);
+      }
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+    /* ── Watch-party sync loop ─────────────────────────────────────────── */
+    let syncInterval = null;
+    let lastClipIndex = null;
+    let currentSessionId = null;
+
+    function startSyncLoop(sessionId) {
+      currentSessionId = sessionId;
+      syncInterval = setInterval(() => pollLiveState(sessionId), 3000);
+    }
+
+    async function pollLiveState(sessionId) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(sessionId)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        updateNowCard(data.currentSegment, data.liveState);
+        updateWatchParty(data.liveState);
+        if (data.status === 'completed' && syncInterval) {
+          clearInterval(syncInterval);
+          syncInterval = null;
+        }
+      } catch { /* network hiccup — try again next tick */ }
+    }
+
+    function updateNowCard(seg, liveState) {
+      const card = document.getElementById('nowCard');
+      if (!seg) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+
+      document.getElementById('nowSegTitle').textContent = seg.title || seg.type;
+      const prompt = seg.prompt || '';
+      const promptEl = document.getElementById('nowPrompt');
+      promptEl.textContent = prompt;
+      promptEl.style.display = prompt ? '' : 'none';
+
+      const badge = document.getElementById('breakoutBadge');
+      badge.style.display = seg.type === 'breakout' ? '' : 'none';
+
+      // Countdown
+      const countEl = document.getElementById('nowCountdown');
+      if (seg.durationMin && liveState?.segmentStartedAt) {
+        const elapsed = (Date.now() - new Date(liveState.segmentStartedAt).getTime()) / 1000;
+        const remaining = Math.max(0, seg.durationMin * 60 - elapsed);
+        const m = Math.floor(remaining / 60), s = Math.floor(remaining % 60);
+        countEl.textContent = `${m}:${s.toString().padStart(2, '0')} remaining`;
+      } else {
+        countEl.textContent = '';
+      }
+    }
+
+    async function updateWatchParty(liveState) {
+      if (!liveState?.playback) return;
+      const { clipIndex, playing, positionSec, stateUpdatedAt } = liveState.playback;
+      const player = document.getElementById('clipPlayer');
+      const mainCol = document.getElementById('mainCol');
+      const muteReminder = document.getElementById('muteReminder');
+
+      if (clipIndex == null) {
+        // No clip — hide player
+        mainCol.classList.remove('clip-active');
+        muteReminder.classList.add('hidden');
+        return;
+      }
+
+      // Load clip URL if clipIndex changed
+      if (clipIndex !== lastClipIndex) {
+        lastClipIndex = clipIndex;
+        try {
+          const res = await fetch(
+            `${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/clips/${clipIndex}/url`,
+            { headers: { 'Authorization': `Bearer ${token}` } }
+          );
+          if (res.ok) {
+            const data = await res.json();
+            player.src = data.clipUrl;
+            mainCol.classList.add('clip-active');
+            muteReminder.classList.remove('hidden');
+          }
+        } catch { /* retry next poll */ }
+      }
+
+      // Sync play/pause
+      if (playing && player.paused) {
+        player.play().catch(() => {});
+      } else if (!playing && !player.paused) {
+        player.pause();
+      }
+
+      // Drift correction — only seek if drift > 1.5s to avoid constant stuttering
+      if (stateUpdatedAt && playing) {
+        const elapsed = (Date.now() - new Date(stateUpdatedAt).getTime()) / 1000;
+        const target = (positionSec || 0) + elapsed;
+        if (Math.abs(player.currentTime - target) > 1.5) {
+          player.currentTime = target;
+        }
+      } else if (!playing && stateUpdatedAt) {
+        const target = positionSec || 0;
+        if (Math.abs(player.currentTime - target) > 1.5) {
+          player.currentTime = target;
+        }
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

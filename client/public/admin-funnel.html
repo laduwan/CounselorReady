@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Conversion Funnel - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .funnel-bar { transition: width 0.8s ease-in-out; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <select id="dayRange" onchange="loadFunnel()" class="bg-burgundy-700 text-white border border-burgundy-600 rounded-lg px-3 py-1.5 text-sm">
+          <option value="30">Last 30 days</option>
+          <option value="90" selected>Last 90 days</option>
+          <option value="180">Last 6 months</option>
+          <option value="365">Last year</option>
+        </select>
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-funnel.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-filter w-5"></i>
+          Conversion Funnel
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-tags w-5"></i>
+          Coupons
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-database w-5"></i>
+          Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+
+      <!-- Loading -->
+      <div id="loading" class="text-center py-12">
+        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <p class="text-forest-600 mt-2">Loading funnel data...</p>
+      </div>
+
+      <!-- Dashboard Content -->
+      <div id="dashboardContent" class="hidden">
+
+        <!-- Page Header -->
+        <div class="mb-8">
+          <h1 class="text-2xl font-display font-bold text-burgundy-900">Conversion Funnel</h1>
+          <p class="text-forest-600 mt-1">Track user journey from sign-up through course completion</p>
+        </div>
+
+        <!-- Funnel Visualization -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-8 mb-8">
+          <h3 class="text-lg font-semibold text-burgundy-900 mb-6">User Journey Funnel</h3>
+          <div id="funnelBars" class="space-y-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Drop-off Analysis & Avg Times -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+          <!-- Step-by-step Drop-off -->
+          <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+            <h3 class="text-lg font-semibold text-burgundy-900 mb-6">Step-by-Step Drop-off</h3>
+            <div id="dropoffList" class="space-y-4">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Average Times Between Stages -->
+          <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+            <h3 class="text-lg font-semibold text-burgundy-900 mb-6">Average Time Between Stages</h3>
+            <div id="avgTimes" class="space-y-6">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Trend Chart -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6 mb-8">
+          <h3 class="text-lg font-semibold text-burgundy-900 mb-6">Weekly Trend</h3>
+          <canvas id="trendChart" height="80"></canvas>
+        </div>
+
+        <!-- User Activity Search -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-burgundy-900">Activity Log</h3>
+            <div class="flex items-center gap-3">
+              <input id="emailSearch" type="text" placeholder="Search by email..." class="text-sm border border-forest-200 rounded-lg px-3 py-1.5 w-64 focus:ring-2 focus:ring-forest-600 outline-none">
+              <select id="activityTypeFilter" class="text-sm border border-forest-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-forest-600 outline-none">
+                <option value="">All Events</option>
+                <option value="user_registered">Signed Up</option>
+                <option value="user_login">Logged In</option>
+                <option value="user_enrolled">Enrolled</option>
+                <option value="payment_succeeded">Payment</option>
+                <option value="course_started">Began Course</option>
+                <option value="lesson_completed">Lesson Done</option>
+                <option value="quiz_passed">Quiz Passed</option>
+                <option value="quiz_failed">Quiz Failed</option>
+                <option value="course_completed">Course Completed</option>
+                <option value="subscription_started">Subscription</option>
+                <option value="certificate_generated">Certificate</option>
+              </select>
+              <button onclick="searchActivities()" class="bg-forest-600 hover:bg-forest-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium">Search</button>
+            </div>
+          </div>
+          <div id="activityResults" class="space-y-2">
+            <p class="text-center text-forest-500 py-6">Use the filters above to search user activities</p>
+          </div>
+          <div id="activityPagination" class="flex items-center justify-center gap-2 mt-4 hidden">
+            <button onclick="prevPage()" id="prevBtn" class="px-3 py-1 rounded border border-forest-200 text-sm text-forest-600 hover:bg-forest-50 disabled:opacity-40" disabled>Prev</button>
+            <span id="pageInfo" class="text-sm text-forest-600"></span>
+            <button onclick="nextPage()" id="nextBtn" class="px-3 py-1 rounded border border-forest-200 text-sm text-forest-600 hover:bg-forest-50 disabled:opacity-40">Next</button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let currentPage = 1;
+    let trendChart = null;
+
+    const stageColors = {
+      'Signed Up': { bg: 'bg-emerald-500', text: 'text-emerald-700', light: 'bg-emerald-100' },
+      'Enrolled': { bg: 'bg-blue-500', text: 'text-blue-700', light: 'bg-blue-100' },
+      'Made Payment': { bg: 'bg-purple-500', text: 'text-purple-700', light: 'bg-purple-100' },
+      'Began Course': { bg: 'bg-amber-500', text: 'text-amber-700', light: 'bg-amber-100' },
+      'Completed Course': { bg: 'bg-burgundy-700', text: 'text-burgundy-700', light: 'bg-burgundy-100' }
+    };
+
+    const activityConfig = {
+      user_registered: { icon: 'fa-user-plus', color: 'text-green-600', label: 'Signed Up' },
+      user_login: { icon: 'fa-sign-in-alt', color: 'text-blue-500', label: 'Logged In' },
+      user_enrolled: { icon: 'fa-book-open', color: 'text-blue-600', label: 'Enrolled' },
+      payment_succeeded: { icon: 'fa-credit-card', color: 'text-purple-600', label: 'Payment' },
+      payment_failed: { icon: 'fa-exclamation-triangle', color: 'text-red-500', label: 'Payment Failed' },
+      subscription_started: { icon: 'fa-crown', color: 'text-purple-600', label: 'Subscribed' },
+      subscription_canceled: { icon: 'fa-times-circle', color: 'text-orange-500', label: 'Canceled Sub' },
+      course_started: { icon: 'fa-play-circle', color: 'text-amber-600', label: 'Began Course' },
+      lesson_completed: { icon: 'fa-check', color: 'text-teal-600', label: 'Lesson Done' },
+      quiz_passed: { icon: 'fa-trophy', color: 'text-green-600', label: 'Quiz Passed' },
+      quiz_failed: { icon: 'fa-times', color: 'text-red-500', label: 'Quiz Failed' },
+      course_completed: { icon: 'fa-graduation-cap', color: 'text-burgundy-700', label: 'Completed' },
+      course_failed: { icon: 'fa-times-circle', color: 'text-red-600', label: 'Course Failed' },
+      certificate_generated: { icon: 'fa-certificate', color: 'text-amber-600', label: 'Certificate' }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadFunnel();
+    });
+
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') {
+        alert('Admin access required');
+        window.location.href = '/dashboard.html';
+      }
+      if (user.email) document.getElementById('adminEmail').textContent = user.email;
+    }
+
+    async function loadFunnel() {
+      const token = localStorage.getItem('token');
+      const days = document.getElementById('dayRange').value;
+
+      try {
+        const [funnelRes, trendRes] = await Promise.all([
+          fetch(`${API_URL}/api/analytics/admin/funnel?days=${days}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(`${API_URL}/api/analytics/admin/funnel/trend?days=${days}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (!funnelRes.ok || !trendRes.ok) throw new Error('Failed to load');
+
+        const funnelData = await funnelRes.json();
+        const trendData = await trendRes.json();
+
+        renderFunnel(funnelData);
+        renderTrend(trendData);
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('dashboardContent').classList.remove('hidden');
+      } catch (error) {
+        console.error('Load funnel error:', error);
+        document.getElementById('loading').innerHTML = '<p class="text-burgundy-600">Failed to load funnel data</p>';
+      }
+    }
+
+    function renderFunnel(data) {
+      const { stages, dropoffs, avgTimes } = data;
+      const maxCount = Math.max(...stages.map(s => s.count), 1);
+
+      // Funnel bars
+      const barsHtml = stages.map((stage, i) => {
+        const width = Math.max((stage.count / maxCount) * 100, 8);
+        const colors = stageColors[stage.stage] || { bg: 'bg-gray-500', text: 'text-gray-700', light: 'bg-gray-100' };
+
+        return `
+          <div class="flex items-center gap-4">
+            <div class="w-40 text-right">
+              <p class="font-medium ${colors.text} text-sm">${stage.stage}</p>
+            </div>
+            <div class="flex-1 relative">
+              <div class="h-10 ${colors.bg} rounded-lg funnel-bar flex items-center justify-end pr-3" style="width: ${width}%">
+                <span class="text-white font-bold text-sm">${stage.count.toLocaleString()}</span>
+              </div>
+            </div>
+            <div class="w-16 text-right">
+              <span class="text-sm font-medium ${i === 0 ? 'text-forest-600' : stage.rate >= 50 ? 'text-green-600' : stage.rate >= 25 ? 'text-amber-600' : 'text-red-600'}">${stage.rate}%</span>
+            </div>
+          </div>
+          ${i < stages.length - 1 ? `
+            <div class="flex items-center gap-4 pl-44">
+              <div class="flex items-center gap-2 text-xs text-forest-400">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                <span>${dropoffs[i]?.stepRate || 0}% convert</span>
+                <span class="text-red-400 ml-2">${dropoffs[i]?.dropped || 0} dropped</span>
+              </div>
+            </div>
+          ` : ''}
+        `;
+      }).join('');
+
+      document.getElementById('funnelBars').innerHTML = barsHtml;
+
+      // Drop-off cards
+      const dropoffHtml = dropoffs.map(d => `
+        <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
+          <div class="w-10 h-10 rounded-full ${d.stepRate >= 50 ? 'bg-green-100 text-green-600' : d.stepRate >= 25 ? 'bg-amber-100 text-amber-600' : 'bg-red-100 text-red-600'} flex items-center justify-center font-bold text-sm">
+            ${d.stepRate}%
+          </div>
+          <div class="flex-1">
+            <p class="text-sm font-medium text-forest-800">${d.from} &rarr; ${d.to}</p>
+            <p class="text-xs text-forest-500">${d.dropped.toLocaleString()} users dropped off</p>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('dropoffList').innerHTML = dropoffHtml || '<p class="text-forest-500 text-sm">No data available</p>';
+
+      // Average times
+      const timeEntries = [
+        { label: 'Sign-up to First Enrollment', value: avgTimes.registrationToEnrollment },
+        { label: 'Enrollment to Course Start', value: avgTimes.enrollmentToStart },
+        { label: 'Start to Completion', value: avgTimes.startToCompletion }
+      ];
+
+      const timesHtml = timeEntries.map(t => {
+        const formatted = t.value !== null && t.value !== undefined ? formatTime(t.value) : 'No data';
+        return `
+          <div>
+            <p class="text-sm text-forest-600 mb-1">${t.label}</p>
+            <p class="text-2xl font-bold text-burgundy-800">${formatted}</p>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('avgTimes').innerHTML = timesHtml;
+    }
+
+    function formatTime(hours) {
+      if (hours < 1) return `${Math.round(hours * 60)}m`;
+      if (hours < 24) return `${Math.round(hours * 10) / 10}h`;
+      const days = Math.round(hours / 24 * 10) / 10;
+      return `${days}d`;
+    }
+
+    function renderTrend(data) {
+      const { registrations, enrollments, completions } = data;
+
+      // Build unified week labels
+      const allWeeks = new Set();
+      [registrations, enrollments, completions].forEach(arr => {
+        arr.forEach(d => allWeeks.add(d._id));
+      });
+      const weeks = [...allWeeks].sort();
+
+      const toMap = (arr) => {
+        const m = {};
+        arr.forEach(d => m[d._id] = d.count || d.uniqueUsers || 0);
+        return m;
+      };
+
+      const regMap = toMap(registrations);
+      const enrMap = toMap(enrollments);
+      const compMap = toMap(completions);
+
+      const ctx = document.getElementById('trendChart').getContext('2d');
+
+      if (trendChart) trendChart.destroy();
+
+      trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: weeks.map(w => `W${w.split('-')[1]}`),
+          datasets: [
+            {
+              label: 'Registrations',
+              data: weeks.map(w => regMap[w] || 0),
+              borderColor: '#22c55e',
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Enrollments',
+              data: weeks.map(w => enrMap[w] || 0),
+              borderColor: '#3b82f6',
+              backgroundColor: 'rgba(59, 130, 246, 0.1)',
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Completions',
+              data: weeks.map(w => compMap[w] || 0),
+              borderColor: '#8b2542',
+              backgroundColor: 'rgba(139, 37, 66, 0.1)',
+              fill: true,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: 'top' } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+    }
+
+    // Activity search
+    async function searchActivities(page) {
+      const token = localStorage.getItem('token');
+      currentPage = page || 1;
+
+      const email = document.getElementById('emailSearch').value;
+      const type = document.getElementById('activityTypeFilter').value;
+      const days = document.getElementById('dayRange').value;
+
+      const params = new URLSearchParams({ page: currentPage, limit: 25, days });
+      if (email) params.set('email', email);
+      if (type) params.set('type', type);
+
+      try {
+        const res = await fetch(`${API_URL}/api/analytics/admin/activity/search?${params}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to search');
+        const data = await res.json();
+        renderActivities(data.activities, data.pagination);
+      } catch (error) {
+        console.error('Search error:', error);
+        document.getElementById('activityResults').innerHTML = '<p class="text-red-500 text-center py-4">Search failed</p>';
+      }
+    }
+
+    function renderActivities(activities, pagination) {
+      const container = document.getElementById('activityResults');
+
+      if (!activities.length) {
+        container.innerHTML = '<p class="text-center text-forest-500 py-6">No activities found</p>';
+        document.getElementById('activityPagination').classList.add('hidden');
+        return;
+      }
+
+      container.innerHTML = activities.map(a => {
+        const config = activityConfig[a.type] || { icon: 'fa-circle', color: 'text-gray-500', label: a.type };
+        const time = new Date(a.timestamp).toLocaleString();
+        const details = [];
+        if (a.courseName) details.push(a.courseName);
+        if (a.data?.score !== undefined) details.push(`Score: ${a.data.score}%`);
+        if (a.data?.ceHours) details.push(`${a.data.ceHours} CE hrs`);
+        if (a.data?.plan) details.push(`${a.data.plan} plan`);
+        if (a.data?.amount) details.push(`$${(a.data.amount / 100).toFixed(2)}`);
+
+        return `
+          <div class="flex items-center gap-3 p-3 bg-stone-50 rounded-lg hover:bg-stone-100 transition-colors">
+            <div class="w-8 h-8 rounded-full bg-white border flex items-center justify-center">
+              <i class="fas ${config.icon} ${config.color} text-sm"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2">
+                <span class="font-medium text-forest-900 text-sm truncate">${a.userName || a.userEmail || 'Unknown'}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-forest-100 text-forest-600">${config.label}</span>
+              </div>
+              ${details.length ? `<p class="text-xs text-forest-500 mt-0.5">${details.join(' &bull; ')}</p>` : ''}
+            </div>
+            <span class="text-xs text-forest-400 whitespace-nowrap">${time}</span>
+          </div>
+        `;
+      }).join('');
+
+      // Pagination
+      const pagEl = document.getElementById('activityPagination');
+      pagEl.classList.remove('hidden');
+      document.getElementById('pageInfo').textContent = `Page ${pagination.page} of ${pagination.pages}`;
+      document.getElementById('prevBtn').disabled = pagination.page <= 1;
+      document.getElementById('nextBtn').disabled = pagination.page >= pagination.pages;
+    }
+
+    function prevPage() { searchActivities(currentPage - 1); }
+    function nextPage() { searchActivities(currentPage + 1); }
+
+    // Enter key triggers search
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && document.activeElement.id === 'emailSearch') {
+        searchActivities();
+      }
+    });
+  </script>
+
+</main>
+</div>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

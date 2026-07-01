@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Messages - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-forest-900">Messages</h1>
+        <p class="text-forest-600 mt-1">Contact support and view your conversations</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="syncMessages()" id="syncBtn" class="inline-flex items-center gap-2 bg-forest-100 hover:bg-forest-200 text-forest-700 font-semibold px-4 py-3 rounded-xl transition-colors">
+          <svg id="syncIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Sync
+        </button>
+        <button onclick="openNewMessageModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          New Message
+        </button>
+      </div>
+    </div>
+
+    <!-- Auto-refresh indicator -->
+    <div class="mb-4 flex items-center gap-2 text-sm text-forest-500">
+      <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+      Auto-refresh: <span id="refreshCountdown">30</span>s
+    </div>
+
+    <div class="grid grid-cols-3 gap-6">
+      <!-- Conversations List -->
+      <div class="col-span-1 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50">
+          <h2 class="font-semibold text-forest-900">Conversations</h2>
+        </div>
+        <div id="conversationsList" class="divide-y divide-stone-100 max-h-[600px] overflow-y-auto">
+          <div class="p-8 text-center text-forest-500">
+            <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p>No conversations yet</p>
+            <p class="text-sm mt-1">Start a new message to contact support</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Message Thread -->
+      <div class="col-span-2 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden flex flex-col" style="height: 650px;">
+        <div id="threadHeader" class="p-4 border-b border-stone-200 bg-stone-50">
+          <h2 class="font-semibold text-forest-900">Select a conversation</h2>
+        </div>
+        
+        <div id="messageThread" class="flex-1 overflow-y-auto p-6">
+          <div class="flex items-center justify-center h-full text-forest-500">
+            <div class="text-center">
+              <svg class="w-16 h-16 mx-auto text-stone-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+              </svg>
+              <p>Select a conversation to view messages</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="replyBox" class="p-4 border-t border-stone-200 bg-stone-50 hidden">
+          <form id="replyForm" class="flex gap-3">
+            <div class="flex-1 relative">
+              <textarea id="replyMessage" rows="2" placeholder="Type your reply..." class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+              <label class="absolute bottom-3 right-3 cursor-pointer text-forest-500 hover:text-burgundy-600">
+                <input type="file" id="replyAttachment" multiple class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+              </label>
+            </div>
+            <button type="submit" class="px-6 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors">
+              Send
+            </button>
+          </form>
+          <div id="replyAttachments" class="mt-2 flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- New Message Modal -->
+  <div id="newMessageModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-stone-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-forest-900">New Message</h2>
+          <button onclick="closeNewMessageModal()" class="text-forest-400 hover:text-forest-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <form id="newMessageForm" class="p-6 space-y-5">
+        <!-- Admin: To Field with Autocomplete (hidden for non-admins) -->
+        <div id="adminToField" class="hidden">
+          <label class="block text-sm font-medium text-forest-700 mb-2">To *</label>
+          <div class="relative">
+            <input type="text" id="toField" placeholder="Start typing a name or email..." autocomplete="off" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <div id="autocompleteResults" class="fixed bg-white border border-stone-300 rounded-xl mt-1 shadow-lg z-[200] hidden max-h-60 overflow-y-auto w-full max-w-lg"></div>
+          </div>
+          <div id="selectedRecipients" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
+        <!-- Type -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">What can we help with?</label>
+          <select id="messageType" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <option value="support">General Support</option>
+            <option value="billing">Billing Question</option>
+            <option value="credential">Credential Help</option>
+            <option value="course">Course Issue</option>
+            <option value="question">Other Question</option>
+          </select>
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Subject *</label>
+          <input type="text" id="messageSubject" required placeholder="Brief description of your question" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Message -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Message *</label>
+          <textarea id="messageBody" required rows="5" placeholder="Describe your question or issue in detail..." class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Attachments -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Attachments (optional)</label>
+          <div id="dropZone" class="border-2 border-dashed border-stone-300 rounded-xl p-6 text-center hover:border-burgundy-400 transition-colors cursor-pointer">
+            <input type="file" id="messageAttachments" multiple class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+            <svg class="w-10 h-10 mx-auto text-stone-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+            </svg>
+            <p class="text-forest-600">Click or drag files to upload</p>
+            <p class="text-sm text-forest-400 mt-1">PDF, Word, or images up to 10MB</p>
+          </div>
+          <div id="attachmentList" class="mt-3 space-y-2"></div>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeNewMessageModal()" class="flex-1 py-3 border-2 border-stone-300 text-forest-700 font-semibold rounded-xl hover:bg-stone-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors">
+            Send Message
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // User menu
+    function toggleUserMenu() {
+      document.getElementById('userMenu').classList.toggle('hidden');
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('button') && !e.target.closest('#userMenu')) {
+        document.getElementById('userMenu')?.classList.add('hidden');
+      }
+    });
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login.html';
+    }
+
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let currentConversationId = null;
+    let selectedFiles = [];
+    let isAdmin = false;
+    let selectedRecipients = [];
+    let searchTimeout = null;
+
+    // Check auth
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // Check if user is admin and show recipient field
+    async function checkAdminStatus() {
+      try {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const me = data.user || data;
+        if (me.role === 'admin') {
+          isAdmin = true;
+          document.getElementById('adminToField').classList.remove('hidden');
+          setupAdminAutocomplete();
+        }
+        // Set user initial
+        const initial = (me.profile?.name || me.email || '?').substring(0, 1).toUpperCase();
+        document.getElementById('userInitial').textContent = initial;
+      } catch (err) {
+        console.log('Could not check admin status');
+      }
+    }
+
+    function setupAdminAutocomplete() {
+      const toField = document.getElementById('toField');
+      toField.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => searchUsers(e.target.value), 300);
+      });
+      toField.addEventListener('blur', () => {
+        setTimeout(() => document.getElementById('autocompleteResults').classList.add('hidden'), 200);
+      });
+    }
+
+    async function searchUsers(query) {
+      if (query.length < 2) {
+        document.getElementById('autocompleteResults').classList.add('hidden');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/users?search=${encodeURIComponent(query)}&limit=10`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        renderAutocomplete(data.users || []);
+      } catch (error) {
+        console.error('Search users error:', error);
+      }
+    }
+
+    function renderAutocomplete(users) {
+      const container = document.getElementById('autocompleteResults');
+      if (users.length === 0) {
+        container.innerHTML = '<div class="p-3 text-forest-500 text-sm">No users found</div>';
+      } else {
+        container.innerHTML = users.map(user => `
+          <button type="button" onclick="selectRecipient('${user._id}', '${user.name.replace(/'/g, "\\'")}', '${user.email}')" class="w-full text-left p-3 hover:bg-stone-50 flex items-center gap-3 border-b border-stone-100 last:border-0">
+            <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-xs">
+              ${(user.name || 'U').substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <p class="font-medium text-forest-900">${user.name || 'Unknown'}</p>
+              <p class="text-sm text-forest-500">${user.email}</p>
+            </div>
+          </button>
+        `).join('');
+      }
+      container.classList.remove('hidden');
+      const rect = document.getElementById('toField').getBoundingClientRect();
+      container.style.top = (rect.bottom + 4) + 'px';
+      container.style.left = rect.left + 'px';
+      container.style.width = rect.width + 'px';
+    }
+
+    function selectRecipient(id, name, email) {
+      if (selectedRecipients.find(r => r.id === id)) return;
+      selectedRecipients.push({ id, name, email });
+      renderSelectedRecipients();
+      document.getElementById('toField').value = '';
+      document.getElementById('autocompleteResults').classList.add('hidden');
+    }
+
+    function removeRecipient(id) {
+      selectedRecipients = selectedRecipients.filter(r => r.id !== id);
+      renderSelectedRecipients();
+    }
+
+    function renderSelectedRecipients() {
+      const container = document.getElementById('selectedRecipients');
+      container.innerHTML = selectedRecipients.map(r => `
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-100 text-burgundy-800 rounded-full text-sm">
+          ${r.name}
+          <button type="button" onclick="removeRecipient('${r.id}')" class="hover:text-burgundy-600">&times;</button>
+        </span>
+      `).join('');
+    }
+
+    // Load conversations on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAdminStatus();
+      loadConversations();
+      setupEventListeners();
+      startAutoRefresh();
+    });
+
+    // Auto-refresh every 30 seconds
+    let refreshInterval;
+    let countdownInterval;
+    let countdown = 30;
+
+    function startAutoRefresh() {
+      countdown = 30;
+      updateCountdown();
+      
+      countdownInterval = setInterval(() => {
+        countdown--;
+        updateCountdown();
+        if (countdown <= 0) {
+          countdown = 30;
+        }
+      }, 1000);
+      
+      refreshInterval = setInterval(() => {
+        syncMessages(true);
+      }, 30000);
+    }
+
+    function updateCountdown() {
+      const el = document.getElementById('refreshCountdown');
+      if (el) el.textContent = countdown;
+    }
+
+    async function syncMessages(silent = false) {
+      const btn = document.getElementById('syncBtn');
+      const icon = document.getElementById('syncIcon');
+      
+      if (!silent) {
+        btn.disabled = true;
+        icon.classList.add('animate-spin');
+      }
+      
+      await loadConversations();
+      if (currentConversationId) {
+        await loadConversation(currentConversationId);
+      }
+      
+      if (!silent) {
+        setTimeout(() => {
+          btn.disabled = false;
+          icon.classList.remove('animate-spin');
+        }, 500);
+      }
+      
+      countdown = 30;
+    }
+
+    function setupEventListeners() {
+      // Drop zone
+      const dropZone = document.getElementById('dropZone');
+      const fileInput = document.getElementById('messageAttachments');
+      
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-burgundy-500', 'bg-burgundy-50');
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50');
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-burgundy-500', 'bg-burgundy-50');
+        handleFiles(e.dataTransfer.files);
+      });
+      fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+      // New message form
+      document.getElementById('newMessageForm').addEventListener('submit', sendNewMessage);
+      
+      // Reply form
+      document.getElementById('replyForm').addEventListener('submit', sendReply);
+      
+      // Reply attachments
+      document.getElementById('replyAttachment').addEventListener('change', (e) => {
+        const container = document.getElementById('replyAttachments');
+        container.innerHTML = '';
+        Array.from(e.target.files).forEach(file => {
+          container.innerHTML += `<span class="inline-flex items-center gap-1 px-2 py-1 bg-burgundy-100 text-burgundy-700 rounded text-sm">${file.name}</span>`;
+        });
+      });
+    }
+
+    function handleFiles(files) {
+      selectedFiles = Array.from(files);
+      const container = document.getElementById('attachmentList');
+      container.innerHTML = '';
+      selectedFiles.forEach((file, index) => {
+        container.innerHTML += `
+          <div class="flex items-center justify-between p-2 bg-stone-100 rounded-lg">
+            <span class="text-sm text-forest-700 truncate">${file.name}</span>
+            <button type="button" onclick="removeFile(${index})" class="text-burgundy-600 hover:text-burgundy-800">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      handleFiles(selectedFiles);
+    }
+
+    async function loadConversations() {
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/messages/my-conversations`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderConversations(data.conversations || []);
+      } catch (error) {
+        console.error('Load conversations error:', error);
+      }
+    }
+
+    function renderConversations(conversations) {
+      const container = document.getElementById('conversationsList');
+      
+      if (conversations.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-forest-500">
+            <svg class="w-12 h-12 mx-auto text-stone-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p>No conversations yet</p>
+            <p class="text-sm mt-1">Start a new message to contact support</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = conversations.map(conv => `
+        <button onclick="loadConversation('${conv._id}')" class="w-full text-left p-4 hover:bg-stone-50 transition-colors ${currentConversationId === conv._id ? 'bg-burgundy-50 border-l-4 border-burgundy-600' : ''}">
+          <div class="flex items-start justify-between">
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-forest-900 truncate">${conv.lastMessage?.subject || 'No subject'}</p>
+              <p class="text-sm text-forest-500 truncate mt-1">${conv.lastMessage?.body?.substring(0, 50) || ''}...</p>
+              <p class="text-xs text-forest-400 mt-1">${formatDate(conv.lastMessage?.createdAt)}</p>
+            </div>
+            ${conv.unreadCount > 0 ? `<span class="bg-burgundy-600 text-white text-xs font-bold px-2 py-1 rounded-full">${conv.unreadCount}</span>` : ''}
+          </div>
+          <div class="mt-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(conv.lastMessage?.status)}">
+              ${conv.lastMessage?.status || 'open'}
+            </span>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function getStatusColor(status) {
+      const colors = {
+        'open': 'bg-yellow-100 text-yellow-800',
+        'replied': 'bg-green-100 text-green-800',
+        'resolved': 'bg-blue-100 text-blue-800',
+        'closed': 'bg-stone-100 text-stone-600'
+      };
+      return colors[status] || colors['open'];
+    }
+
+    async function loadConversation(conversationId) {
+      currentConversationId = conversationId;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/messages/conversation/${conversationId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderMessages(data.messages || []);
+        
+        // Refresh conversation list to update unread counts
+        loadConversations();
+      } catch (error) {
+        console.error('Load conversation error:', error);
+      }
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById('messageThread');
+      const header = document.getElementById('threadHeader');
+      const replyBox = document.getElementById('replyBox');
+      
+      if (messages.length === 0) {
+        container.innerHTML = '<p class="text-center text-forest-500 py-8">No messages in this conversation</p>';
+        return;
+      }
+      
+      header.innerHTML = `<h2 class="font-semibold text-forest-900">${messages[0].subject}</h2>`;
+      replyBox.classList.remove('hidden');
+      
+      container.innerHTML = messages.map(msg => `
+        <div class="mb-6 ${msg.fromAdmin ? 'pl-8' : 'pr-8'}">
+          <div class="${msg.fromAdmin ? 'bg-forest-50 border-l-4 border-forest-500' : 'bg-burgundy-50 border-l-4 border-burgundy-500'} rounded-r-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-medium ${msg.fromAdmin ? 'text-forest-800' : 'text-burgundy-800'}">
+                ${msg.fromAdmin ? '👩‍💼 CounselorReady Support' : '👤 You'}
+              </span>
+              <span class="text-xs text-forest-500">${formatDate(msg.createdAt)}</span>
+            </div>
+            <p class="text-forest-700 whitespace-pre-wrap">${msg.body}</p>
+            ${msg.attachments && msg.attachments.length > 0 ? `
+              <div class="mt-3 pt-3 border-t border-stone-200">
+                <p class="text-xs font-medium text-forest-600 mb-2">📎 Attachments:</p>
+                <div class="flex flex-wrap gap-2">
+                  ${msg.attachments.map(att => `
+                    <a href="${att.url}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-stone-300 rounded text-sm text-forest-700 hover:bg-stone-50">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                      ${att.originalName}
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendNewMessage(e) {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      formData.append('type', document.getElementById('messageType').value);
+      formData.append('subject', document.getElementById('messageSubject').value);
+      formData.append('body', document.getElementById('messageBody').value);
+
+      // If admin is sending to specific recipients
+      if (isAdmin && selectedRecipients.length > 0) {
+        formData.append('userIds', JSON.stringify(selectedRecipients.map(r => r.id)));
+      }
+
+      selectedFiles.forEach(file => {
+        formData.append('attachments', file);
+      });
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/messages/contact`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          closeNewMessageModal();
+          loadConversations();
+          if (data.conversationId) {
+            loadConversation(data.conversationId);
+          }
+          alert('Message sent! We\'ll respond as soon as possible.');
+        } else {
+          alert(data.error || 'Failed to send message');
+        }
+      } catch (error) {
+        console.error('Send message error:', error);
+        alert('Failed to send message. Please try again.');
+      }
+    }
+
+    async function sendReply(e) {
+      e.preventDefault();
+      
+      if (!currentConversationId) return;
+      
+      const formData = new FormData();
+      formData.append('body', document.getElementById('replyMessage').value);
+      
+      const attachments = document.getElementById('replyAttachment').files;
+      Array.from(attachments).forEach(file => {
+        formData.append('attachments', file);
+      });
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/messages/reply/${currentConversationId}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if (response.ok) {
+          document.getElementById('replyMessage').value = '';
+          document.getElementById('replyAttachment').value = '';
+          document.getElementById('replyAttachments').innerHTML = '';
+          loadConversation(currentConversationId);
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to send reply');
+        }
+      } catch (error) {
+        console.error('Send reply error:', error);
+        alert('Failed to send reply. Please try again.');
+      }
+    }
+
+    function openNewMessageModal() {
+      document.getElementById('newMessageModal').classList.remove('hidden');
+      document.getElementById('newMessageForm').reset();
+      selectedFiles = [];
+      selectedRecipients = [];
+      document.getElementById('attachmentList').innerHTML = '';
+      if (isAdmin) renderSelectedRecipients();
+    }
+
+    function closeNewMessageModal() {
+      document.getElementById('newMessageModal').classList.add('hidden');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+      if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+  </script>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

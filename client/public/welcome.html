@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/cr-gtag.js"></script>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Welcome to CounselorReady - Getting Started</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6', 100: '#fae8eb', 200: '#f5d0d6', 300: '#eba9b5',
+              400: '#dd768a', 500: '#c94d65', 600: '#a83350', 700: '#8b2542',
+              800: '#6b1d34', 900: '#4a1524', 950: '#2d0a14'
+            },
+            forest: {
+              50: '#f3f6f4', 100: '#e3ebe5', 200: '#c8d7cc', 300: '#a1bba8',
+              400: '#759a7f', 500: '#547c5f', 600: '#4A7C59', 700: '#34503d',
+              800: '#2b4133', 900: '#1f3025', 950: '#121c16'
+            },
+            gold: {
+              50: '#fefce8', 100: '#fef9c3', 200: '#fef08a', 300: '#fde047',
+              400: '#facc15', 500: '#d4a012', 600: '#a16207', 700: '#854d0e',
+              800: '#713f12', 900: '#5c3210'
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .step-card { transition: all 0.3s ease; }
+    .step-card:hover { transform: translateY(-2px); }
+    .step-card.completed { opacity: 0.7; }
+    .step-card.completed .step-number { background: #34503d; }
+    .progress-line { height: 4px; transition: width 0.5s ease; }
+  </style>
+</head>
+<body class="bg-stone-50 text-gray-900 antialiased min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-hunter-100 bg-white/90 backdrop-blur-sm sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34); shadow-lg">
+          <span class="font-display font-bold text-lg" style="position: relative; display: inline-block; width: 22px; height: 22px;"><span style="color: #D4A855; position: absolute; top: -3px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 5px; left: 6px;">R</span></span>
+        </div>
+        <span class="font-display font-semibold text-xl">
+          <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+        </span>
+      </div>
+      <div style="text-align:right">
+        <a href="/dashboard.html" class="text-forest-600 hover:text-forest-800 text-sm font-medium">
+          Skip to Dashboard →
+        </a>
+        <p style="font-size:10px;color:#A67F2D;max-width:220px;margin-top:4px;line-height:1.3">
+          Skipping credential setup means we cannot advocate on your behalf in the event of a board audit.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-6 py-12">
+    
+    <!-- Welcome Section -->
+    <div class="text-center mb-12">
+      <h1 class="font-display text-4xl md:text-5xl font-semibold text-burgundy-900 mb-4">
+        Welcome to CounselorReady! 🎉
+      </h1>
+      <p class="text-forest-600 text-lg max-w-2xl mx-auto">
+        Let's get you set up in just a few minutes. Follow these steps to make the most of your membership.
+      </p>
+      
+      <!-- Progress Bar -->
+      <div class="mt-8 max-w-md mx-auto">
+        <div class="flex justify-between text-sm text-forest-500 mb-2">
+          <span>Getting Started</span>
+          <span id="progressText">0 of 5 complete</span>
+        </div>
+        <div class="bg-forest-100 rounded-full h-2 overflow-hidden">
+          <div id="progressBar" class="progress-line bg-gradient-to-r from-forest-500 to-forest-600 rounded-full" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="space-y-6">
+      
+      <!-- Step 1: Add Your First Credential -->
+      <div class="step-card bg-white rounded-2xl border border-forest-100 shadow-sm overflow-hidden" data-step="1">
+        <div class="p-6 flex gap-6">
+          <div class="flex-shrink-0">
+            <div class="step-number w-12 h-12 bg-burgundy-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              1
+            </div>
+          </div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Add Your First Credential</h2>
+                <p class="text-forest-600 mb-4">
+                  Start by adding your primary license. We'll track your CE requirements, renewal dates, and send you reminders so you never miss a deadline.
+                </p>
+              </div>
+              <button onclick="toggleStep(1)" class="check-btn flex-shrink-0 w-8 h-8 rounded-full border-2 border-forest-300 hover:border-forest-500 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-forest-500 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Why we need this -->
+            <div class="rounded-xl p-4 mb-4 border-l-4 border-gold-500" style="background: #fefce8;">
+              <p class="text-sm text-burgundy-800 font-semibold mb-1">Why we need this</p>
+              <p class="text-sm text-forest-700 mb-3">
+                Your license number is required for the attendance records we submit to boards for compliance.
+              </p>
+              <p class="text-sm text-forest-700">
+                <span class="font-semibold text-burgundy-800">Pre-licensed?</span>
+                Enter <code class="bg-white px-1.5 py-0.5 rounded text-burgundy-700 font-semibold text-xs">PRELICENSED</code>
+                in the license field. Certificates will reflect your status at completion and cannot be changed retroactively &mdash;
+                update your license number as soon as you're licensed.
+              </p>
+              <p class="text-sm text-burgundy-800 font-semibold mt-3" style="border-top:1px solid #fde68a;padding-top:8px">
+                ⚠ If you skip this step, CounselorReady cannot advocate on your behalf in the event of a board audit. We strongly recommend completing this before starting any courses.
+              </p>
+            </div>
+
+            <div class="bg-stone-50 rounded-xl p-4 mb-4">
+              <p class="text-sm text-forest-700 font-medium mb-2">What you'll need:</p>
+              <ul class="text-sm text-forest-600 space-y-1">
+                <li>• License type (LPC, LCSW, LMFT, etc.)</li>
+                <li>• License number <span class="text-forest-500">(or "PRELICENSED")</span></li>
+                <li>• Expiration date</li>
+                <li>• State of licensure</li>
+              </ul>
+            </div>
+            
+            <a href="/credentials.html" class="inline-flex items-center gap-2 bg-burgundy-700 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-burgundy-800 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              Add Credential
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Upload Existing Certificates -->
+      <div class="step-card bg-white rounded-2xl border border-forest-100 shadow-sm overflow-hidden" data-step="2">
+        <div class="p-6 flex gap-6">
+          <div class="flex-shrink-0">
+            <div class="step-number w-12 h-12 bg-burgundy-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              2
+            </div>
+          </div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Upload Existing Certificates</h2>
+                <p class="text-forest-600 mb-4">
+                  Already have CE certificates from other providers? Upload them here. Our AI will automatically extract the course name, hours, and completion date.
+                </p>
+              </div>
+              <button onclick="toggleStep(2)" class="check-btn flex-shrink-0 w-8 h-8 rounded-full border-2 border-forest-300 hover:border-forest-500 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-forest-500 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-stone-50 rounded-xl p-4 mb-4">
+              <p class="text-sm text-forest-700 font-medium mb-2">Accepted formats:</p>
+              <p class="text-sm text-forest-600">PDF, JPG, PNG — Just drag and drop or click to upload</p>
+            </div>
+            
+            <a href="/credentials.html#certifications" class="inline-flex items-center gap-2 bg-forest-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-forest-700 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+              </svg>
+              Upload Certificates
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Browse CE Courses -->
+      <div class="step-card bg-white rounded-2xl border border-forest-100 shadow-sm overflow-hidden" data-step="3">
+        <div class="p-6 flex gap-6">
+          <div class="flex-shrink-0">
+            <div class="step-number w-12 h-12 bg-burgundy-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              3
+            </div>
+          </div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Browse CE Courses</h2>
+                <p class="text-forest-600 mb-4">
+                  Explore our continuing education courses. Filter by topic, hours, or state requirements. All courses include instant certificates upon completion.
+                </p>
+              </div>
+              <button onclick="toggleStep(3)" class="check-btn flex-shrink-0 w-8 h-8 rounded-full border-2 border-forest-300 hover:border-forest-500 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-forest-500 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-stone-50 rounded-xl p-4 mb-4">
+              <div class="flex items-center gap-4 mb-3">
+                <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-14 w-auto">
+                <p class="text-sm text-forest-600">Courses offered by NBCC Approved Continuing Education Provider (ACEP #7760)</p>
+              </div>
+              <p class="text-sm text-forest-700 font-medium mb-2">Popular topics:</p>
+              <div class="flex flex-wrap gap-2">
+                <span class="text-xs bg-white px-3 py-1 rounded-full border border-forest-200 text-forest-600">Ethics</span>
+                <span class="text-xs bg-white px-3 py-1 rounded-full border border-forest-200 text-forest-600">Trauma</span>
+                <span class="text-xs bg-white px-3 py-1 rounded-full border border-forest-200 text-forest-600">Telehealth</span>
+                <span class="text-xs bg-white px-3 py-1 rounded-full border border-forest-200 text-forest-600">Supervision</span>
+                <span class="text-xs bg-white px-3 py-1 rounded-full border border-forest-200 text-forest-600">Cultural Competency</span>
+              </div>
+            </div>
+            
+            <a href="/courses.html" class="inline-flex items-center gap-2 bg-forest-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-forest-700 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+              Browse Courses
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Set Up Reminders -->
+      <div class="step-card bg-white rounded-2xl border border-forest-100 shadow-sm overflow-hidden" data-step="4">
+        <div class="p-6 flex gap-6">
+          <div class="flex-shrink-0">
+            <div class="step-number w-12 h-12 bg-burgundy-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              4
+            </div>
+          </div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Set Up Reminders</h2>
+                <p class="text-forest-600 mb-4">
+                  Choose how you want to be notified about upcoming renewals. We'll remind you at 90, 60, 30, 14, and 7 days before expiration.
+                </p>
+              </div>
+              <button onclick="toggleStep(4)" class="check-btn flex-shrink-0 w-8 h-8 rounded-full border-2 border-forest-300 hover:border-forest-500 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-forest-500 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-stone-50 rounded-xl p-4 mb-4">
+              <p class="text-sm text-forest-700 font-medium mb-2">Reminder options:</p>
+              <ul class="text-sm text-forest-600 space-y-1">
+                <li>• Email notifications (default: ON)</li>
+                <li>• SMS text messages (Professional & VIP)</li>
+                <li>• Calendar sync (Google, Outlook, Apple)</li>
+              </ul>
+            </div>
+            
+            <a href="/settings.html" class="inline-flex items-center gap-2 bg-forest-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-forest-700 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+              </svg>
+              Configure Reminders
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: Explore Your Dashboard -->
+      <div class="step-card bg-white rounded-2xl border border-forest-100 shadow-sm overflow-hidden" data-step="5">
+        <div class="p-6 flex gap-6">
+          <div class="flex-shrink-0">
+            <div class="step-number w-12 h-12 bg-burgundy-700 rounded-full flex items-center justify-center text-white font-bold text-lg">
+              5
+            </div>
+          </div>
+          <div class="flex-grow">
+            <div class="flex items-start justify-between">
+              <div>
+                <h2 class="font-display text-2xl font-semibold text-burgundy-900 mb-2">Explore Your Dashboard</h2>
+                <p class="text-forest-600 mb-4">
+                  Your dashboard shows everything at a glance: CE progress, upcoming renewals, recent activity, and quick actions. It's your home base.
+                </p>
+              </div>
+              <button onclick="toggleStep(5)" class="check-btn flex-shrink-0 w-8 h-8 rounded-full border-2 border-forest-300 hover:border-forest-500 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5 text-forest-500 hidden check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-stone-50 rounded-xl p-4 mb-4">
+              <p class="text-sm text-forest-700 font-medium mb-2">Dashboard features:</p>
+              <ul class="text-sm text-forest-600 space-y-1">
+                <li>• CE hours progress by credential</li>
+                <li>• Upcoming renewal deadlines</li>
+                <li>• Courses in progress</li>
+                <li>• Audit report generator</li>
+              </ul>
+            </div>
+            
+            <a href="/dashboard.html" class="inline-flex items-center gap-2 bg-burgundy-700 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-burgundy-800 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+              </svg>
+              Go to Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIP Features Callout -->
+    <div id="vipCallout" class="mt-12 bg-gradient-to-br from-gold-50 to-gold-100 border border-gold-200 rounded-2xl p-8 hidden">
+      <div class="flex items-start gap-4">
+        <div class="w-12 h-12 bg-gold-200 rounded-full flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6 text-gold-700" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-display text-xl font-semibold text-gold-800 mb-2">You're a VIP Member!</h3>
+          <p class="text-gold-700 mb-4">You have access to exclusive features:</p>
+          <ul class="text-gold-700 text-sm space-y-2">
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Multi-state CE tracking with smart recommendations
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              1 quarterly consultation with a GA licensing expert
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Hardship pause benefit (1 free month/year, rolls over)
+            </li>
+            <li class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              Priority support & early access to new courses
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion Message -->
+    <div id="completionMessage" class="mt-12 text-center hidden">
+      <div class="bg-forest-50 border border-forest-200 rounded-2xl p-8">
+        <div class="w-16 h-16 bg-forest-200 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-forest-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <h3 class="font-display text-2xl font-semibold text-forest-800 mb-2">You're All Set!</h3>
+        <p class="text-forest-600 mb-6">You've completed the getting started guide. Your CE tracking journey begins now.</p>
+        <a href="/dashboard.html" class="inline-flex items-center gap-2 bg-forest-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-forest-700 transition-colors">
+          Go to Your Dashboard
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="mt-12 text-center">
+      <p class="text-forest-500 text-sm">
+        Need help? <a href="/messages.html" class="text-burgundy-600 hover:text-burgundy-800 font-medium">Contact Support</a> or check out our 
+        <a href="#" class="text-burgundy-600 hover:text-burgundy-800 font-medium">FAQ</a>
+      </p>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="mt-12 py-6 px-4 bg-white border-t border-burgundy-100">
+    <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-12 w-auto">
+        <p class="text-forest-400 text-xs">NBCC Approved Provider | ACEP #7760</p>
+      </div>
+      <p class="text-forest-500 text-sm">© 2025 CounselorReady. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let completedSteps = JSON.parse(localStorage.getItem('welcomeSteps') || '[]');
+    
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Check auth
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      // Check if VIP
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.subscription?.plan === 'vip') {
+        document.getElementById('vipCallout').classList.remove('hidden');
+      }
+      
+      // Restore completed steps
+      completedSteps.forEach(step => {
+        markStepComplete(step, false);
+      });
+      updateProgress();
+    });
+    
+    function toggleStep(step) {
+      const index = completedSteps.indexOf(step);
+      if (index > -1) {
+        completedSteps.splice(index, 1);
+        markStepIncomplete(step);
+      } else {
+        completedSteps.push(step);
+        markStepComplete(step, true);
+      }
+      
+      localStorage.setItem('welcomeSteps', JSON.stringify(completedSteps));
+      updateProgress();
+    }
+    
+    function markStepComplete(step, animate) {
+      const card = document.querySelector(`[data-step="${step}"]`);
+      if (!card) return;
+      
+      card.classList.add('completed');
+      const checkIcon = card.querySelector('.check-icon');
+      const checkBtn = card.querySelector('.check-btn');
+      
+      checkIcon.classList.remove('hidden');
+      checkBtn.classList.add('bg-forest-500', 'border-forest-500');
+      checkBtn.classList.remove('border-forest-300');
+      
+      if (animate) {
+        card.style.transform = 'scale(0.98)';
+        setTimeout(() => {
+          card.style.transform = '';
+        }, 150);
+      }
+    }
+    
+    function markStepIncomplete(step) {
+      const card = document.querySelector(`[data-step="${step}"]`);
+      if (!card) return;
+      
+      card.classList.remove('completed');
+      const checkIcon = card.querySelector('.check-icon');
+      const checkBtn = card.querySelector('.check-btn');
+      
+      checkIcon.classList.add('hidden');
+      checkBtn.classList.remove('bg-forest-500', 'border-forest-500');
+      checkBtn.classList.add('border-forest-300');
+    }
+    
+    function updateProgress() {
+      const total = 5;
+      const completed = completedSteps.length;
+      const percent = (completed / total) * 100;
+      
+      document.getElementById('progressBar').style.width = percent + '%';
+      document.getElementById('progressText').textContent = `${completed} of ${total} complete`;
+      
+      // Show completion message if all done
+      if (completed === total) {
+        document.getElementById('completionMessage').classList.remove('hidden');
+      } else {
+        document.getElementById('completionMessage').classList.add('hidden');
+      }
+    }
+  </script>
+
+<script src="/js/footer.js"></script></body>
+</html>

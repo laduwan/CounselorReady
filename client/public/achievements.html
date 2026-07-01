@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Achievements | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <style>
+    body{font-family:'Lato',system-ui,sans-serif}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif}
+    .badge-card{transition:transform .2s,box-shadow .2s}
+    .badge-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .badge-card.earned{border-color:#4A7C59}
+    .badge-card.locked{opacity:.55}
+    .xp-bar{transition:width .8s cubic-bezier(.4,0,.2,1)}
+    .streak-flame{animation:flicker 1.5s ease-in-out infinite}
+    @keyframes flicker{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.85;transform:scale(1.05)}}
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-20">
+      <div class="w-10 h-10 border-3 border-stone-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-stone-400">Loading achievements...</p>
+    </div>
+
+    <div id="content" class="hidden">
+
+      <!-- Hero stats -->
+      <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center gap-6">
+          <!-- Level circle -->
+          <div class="flex-shrink-0 flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,#6B1D34,#8b2542)">
+              <div class="text-center">
+                <p class="text-3xl font-bold text-white font-display" id="userLevel">1</p>
+                <p class="text-[10px] text-burgundy-200 uppercase tracking-wider">Level</p>
+              </div>
+            </div>
+          </div>
+          <!-- XP + stats -->
+          <div class="flex-1">
+            <h1 class="font-display text-2xl font-semibold text-burgundy-800 mb-1">Your Achievements</h1>
+            <p class="text-stone-500 text-sm mb-4">Keep learning to earn XP, badges, and climb the leaderboard.</p>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-stone-500">XP Progress</span>
+                <span class="font-semibold text-burgundy-800"><span id="currentXp">0</span> XP &middot; <span id="xpToNext">500</span> to next level</span>
+              </div>
+              <div class="w-full bg-stone-100 rounded-full h-3 overflow-hidden">
+                <div class="xp-bar h-full rounded-full" id="xpBar" style="width:0%;background:linear-gradient(90deg,#6B1D34,#D4A855)"></div>
+              </div>
+            </div>
+            <div class="flex gap-6 text-sm">
+              <div><span class="font-bold text-burgundy-800" id="statCourses">0</span> <span class="text-stone-400">courses</span></div>
+              <div><span class="font-bold text-hunter-500" id="statHours">0</span> <span class="text-stone-400">CE hours</span></div>
+              <div><span class="font-bold text-honey-400" id="statQuizzes">0</span> <span class="text-stone-400">quizzes</span></div>
+              <div class="flex items-center gap-1">
+                <svg class="w-4 h-4 text-orange-500 streak-flame" id="streakIcon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>
+                <span class="font-bold text-orange-600" id="statStreak">0</span>
+                <span class="text-stone-400">day streak</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  CounselorReady Mastery Mark Points (MMP) Widget — v2
+  Day 3 — May 5, 2026
+
+  PLACEMENT: Drop into client/public/achievements.html between
+  the Level/XP hero block and the Badges grid.
+
+  STANDALONE: Self-contained CSS + JS. No external deps beyond
+  the API (/api/rewards/balance).
+
+  REVERT: Delete this entire block.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<!--
+  ═══════════════════════════════════════════════════════════════
+  CounselorReady Achievements Page — XP↔MMP Bridge v4
+  Day 3.5 — May 7, 2026
+
+  PLACEMENT: Drop into client/public/achievements.html DIRECTLY ABOVE
+  the existing <div id="cr-mmp-widget" ...> block.
+
+  v4 changes from v3:
+    + "How you earn MMP" card (lists earn types and point values)
+    + 2-column desktop layout (earn | spend), stacks on mobile
+    + Footnote on each card
+
+  STANDALONE: Self-contained CSS scoped to .cr-bridge-* prefix.
+  REVERT: Delete this entire block.
+  ═══════════════════════════════════════════════════════════════
+-->
+
+<div class="cr-bridge-root">
+  <style>
+    .cr-bridge-root {
+      max-width: 100%;
+      margin: 24px 0 8px 0;
+      padding: 0 4px;
+      font-family: 'Lato', system-ui, sans-serif;
+    }
+    .cr-bridge-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .cr-bridge-line {
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(
+        to right,
+        rgba(212, 168, 85, 0.0),
+        rgba(212, 168, 85, 0.40) 50%,
+        rgba(212, 168, 85, 0.40) 100%
+      );
+    }
+    .cr-bridge-line-right {
+      background: linear-gradient(
+        to right,
+        rgba(212, 168, 85, 0.40) 0%,
+        rgba(212, 168, 85, 0.40) 50%,
+        rgba(212, 168, 85, 0.0)
+      );
+    }
+    .cr-bridge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: linear-gradient(135deg, rgba(212, 168, 85, 0.16) 0%, rgba(212, 168, 85, 0.08) 100%);
+      border: 1px solid rgba(212, 168, 85, 0.45);
+      border-radius: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: #8C6A1F;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(212, 168, 85, 0.10);
+    }
+    .cr-bridge-sparkle { font-size: 14px; line-height: 1; }
+
+    .cr-bridge-headline {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      line-height: 1.25;
+      color: #6B1D34;
+      font-weight: 600;
+      text-align: center;
+      margin: 0 auto 8px;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+    .cr-bridge-headline strong { font-style: italic; color: #4A7C59; }
+
+    .cr-bridge-explainer {
+      max-width: 580px;
+      margin: 0 auto 20px;
+      padding: 0 16px;
+      text-align: center;
+      font-size: 13.5px;
+      line-height: 1.6;
+      color: rgba(40, 65, 87, 0.78);
+    }
+    .cr-bridge-explainer .cr-bridge-mmp { color: #6B1D34; font-weight: 700; }
+    .cr-bridge-explainer .cr-bridge-xp { color: #4A7C59; font-weight: 700; }
+
+    .cr-bridge-cardgrid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 760px;
+      margin: 0 auto 16px;
+    }
+    @media (max-width: 640px) {
+      .cr-bridge-cardgrid { grid-template-columns: 1fr; }
+    }
+
+    .cr-bridge-card {
+      padding: 16px 18px 14px;
+      background: linear-gradient(135deg, rgba(245, 245, 220, 0.55) 0%, rgba(255, 255, 255, 0.7) 100%);
+      border: 1px solid rgba(212, 168, 85, 0.30);
+      border-radius: 12px;
+    }
+    .cr-bridge-card-title {
+      font-size: 11px;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: #8C6A1F;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .cr-bridge-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+      font-size: 13px;
+      color: #284157;
+      line-height: 1.4;
+    }
+    .cr-bridge-row + .cr-bridge-row {
+      border-top: 1px dashed rgba(40, 65, 87, 0.10);
+      margin-top: 4px;
+      padding-top: 8px;
+    }
+    .cr-bridge-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(212, 168, 85, 0.18);
+      border-radius: 50%;
+      color: #8C6A1F;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .cr-bridge-text { flex: 1; }
+    .cr-bridge-text strong { color: #6B1D34; }
+    .cr-bridge-text em { color: #4A7C59; font-style: normal; font-weight: 700; }
+    .cr-bridge-footnote {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(40, 65, 87, 0.10);
+      font-size: 11px;
+      line-height: 1.5;
+      color: rgba(40, 65, 87, 0.6);
+      font-style: italic;
+    }
+
+    .cr-bridge-mission {
+      max-width: 540px;
+      margin: 4px auto 0;
+      padding: 0 16px;
+      text-align: center;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 16px;
+      font-style: italic;
+      line-height: 1.5;
+      color: rgba(74, 124, 89, 0.85);
+    }
+
+    @media (max-width: 480px) {
+      .cr-bridge-headline { font-size: 19px; }
+      .cr-bridge-explainer { font-size: 13px; }
+      .cr-bridge-mission { font-size: 14.5px; }
+      .cr-bridge-row { font-size: 12.5px; }
+    }
+  </style>
+
+  <div class="cr-bridge-divider">
+    <div class="cr-bridge-line"></div>
+    <span class="cr-bridge-pill">
+      <span class="cr-bridge-sparkle">✨</span>
+      Mastery Has Its Rewards
+    </span>
+    <div class="cr-bridge-line cr-bridge-line-right"></div>
+  </div>
+
+  <h3 class="cr-bridge-headline">
+    Your work, recognized <strong>two ways</strong>.
+  </h3>
+
+  <p class="cr-bridge-explainer">
+    <span class="cr-bridge-xp">XP and Level above</span> map your daily journey &mdash; logins, streaks, sections, badges. <span class="cr-bridge-mmp">Mastery Mark Points below</span> are something different: a real, redeemable currency you earn for the moments that matter most.
+  </p>
+
+  <div class="cr-bridge-cardgrid">
+
+    <!-- HOW TO EARN -->
+    <div class="cr-bridge-card">
+      <div class="cr-bridge-card-title">How you earn MMP</div>
+
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">💭</span>
+        <span class="cr-bridge-text"><strong>+5 MMP</strong> &mdash; submit a reflection in any course</span>
+      </div>
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">🎓</span>
+        <span class="cr-bridge-text"><strong>+25 to +100 MMP</strong> &mdash; complete a course <em>(longer courses + subscribers earn more)</em></span>
+      </div>
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">📜</span>
+        <span class="cr-bridge-text"><strong>+25 MMP</strong> &mdash; claim your certificate</span>
+      </div>
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">🤝</span>
+        <span class="cr-bridge-text"><strong>up to +350 MMP</strong> &mdash; refer a colleague*</span>
+      </div>
+
+      <div class="cr-bridge-footnote">
+        *+50 MMP when they sign up &middot; +200 when they subscribe &middot; +100 more after 3 months
+      </div>
+    </div>
+
+    <!-- WHAT MMP CAN BUY -->
+    <div class="cr-bridge-card">
+      <div class="cr-bridge-card-title">What MMP can buy</div>
+
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">$</span>
+        <span class="cr-bridge-text"><strong>$10 or $25 subscription credit</strong> &mdash; auto-applied to your next invoice</span>
+      </div>
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">🛍</span>
+        <span class="cr-bridge-text"><strong>$25 Amazon or DoorDash</strong> gift cards</span>
+      </div>
+      <div class="cr-bridge-row">
+        <span class="cr-bridge-icon">🌿</span>
+        <span class="cr-bridge-text"><strong>$25 spa gift cards</strong> &mdash; massage, retreats, and wellness at Georgia partner spas</span>
+      </div>
+
+      <div class="cr-bridge-footnote">
+        Redemption unlocks at 500 MMP &middot; spend any time after that
+      </div>
+    </div>
+
+  </div>
+
+  <p class="cr-bridge-mission">
+    Because the people who care for others deserve real care in return.
+  </p>
+</div>
+
+<!-- ═══ END XP↔MMP Bridge v4 ═══ -->
+
+<div id="cr-mmp-widget" class="cr-mmp-root" style="display:none">
+  <style>
+    #cr-mmp-widget.cr-mmp-root {
+      font-family: 'Lato', system-ui, sans-serif;
+      max-width: 100%;
+      margin: 24px 0;
+      padding: 0;
+      color: #2A2620;
+    }
+    #cr-mmp-widget .cr-mmp-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(40, 65, 87, 0.12);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    }
+    #cr-mmp-widget .cr-mmp-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    #cr-mmp-widget .cr-mmp-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 22px;
+      font-weight: 600;
+      color: #6B1D34;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-title-icon {
+      font-size: 20px;
+    }
+    #cr-mmp-widget .cr-mmp-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    #cr-mmp-widget .cr-mmp-tier-capable    { background: rgba(74,124,89,0.10);  color: #4A7C59; }
+    #cr-mmp-widget .cr-mmp-tier-proficient { background: rgba(74,124,89,0.18);  color: #2D5238; }
+    #cr-mmp-widget .cr-mmp-tier-skilled    { background: rgba(40,65,87,0.12);   color: #284157; }
+    #cr-mmp-widget .cr-mmp-tier-seasoned   { background: rgba(212,168,85,0.20); color: #8C6A1F; }
+
+    #cr-mmp-widget .cr-mmp-balance-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+    @media (max-width: 480px) {
+      #cr-mmp-widget .cr-mmp-balance-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell {
+      padding: 14px 18px;
+      background: rgba(107, 29, 52, 0.04);
+      border-left: 3px solid #6B1D34;
+      border-radius: 4px;
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell.cr-mmp-lifetime {
+      background: rgba(74, 124, 89, 0.04);
+      border-left-color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-balance-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 4px;
+    }
+    #cr-mmp-widget .cr-mmp-balance-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 32px;
+      font-weight: 600;
+      line-height: 1;
+      color: #6B1D34;
+    }
+    #cr-mmp-widget .cr-mmp-balance-cell.cr-mmp-lifetime .cr-mmp-balance-value {
+      color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-balance-unit {
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-left: 4px;
+      font-family: 'Lato', sans-serif;
+    }
+
+    #cr-mmp-widget .cr-mmp-progress {
+      margin-bottom: 18px;
+    }
+    #cr-mmp-widget .cr-mmp-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 6px;
+    }
+    #cr-mmp-widget .cr-mmp-progress-bar {
+      height: 8px;
+      background: rgba(40, 65, 87, 0.08);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #cr-mmp-widget .cr-mmp-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6B1D34 0%, #4A7C59 100%);
+      border-radius: 4px;
+      transition: width 0.6s ease;
+    }
+    #cr-mmp-widget .cr-mmp-progress-fill.cr-mmp-maxed {
+      background: linear-gradient(90deg, #D4A855 0%, #4A7C59 100%);
+    }
+
+    #cr-mmp-widget .cr-mmp-redeem-cta {
+      padding: 14px 18px;
+      background: rgba(212, 168, 85, 0.10);
+      border: 1px dashed rgba(212, 168, 85, 0.5);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.75);
+      line-height: 1.5;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-cta strong {
+      color: #6B1D34;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #6B1D34;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      transition: background 0.15s;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-btn:hover {
+      background: #4A1424;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-active {
+      padding: 16px 18px;
+      background: rgba(107, 29, 52, 0.05);
+      border: 1px solid rgba(107, 29, 52, 0.18);
+      border-radius: 8px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-text {
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.75);
+      line-height: 1.5;
+      flex: 1;
+      min-width: 200px;
+    }
+    #cr-mmp-widget .cr-mmp-redeem-text strong {
+      color: #6B1D34;
+    }
+
+    #cr-mmp-widget .cr-mmp-section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: rgba(40, 65, 87, 0.55);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(40, 65, 87, 0.08);
+    }
+
+    #cr-mmp-widget .cr-mmp-tx-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 18px 0;
+    }
+    #cr-mmp-widget .cr-mmp-tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(40, 65, 87, 0.06);
+      font-size: 14px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-item:last-child {
+      border-bottom: none;
+    }
+    #cr-mmp-widget .cr-mmp-tx-desc {
+      flex: 1;
+      color: #2A2620;
+      padding-right: 12px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-meta {
+      font-size: 11px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-top: 2px;
+    }
+    #cr-mmp-widget .cr-mmp-tx-amount {
+      font-weight: 700;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    #cr-mmp-widget .cr-mmp-tx-amount.cr-mmp-tx-positive { color: #4A7C59; }
+    #cr-mmp-widget .cr-mmp-tx-amount.cr-mmp-tx-negative { color: #C0392B; }
+    #cr-mmp-widget .cr-mmp-tx-empty {
+      padding: 20px 0;
+      text-align: center;
+      font-size: 13px;
+      color: rgba(40, 65, 87, 0.55);
+      font-style: italic;
+    }
+
+    #cr-mmp-widget .cr-mmp-referral {
+      padding: 14px 18px;
+      background: rgba(74, 124, 89, 0.06);
+      border-radius: 8px;
+      border-left: 3px solid #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-referral-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 700;
+      color: #4A7C59;
+      margin-bottom: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-referral-link-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    #cr-mmp-widget .cr-mmp-referral-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid rgba(40, 65, 87, 0.16);
+      border-radius: 6px;
+      font-family: 'Lato', monospace;
+      font-size: 12px;
+      color: #2A2620;
+      background: #FFFFFF;
+      min-width: 0;
+    }
+    #cr-mmp-widget .cr-mmp-referral-input:focus {
+      outline: none;
+      border-color: #4A7C59;
+    }
+    #cr-mmp-widget .cr-mmp-copy-btn {
+      padding: 8px 14px;
+      background: #4A7C59;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    #cr-mmp-widget .cr-mmp-copy-btn:hover { background: #3D6A4A; }
+    #cr-mmp-widget .cr-mmp-copy-btn.cr-mmp-copied { background: #D4A855; }
+    #cr-mmp-widget .cr-mmp-referral-hint {
+      font-size: 11px;
+      color: rgba(40, 65, 87, 0.55);
+      margin-top: 8px;
+    }
+    #cr-mmp-widget .cr-mmp-referral-hint strong { color: #4A7C59; }
+
+    #cr-mmp-widget .cr-mmp-loading,
+    #cr-mmp-widget .cr-mmp-error {
+      padding: 24px;
+      text-align: center;
+      color: rgba(40, 65, 87, 0.55);
+      font-size: 14px;
+    }
+    #cr-mmp-widget .cr-mmp-error { color: #C0392B; }
+  </style>
+
+  <div class="cr-mmp-card">
+    <div id="cr-mmp-content">
+      <div class="cr-mmp-loading">Loading your Mastery Mark Points…</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  function crMmpApiBase() {
+    return location.origin.includes('localhost')
+      ? 'http://localhost:5000'
+      : 'https://api.counselorready.com';
+  }
+
+  function crMmpEsc(str) {
+    if (str == null) return '';
+    var d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+  }
+
+  function crMmpFormatTxType(type) {
+    var map = {
+      reflection_submitted:     'Reflection submitted',
+      course_completion:        'Course completed',
+      certificate_earned:       'Certificate earned',
+      course_review:            'Course reviewed',
+      course_evaluation:        'Course evaluation',
+      referral_signup:          'Referral signed up',
+      referral_paid:            'Referral subscribed',
+      referral_retention_bonus: 'Referral retained 3+ months',
+      social_share:             'Shared to social',
+      streak_7day:              '7-day streak',
+      streak_30day:             '30-day streak',
+      redemption_stripe_credit: 'Redeemed: subscription credit',
+      redemption_giftcard:      'Redeemed: gift card',
+      admin_adjustment:         'Adjustment',
+    };
+    return map[type] || type;
+  }
+
+  function crMmpFormatTimeAgo(dateStr) {
+    if (!dateStr) return '';
+    var diff = Date.now() - new Date(dateStr).getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+    if (diff < 604800000) return Math.floor(diff / 86400000) + 'd ago';
+    return new Date(dateStr).toLocaleDateString();
+  }
+
+  function crMmpRender(data) {
+    var content = document.getElementById('cr-mmp-content');
+    if (!content) return;
+
+    var tier = data.tier || { name: 'Capable', color: 'green', nextThreshold: 250 };
+    var balance = data.balance || 0;
+    var lifetime = data.lifetime || 0;
+    var pctToNext = tier.nextThreshold
+      ? Math.min(100, Math.round((lifetime / tier.nextThreshold) * 100))
+      : 100;
+    var pointsToNext = tier.nextThreshold
+      ? Math.max(0, tier.nextThreshold - lifetime)
+      : 0;
+    var maxedTier = !tier.nextThreshold;
+
+    // Redeem CTA
+    var redeemHtml;
+    if (balance >= 500) {
+      redeemHtml =
+        '<div class="cr-mmp-redeem-active">' +
+          '<div class="cr-mmp-redeem-text">' +
+            '<strong>You can redeem your MMPs.</strong> Choose a subscription credit or a gift card.' +
+          '</div>' +
+          '<a href="/redeem.html" class="cr-mmp-redeem-btn">Redeem MMPs →</a>' +
+        '</div>';
+    } else {
+      var pointsTo500 = 500 - balance;
+      redeemHtml =
+        '<div class="cr-mmp-redeem-cta">' +
+        '<strong>Redemption opens at 500 MMPs.</strong> ' +
+        pointsTo500 + ' more to unlock — earn by completing courses, submitting reflections, and referring colleagues.' +
+        '</div>';
+    }
+
+    var referralCode = data.referralCode || '';
+    var referralUrl = referralCode
+      ? location.origin + '/register?ref=' + referralCode
+      : '';
+
+    var referralHtml = '';
+    if (referralCode) {
+      referralHtml =
+        '<div class="cr-mmp-referral">' +
+          '<div class="cr-mmp-referral-label">Your Referral Link</div>' +
+          '<div class="cr-mmp-referral-link-row">' +
+            '<input type="text" class="cr-mmp-referral-input" value="' + crMmpEsc(referralUrl) + '" readonly id="cr-mmp-referral-url">' +
+            '<button class="cr-mmp-copy-btn" id="cr-mmp-copy-btn">Copy</button>' +
+          '</div>' +
+          '<div class="cr-mmp-referral-hint">' +
+            'Earn <strong>50 MMPs</strong> when someone signs up · <strong>200 MMPs</strong> when they subscribe' +
+          '</div>' +
+        '</div>';
+    }
+
+    var txItemsHtml;
+    var txs = (data.recentTransactions || []).slice(0, 5);
+    if (txs.length === 0) {
+      txItemsHtml = '<div class="cr-mmp-tx-empty">No activity yet — submit a reflection in any course to earn your first 5 Mastery Mark Points.</div>';
+    } else {
+      txItemsHtml = '<ul class="cr-mmp-tx-list">' + txs.map(function(tx) {
+        var amount = tx.amount || 0;
+        var sign = amount >= 0 ? '+' : '';
+        var cls = amount >= 0 ? 'cr-mmp-tx-positive' : 'cr-mmp-tx-negative';
+        var label = crMmpFormatTxType(tx.type);
+        var when = crMmpFormatTimeAgo(tx.createdAt);
+        return '<li class="cr-mmp-tx-item">' +
+          '<div>' +
+            '<div class="cr-mmp-tx-desc">' + crMmpEsc(label) + '</div>' +
+            '<div class="cr-mmp-tx-meta">' + crMmpEsc(when) + '</div>' +
+          '</div>' +
+          '<div class="cr-mmp-tx-amount ' + cls + '">' + sign + amount + '</div>' +
+        '</li>';
+      }).join('') + '</ul>';
+    }
+
+    var tierClass = 'cr-mmp-tier-' + (tier.name || 'Capable').toLowerCase();
+    var progressClass = 'cr-mmp-progress-fill' + (maxedTier ? ' cr-mmp-maxed' : '');
+
+    content.innerHTML =
+      '<div class="cr-mmp-header">' +
+        '<h3 class="cr-mmp-title"><span class="cr-mmp-title-icon">✨</span> Mastery Mark Points</h3>' +
+        '<span class="cr-mmp-tier-badge ' + tierClass + '">' + crMmpEsc(tier.name) + ' Tier</span>' +
+      '</div>' +
+      '<div class="cr-mmp-balance-row">' +
+        '<div class="cr-mmp-balance-cell">' +
+          '<div class="cr-mmp-balance-label">Balance</div>' +
+          '<div class="cr-mmp-balance-value">' + balance + '<span class="cr-mmp-balance-unit">MMP</span></div>' +
+        '</div>' +
+        '<div class="cr-mmp-balance-cell cr-mmp-lifetime">' +
+          '<div class="cr-mmp-balance-label">Lifetime Earned</div>' +
+          '<div class="cr-mmp-balance-value">' + lifetime + '<span class="cr-mmp-balance-unit">MMP</span></div>' +
+        '</div>' +
+      '</div>' +
+      (maxedTier
+        ? '<div class="cr-mmp-progress"><div class="cr-mmp-progress-label"><span>Top tier reached</span><span>Seasoned</span></div><div class="cr-mmp-progress-bar"><div class="' + progressClass + '" style="width:100%"></div></div></div>'
+        : '<div class="cr-mmp-progress">' +
+            '<div class="cr-mmp-progress-label">' +
+              '<span>' + lifetime + ' / ' + tier.nextThreshold + ' lifetime</span>' +
+              '<span>' + pointsToNext + ' to next tier</span>' +
+            '</div>' +
+            '<div class="cr-mmp-progress-bar">' +
+              '<div class="' + progressClass + '" style="width:' + pctToNext + '%"></div>' +
+            '</div>' +
+          '</div>'
+      ) +
+      redeemHtml +
+      '<div class="cr-mmp-section-label">Recent Activity</div>' +
+      txItemsHtml +
+      referralHtml;
+
+    // Wire copy button
+    var copyBtn = document.getElementById('cr-mmp-copy-btn');
+    var urlInput = document.getElementById('cr-mmp-referral-url');
+    if (copyBtn && urlInput) {
+      copyBtn.addEventListener('click', function() {
+        try {
+          urlInput.select();
+          urlInput.setSelectionRange(0, 99999);
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(urlInput.value);
+          } else {
+            document.execCommand('copy');
+          }
+          copyBtn.textContent = 'Copied!';
+          copyBtn.classList.add('cr-mmp-copied');
+          setTimeout(function() {
+            copyBtn.textContent = 'Copy';
+            copyBtn.classList.remove('cr-mmp-copied');
+          }, 2000);
+        } catch (e) {
+          copyBtn.textContent = 'Press Ctrl+C';
+        }
+      });
+    }
+  }
+
+  function crMmpInit() {
+    var token = localStorage.getItem('token');
+    if (!token) {
+      var widget = document.getElementById('cr-mmp-widget');
+      if (widget) widget.style.display = 'none';
+      return;
+    }
+
+    var widget = document.getElementById('cr-mmp-widget');
+    if (widget) widget.style.display = 'block';
+
+    fetch(crMmpApiBase() + '/api/rewards/balance', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+      .then(function(res) {
+        if (res.status === 401) {
+          if (widget) widget.style.display = 'none';
+          return null;
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function(data) {
+        if (data) crMmpRender(data);
+      })
+      .catch(function(err) {
+        var content = document.getElementById('cr-mmp-content');
+        if (content) {
+          content.innerHTML = '<div class="cr-mmp-error">Couldn\'t load Mastery Mark Points. Refresh to try again.</div>';
+        }
+        console.error('[MMP WIDGET]', err);
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', crMmpInit);
+  } else {
+    crMmpInit();
+  }
+})();
+</script>
+
+<!-- ═══ END Mastery Mark Points Widget ═══ -->
+
+      <!-- Badges grid -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-800 mb-4">Badges</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-10" id="badgesGrid"></div>
+
+      <!-- Leaderboard -->
+      <h2 class="font-display text-xl font-semibold text-burgundy-800 mb-4">Leaderboard</h2>
+      <div class="flex gap-2 mb-4" id="lbTabs">
+        <button onclick="loadLeaderboard('alltime')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-burgundy-800 text-white" data-period="alltime">All Time</button>
+        <button onclick="loadLeaderboard('monthly')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500" data-period="monthly">This Month</button>
+        <button onclick="loadLeaderboard('weekly')" class="lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500" data-period="weekly">This Week</button>
+      </div>
+      <div class="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden" id="leaderboardCard">
+        <div id="leaderboardList" class="divide-y divide-stone-100"></div>
+        <div id="myRank" class="border-t-2 border-burgundy-100 bg-burgundy-50 p-4 text-sm"></div>
+      </div>
+    </div>
+  </main>
+
+<script>
+  const API=location.hostname==='localhost'?'http://localhost:5000':'https://api.counselorready.com';
+  const T=localStorage.getItem('token');
+  if(!T)location.href='/login.html';
+
+  const BADGE_ICONS={
+    trophy:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3h14l-1.5 8a5.5 5.5 0 01-11 0L5 3zM12 17v4m-4 0h8"/></svg>',
+    star:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01z"/></svg>',
+    crown:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 18l3-11 5 5 2-10 2 10 5-5 3 11z"/></svg>',
+    gem:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 3h12l4 7-10 11L2 10z"/></svg>',
+    flame:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>',
+    fire:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 23c-3.6 0-8-2.4-8-8.3C4 9.3 8.3 4.5 11 1.5l1-.9 1 .9c2.7 3 7 7.8 7 13.2 0 5.9-4.4 8.3-8 8.3z"/></svg>',
+    medal:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 14.5L6.5 22l5.5-3 5.5 3L16 14.5"/></svg>',
+    award:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15l-3 6 1-4-3 1 5-7 3 6-1-4 3 1z"/><circle cx="12" cy="8" r="6" stroke-width="1.5"/></svg>',
+    clock:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 7v5l3 3"/></svg>',
+    zap:'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+    'check-circle':'<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+  };
+
+  async function init(){
+    try{
+      const r=await fetch(`${API}/api/gamification/my`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)throw new Error('Failed to load');
+      const data=await r.json();
+
+      document.getElementById('loading').style.display='none';
+      document.getElementById('content').classList.remove('hidden');
+
+      // Stats
+      document.getElementById('userLevel').textContent=data.level||1;
+      document.getElementById('currentXp').textContent=data.xp||0;
+      document.getElementById('xpToNext').textContent=data.xpToNextLevel||500;
+      document.getElementById('statCourses').textContent=data.totalCoursesCompleted||0;
+      document.getElementById('statHours').textContent=data.totalCEHoursEarned||0;
+      document.getElementById('statQuizzes').textContent=data.totalQuizzesPassed||0;
+      document.getElementById('statStreak').textContent=data.currentStreak||0;
+
+      if(!data.currentStreak)document.getElementById('streakIcon').style.display='none';
+
+      // XP bar
+      const xpInLevel=data.xp%500;
+      const pct=Math.round((xpInLevel/500)*100);
+      setTimeout(()=>{document.getElementById('xpBar').style.width=pct+'%'},100);
+
+      // Badges
+      const badges=data.availableBadges||[];
+      document.getElementById('badgesGrid').innerHTML=badges.map(b=>{
+        const icon=BADGE_ICONS[b.icon]||BADGE_ICONS.star;
+        const earned=b.earned;
+        const earnedDate=earned&&b.earnedAt?new Date(b.earnedAt).toLocaleDateString():'';
+        return`
+          <div class="badge-card bg-white rounded-xl border ${earned?'border-hunter-500':'border-stone-200'} p-5 text-center ${earned?'earned':'locked'}">
+            <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center mb-3 ${earned?'bg-honey-100 text-honey-700':'bg-stone-100 text-stone-300'}">
+              ${icon}
+            </div>
+            <h3 class="font-semibold text-sm ${earned?'text-burgundy-800':'text-stone-400'}">${b.name}</h3>
+            <p class="text-xs mt-1 ${earned?'text-stone-500':'text-stone-300'}">${b.description}</p>
+            ${earned?`<p class="text-[10px] text-hunter-500 mt-2 font-medium">Earned ${earnedDate}</p>`:'<p class="text-[10px] text-stone-300 mt-2">Locked</p>'}
+          </div>
+        `;
+      }).join('');
+
+      loadLeaderboard('alltime');
+    }catch(e){
+      document.getElementById('loading').innerHTML=`<p class="text-burgundy-700 font-semibold">${e.message}</p>`;
+    }
+  }
+
+  async function loadLeaderboard(period){
+    // Tab styling
+    document.querySelectorAll('.lb-tab').forEach(t=>{
+      if(t.dataset.period===period){t.className='lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-burgundy-800 text-white'}
+      else{t.className='lb-tab px-4 py-2 rounded-lg text-sm font-semibold bg-stone-100 text-stone-500'}
+    });
+
+    try{
+      const r=await fetch(`${API}/api/gamification/leaderboard?period=${period}`,{headers:{Authorization:`Bearer ${T}`}});
+      if(!r.ok)return;
+      const data=await r.json();
+
+      const medalColors=['#D4A855','#9CA3AF','#CD7F32'];
+      document.getElementById('leaderboardList').innerHTML=(data.leaderboard||[]).map((p,i)=>`
+        <div class="flex items-center gap-4 px-5 py-3 ${i<3?'bg-honey-50':''}">
+          <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="${i<3?`background:${medalColors[i]};color:#fff`:'background:#F1EFE9;color:#57534e'}">${p.rank}</span>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-burgundy-800 truncate">${p.name||'Anonymous'}</p>
+            <p class="text-xs text-stone-400">Level ${p.level} &middot; ${p.badges} badges &middot; ${p.streak}d streak</p>
+          </div>
+          <span class="text-sm font-bold text-burgundy-800">${p.xp.toLocaleString()} XP</span>
+        </div>
+      `).join('')||(data.leaderboard?.length===0?'<div class="p-6 text-center text-stone-400 text-sm">No activity yet. Be the first!</div>':'');
+
+      const myRankEl=document.getElementById('myRank');
+      if(data.myRank){
+        myRankEl.innerHTML=`<span class="font-semibold text-burgundy-800">Your rank: #${data.myRank}</span> &middot; ${(data.myXp||0).toLocaleString()} XP`;
+      }else{
+        myRankEl.innerHTML='<span class="text-stone-400">Complete a course to appear on the leaderboard</span>';
+      }
+    }catch(e){console.error(e)}
+  }
+
+  document.addEventListener('DOMContentLoaded',init);
+</script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

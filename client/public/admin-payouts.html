@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Marketplace Payouts - CounselorReady Admin</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family:'Lato',system-ui,sans-serif;}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(40,65,87,.45);z-index:60;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg.open{display:flex}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <a href="/admin-partners.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Management
+    </a>
+
+    <div class="flex items-center justify-between mb-6 gap-4 flex-wrap">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Marketplace Payouts</h1>
+        <p class="text-gray-500 mt-1">Reconcile and settle syndication commissions <span id="adminEmail" class="text-stone-400 text-xs"></span></p>
+      </div>
+      <select id="statusFilter" onchange="load()" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
+        <option value="pending">Pending</option>
+        <option value="all">All</option>
+        <option value="paid">Paid</option>
+      </select>
+    </div>
+
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading commissions...</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+    </div>
+
+    <div id="content" class="hidden space-y-6">
+
+      <!-- Totals -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <p class="text-xs text-stone-500">Pending owed to partners</p>
+          <p id="totalPending" class="text-2xl font-bold text-burgundy-900 mt-1">$0.00</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <p class="text-xs text-stone-500">Advertising expense <span class="text-stone-400">(15% on our courses)</span></p>
+          <p id="adExpense" class="text-2xl font-bold text-stone-900 mt-1">$0.00</p>
+        </div>
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <p class="text-xs text-stone-500">Content cost <span class="text-stone-400">(85% on partner courses)</span></p>
+          <p id="contentCost" class="text-2xl font-bold text-stone-900 mt-1">$0.00</p>
+        </div>
+      </div>
+
+      <!-- Clawback alert -->
+      <div id="clawbackAlert" class="hidden rounded-xl border border-red-200 p-4 flex items-center gap-3" style="background:#fef2f2">
+        <i class="fas fa-rotate-left text-red-600"></i>
+        <p class="text-sm text-stone-700" id="clawbackText"></p>
+      </div>
+
+      <!-- Partner table -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-stone-200 bg-stone-50">
+                <th class="text-left py-3 px-4 text-xs font-medium text-stone-500">Partner</th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-stone-500">Pending</th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-stone-500">Paid</th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-stone-500">Sales</th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-stone-500"></th>
+              </tr>
+            </thead>
+            <tbody id="partnerBody"></tbody>
+          </table>
+        </div>
+        <div id="noRows" class="hidden text-center py-12 text-stone-500 text-sm">No commissions for this filter.</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Settle modal -->
+  <div id="settleModal" class="modal-bg">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+      <div class="flex items-center justify-between mb-1">
+        <h2 class="font-display text-xl font-semibold text-burgundy-900">Settle Commissions</h2>
+        <button onclick="closeSettle()" class="text-stone-400 hover:text-stone-600"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="text-sm text-stone-500 mb-4"><span id="settleName" class="font-medium text-stone-700"></span> — <span id="settleAmount" class="font-semibold text-burgundy-900"></span> pending</p>
+
+      <label class="block text-xs font-semibold text-stone-600 mb-1.5">Settlement method</label>
+      <select id="settleMethod" class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm mb-1">
+        <option value="credit">Account credit (apply to their CounselorReady invoice)</option>
+        <option value="external">External payout (ACH / bank — recorded only)</option>
+        <option value="cash">Cash / other (recorded only)</option>
+      </select>
+      <p id="creditNote" class="text-xs text-stone-400 mb-3">If the partner has a Stripe customer on file, this applies a balance credit automatically. Otherwise it's recorded for manual handling.</p>
+
+      <label class="block text-xs font-semibold text-stone-600 mb-1.5">Reference (optional)</label>
+      <input id="settleRef" class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm mb-4" placeholder="e.g. ACH batch #, check #">
+
+      <div id="settleMsg" class="hidden text-sm mb-3"></div>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeSettle()" class="px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Cancel</button>
+        <button onclick="doSettle()" id="settleBtn" class="px-4 py-2 text-sm rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white font-medium">Mark Settled</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    let SETTLE_PARTNER = null;
+
+    document.addEventListener('DOMContentLoaded', () => { checkAuth(); load(); });
+
+    function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') { alert('Admin access required'); window.location.href = '/dashboard.html'; return; }
+      const el = document.getElementById('adminEmail'); if (el) el.textContent = user.email || '';
+    }
+    function esc(s){ if(s==null) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+    function money(n){ return '$' + (Number(n) || 0).toFixed(2); }
+
+    async function load() {
+      const status = document.getElementById('statusFilter').value;
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('content').classList.add('hidden');
+      document.getElementById('errorState').classList.add('hidden');
+      try {
+        const res = await fetch(`${API_URL}/api/partners/admin/commissions?status=${status}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed to load');
+        const d = await res.json();
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+
+        document.getElementById('totalPending').textContent = money(d.totals?.totalPendingOwed);
+        document.getElementById('adExpense').textContent = money(d.totals?.advertisingExpense);
+        document.getElementById('contentCost').textContent = money(d.totals?.contentCost);
+
+        const cb = d.totals?.clawbackOwed || 0;
+        const cbAlert = document.getElementById('clawbackAlert');
+        if (cb > 0) {
+          document.getElementById('clawbackText').innerHTML =
+            `<strong>${money(cb)}</strong> in clawbacks across ${d.totals.clawbackCount} refunded sale${d.totals.clawbackCount !== 1 ? 's' : ''} that were already paid out — recover from the partner's next settlement.`;
+          cbAlert.classList.remove('hidden');
+        } else {
+          cbAlert.classList.add('hidden');
+        }
+
+        const body = document.getElementById('partnerBody');
+        const rows = d.partners || [];
+        if (!rows.length) { body.innerHTML = ''; document.getElementById('noRows').classList.remove('hidden'); return; }
+        document.getElementById('noRows').classList.add('hidden');
+        body.innerHTML = rows.map(r => `
+          <tr class="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+            <td class="py-3 px-4">
+              <div class="font-medium text-stone-900">${esc(r.name)}</div>
+              <div class="text-xs text-stone-500">${esc(r.slug)}${r.hasStripeCustomer ? ' · <span class="text-hunter-600">Stripe on file</span>' : ''}</div>
+            </td>
+            <td class="py-3 px-4 text-right font-semibold ${r.pending > 0 ? 'text-burgundy-900' : 'text-stone-400'}">${money(r.pending)}</td>
+            <td class="py-3 px-4 text-right text-stone-600">${money(r.paid)}</td>
+            <td class="py-3 px-4 text-right text-stone-600">${r.entries}</td>
+            <td class="py-3 px-4 text-right">
+              ${r.pending > 0
+                ? `<button onclick='openSettle(${JSON.stringify({ partnerId: r.partnerId, name: r.name, pending: r.pending })})' class="text-xs font-medium text-white bg-hunter-700 hover:bg-hunter-800 px-3 py-1.5 rounded-lg">Settle</button>`
+                : '<span class="text-xs text-stone-400">—</span>'}
+            </td>
+          </tr>`).join('');
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function openSettle(p) {
+      SETTLE_PARTNER = p;
+      document.getElementById('settleName').textContent = p.name;
+      document.getElementById('settleAmount').textContent = money(p.pending);
+      document.getElementById('settleRef').value = '';
+      document.getElementById('settleMsg').classList.add('hidden');
+      document.getElementById('settleModal').classList.add('open');
+    }
+    function closeSettle() { document.getElementById('settleModal').classList.remove('open'); }
+
+    async function doSettle() {
+      if (!SETTLE_PARTNER) return;
+      const btn = document.getElementById('settleBtn');
+      const msg = document.getElementById('settleMsg');
+      btn.disabled = true; btn.textContent = 'Settling...';
+      try {
+        const res = await fetch(`${API_URL}/api/partners/admin/commissions/settle`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            partnerId: SETTLE_PARTNER.partnerId,
+            method: document.getElementById('settleMethod').value,
+            reference: document.getElementById('settleRef').value.trim() || undefined
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to settle');
+        msg.className = 'text-sm text-hunter-700 mb-3'; msg.textContent = data.message; msg.classList.remove('hidden');
+        setTimeout(() => { closeSettle(); load(); }, 1200);
+      } catch (err) {
+        msg.className = 'text-sm text-red-600 mb-3'; msg.textContent = err.message; msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Mark Settled';
+      }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

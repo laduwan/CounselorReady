@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Manage Users | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(40,65,87,.45);z-index:60;align-items:center;justify-content:center;padding:1rem}
+    .modal-bg.open{display:flex}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- ═══════ HEADER ═══════ -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-5xl mx-auto px-6 py-8">
+
+    <a href="/partner-dashboard.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Partner Dashboard
+    </a>
+
+    <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Manage Users</h1>
+        <p class="text-gray-500 mt-1">Invite team members and manage their access</p>
+      </div>
+      <button onclick="openInvite()" id="inviteBtn" class="hidden bg-burgundy-800 hover:bg-burgundy-900 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2 transition-colors">
+        <i class="fas fa-user-plus"></i> Invite Users
+      </button>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading users...</p>
+    </div>
+
+    <!-- Empty (no partner) -->
+    <div id="emptyState" class="hidden text-center py-20">
+      <i class="fas fa-handshake text-5xl text-gray-300 mb-4"></i>
+      <p class="text-lg font-medium text-stone-600">No partner account found</p>
+      <p class="text-sm text-stone-500 mt-1">This page is available to whitelabel distribution partners.</p>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <!-- Content -->
+    <div id="content" class="hidden space-y-5">
+
+      <!-- Seat quota -->
+      <div id="quotaCard" class="bg-white rounded-xl border border-gray-200 p-5"></div>
+
+      <!-- Search -->
+      <div class="bg-white rounded-xl border border-gray-200 p-4">
+        <div class="relative">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+          <input type="text" id="searchInput" placeholder="Search by name or email..."
+            class="w-full pl-10 pr-4 py-2 border border-stone-200 rounded-lg text-sm focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500 outline-none">
+        </div>
+      </div>
+
+      <!-- Users table -->
+      <div class="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-stone-200 bg-stone-50">
+                <th class="text-left py-3 px-4 text-xs font-medium text-stone-500">Name</th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-stone-500">Plan</th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-stone-500">Status</th>
+                <th class="text-left py-3 px-4 text-xs font-medium text-stone-500">Last Login</th>
+                <th class="text-right py-3 px-4 text-xs font-medium text-stone-500"></th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+        <div id="noUsers" class="hidden text-center py-12 text-stone-500 text-sm">No users match your search.</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Invite modal -->
+  <div id="inviteModal" class="modal-bg">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-xl font-semibold text-burgundy-900">Invite Users</h2>
+        <button onclick="closeInvite()" class="text-stone-400 hover:text-stone-600"><i class="fas fa-times"></i></button>
+      </div>
+      <p class="text-sm text-stone-500 mb-3">Enter one email per line (up to 50). Each person receives a branded invitation to create their account.</p>
+      <textarea id="inviteEmails" rows="6" placeholder="jane@example.com&#10;john@example.com"
+        class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-hunter-500 outline-none"></textarea>
+      <div id="inviteResult" class="hidden mt-3 text-sm"></div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button onclick="closeInvite()" class="px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Cancel</button>
+        <button onclick="sendInvites()" id="sendInviteBtn" class="px-4 py-2 text-sm rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white font-medium">Send Invitations</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+    const AUTH = { 'Authorization': `Bearer ${T}`, 'Content-Type': 'application/json' };
+
+    try {
+      const p = JSON.parse(atob(T.split('.')[1]));
+      const un = document.getElementById('userName'); if (un) un.textContent = p.name || '';
+      const av = document.getElementById('userAvatar'); if (av) av.textContent = (p.name || '--').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    } catch (e) {}
+
+    let ALL_USERS = [];
+
+    function esc(str) {
+      if (str === null || str === undefined) return '';
+      const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+    }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : 'Never'; }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+    async function init() {
+      try {
+        const myRes = await fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null);
+        if (!myRes || !myRes.ok) {
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('emptyState').classList.remove('hidden');
+          return;
+        }
+
+        const [usersRes, quotaRes] = await Promise.all([
+          fetch(`${API}/api/partners/my/users?limit=500`, { headers: AUTH }).catch(() => null),
+          fetch(`${API}/api/partners/my/quota`, { headers: AUTH }).catch(() => null)
+        ]);
+
+        const usersData = usersRes && usersRes.ok ? await usersRes.json() : { users: [] };
+        const quota = quotaRes && quotaRes.ok ? await quotaRes.json() : null;
+        ALL_USERS = usersData.users || [];
+
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('content').classList.remove('hidden');
+        document.getElementById('inviteBtn').classList.remove('hidden');
+
+        renderQuota(quota);
+        renderUsers(ALL_USERS);
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+          const q = e.target.value.toLowerCase().trim();
+          renderUsers(!q ? ALL_USERS : ALL_USERS.filter(u =>
+            (u.email || '').toLowerCase().includes(q) ||
+            (`${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`).toLowerCase().includes(q)));
+        });
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message || 'Failed to load users';
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    }
+
+    function renderQuota(quota) {
+      const card = document.getElementById('quotaCard');
+      if (!quota || !quota.userQuota) {
+        card.innerHTML = `<p class="text-sm text-stone-500"><span class="font-bold text-stone-900">${ALL_USERS.length}</span> total users</p>`;
+        return;
+      }
+      const q = quota.userQuota;
+      const unlimited = q.limit === -1;
+      const pct = unlimited ? 0 : Math.min(100, q.percentage || 0);
+      const barColor = pct >= 90 ? '#dc2626' : pct >= 70 ? '#d97706' : '#4A7C59';
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-sm font-semibold text-stone-900">Seat Usage</p>
+          <p class="text-sm text-stone-600"><span class="font-bold text-stone-900">${q.used}</span> ${unlimited ? '' : `/ ${q.limit}`} users${unlimited ? ' (unlimited)' : ''}</p>
+        </div>
+        ${unlimited ? '' : `
+        <div class="w-full bg-stone-200 rounded-full h-2">
+          <div class="h-2 rounded-full" style="width:${pct}%;background:${barColor}"></div>
+        </div>
+        ${q.remaining <= 0 ? '<p class="text-xs text-red-600 mt-2">Seat limit reached. Upgrade your plan to invite more users.</p>' : ''}`}
+      `;
+    }
+
+    function renderUsers(list) {
+      const body = document.getElementById('usersBody');
+      const none = document.getElementById('noUsers');
+      if (!list.length) { body.innerHTML = ''; none.classList.remove('hidden'); return; }
+      none.classList.add('hidden');
+      const me = (() => { try { return JSON.parse(atob(T.split('.')[1])).id || JSON.parse(atob(T.split('.')[1]))._id; } catch (e) { return null; } })();
+
+      body.innerHTML = list.map(u => {
+        const name = `${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim() || '—';
+        const plan = u.subscription?.plan || 'free';
+        const status = u.subscription?.status || (u.emailVerified ? 'active' : 'pending');
+        const statusColor = status === 'active' ? '#4A7C59' : status === 'past_due' || status === 'canceled' ? '#dc2626' : '#78716c';
+        const statusBg = status === 'active' ? '#f0fdf4' : status === 'past_due' || status === 'canceled' ? '#fef2f2' : '#f5f5f4';
+        const isOwner = u.role === 'partner_admin' || (me && (u._id === me));
+        return `
+          <tr class="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+            <td class="py-3 px-4">
+              <div class="font-medium text-stone-900">${esc(name)}</div>
+              <div class="text-xs text-stone-500">${esc(u.email)}</div>
+            </td>
+            <td class="py-3 px-4 text-stone-600 capitalize">${esc(plan)}</td>
+            <td class="py-3 px-4">
+              <span class="inline-block px-2 py-0.5 rounded-full text-xs font-medium capitalize" style="background:${statusBg};color:${statusColor}">${esc(status)}</span>
+            </td>
+            <td class="py-3 px-4 text-stone-600">${fmtDate(u.lastLoginAt)}</td>
+            <td class="py-3 px-4 text-right">
+              ${isOwner ? '<span class="text-xs text-stone-400">Admin</span>' :
+                `<button onclick="removeUser('${u._id}','${esc(u.email)}')" class="text-xs text-red-600 hover:text-red-800 font-medium">Remove</button>`}
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── Invite ──
+    function openInvite() {
+      document.getElementById('inviteEmails').value = '';
+      document.getElementById('inviteResult').classList.add('hidden');
+      document.getElementById('inviteModal').classList.add('open');
+    }
+    function closeInvite() { document.getElementById('inviteModal').classList.remove('open'); }
+
+    async function sendInvites() {
+      const raw = document.getElementById('inviteEmails').value;
+      const emails = raw.split(/[\n,]/).map(e => e.trim()).filter(Boolean);
+      const result = document.getElementById('inviteResult');
+      if (!emails.length) {
+        result.className = 'mt-3 text-sm text-red-600'; result.textContent = 'Enter at least one email.'; result.classList.remove('hidden'); return;
+      }
+      const btn = document.getElementById('sendInviteBtn');
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try {
+        const res = await fetch(`${API}/api/partners/my/users/invite`, {
+          method: 'POST', headers: AUTH, body: JSON.stringify({ emails })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send invitations');
+        const sent = (data.sent || []).length;
+        const errs = data.errors || [];
+        result.className = 'mt-3 text-sm';
+        result.innerHTML = `<p class="text-hunter-700 font-medium">${sent} invitation${sent !== 1 ? 's' : ''} sent.</p>` +
+          (errs.length ? `<ul class="mt-1 text-red-600 text-xs list-disc pl-4">${errs.map(e => `<li>${esc(e.email)}: ${esc(e.error)}</li>`).join('')}</ul>` : '');
+        result.classList.remove('hidden');
+      } catch (err) {
+        result.className = 'mt-3 text-sm text-red-600'; result.textContent = err.message; result.classList.remove('hidden');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Send Invitations';
+      }
+    }
+
+    // ── Remove ──
+    async function removeUser(userId, email) {
+      if (!confirm(`Remove ${email} from your organization? They will lose partner access.`)) return;
+      try {
+        const res = await fetch(`${API}/api/partners/my/users/${userId}`, { method: 'DELETE', headers: AUTH });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to remove user');
+        ALL_USERS = ALL_USERS.filter(u => u._id !== userId);
+        renderUsers(ALL_USERS);
+      } catch (err) { alert(err.message); }
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

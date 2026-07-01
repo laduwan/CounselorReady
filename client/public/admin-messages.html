@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Messages - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    h1, h2, h3 { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .tab-active { border-bottom: 3px solid #6b1d34; color: #6b1d34; font-weight: 600; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/></svg>
+          Users
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Migration
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+          Messages
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+          Hardship Requests
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          Analytics
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"/></svg>
+          Integrations
+        </a>
+      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-forest-900">Admin Messages</h1>
+        <p class="text-forest-600 mt-1">Manage user messages and send communications</p>
+      </div>
+      <button onclick="openComposeModal()" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-5 py-3 rounded-xl transition-colors shadow-md">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Compose Message
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="border-b border-stone-200 mb-6">
+      <nav class="flex gap-8">
+        <button onclick="showTab('inbox')" id="tab-inbox" class="pb-3 px-1 tab-active">
+          📥 Inbox <span id="inboxCount" class="ml-1 bg-burgundy-100 text-burgundy-700 text-xs px-2 py-0.5 rounded-full">0</span>
+        </button>
+        <button onclick="showTab('sent')" id="tab-sent" class="pb-3 px-1 text-forest-600 hover:text-forest-800">
+          📤 Sent
+        </button>
+        <button onclick="showTab('users')" id="tab-users" class="pb-3 px-1 text-forest-600 hover:text-forest-800">
+          👥 User Progress
+        </button>
+        <button onclick="showTab('broadcast')" id="tab-broadcast" class="pb-3 px-1 text-forest-600 hover:text-forest-800">
+          📢 Broadcast
+        </button>
+      <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </div>
+
+    <!-- Inbox Tab -->
+    <div id="content-inbox" class="grid grid-cols-3 gap-6">
+      <!-- Conversations List -->
+      <div class="col-span-1 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
+          <h2 class="font-semibold text-forest-900">Support Requests</h2>
+          <select id="statusFilter" onchange="filterByStatus()" class="text-sm border border-stone-300 rounded-lg px-2 py-1">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="replied">Replied</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div id="inboxList" class="divide-y divide-stone-100 max-h-[550px] overflow-y-auto">
+          <div class="p-8 text-center text-forest-500">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Message Thread & User Info -->
+      <div class="col-span-2 space-y-4">
+        <!-- User Info Panel -->
+        <div id="userInfoPanel" class="bg-white rounded-2xl shadow-sm border border-stone-200 p-4 hidden">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <div id="userAvatar" class="w-12 h-12 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-lg"></div>
+              <div>
+                <h3 id="userName" class="font-semibold text-forest-900"></h3>
+                <p id="userEmail" class="text-sm text-forest-600"></p>
+              </div>
+            </div>
+            <button onclick="viewUserProgress()" class="px-4 py-2 bg-forest-100 text-forest-700 rounded-lg hover:bg-forest-200 transition-colors text-sm font-medium">
+              📊 View Course Progress
+            </button>
+          </div>
+        </div>
+
+        <!-- Message Thread -->
+        <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden flex flex-col" style="height: 500px;">
+          <div id="threadHeader" class="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
+            <h2 class="font-semibold text-forest-900">Select a conversation</h2>
+            <div id="statusButtons" class="hidden flex gap-2">
+              <button onclick="updateStatus('resolved')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200">✓ Resolved</button>
+              <button onclick="updateStatus('closed')" class="px-3 py-1 bg-stone-100 text-stone-600 rounded-lg text-sm hover:bg-stone-200">Close</button>
+            </div>
+          </div>
+          
+          <div id="messageThread" class="flex-1 overflow-y-auto p-6">
+            <div class="flex items-center justify-center h-full text-forest-500">
+              <div class="text-center">
+                <svg class="w-16 h-16 mx-auto text-stone-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                <p>Select a conversation to view messages</p>
+              </div>
+            </div>
+          </div>
+
+          <div id="replyBox" class="p-4 border-t border-stone-200 bg-stone-50 hidden">
+            <form id="replyForm" class="flex gap-3">
+              <div class="flex-1 relative">
+                <textarea id="replyMessage" rows="2" placeholder="Type your reply..." class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+                <label class="absolute bottom-3 right-3 cursor-pointer text-forest-500 hover:text-burgundy-600">
+                  <input type="file" id="replyAttachment" multiple class="hidden">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                  </svg>
+                </label>
+              </div>
+              <div class="flex flex-col gap-2">
+                <label class="flex items-center gap-2 text-sm text-forest-600">
+                  <input type="checkbox" id="sendEmailCheckbox" checked class="rounded border-stone-300 text-burgundy-600">
+                  Send email
+                </label>
+                <button type="submit" class="px-6 py-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors">
+                  Reply
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sent Tab -->
+    <div id="content-sent" class="hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50">
+          <h2 class="font-semibold text-forest-900">Sent Messages</h2>
+        </div>
+        <div id="sentList" class="divide-y divide-stone-100">
+          <div class="p-8 text-center text-forest-500">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Progress Tab -->
+    <div id="content-users" class="hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-stone-200">
+        <div class="p-4 border-b border-stone-200 bg-stone-50 flex items-center gap-4">
+          <h2 class="font-semibold text-forest-900">User Course Progress</h2>
+          <div class="flex-1 relative">
+            <input type="text" id="userSearchInput" placeholder="Search users by name or email..." class="w-full px-4 py-2 pl-10 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <svg class="w-5 h-5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div id="userProgressList" class="p-4">
+          <p class="text-forest-500 text-center py-8">Search for a user to view their course progress</p>
+        </div>
+      </div>
+
+      <!-- User Detail Panel -->
+      <div id="userDetailPanel" class="mt-6 bg-white rounded-2xl shadow-sm border border-stone-200 hidden">
+        <div class="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div id="detailUserAvatar" class="w-12 h-12 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-lg"></div>
+            <div>
+              <h3 id="detailUserName" class="font-semibold text-forest-900"></h3>
+              <p id="detailUserEmail" class="text-sm text-forest-600"></p>
+            </div>
+          </div>
+          <button onclick="messageUser()" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg hover:bg-burgundy-900 transition-colors text-sm font-medium">
+            ✉️ Send Message
+          </button>
+        </div>
+        
+        <!-- Registration & Subscription Info -->
+        <div class="p-4 border-b border-stone-200 bg-stone-50/50">
+          <div class="grid grid-cols-4 gap-4">
+            <div>
+              <p class="text-xs text-forest-500 uppercase font-medium">Registered</p>
+              <p id="detailRegisteredAt" class="text-sm font-semibold text-forest-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs text-forest-500 uppercase font-medium">Plan</p>
+              <p id="detailPlan" class="text-sm font-semibold text-forest-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs text-forest-500 uppercase font-medium">State</p>
+              <p id="detailState" class="text-sm font-semibold text-forest-800">-</p>
+            </div>
+            <div>
+              <p class="text-xs text-forest-500 uppercase font-medium">CE Hours Earned</p>
+              <p id="detailCEHours" class="text-sm font-semibold text-forest-800">-</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="p-4 border-b border-stone-200">
+          <div class="grid grid-cols-4 gap-4 text-center">
+            <div class="bg-burgundy-50 rounded-xl p-3">
+              <p id="statTotalCourses" class="text-2xl font-bold text-burgundy-800">0</p>
+              <p class="text-xs text-burgundy-600">Enrolled</p>
+            </div>
+            <div class="bg-green-50 rounded-xl p-3">
+              <p id="statCompletedCourses" class="text-2xl font-bold text-green-700">0</p>
+              <p class="text-xs text-green-600">Completed</p>
+            </div>
+            <div class="bg-yellow-50 rounded-xl p-3">
+              <p id="statInProgressCourses" class="text-2xl font-bold text-yellow-700">0</p>
+              <p class="text-xs text-yellow-600">In Progress</p>
+            </div>
+            <div class="bg-forest-50 rounded-xl p-3">
+              <p id="statCredentials" class="text-2xl font-bold text-forest-700">0</p>
+              <p class="text-xs text-forest-600">Credentials</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Credentials Section -->
+        <div class="p-4 border-b border-stone-200">
+          <h4 class="font-semibold text-forest-900 mb-3">Credentials</h4>
+          <div id="credentialsList" class="space-y-2">
+            <p class="text-forest-500 text-sm">No credentials</p>
+          </div>
+        </div>
+        
+        <div class="p-6">
+          <h4 class="font-semibold text-forest-900 mb-4">Course Enrollments & Progress</h4>
+          <div id="courseProgressList" class="space-y-4">
+            <!-- Courses will be rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Broadcast Tab -->
+    <div id="content-broadcast" class="hidden">
+      <div class="grid grid-cols-3 gap-6">
+        <!-- Compose Broadcast -->
+        <div class="col-span-1 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="p-4 border-b border-stone-200 bg-stone-50">
+            <h2 class="font-semibold text-forest-900">New Broadcast</h2>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Title</label>
+              <input id="msgBcTitle" type="text" placeholder="Broadcast title..." class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-stone-700 mb-1">Message</label>
+              <textarea id="msgBcMessage" rows="5" placeholder="What do learners need to know?" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1">Type</label>
+                <select id="msgBcType" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 outline-none">
+                  <option value="info">Info</option>
+                  <option value="maintenance">Maintenance</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="update">Update</option>
+                  <option value="promotion">Promotion</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-stone-700 mb-1">Audience</label>
+                <select id="msgBcAudience" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 outline-none">
+                  <option value="all">All Users</option>
+                  <option value="free">Free Plan</option>
+                  <option value="professional">Professional</option>
+                  <option value="vip">VIP</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-sm text-stone-600">
+                <input id="msgBcPinned" type="checkbox" class="rounded border-stone-300"> Pin
+              </label>
+              <label class="flex items-center gap-2 text-sm text-stone-600">
+                <input id="msgBcEmail" type="checkbox" class="rounded border-stone-300"> Email
+              </label>
+            </div>
+            <div id="msgBcError" class="text-sm text-red-600 hidden"></div>
+            <div id="msgBcSuccess" class="text-sm text-green-600 hidden"></div>
+            <button onclick="sendMsgBroadcast()" id="msgBcSendBtn" class="w-full py-2 text-sm font-semibold text-white rounded-lg" style="background:#6B1D34">
+              Send Broadcast
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Broadcasts List -->
+        <div class="col-span-2 bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="p-4 border-b border-stone-200 bg-stone-50 flex items-center justify-between">
+            <h2 class="font-semibold text-forest-900">Active Broadcasts</h2>
+            <button onclick="loadMsgBroadcasts()" class="text-sm text-burgundy-600 hover:text-burgundy-800">
+              <i class="fas fa-sync-alt mr-1"></i> Refresh
+            </button>
+          </div>
+          <div id="msgBcList" class="divide-y divide-stone-100">
+            <div class="p-8 text-center text-stone-400">Click "Refresh" or switch to this tab to load broadcasts.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Compose Message Modal -->
+  <div id="composeModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
+      <div class="p-6 border-b border-stone-200">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-forest-900">Compose Message</h2>
+          <button onclick="closeComposeModal()" class="text-forest-400 hover:text-forest-600">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      
+      <div class="overflow-y-auto flex-1">
+      <form id="composeForm" class="p-6 space-y-5">
+        <!-- To Field with Autocomplete -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">To *</label>
+          <div class="relative">
+            <input type="text" id="toField" placeholder="Start typing a name or email..." autocomplete="off" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+            <div id="autocompleteResults" class="fixed bg-white border border-stone-300 rounded-xl mt-1 shadow-lg z-[200] hidden max-h-60 overflow-y-auto w-full max-w-lg"></div>
+          </div>
+          <div id="selectedRecipients" class="flex flex-wrap gap-2 mt-2"></div>
+        </div>
+
+        <!-- Bulk Options -->
+        <div class="bg-stone-50 rounded-xl p-4">
+          <h3 class="text-sm font-semibold text-forest-800 mb-3">Or send to a group:</h3>
+          <div class="grid grid-cols-3 gap-3">
+            <button type="button" onclick="selectGroup('all')" class="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm hover:border-burgundy-500 hover:bg-burgundy-50 transition-colors">All Users</button>
+            <button type="button" onclick="selectGroup('expiring')" class="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm hover:border-burgundy-500 hover:bg-burgundy-50 transition-colors">Expiring in 30 days</button>
+            <button type="button" onclick="selectGroup('lowProgress')" class="px-3 py-2 bg-white border border-stone-300 rounded-lg text-sm hover:border-burgundy-500 hover:bg-burgundy-50 transition-colors">Low CE Progress</button>
+          </div>
+          <div class="grid grid-cols-2 gap-3 mt-3">
+            <select id="filterState" class="px-3 py-2 border border-stone-300 rounded-lg text-sm">
+              <option value="">Filter by State...</option>
+              <option value="GA">Georgia</option>
+              <option value="FL">Florida</option>
+              <option value="TX">Texas</option>
+              <option value="CA">California</option>
+            </select>
+            <select id="filterCredential" class="px-3 py-2 border border-stone-300 rounded-lg text-sm">
+              <option value="">Filter by Credential...</option>
+              <option value="LPC">LPC</option>
+              <option value="LMFT">LMFT</option>
+              <option value="LCSW">LCSW</option>
+              <option value="NCC">NCC</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Subject *</label>
+          <input type="text" id="composeSubject" required placeholder="Message subject" class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+        </div>
+
+        <!-- Message -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Message *</label>
+          <textarea id="composeBody" required rows="6" placeholder="Your message..." class="w-full px-4 py-3 border border-stone-300 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none resize-none"></textarea>
+        </div>
+
+        <!-- Attachments -->
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-2">Attachments</label>
+          <input type="file" id="composeAttachments" multiple class="w-full px-4 py-3 border border-stone-300 rounded-xl">
+        </div>
+
+        <!-- Options -->
+        <div class="flex items-center gap-4">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="composeSendEmail" checked class="w-5 h-5 rounded border-stone-300 text-burgundy-600">
+            <span class="text-sm text-forest-700">📧 Send email notification</span>
+          </label>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeComposeModal()" class="flex-1 py-3 border-2 border-stone-300 text-forest-700 font-semibold rounded-xl hover:bg-stone-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-3 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold rounded-xl transition-colors">
+            Send Message
+          </button>
+        </div>
+      </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let currentConversationId = null;
+    let currentUserId = null;
+    let selectedRecipients = [];
+    let searchTimeout = null;
+
+    // Check auth
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+      loadInbox();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // To field autocomplete
+      const toField = document.getElementById('toField');
+      toField.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => searchUsers(e.target.value), 300);
+      });
+      toField.addEventListener('focus', () => {
+        if (toField.value.length >= 2) searchUsers(toField.value);
+      });
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#toField') && !e.target.closest('#autocompleteResults')) {
+          document.getElementById('autocompleteResults').classList.add('hidden');
+        }
+      });
+
+      // User search in progress tab
+      const userSearch = document.getElementById('userSearchInput');
+      userSearch.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => searchUsersForProgress(e.target.value), 300);
+      });
+
+      // Reply form
+      document.getElementById('replyForm').addEventListener('submit', sendReply);
+      
+      // Compose form
+      document.getElementById('composeForm').addEventListener('submit', sendCompose);
+    }
+
+    // Tab switching
+    function showTab(tab) {
+      ['inbox', 'sent', 'users', 'broadcast'].forEach(t => {
+        const content = document.getElementById('content-' + t);
+        const tabBtn = document.getElementById('tab-' + t);
+        if (content) content.classList.add('hidden');
+        if (tabBtn) { tabBtn.classList.remove('tab-active'); tabBtn.classList.add('text-forest-600'); }
+      });
+      document.getElementById('content-' + tab).classList.remove('hidden');
+      document.getElementById('tab-' + tab).classList.add('tab-active');
+      document.getElementById('tab-' + tab).classList.remove('text-forest-600');
+      if (tab === 'broadcast') loadMsgBroadcasts();
+    }
+
+    // Load inbox
+    async function loadInbox() {
+      try {
+        const status = document.getElementById('statusFilter').value;
+        const url = status ? `${API_URL}/api/announcements/admin/inbox?status=${status}` : `${API_URL}/api/announcements/admin/inbox`;
+        
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderInbox(data.conversations || []);
+        
+        document.getElementById('inboxCount').textContent = data.totalUnread || 0;
+      } catch (error) {
+        console.error('Load inbox error:', error);
+      }
+    }
+
+    function filterByStatus() {
+      loadInbox();
+    }
+
+    function renderInbox(conversations) {
+      const container = document.getElementById('inboxList');
+      
+      if (conversations.length === 0) {
+        container.innerHTML = '<div class="p-8 text-center text-forest-500">No messages</div>';
+        return;
+      }
+      
+      container.innerHTML = conversations.map(conv => `
+        <button onclick="loadConversation('${conv._id}', '${conv.user?._id || ''}')" class="w-full text-left p-4 hover:bg-stone-50 transition-colors ${currentConversationId === conv._id ? 'bg-burgundy-50 border-l-4 border-burgundy-600' : ''}">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-sm">
+                ${(conv.user?.name || 'U').substring(0, 2).toUpperCase()}
+              </div>
+              <div class="min-w-0">
+                <p class="font-medium text-forest-900">${conv.user?.name || 'Unknown User'}</p>
+                <p class="text-sm text-forest-500 truncate">${conv.lastMessage?.subject || ''}</p>
+              </div>
+            </div>
+            ${conv.unreadCount > 0 ? `<span class="bg-burgundy-600 text-white text-xs font-bold px-2 py-1 rounded-full">${conv.unreadCount}</span>` : ''}
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(conv.lastMessage?.status)}">
+              ${conv.lastMessage?.status || 'open'}
+            </span>
+            <span class="text-xs text-forest-400">${formatDate(conv.lastMessage?.createdAt)}</span>
+          </div>
+        </button>
+      `).join('');
+    }
+
+    function getStatusColor(status) {
+      const colors = {
+        'open': 'bg-yellow-100 text-yellow-800',
+        'replied': 'bg-green-100 text-green-800',
+        'resolved': 'bg-blue-100 text-blue-800',
+        'closed': 'bg-stone-100 text-stone-600'
+      };
+      return colors[status] || colors['open'];
+    }
+
+    async function loadConversation(conversationId, userId) {
+      currentConversationId = conversationId;
+      currentUserId = userId;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/conversation/${conversationId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderMessages(data.messages || []);
+        
+        // Show user info
+        if (userId) {
+          loadUserInfo(userId);
+        }
+        
+        loadInbox(); // Refresh unread counts
+      } catch (error) {
+        console.error('Load conversation error:', error);
+      }
+    }
+
+    async function loadUserInfo(userId) {
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          const user = await response.json();
+          const panel = document.getElementById('userInfoPanel');
+          panel.classList.remove('hidden');
+          document.getElementById('userAvatar').textContent = (user.name || 'U').substring(0, 2).toUpperCase();
+          document.getElementById('userName').textContent = user.name || 'Unknown';
+          document.getElementById('userEmail').textContent = user.email || '';
+        }
+      } catch (error) {
+        console.error('Load user info error:', error);
+      }
+    }
+
+    function renderMessages(messages) {
+      const container = document.getElementById('messageThread');
+      const header = document.getElementById('threadHeader');
+      const replyBox = document.getElementById('replyBox');
+      const statusButtons = document.getElementById('statusButtons');
+      
+      if (messages.length === 0) {
+        container.innerHTML = '<p class="text-center text-forest-500 py-8">No messages</p>';
+        return;
+      }
+      
+      header.innerHTML = `<h2 class="font-semibold text-forest-900">${messages[0].subject}</h2>`;
+      header.appendChild(statusButtons);
+      statusButtons.classList.remove('hidden');
+      replyBox.classList.remove('hidden');
+      
+      container.innerHTML = messages.map(msg => `
+        <div class="mb-6 ${msg.fromAdmin ? 'pl-8' : 'pr-8'}">
+          <div class="${msg.fromAdmin ? 'bg-forest-50 border-l-4 border-forest-500' : 'bg-burgundy-50 border-l-4 border-burgundy-500'} rounded-r-xl p-4">
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-medium ${msg.fromAdmin ? 'text-forest-800' : 'text-burgundy-800'}">
+                ${msg.fromAdmin ? '👩‍💼 You (Admin)' : `👤 ${msg.fromUser?.name || 'User'}`}
+              </span>
+              <span class="text-xs text-forest-500">${formatDate(msg.createdAt)}</span>
+            </div>
+            <p class="text-forest-700 whitespace-pre-wrap">${msg.body}</p>
+            ${msg.attachments && msg.attachments.length > 0 ? `
+              <div class="mt-3 pt-3 border-t border-stone-200">
+                <p class="text-xs font-medium text-forest-600 mb-2">📎 Attachments:</p>
+                <div class="flex flex-wrap gap-2">
+                  ${msg.attachments.map(att => `
+                    <a href="${att.url}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 bg-white border border-stone-300 rounded text-sm text-forest-700 hover:bg-stone-50">
+                      ${att.originalName}
+                    </a>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+      
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendReply(e) {
+      e.preventDefault();
+      if (!currentConversationId) return;
+      
+      const formData = new FormData();
+      formData.append('body', document.getElementById('replyMessage').value);
+      formData.append('sendEmail', document.getElementById('sendEmailCheckbox').checked);
+      
+      const attachments = document.getElementById('replyAttachment').files;
+      Array.from(attachments).forEach(file => formData.append('attachments', file));
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/reply/${currentConversationId}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        if (response.ok) {
+          document.getElementById('replyMessage').value = '';
+          document.getElementById('replyAttachment').value = '';
+          loadConversation(currentConversationId, currentUserId);
+        } else {
+          alert('Failed to send reply');
+        }
+      } catch (error) {
+        console.error('Send reply error:', error);
+      }
+    }
+
+    async function updateStatus(status) {
+      if (!currentConversationId) return;
+      
+      try {
+        await fetch(`${API_URL}/api/announcements/admin/conversation/${currentConversationId}/status`, {
+          method: 'PUT',
+          headers: { 
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ status })
+        });
+        
+        loadInbox();
+      } catch (error) {
+        console.error('Update status error:', error);
+      }
+    }
+
+    // User autocomplete for compose
+    async function searchUsers(query) {
+      if (query.length < 2) {
+        document.getElementById('autocompleteResults').classList.add('hidden');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/users?search=${encodeURIComponent(query)}&limit=10`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderAutocomplete(data.users || []);
+      } catch (error) {
+        console.error('Search users error:', error);
+      }
+    }
+
+    function renderAutocomplete(users) {
+      const container = document.getElementById('autocompleteResults');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<div class="p-3 text-forest-500 text-sm">No users found</div>';
+      } else {
+        container.innerHTML = users.map(user => `
+          <button type="button" onclick="selectRecipient('${user._id}', '${user.name}', '${user.email}')" class="w-full text-left p-3 hover:bg-stone-50 flex items-center gap-3 border-b border-stone-100 last:border-0">
+            <div class="w-8 h-8 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold text-xs">
+              ${(user.name || 'U').substring(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <p class="font-medium text-forest-900">${user.name || 'Unknown'}</p>
+              <p class="text-sm text-forest-500">${user.email}</p>
+            </div>
+          </button>
+        `).join('');
+      }
+      
+      container.classList.remove('hidden');
+      const rect = document.getElementById('toField').getBoundingClientRect();
+      container.style.top = (rect.bottom + 4) + 'px';
+      container.style.left = rect.left + 'px';
+      container.style.width = rect.width + 'px';
+    }
+
+    function selectRecipient(id, name, email) {
+      if (selectedRecipients.find(r => r.id === id)) return;
+      
+      selectedRecipients.push({ id, name, email });
+      renderSelectedRecipients();
+      document.getElementById('toField').value = '';
+      document.getElementById('autocompleteResults').classList.add('hidden');
+    }
+
+    function removeRecipient(id) {
+      selectedRecipients = selectedRecipients.filter(r => r.id !== id);
+      renderSelectedRecipients();
+    }
+
+    function renderSelectedRecipients() {
+      const container = document.getElementById('selectedRecipients');
+      container.innerHTML = selectedRecipients.map(r => `
+        <span class="inline-flex items-center gap-1 px-3 py-1 bg-burgundy-100 text-burgundy-800 rounded-full text-sm">
+          ${r.name}
+          <button type="button" onclick="removeRecipient('${r.id}')" class="hover:text-burgundy-600">×</button>
+        </span>
+      `).join('');
+    }
+
+    function selectGroup(group) {
+      // Clear individual recipients
+      selectedRecipients = [];
+      renderSelectedRecipients();
+      document.getElementById('toField').value = `[${group.toUpperCase()}]`;
+    }
+
+    async function sendCompose(e) {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      formData.append('subject', document.getElementById('composeSubject').value);
+      formData.append('body', document.getElementById('composeBody').value);
+      formData.append('sendEmail', document.getElementById('composeSendEmail').checked);
+      
+      if (selectedRecipients.length > 0) {
+        formData.append('userIds', JSON.stringify(selectedRecipients.map(r => r.id)));
+      } else {
+        // Check for group/filter options
+        const state = document.getElementById('filterState').value;
+        const credential = document.getElementById('filterCredential').value;
+        if (state) formData.append('filterByState', state);
+        if (credential) formData.append('filterByCredential', credential);
+      }
+      
+      const attachments = document.getElementById('composeAttachments').files;
+      Array.from(attachments).forEach(file => formData.append('attachments', file));
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/messages/send`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          closeComposeModal();
+          alert(data.message || 'Message sent!');
+        } else {
+          alert(data.error || 'Failed to send message');
+        }
+      } catch (error) {
+        console.error('Send compose error:', error);
+      }
+    }
+
+    // User Progress Tab
+    async function searchUsersForProgress(query) {
+      if (query.length < 2) {
+        document.getElementById('userProgressList').innerHTML = '<p class="text-forest-500 text-center py-8">Search for a user to view their course progress</p>';
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/announcements/admin/users?search=${encodeURIComponent(query)}&limit=20`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderUserProgressList(data.users || []);
+      } catch (error) {
+        console.error('Search users error:', error);
+      }
+    }
+
+    function renderUserProgressList(users) {
+      const container = document.getElementById('userProgressList');
+      
+      if (users.length === 0) {
+        container.innerHTML = '<p class="text-forest-500 text-center py-8">No users found</p>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="grid grid-cols-2 gap-4">
+          ${users.map(user => `
+            <button onclick="loadUserProgress('${user._id}')" class="text-left p-4 border border-stone-200 rounded-xl hover:border-burgundy-400 hover:bg-burgundy-50 transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-burgundy-100 rounded-full flex items-center justify-center text-burgundy-700 font-bold">
+                  ${(user.name || 'U').substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <p class="font-medium text-forest-900">${user.name || 'Unknown'}</p>
+                  <p class="text-sm text-forest-500">${user.email}</p>
+                </div>
+              </div>
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function loadUserProgress(userId) {
+      currentUserId = userId;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${userId}/progress`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        renderUserDetail(data);
+      } catch (error) {
+        console.error('Load user progress error:', error);
+      }
+    }
+
+    function renderUserDetail(data) {
+      const panel = document.getElementById('userDetailPanel');
+      panel.classList.remove('hidden');
+      
+      // Store current user data for actions
+      window.currentUserData = data;
+      
+      // User basic info
+      document.getElementById('detailUserAvatar').textContent = (data.user?.name || 'U').substring(0, 2).toUpperCase();
+      document.getElementById('detailUserName').textContent = data.user?.name || 'Unknown';
+      document.getElementById('detailUserEmail').textContent = data.user?.email || '';
+      
+      // Registration & subscription info
+      document.getElementById('detailRegisteredAt').textContent = data.user?.registeredAt ? new Date(data.user.registeredAt).toLocaleDateString() : '-';
+      document.getElementById('detailPlan').innerHTML = `<span class="px-2 py-0.5 rounded ${getPlanColor(data.user?.subscription?.plan)}">${(data.user?.subscription?.plan || 'free').toUpperCase()}</span>`;
+      document.getElementById('detailState').textContent = data.user?.primaryState || '-';
+      document.getElementById('detailCEHours').textContent = data.stats?.totalCEHoursEarned || 0;
+      
+      // Stats
+      document.getElementById('statTotalCourses').textContent = data.stats?.totalCourses || 0;
+      document.getElementById('statCompletedCourses').textContent = data.stats?.completedCourses || 0;
+      document.getElementById('statInProgressCourses').textContent = data.stats?.inProgressCourses || 0;
+      document.getElementById('statCredentials').textContent = data.stats?.totalCredentials || 0;
+      
+      // Credentials
+      const credContainer = document.getElementById('credentialsList');
+      const credentials = data.credentials || [];
+      if (credentials.length === 0) {
+        credContainer.innerHTML = '<p class="text-forest-500 text-sm">No credentials added</p>';
+      } else {
+        credContainer.innerHTML = credentials.map(cred => `
+          <div class="flex items-center justify-between p-3 bg-stone-50 rounded-lg">
+            <div class="flex items-center gap-3">
+              <span class="text-lg">🎓</span>
+              <div>
+                <p class="font-medium text-forest-800">${cred.name} (${cred.state})</p>
+                <p class="text-xs text-forest-500">License: ${cred.licenseNumber || 'Not set'}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-medium ${isExpiringSoon(cred.expirationDate) ? 'text-red-600' : 'text-forest-700'}">
+                Exp: ${cred.expirationDate ? new Date(cred.expirationDate).toLocaleDateString() : 'Not set'}
+              </p>
+              <p class="text-xs text-forest-500">${cred.totalCEUsCompleted || 0} / ${cred.totalCEUsRequired || 0} CE hours</p>
+            </div>
+          </div>
+        `).join('');
+      }
+      
+      // Course progress with admin controls
+      const container = document.getElementById('courseProgressList');
+      const courses = data.courseProgress || [];
+      
+      // Add "Enroll in Course" button at top
+      let enrollButtonHtml = `
+        <div class="mb-4 flex justify-end">
+          <button onclick="openEnrollModal()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg text-sm font-medium flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Enroll in Course
+          </button>
+        </div>
+      `;
+      
+      if (courses.length === 0) {
+        container.innerHTML = enrollButtonHtml + '<p class="text-forest-500">No course enrollments</p>';
+        return;
+      }
+      
+      container.innerHTML = enrollButtonHtml + courses.map(course => `
+        <div class="border border-stone-200 rounded-xl p-4">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h5 class="font-medium text-forest-900">${course.title || 'Unknown Course'}</h5>
+              <p class="text-xs text-forest-500">${course.category || 'General'} • ${course.ceHours || 0} CE Hours</p>
+              ${course.adminCompleted ? `<p class="text-xs text-purple-600 mt-1">📋 Admin completed${course.adminNote ? ': ' + course.adminNote : ''}</p>` : ''}
+            </div>
+            <span class="text-sm ${course.completed ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'} font-medium px-2 py-1 rounded-lg">
+              ${course.completed ? '✅ Completed' : '⏳ In Progress'}
+            </span>
+          </div>
+          <div class="w-full bg-stone-200 rounded-full h-2 mb-3">
+            <div class="bg-burgundy-600 h-2 rounded-full transition-all" style="width: ${course.progress || 0}%"></div>
+          </div>
+          <div class="grid grid-cols-4 gap-4 text-sm mb-3">
+            <div>
+              <p class="text-forest-500 text-xs">Progress</p>
+              <p class="font-medium text-forest-800">${course.progress || 0}%</p>
+            </div>
+            <div>
+              <p class="text-forest-500 text-xs">Lessons</p>
+              <p class="font-medium text-forest-800">${course.completedLessonsCount || 0} / ${course.totalLessons || 0}</p>
+            </div>
+            <div>
+              <p class="text-forest-500 text-xs">Enrolled</p>
+              <p class="font-medium text-forest-800">${formatDate(course.enrolledAt)}</p>
+            </div>
+            <div>
+              <p class="text-forest-500 text-xs">Last Active</p>
+              <p class="font-medium text-forest-800">${formatDate(course.lastAccessed)}</p>
+            </div>
+          </div>
+          ${course.completed && course.completedAt ? `
+            <div class="mb-3 pt-2 border-t border-stone-200">
+              <p class="text-xs text-green-600">✓ Completed on ${new Date(course.completedAt).toLocaleDateString()}</p>
+            </div>
+          ` : ''}
+          <!-- Admin Actions -->
+          <div class="flex gap-2 pt-3 border-t border-stone-200">
+            ${!course.completed ? `
+              <button onclick="adminMarkComplete('${course.courseId}')" class="px-3 py-1.5 bg-green-100 hover:bg-green-200 text-green-700 rounded text-xs font-medium">
+                ✓ Mark Complete
+              </button>
+            ` : ''}
+            <button onclick="adminResetProgress('${course.courseId}')" class="px-3 py-1.5 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded text-xs font-medium">
+              ↺ Reset Progress
+            </button>
+            <button onclick="adminUnenroll('${course.courseId}', '${course.title?.replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-medium">
+              ✕ Unenroll
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getPlanColor(plan) {
+      const colors = {
+        'free': 'bg-stone-100 text-stone-700',
+        'professional': 'bg-blue-100 text-blue-700',
+        'monthly': 'bg-blue-100 text-blue-700',
+        'vip': 'bg-purple-100 text-purple-700',
+        'annual_vip': 'bg-purple-100 text-purple-700',
+        'lifetime': 'bg-amber-100 text-amber-700'
+      };
+      return colors[plan] || colors['free'];
+    }
+
+    function isExpiringSoon(date) {
+      if (!date) return false;
+      const exp = new Date(date);
+      const now = new Date();
+      const daysUntil = (exp - now) / (1000 * 60 * 60 * 24);
+      return daysUntil <= 90;
+    }
+
+    function viewUserProgress() {
+      if (currentUserId) {
+        showTab('users');
+        loadUserProgress(currentUserId);
+      }
+    }
+
+    function messageUser() {
+      if (currentUserId) {
+        // Pre-fill compose with this user
+        openComposeModal();
+        // Would need to fetch user details and add to selectedRecipients
+      }
+    }
+
+    function openComposeModal() {
+      document.getElementById('composeModal').classList.remove('hidden');
+      document.getElementById('composeForm').reset();
+      selectedRecipients = [];
+      renderSelectedRecipients();
+    }
+
+    function closeComposeModal() {
+      document.getElementById('composeModal').classList.add('hidden');
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now - date;
+      
+      if (diff < 60000) return 'Just now';
+      if (diff < 3600000) return `${Math.floor(diff/60000)}m ago`;
+      if (diff < 86400000) return `${Math.floor(diff/3600000)}h ago`;
+      if (diff < 604800000) return `${Math.floor(diff/86400000)}d ago`;
+      
+      return date.toLocaleDateString();
+    }
+    
+    // ============================================
+    // ADMIN ENROLLMENT MANAGEMENT
+    // ============================================
+    
+    async function openEnrollModal() {
+      if (!currentUserId) return;
+      
+      // Fetch available courses
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        const availableCourses = data.availableCourses || [];
+        
+        if (availableCourses.length === 0) {
+          alert('User is already enrolled in all available courses.');
+          return;
+        }
+        
+        // Build modal content
+        const modalHtml = `
+          <div id="enrollModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4">
+              <div class="p-6 border-b border-stone-200">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-lg font-semibold text-forest-900">Enroll User in Course</h3>
+                  <button onclick="closeEnrollModal()" class="text-forest-400 hover:text-forest-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="p-6">
+                <label class="block text-sm font-medium text-forest-700 mb-2">Select Course</label>
+                <select id="enrollCourseSelect" class="w-full p-3 border border-stone-300 rounded-lg focus:ring-2 focus:ring-hunter-500 focus:border-hunter-500">
+                  <option value="">-- Select a course --</option>
+                  ${availableCourses.map(c => `
+                    <option value="${c._id}">${c.title} (${c.ceuHours || 0} CE hrs)</option>
+                  `).join('')}
+                </select>
+              </div>
+              <div class="p-6 border-t border-stone-200 flex justify-end gap-3">
+                <button onclick="closeEnrollModal()" class="px-4 py-2 border border-stone-300 rounded-lg text-forest-700 hover:bg-stone-50">
+                  Cancel
+                </button>
+                <button onclick="submitEnrollment()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg font-medium">
+                  Enroll User
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      } catch (error) {
+        console.error('Open enroll modal error:', error);
+        alert('Failed to load available courses');
+      }
+    }
+    
+    function closeEnrollModal() {
+      const modal = document.getElementById('enrollModal');
+      if (modal) modal.remove();
+    }
+    
+    async function submitEnrollment() {
+      const courseId = document.getElementById('enrollCourseSelect')?.value;
+      if (!courseId) {
+        alert('Please select a course');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enroll`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ courseId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          closeEnrollModal();
+          alert(data.message || 'User enrolled successfully');
+          loadUserProgress(currentUserId); // Refresh
+        } else {
+          alert(data.error || 'Failed to enroll user');
+        }
+      } catch (error) {
+        console.error('Enroll error:', error);
+        alert('Failed to enroll user');
+      }
+    }
+    
+    async function adminMarkComplete(courseId) {
+      const note = prompt('Optional: Add a note for this manual completion:');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ note })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(data.message || 'Course marked as complete');
+          loadUserProgress(currentUserId); // Refresh
+        } else {
+          alert(data.error || 'Failed to complete course');
+        }
+      } catch (error) {
+        console.error('Mark complete error:', error);
+        alert('Failed to mark course as complete');
+      }
+    }
+    
+    async function adminResetProgress(courseId) {
+      if (!confirm('Are you sure you want to reset this user\'s progress? They will need to retake the course from the beginning.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}/reset`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(data.message || 'Progress reset successfully');
+          loadUserProgress(currentUserId); // Refresh
+        } else {
+          alert(data.error || 'Failed to reset progress');
+        }
+      } catch (error) {
+        console.error('Reset progress error:', error);
+        alert('Failed to reset progress');
+      }
+    }
+    
+    async function adminUnenroll(courseId, courseTitle) {
+      if (!confirm(`Are you sure you want to unenroll this user from "${courseTitle}"? This will remove all their progress and cannot be undone.`)) {
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/enrollments/${courseId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          alert(data.message || 'User unenrolled successfully');
+          loadUserProgress(currentUserId); // Refresh
+        } else {
+          alert(data.error || 'Failed to unenroll user');
+        }
+      } catch (error) {
+        console.error('Unenroll error:', error);
+        alert('Failed to unenroll user');
+      }
+    }
+    
+    // Load admin email
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.email) {
+      document.getElementById('adminEmail').textContent = user.email;
+    }
+
+    // ── Broadcast Tab Functions ──
+    async function sendMsgBroadcast() {
+      const title = document.getElementById('msgBcTitle').value.trim();
+      const message = document.getElementById('msgBcMessage').value.trim();
+      const type = document.getElementById('msgBcType').value;
+      const audience = document.getElementById('msgBcAudience').value;
+      const isPinned = document.getElementById('msgBcPinned').checked;
+      const sendEmail = document.getElementById('msgBcEmail').checked;
+      const errEl = document.getElementById('msgBcError');
+      const successEl = document.getElementById('msgBcSuccess');
+      errEl.classList.add('hidden');
+      successEl.classList.add('hidden');
+
+      if (!title || !message) {
+        errEl.textContent = 'Title and message are required.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const btn = document.getElementById('msgBcSendBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending...';
+
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ title, message, type, audience, isPinned, sendEmail })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Failed to send');
+        successEl.textContent = `Broadcast sent to ${data.affectedUsers || 'all'} users!`;
+        successEl.classList.remove('hidden');
+        document.getElementById('msgBcTitle').value = '';
+        document.getElementById('msgBcMessage').value = '';
+        loadMsgBroadcasts();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Broadcast';
+      }
+    }
+
+    async function loadMsgBroadcasts() {
+      const listEl = document.getElementById('msgBcList');
+      listEl.innerHTML = '<div class="p-6 text-center text-stone-400">Loading...</div>';
+      try {
+        const res = await fetch(`${API_URL}/api/admin/broadcasts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const broadcasts = data.broadcasts || [];
+        if (broadcasts.length === 0) {
+          listEl.innerHTML = '<div class="p-8 text-center text-stone-400">No broadcasts yet.</div>';
+          return;
+        }
+        listEl.innerHTML = broadcasts.map(b => {
+          const typeColors = { urgent: '#DC2626', maintenance: '#D97706', info: '#6B1D34', update: '#4A7C59', promotion: '#7C3AED' };
+          const color = typeColors[b.type] || '#6B7280';
+          const date = new Date(b.createdAt).toLocaleDateString();
+          const readCount = b.readBy?.length || 0;
+          const dismissCount = b.dismissedBy?.length || 0;
+          const active = b.isActive;
+          return `<div class="p-4 flex items-start gap-4 ${active ? '' : 'opacity-50'}">
+            <div class="w-2 h-2 rounded-full mt-2 flex-shrink-0" style="background:${color}"></div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-sm font-semibold text-stone-800">${b.title}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${color}20;color:${color}">${b.type}</span>
+                ${!active ? '<span class="text-xs text-stone-400">(inactive)</span>' : ''}
+              </div>
+              <p class="text-sm text-stone-600 mb-1">${b.message.length > 120 ? b.message.substring(0, 120) + '...' : b.message}</p>
+              <div class="flex items-center gap-4 text-xs text-stone-400">
+                <span>${date}</span>
+                <span>${readCount} read</span>
+                <span>${dismissCount} dismissed</span>
+                <span>Audience: ${b.audience}</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              ${active ? `<button onclick="deactivateMsgBroadcast('${b._id}')" class="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded border border-amber-200 hover:bg-amber-50">Deactivate</button>` : ''}
+              <button onclick="deleteMsgBroadcast('${b._id}')" class="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded border border-red-200 hover:bg-red-50">Delete</button>
+            </div>
+          </div>`;
+        }).join('');
+      } catch (err) {
+        listEl.innerHTML = `<div class="p-6 text-center text-red-500">${err.message}</div>`;
+      }
+    }
+
+    async function deactivateMsgBroadcast(id) {
+      try {
+        await fetch(`${API_URL}/api/admin/broadcasts/${id}/deactivate`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadMsgBroadcasts();
+      } catch (err) {
+        alert('Failed to deactivate: ' + err.message);
+      }
+    }
+
+    async function deleteMsgBroadcast(id) {
+      if (!confirm('Delete this broadcast permanently?')) return;
+      try {
+        await fetch(`${API_URL}/api/admin/broadcasts/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        loadMsgBroadcasts();
+      } catch (err) {
+        alert('Failed to delete: ' + err.message);
+      }
+    }
+  </script>
+    </main>
+  </div>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

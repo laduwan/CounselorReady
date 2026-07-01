@@ -1,0 +1,88 @@
+# ===========================================
+# CounselorReady .gitignore
+# ===========================================
+
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files (NEVER commit these!)
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# IDE and Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Package manager locks (optional - uncomment if you want to ignore)
+# package-lock.json
+# yarn.lock
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Certificate/key files (security)
+*.pem
+*.key
+*.crt
+*.p12
+
+# Local database files
+*.sqlite
+*.sqlite3
+*.db
+
+# Uploaded files (if stored locally)
+uploads/
+public/uploads/
+
+# SCORM packages (large files)
+*.scorm.zip
+scorm-packages/
+
+# API keys (NEVER commit)
+server/anthropic_api_key
+**/anthropic_api_key
+*.api_key
+.claude/

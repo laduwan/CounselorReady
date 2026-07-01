@@ -1,0 +1,329 @@
+/* ═══════════════════════════════════════════════════════════════════
+   CounselorReady Course Content Styles v1.0
+   Depends on: design-tokens.css, typography.css
+   
+   Deploy to: client/public/css/course-content.css
+   
+   PURPOSE: Styles semantic HTML rendered inside course content blocks.
+   This ensures that every <h2>, <h3>, <p>, <blockquote>, <table> etc.
+   inside a content block looks identical whether rendered in:
+     - interactive-course.html  (public player)
+     - admin-course-preview.html (admin preview)
+     - CourseBuilder.jsx content preview pane
+     - course-details.html references section
+   
+   RULE: Course content stored in the database must use ONLY semantic
+   HTML tags (<h2>, <h3>, <p>, <ul>, <ol>, <blockquote>, <table>).
+   NEVER inline style= attributes. This stylesheet handles all visuals.
+   ═══════════════════════════════════════════════════════════════════ */
+
+
+/* ── Content Container ────────────────────────────────────────────
+   Wrap all rendered course content in .cr-content to scope styles.
+   This prevents leaking into nav, footer, or admin chrome.
+   ──────────────────────────────────────────────────────────────── */
+.cr-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--cr-space-lg);
+  background: var(--cr-bg-card);
+  color: var(--cr-text);
+  font-family: var(--cr-font-body);
+  font-size: var(--cr-text-body);
+  line-height: var(--cr-leading-relaxed);
+}
+
+
+/* ── Headings inside content ──────────────────────────────────────
+   H1 is NEVER used inside content blocks.
+   The course player renders the course title as H1.
+   Content starts at H2.
+   ──────────────────────────────────────────────────────────────── */
+.cr-content h1 {
+  /* Override — H1 should not appear inside content blocks.
+     If it does (legacy data), downgrade visually to H2. */
+  font-family: var(--cr-font-display);
+  font-size: var(--cr-text-h2);
+  font-weight: var(--cr-weight-h2);
+  color: var(--cr-h2);
+  line-height: var(--cr-leading-tight);
+  margin: var(--cr-space-xl) 0 var(--cr-space-md);
+  border-bottom: 2px solid var(--cr-burgundy-100);
+  padding-bottom: var(--cr-space-sm);
+}
+
+.cr-content h2 {
+  font-family: var(--cr-font-display);
+  font-size: var(--cr-text-h2);
+  font-weight: var(--cr-weight-h2);
+  color: var(--cr-h2);
+  line-height: var(--cr-leading-tight);
+  margin: var(--cr-space-xl) 0 var(--cr-space-md);
+  border-bottom: 2px solid var(--cr-navy-100);
+  padding-bottom: var(--cr-space-sm);
+}
+
+.cr-content h3 {
+  font-family: var(--cr-font-body);
+  font-size: var(--cr-text-h3);
+  font-weight: var(--cr-weight-h3);
+  color: var(--cr-h3);
+  line-height: var(--cr-leading-tight);
+  margin: var(--cr-space-lg) 0 var(--cr-space-sm);
+}
+
+.cr-content h4 {
+  font-family: var(--cr-font-body);
+  font-size: var(--cr-text-h4);
+  font-weight: var(--cr-weight-h4);
+  color: var(--cr-h4);
+  margin: var(--cr-space-lg) 0 var(--cr-space-sm);
+}
+
+
+/* ── Body Text ────────────────────────────────────────────────────── */
+.cr-content p {
+  margin-bottom: var(--cr-space-md);
+  line-height: var(--cr-leading-relaxed);
+}
+
+
+/* ── Lists ────────────────────────────────────────────────────────── */
+.cr-content ul,
+.cr-content ol {
+  margin: var(--cr-space-sm) 0 var(--cr-space-md);
+  padding-left: var(--cr-space-xl);
+}
+
+.cr-content li {
+  margin-bottom: var(--cr-space-xs);
+  line-height: var(--cr-leading-relaxed);
+}
+
+.cr-content li::marker {
+  color: var(--cr-green-500);
+}
+
+.cr-content ol li::marker {
+  color: var(--cr-navy-500);
+  font-weight: 600;
+}
+
+
+/* ── Clinical Vignettes / Case Examples ───────────────────────────── */
+.cr-content blockquote {
+  border-left: 4px solid var(--cr-honey-400);
+  background: var(--cr-honey-50);
+  padding: var(--cr-space-md) var(--cr-space-lg);
+  margin: var(--cr-space-lg) 0;
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+  font-style: italic;
+  color: var(--cr-navy-600);
+}
+
+
+/* ── Tables ───────────────────────────────────────────────────────── */
+.cr-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--cr-space-lg) 0;
+  font-size: var(--cr-text-small);
+  border: 1px solid var(--cr-border);
+  border-radius: var(--cr-radius-sm);
+  overflow: hidden;
+}
+
+.cr-content thead th {
+  background: var(--cr-navy-50);
+  color: var(--cr-navy-500);
+  font-weight: var(--cr-weight-label);
+  text-align: left;
+  padding: var(--cr-space-sm) var(--cr-space-md);
+  border-bottom: 2px solid var(--cr-navy-200);
+  font-size: var(--cr-text-label);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cr-content tbody td {
+  padding: var(--cr-space-sm) var(--cr-space-md);
+  border-bottom: 1px solid var(--cr-border-light);
+  vertical-align: top;
+}
+
+.cr-content tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+/* ── Emphasis Boxes (wrap in <div class="cr-callout-*">) ──────────── */
+.cr-content .cr-callout-clinical {
+  background: var(--cr-green-50);
+  border-left: 4px solid var(--cr-green-500);
+  padding: var(--cr-space-md) var(--cr-space-lg);
+  margin: var(--cr-space-lg) 0;
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+}
+
+.cr-content .cr-callout-ethics {
+  background: var(--cr-burgundy-50);
+  border-left: 4px solid var(--cr-burgundy-800);
+  padding: var(--cr-space-md) var(--cr-space-lg);
+  margin: var(--cr-space-lg) 0;
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+}
+
+.cr-content .cr-callout-info {
+  background: var(--cr-navy-50);
+  border-left: 4px solid var(--cr-navy-500);
+  padding: var(--cr-space-md) var(--cr-space-lg);
+  margin: var(--cr-space-lg) 0;
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+}
+
+.cr-content .cr-callout-tip {
+  background: var(--cr-honey-50);
+  border-left: 4px solid var(--cr-honey-400);
+  padding: var(--cr-space-md) var(--cr-space-lg);
+  margin: var(--cr-space-lg) 0;
+  border-radius: 0 var(--cr-radius-sm) var(--cr-radius-sm) 0;
+}
+
+
+/* ── Images inside content ────────────────────────────────────────── */
+.cr-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--cr-radius-sm);
+  margin: var(--cr-space-md) 0;
+}
+
+.cr-content figure {
+  margin: var(--cr-space-lg) 0;
+  text-align: center;
+}
+
+.cr-content figcaption {
+  font-size: var(--cr-text-small);
+  color: var(--cr-text-muted);
+  margin-top: var(--cr-space-xs);
+  font-style: italic;
+}
+
+
+/* ── Horizontal Rules (section breaks within content) ─────────────── */
+.cr-content hr {
+  border: none;
+  height: 1px;
+  background: var(--cr-border);
+  margin: var(--cr-space-xl) 0;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   APA REFERENCES
+   Applied to the references section in course-details.html,
+   the course player, and CourseBuilder references module.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cr-references {
+  font-family: var(--cr-font-body);
+  font-size: var(--cr-text-small);
+  color: var(--cr-text);
+  line-height: var(--cr-leading-relaxed);
+}
+
+.cr-references h2 {
+  font-family: var(--cr-font-display);
+  font-size: var(--cr-text-h2);
+  font-weight: var(--cr-weight-h2);
+  color: var(--cr-h2);
+  margin-bottom: var(--cr-space-lg);
+  border-bottom: 2px solid var(--cr-navy-100);
+  padding-bottom: var(--cr-space-sm);
+}
+
+/* APA hanging indent: first line flush, subsequent lines indented */
+.cr-reference {
+  padding-left: 2.25rem;
+  text-indent: -2.25rem;
+  margin-bottom: var(--cr-space-md);
+  line-height: var(--cr-leading-relaxed);
+}
+
+/* Italicize source titles (journal names, book titles) */
+.cr-reference em,
+.cr-reference .cr-ref-source {
+  font-style: italic;
+}
+
+/* DOI / URL links in references */
+.cr-reference a {
+  color: var(--cr-link);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.cr-reference a:hover {
+  color: var(--cr-link-hover);
+  text-decoration: underline;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   SECTION DIVIDERS (course player module/section headers)
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cr-section-header {
+  background: var(--cr-navy-500);
+  color: var(--cr-text-inverse);
+  padding: var(--cr-space-xl) var(--cr-space-lg);
+  border-radius: var(--cr-radius-md);
+  margin: var(--cr-space-xl) 0 var(--cr-space-lg);
+}
+
+.cr-section-header h2 {
+  font-family: var(--cr-font-display);
+  font-size: var(--cr-text-h1);
+  font-weight: var(--cr-weight-h1);
+  color: var(--cr-text-inverse);
+  border: none;
+  margin: 0 0 var(--cr-space-xs);
+  padding: 0;
+}
+
+.cr-section-header .cr-section-subtitle {
+  font-family: var(--cr-font-body);
+  font-size: var(--cr-text-body);
+  color: var(--cr-navy-200);
+  font-weight: 300;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   INLINE STYLE OVERRIDE
+   Neutralizes inline style= attributes in legacy content blocks.
+   This is a safety net — the real fix is to strip inline styles
+   from seed scripts and database content.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.cr-content [style*="color"] {
+  color: inherit !important;
+}
+
+.cr-content [style*="font-family"] {
+  font-family: inherit !important;
+}
+
+.cr-content [style*="font-size"] {
+  font-size: inherit !important;
+}
+
+.cr-content h2[style],
+.cr-content h3[style],
+.cr-content h4[style] {
+  color: inherit !important;
+  font-family: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}

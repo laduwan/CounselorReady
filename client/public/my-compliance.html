@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<!--
+  Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
+  Practice Compliance — Member Self-View (NEW additive page; touches no existing pages).
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+<title>My Compliance — CounselorReady</title>
+<style>
+  :root { --burgundy:#8B2542; --burgundy-dark:#6B1D34; --navy:#284157; --stone:#f5f3f0; --green:#2f7d51; --amber:#b8860b; --red:#a3302f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; color:var(--navy); background:var(--stone); }
+  header.app { background:linear-gradient(135deg,#8B2542,#6B1D34); color:#fff; padding:18px 24px; }
+  header.app h1 { font-size:20px; margin:0; }
+  .wrap { max-width:920px; margin:0 auto; padding:24px; }
+  .card { background:#fff; border:1px solid #e6e2dc; border-radius:12px; padding:18px; margin-bottom:20px; }
+  .card h2 { margin:0 0 4px; font-size:17px; }
+  .muted { color:#7a8591; font-size:13px; }
+  table { width:100%; border-collapse:collapse; font-size:14px; }
+  th,td { text-align:left; padding:9px 8px; border-bottom:1px solid #eee; }
+  th { font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#7a8591; }
+  .pill { display:inline-block; padding:3px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+  .pill.completed { background:#e7f4ec; color:var(--green); }
+  .pill.assigned, .pill.in_progress { background:#eef1f4; color:var(--navy); }
+  .pill.overdue { background:#f9e6e6; color:var(--red); }
+  .pill.waived { background:#f3eef7; color:#6b4f8a; }
+  .ce { background:#fcf3df; color:#7a5a00; border:1px solid #ecd9a6; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700; }
+  .ext { background:#eef4fb; color:#2c5a86; border:1px solid #cfe0f0; padding:2px 8px; border-radius:6px; font-size:11px; }
+  .banner { background:#f9e6e6; border:1px solid #e7bcbc; color:var(--red); border-radius:10px; padding:12px 16px; margin-bottom:16px; font-weight:600; }
+  .counter { font-size:13px; background:#eef1f4; padding:4px 10px; border-radius:999px; }
+</style>
+</head>
+<body>
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+<header class="app"><h1>My Compliance</h1></header>
+<div style="max-width:920px;margin:0 auto;padding:14px 24px 0;display:flex;gap:10px;flex-wrap:wrap;">
+  <a href="/organization.html" style="font-size:13px;color:var(--burgundy-dark);text-decoration:none;padding:5px 14px;border:1px solid var(--burgundy-dark);border-radius:8px;background:#fff;font-weight:600;">← Organization</a>
+  <a href="/team-compliance.html" style="font-size:13px;color:var(--burgundy-dark);text-decoration:none;padding:5px 14px;border:1px solid var(--burgundy-dark);border-radius:8px;background:#fff;font-weight:600;">Team Compliance</a>
+</div>
+<div class="wrap" id="root">
+  <div class="card"><p class="muted">Loading…</p></div>
+</div>
+
+<script>
+const API = location.hostname==='localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+const token = localStorage.getItem('token');
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function api(path) {
+  const ctrl = new AbortController(); const t = setTimeout(()=>ctrl.abort(), 20000);
+  try {
+    const res = await fetch(API + path, { headers: { 'Authorization': 'Bearer ' + token }, signal: ctrl.signal });
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
+  } finally { clearTimeout(t); }
+}
+const fmt = d => d ? new Date(d).toLocaleDateString() : '';
+
+async function init() {
+  const root = document.getElementById('root');
+  if (!token) { root.innerHTML = '<div class="card"><h2>Sign in required</h2><p class="muted"><a href="/signin.html">Sign in</a> to view your assigned training.</p></div>'; return; }
+
+  // Partner feature gate
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.complianceTracking) {
+        document.querySelector('main') && (document.querySelector('main').innerHTML = `
+          <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+            <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+            <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+            <p style="color:#4A7C59;margin-bottom:24px;">
+              This feature requires the Compliance Tracking add-on.
+              Contact your organization administrator to enable it.
+            </p>
+            <a href="/partner-billing.html#addons"
+               style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+              View Add-ons
+            </a>
+          </div>
+        `);
+        return;
+      }
+      if (features && features.isPartnerUser && features.complianceTracking) {
+        const badge = document.createElement('div');
+        badge.id = 'cr-powered-badge';
+        badge.innerHTML = `
+          <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+            <span style="font-weight:700;">Powered by</span>
+            <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+          </div>
+        `;
+        document.body.appendChild(badge);
+      }
+    }
+  } catch (e) { /* fail-open */ }
+
+  let data;
+  try { data = await api('/api/me/compliance'); } catch (e) { root.innerHTML = '<div class="card"><p class="muted">Could not load your compliance data.</p></div>'; return; }
+  if (!data.orgs || !data.orgs.length) { root.innerHTML = '<div class="card"><h2>No assigned training</h2><p class="muted">You have no practice-assigned training. Your personal CE history is unaffected and remains in your dashboard.</p></div>'; return; }
+
+  root.innerHTML = data.orgs.map(o => {
+    const isAgency = o.segment === 'dbhdd_agency';
+    const banner = o.recoupmentRisk ? `<div class="banner">⚠ BILLING AT RISK — you have an overdue Standard Training Requirement. Complete it to restore billing eligibility.</div>` : '';
+    const counter = isAgency ? `<span class="counter">Annual hours: ${o.annualHours||0}/16</span>` : '';
+    const rows = (o.assignments||[]).map(a => `
+      <tr>
+        <td><strong>${esc(a.label||a.courseCode)}</strong>${a.external?' <span class="ext">tracked externally</span>':''}
+            ${a.creditedHours? `<span class="ce">Counts toward license renewal — ${a.creditedHours} CE hrs (NBCC ACEP #7760)</span>`:''}</td>
+        <td><span class="pill ${a.status}">${a.status.replace('_',' ')}</span></td>
+        <td>${fmt(a.dueDate)}</td>
+        <td>${a.completedAt?fmt(a.completedAt):'—'}</td>
+      </tr>`).join('') || '<tr><td colspan="4" class="muted">No assignments.</td></tr>';
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <h2>Assigned by ${esc(o.name)}</h2>${counter}
+      </div>
+      <p class="muted">${isAgency?'DBHDD/DCH Agency compliance':'Practice compliance'}</p>
+      ${banner}
+      <table><thead><tr><th>Training</th><th>Status</th><th>Due</th><th>Completed</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  }).join('');
+}
+init().catch(e => { console.error(e); document.getElementById('root').innerHTML = '<div class="card"><p class="muted">Error loading compliance data.</p></div>'; });
+</script>
+</body>
+</html>

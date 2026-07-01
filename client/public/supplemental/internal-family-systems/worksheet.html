@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IFS Parts Mapping — In-Session Worksheet | CR-CLI-603</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Georgia, 'Times New Roman', serif; font-size: 11pt; color: #1a1a1a; background: #ffffff; padding: 0.75in 1in; max-width: 8.5in; margin: 0 auto; }
+    .branding { text-align: center; font-size: 8.5pt; color: #555; letter-spacing: 0.04em; border-bottom: 2px solid #8B2542; padding-bottom: 6px; margin-bottom: 10px; }
+    .course-header { text-align: center; margin-bottom: 18px; }
+    .course-header .code { font-size: 9pt; color: #8B2542; letter-spacing: 0.08em; font-weight: bold; }
+    .course-header h1 { font-size: 15pt; color: #8B2542; line-height: 1.3; margin-top: 4px; }
+    .course-header .meta { font-size: 9pt; color: #555; margin-top: 4px; }
+    h2 { font-size: 11pt; color: #8B2542; border-bottom: 1px solid #8B2542; padding-bottom: 3px; margin: 16px 0 8px 0; text-transform: uppercase; letter-spacing: 0.05em; }
+    h3 { font-size: 10.5pt; color: #1a1a1a; font-weight: bold; margin: 10px 0 4px 0; }
+    p { font-size: 10pt; line-height: 1.5; margin-bottom: 6px; }
+    ul, ol { padding-left: 18px; margin-bottom: 8px; }
+    li { font-size: 10pt; line-height: 1.5; margin-bottom: 2px; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px; }
+    .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .box { border: 1px solid #8B2542; border-radius: 4px; padding: 10px 12px; }
+    .box h3 { color: #8B2542; margin-top: 0; }
+    .highlight { background: #fff5f7; border-left: 3px solid #8B2542; padding: 4px 8px; margin-bottom: 4px; font-size: 10pt; }
+    .framework-step { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+    .step-num { background: #8B2542; color: white; font-weight: bold; font-size: 9pt; min-width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step-text { font-size: 10pt; line-height: 1.45; }
+    .note-box { background: #f8f4f5; border: 1px solid #c9a0a8; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 9.5pt; }
+    .note-box strong { color: #8B2542; }
+    .write-line { border-bottom: 1px solid #999; margin: 6px 0 14px 0; height: 22px; }
+    .write-line-short { border-bottom: 1px solid #999; margin: 4px 0 8px 0; height: 20px; display: inline-block; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9.5pt; }
+    th { background: #8B2542; color: white; padding: 5px 8px; text-align: left; font-size: 9pt; }
+    td { border: 1px solid #c9a0a8; padding: 5px 8px; vertical-align: top; }
+    tr:nth-child(even) td { background: #fdf8f9; }
+    .footer { border-top: 1px solid #8B2542; margin-top: 20px; padding-top: 6px; text-align: center; font-size: 8pt; color: #555; }
+    .session-info { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+    .field-group { margin-bottom: 4px; }
+    .field-label { font-size: 8.5pt; color: #8B2542; font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+    .tall-line { border-bottom: 1px solid #999; height: 60px; margin: 4px 0 10px 0; }
+    .inventory-table td { height: 42px; }
+    .prompt-item { margin-bottom: 12px; }
+    .prompt-q { font-size: 10pt; font-style: italic; color: #555; margin-bottom: 2px; }
+    @media print { body { padding: 0.5in 0.75in; } h2 { break-before: avoid; } .two-col, .three-col { break-inside: avoid; } .box { break-inside: avoid; } .footer { break-inside: avoid; } }
+  </style>
+</head>
+<body>
+  <div class="branding">GA Integrated Therapeutic Perspectives LLC &nbsp;|&nbsp; NBCC ACEP #7760 &nbsp;|&nbsp; CounselorReady CE</div>
+
+  <div class="course-header">
+    <div class="code">CR-CLI-603 &nbsp;·&nbsp; 3 CE HOURS &nbsp;·&nbsp; CLINICAL SERIES</div>
+    <h1>IFS Parts Mapping<br>In-Session Worksheet</h1>
+    <div class="meta">Internal Family Systems: An Introduction for Licensed Counselors</div>
+  </div>
+
+  <div class="session-info">
+    <div class="field-group">
+      <span class="field-label">Client ID / Initials</span>
+      <div class="write-line"></div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">Session Date</span>
+      <div class="write-line"></div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">Session #</span>
+      <div class="write-line"></div>
+    </div>
+  </div>
+
+  <h2>Section 1 — Parts Inventory</h2>
+  <p style="font-size:9.5pt; margin-bottom:8px;">Identify the parts active for this client. For each part, note the name/label the client uses, its apparent role or job in the system, where it shows up in the body, how the client feels <em>toward</em> this part (blended vs. Self-energy), and what exile/wound it may be protecting.</p>
+
+  <table class="inventory-table">
+    <tr>
+      <th style="width:16%;">Part Name / Label</th>
+      <th style="width:20%;">Role or Job in System</th>
+      <th style="width:18%;">Body Location / Sensation</th>
+      <th style="width:22%;">Client's Feeling Toward This Part</th>
+      <th style="width:24%;">What It May Protect / Exile</th>
+    </tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+    <tr><td></td><td></td><td></td><td></td><td></td></tr>
+  </table>
+
+  <div class="note-box"><strong>Clinician prompt:</strong> "How do you feel toward that part right now?" — Responses like "I hate it," "I'm afraid of it," or "I want it gone" indicate blending. Responses like "I'm curious," "I feel for it," or "I want to understand it" indicate Self-energy present. Note which state is present for each part above.</div>
+
+  <h2>Section 2 — Self-Energy Check-In (The 8 Cs)</h2>
+  <p style="font-size:9.5pt; margin-bottom:8px;">Use these prompts to assess the client's current access to Self-energy. Ask each question aloud and note the client's response or your observation. Absence of a quality may indicate a part is blended.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="prompt-item">
+        <div class="prompt-q">"How calm do you feel inside right now, on a scale of 1–10?"</div>
+        <span class="field-label">Calmness — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Are you able to feel curious about this part, or does it feel threatening?"</div>
+        <span class="field-label">Curiosity — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"How clearly can you see this part — or are other parts' reactions making it hard to see?"</div>
+        <span class="field-label">Clarity — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Do you feel any compassion for this part, even if it's small?"</div>
+        <span class="field-label">Compassion — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+    <div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Do you feel like you can handle being with this part right now?"</div>
+        <span class="field-label">Confidence — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Are you open to new ways of relating to this part, or does it feel fixed?"</div>
+        <span class="field-label">Creativity — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Are you willing to go toward what this part holds, even if it's hard?"</div>
+        <span class="field-label">Courage — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+      <div class="prompt-item">
+        <div class="prompt-q">"Do you feel connected to yourself — or like parts are pulling you away?"</div>
+        <span class="field-label">Connectedness — Client Response / Observation</span>
+        <div class="write-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box"><strong>Clinician note:</strong> If the client cannot access at least 3–4 Cs, consider returning to protector work or grounding before proceeding to exile access. Self-energy is a prerequisite, not an assumption.</div>
+
+  <h2>Section 3 — Trailhead Exploration</h2>
+  <p style="font-size:9.5pt; margin-bottom:8px;">Follow a presenting trailhead through these four stations to identify the activated part. Use this section when the client presents with an emotion, sensation, or reaction that can serve as an entry point.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="box">
+        <h3>Station 1 — Presenting Emotion</h3>
+        <p class="prompt-q">"What emotion are you noticing most right now?"</p>
+        <div class="tall-line"></div>
+        <p style="font-size:9pt; color:#555;">Intensity (0–10): _______ &nbsp; Type: ________________________</p>
+      </div>
+    </div>
+    <div>
+      <div class="box">
+        <h3>Station 2 — Body Sensation</h3>
+        <p class="prompt-q">"Where do you feel that in your body? What does it feel like physically?"</p>
+        <div class="tall-line"></div>
+        <p style="font-size:9pt; color:#555;">Location: _____________ &nbsp; Texture/quality: _______________</p>
+      </div>
+    </div>
+  </div>
+  <div class="two-col">
+    <div>
+      <div class="box">
+        <h3>Station 3 — Image or Memory</h3>
+        <p class="prompt-q">"If that sensation had an image or a scene, what might it look like? Does it remind you of any time in your life?"</p>
+        <div class="tall-line"></div>
+        <p style="font-size:9pt; color:#555;">Age / context (if memory emerges): ________________________</p>
+      </div>
+    </div>
+    <div>
+      <div class="box">
+        <h3>Station 4 — Part Identification</h3>
+        <p class="prompt-q">"Is there a part of you connected to this feeling/image? What do we call it?"</p>
+        <div class="tall-line"></div>
+        <p style="font-size:9pt; color:#555;">Part type: &nbsp; ☐ Manager &nbsp; ☐ Firefighter &nbsp; ☐ Exile</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Section 4 — Direct Access Protocol Notes</h2>
+  <p style="font-size:9.5pt; margin-bottom:6px;">Use this space when a client is significantly blended and cannot separate from a part. Direct access means the clinician speaks <em>to</em> the part via the client, rather than having the Self relate to it. Document what protector permissions you sought and what the part communicated.</p>
+  <div class="field-group">
+    <span class="field-label">Part addressed via direct access</span>
+    <div class="write-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Clinician's opening to the part ("I'd like to speak directly with the part that...")</span>
+    <div class="write-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">What the part communicated / what it needs</span>
+    <div class="tall-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Part's response to being acknowledged / any shift observed</span>
+    <div class="tall-line"></div>
+  </div>
+
+  <h2>Section 5 — Session Goals &amp; Parts Contract</h2>
+  <div class="field-group">
+    <span class="field-label">Primary therapeutic intention for today's session</span>
+    <div class="write-line"></div>
+    <div class="write-line"></div>
+  </div>
+  <div class="two-col">
+    <div class="field-group">
+      <span class="field-label">Protectors asked to step back (list part name + their agreement)</span>
+      <div class="tall-line"></div>
+    </div>
+    <div class="field-group">
+      <span class="field-label">Parts contract — what the system agreed to today</span>
+      <div class="tall-line"></div>
+    </div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Exile(s) accessed this session (if any)</span>
+    <div class="write-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Unburdening work completed? &nbsp; ☐ Yes &nbsp; ☐ Partial &nbsp; ☐ No — protectors not ready</span>
+  </div>
+  <div class="write-line" style="margin-top:8px;"></div>
+  <div class="field-group">
+    <span class="field-label">Protectors updated / integration notes</span>
+    <div class="tall-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Client's closing check-in — how does the system feel at end of session?</span>
+    <div class="tall-line"></div>
+  </div>
+
+  <h2>Section 6 — Clinician Reflection</h2>
+  <p style="font-size:9.5pt; margin-bottom:8px;">IFS emphasizes clinician Self-leadership. Use this section after the session to reflect on your own internal responses. Not for the client record.</p>
+  <div class="field-group">
+    <span class="field-label">Which of your own parts showed up during this session? (e.g., fixer, worrier, rescuer, inner critic)</span>
+    <div class="tall-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Where in your body did you notice activation or tension?</span>
+    <div class="write-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Were you able to maintain Self-energy during the session? If not, what pulled you out?</span>
+    <div class="tall-line"></div>
+  </div>
+  <div class="field-group">
+    <span class="field-label">Supervision / consultation need for this case:</span>
+    <div class="write-line"></div>
+  </div>
+
+  <div class="footer">&copy; 2026 GA Integrated Therapeutic Perspectives LLC. For licensed professional use only.<br>CR-CLI-603 | CounselorReady CE | NBCC ACEP #7760</div>
+</body>
+</html>

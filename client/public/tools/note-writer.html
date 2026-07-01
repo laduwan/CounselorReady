@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Clinical Note Writer — CounselorReady</title>
+<meta name="description" content="Free AI-powered clinical note writer for therapists. Generate SOAP, DAP, and BIRP notes in seconds. No signup required.">
+<meta property="og:title" content="Free Clinical Note Writer — CounselorReady">
+<meta property="og:description" content="AI-powered clinical note writer for therapists. Generate SOAP, DAP, and BIRP notes in seconds.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--burgundy:#6B1D34;--burgundy-light:#8B3A54;--burgundy-deep:#4A1224;--rose:#D0768A;--green:#4A7C59;--gold:#D4A855;--navy:#284157;--navy-deep:#1A2D3D;--stone:#EDEADF;--cream:#F9F6EF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-height:1.6}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(145deg,var(--burgundy-deep),var(--burgundy),var(--burgundy-light));padding:14px 28px 12px;border-bottom:2px solid var(--gold)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px;text-decoration:none}
+.logo span:first-child{color:#D0768A}
+.logo span:last-child{color:#4A7C59}
+.hdr-right{display:flex;align-items:center;gap:12px}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hdr-badge{background:rgba(212,168,85,0.25);color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid rgba(212,168,85,0.4)}
+.hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+.hdr-link{color:rgba(255,255,255,.7);font-size:12px;text-decoration:none;padding:5px 12px;border:1px solid rgba(255,255,255,.2);border-radius:6px;transition:all .15s}
+.hdr-link:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* ── TIER BAR ── */
+.tier-bar{background:var(--navy-deep);padding:8px 28px;display:flex;align-items:center;gap:20px;overflow-x:auto}
+.tier-item{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap}
+.tier-item strong{color:rgba(255,255,255,.9)}
+.tier-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tier-item.active .tier-dot{background:var(--gold)}
+.tier-item:not(.active) .tier-dot{background:rgba(255,255,255,.2)}
+
+/* ── LAYOUT ── */
+.main{max-width:860px;margin:0 auto;padding:24px 20px 80px}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px}
+.card-hdr{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid #E0DBD0;background:linear-gradient(135deg,rgba(107,29,52,.03),rgba(74,124,89,.03))}
+.card-hdr h2{font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;color:var(--navy)}
+.card-hdr p{font-size:12px;color:#888;margin-top:1px}
+.card-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.card-body{padding:16px 20px}
+
+/* ── SECTION LABEL ── */
+.sec-label{font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.sec-label .opt{font-weight:400;color:#bbb;text-transform:none;letter-spacing:0;font-size:10px}
+
+/* ── CHIP GROUPS ── */
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.chip{padding:6px 12px;border:1.5px solid #E0DBD0;border-radius:99px;font-size:12.5px;font-family:'Lato',sans-serif;cursor:pointer;transition:all .15s;user-select:none;background:#fff;color:#555;line-height:1}
+.chip:hover{border-color:var(--burgundy);color:var(--burgundy)}
+.chip.sel-b{border-color:var(--burgundy);background:rgba(107,29,52,.08);color:var(--burgundy);font-weight:700}
+.chip.sel-g{border-color:var(--green);background:rgba(74,124,89,.08);color:var(--green);font-weight:700}
+.chip.sel-n{border-color:var(--navy);background:rgba(40,65,87,.08);color:var(--navy);font-weight:700}
+.chip.sel-gold{border-color:var(--gold);background:rgba(212,168,85,.12);color:#8A6000;font-weight:700}
+.chip-single .chip.sel-b,.chip-single .chip.sel-g,.chip-single .chip.sel-n{font-weight:700}
+
+/* ── DIVIDER ── */
+.divider{border:none;border-top:1px solid #E8E4D8;margin:14px 0}
+
+/* ── TEXTAREA ── */
+.field{margin-bottom:0}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px}
+.field textarea{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #ddd;font-family:'Lato',sans-serif;font-size:14px;outline:none;transition:border-color .15s,box-shadow .15s;resize:vertical;min-height:110px;line-height:1.6}
+.field textarea:focus{border-color:var(--burgundy);box-shadow:0 0 0 3px rgba(107,29,52,.08)}
+.field textarea::placeholder{color:#bbb;font-style:italic}
+.char-count{font-size:11px;color:#bbb;text-align:right;margin-top:3px}
+.char-count.warn{color:#C4732A}
+.char-count.danger{color:var(--burgundy)}
+
+/* ── TEXT INPUT ── */
+.text-input{width:100%;padding:9px 12px;border-radius:8px;border:1.5px solid #ddd;font-family:'Lato',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+.text-input:focus{border-color:var(--burgundy);box-shadow:0 0 0 3px rgba(107,29,52,.08)}
+
+/* ── FORMAT TILES ── */
+.format-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:14px}
+@media(max-width:600px){.format-grid{grid-template-columns:repeat(2,1fr)}}
+.fmt-tile{padding:10px 6px;border:2px solid #E0DBD0;border-radius:9px;background:#fff;cursor:pointer;text-align:center;transition:all .15s}
+.fmt-tile:hover{border-color:var(--burgundy)}
+.fmt-tile.selected{border-color:var(--burgundy);background:rgba(107,29,52,.06)}
+.fmt-tile .fmt-name{font-size:15px;font-weight:700;color:var(--burgundy);font-family:'Cormorant Garamond',Georgia,serif}
+.fmt-tile .fmt-full{font-size:9.5px;color:#999;margin-top:1px;line-height:1.3}
+
+/* ── DISCLAIMER ── */
+.disclaimer{background:rgba(40,65,87,.05);border-left:3px solid var(--navy);border-radius:0 8px 8px 0;padding:9px 13px;font-size:12px;color:var(--navy);line-height:1.5;margin-bottom:14px}
+
+/* ── GENERATE BUTTON ── */
+.generate-btn{width:100%;padding:16px;border-radius:10px;font-family:'Cormorant Garamond',Georgia,serif;font-size:18px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);box-shadow:0 4px 16px rgba(212,168,85,.35);transition:all .15s;display:flex;align-items:center;justify-content:center;gap:10px;letter-spacing:.02em;margin-top:16px}
+.generate-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(212,168,85,.4)}
+.generate-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(74,20,36,.3);border-top-color:var(--burgundy-deep);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── OUTPUT ── */
+.output-card{display:none}
+.output-card.visible{display:block}
+.output-hdr{background:linear-gradient(135deg,var(--green),#5A9469);padding:18px 24px;display:flex;align-items:center;justify-content:space-between}
+.output-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff}
+.output-hdr .meta{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px}
+.output-actions{display:flex;gap:8px}
+.output-btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Lato',sans-serif;transition:all .15s;display:flex;align-items:center;gap:5px}
+.btn-copy{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.btn-copy:hover{background:rgba(255,255,255,.3)}
+.btn-copy.copied{background:rgba(255,255,255,.35)}
+.btn-new{background:var(--gold);color:var(--burgundy-deep)}
+.btn-new:hover{background:#C49A40}
+.output-body{padding:28px;font-size:14px;line-height:1.8;color:#2A2A2A;white-space:pre-wrap;font-family:'Lato',sans-serif}
+.output-section-head{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:700;color:var(--burgundy);margin:0 0 6px;margin-top:18px}
+.output-section-head:first-child{margin-top:0}
+
+/* ── RATE LIMIT ── */
+.rate-limit-card{display:none}
+.rate-limit-card.visible{display:block}
+.rate-limit-body{padding:28px;text-align:center}
+.rate-limit-body h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;color:var(--burgundy);margin-bottom:8px}
+.rate-limit-body p{font-size:14px;color:#666;margin-bottom:20px;max-width:440px;margin-left:auto;margin-right:auto}
+.upgrade-btn{display:inline-block;padding:12px 28px;background:var(--burgundy);color:#fff;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px}
+.resets-at{font-size:12px;color:#aaa;margin-top:12px}
+
+
+/* ── SYMPTOM SLIDERS ── */
+.sym-group{background:rgba(107,29,52,.03);border-radius:10px;padding:13px 15px;margin-bottom:10px}
+.sym-group:last-child{margin-bottom:0}
+.sym-group-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px}
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:520px){.sym-grid{grid-template-columns:1fr}}
+.sym-row label{display:block;font-size:11px;color:#666;margin-bottom:4px;line-height:1.3}
+.sym-row .slider-wrap{display:flex;align-items:center;gap:8px}
+.sym-row .slider-wrap input{flex:1}
+.sym-row .slider-val{font-size:13px;font-weight:700;min-width:20px;color:var(--navy)}
+.sym-na{font-size:11px;color:#bbb;font-style:italic;padding:8px 0}
+
+/* ── FOOTER ── */
+.tool-footer{background:var(--navy-deep);color:rgba(255,255,255,.5);text-align:center;padding:18px;font-size:11px;line-height:1.6;margin-top:20px}
+.tool-footer a{color:rgba(255,255,255,.6);text-decoration:none}
+</style>
+<script src="/js/cr-gtag.js"></script>
+<script>!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(a!==void 0?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return a!="posthog"&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+" (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);posthog.init("phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb",{api_host:"https://us.i.posthog.com",autocapture:false});</script>
+</head>
+<body>
+<script>
+(async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const main = document.querySelector('main');
+          if (main) main.innerHTML = `
+            <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+              <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+              <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+              <p style="color:#4A7C59;margin-bottom:24px;">
+                This feature requires the Clinical Tools Suite add-on.
+                Contact your organization administrator to enable it.
+              </p>
+              <a href="/partner-billing.html#addons"
+                 style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+                View Add-ons
+              </a>
+            </div>
+          `;
+        });
+        return;
+      }
+      if (features && features.isPartnerUser && features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const badge = document.createElement('div');
+          badge.id = 'cr-powered-badge';
+          badge.innerHTML = `
+            <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+              <span style="font-weight:700;">Powered by</span>
+              <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+            </div>
+          `;
+          document.body.appendChild(badge);
+        });
+      }
+    }
+  } catch (e) { /* fail-open */ }
+})();
+</script>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <a href="/" class="logo"><span>Counselor</span><span>Ready</span></a>
+    <div class="hdr-right">
+      <a href="/tools/index.html" class="hdr-link">← All Tools</a>
+      <a href="/courses.html" class="hdr-link">CE Courses</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;margin-top:4px">
+    <span class="hdr-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Clinical Note Writer
+    </span>
+    <span class="hdr-badge">AI-Powered</span>
+  </div>
+  <div class="hdr-sub">SOAP · DAP · BIRP · Narrative — tap through checkboxes, type only what's unique</div>
+</div>
+
+<div class="tier-bar">
+  <span class="tier-item active"><span class="tier-dot"></span><strong>15/day</strong> free (no login)</span>
+  <span class="tier-item"><span class="tier-dot"></span><strong>30/day</strong> $7.95/mo</span>
+  <span class="tier-item"><span class="tier-dot"></span><strong>60/day</strong> Professional plan</span>
+  <span class="tier-item"><span class="tier-dot"></span><strong>Unlimited</strong> VIP plan</span>
+</div>
+
+<div class="main">
+
+
+  <!-- ── CLIENT PROFILE (subscriber feature) ── -->
+  <div class="card" id="profileCard">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(212,168,85,.15)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div><h2>Client Profile</h2><p>Load saved defaults — no identifiers stored, ever</p></div>
+    </div>
+    <div class="card-body" id="profileBody">
+      <div id="profileFree" style="background:linear-gradient(135deg,rgba(212,168,85,.08),rgba(74,124,89,.06));border:1px dashed rgba(212,168,85,.5);border-radius:10px;padding:14px 16px;display:flex;align-items:flex-start;gap:14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#8A6000;margin-bottom:3px">Save client profiles for faster documentation</div>
+          <div style="font-size:12px;color:#666;line-height:1.55">Subscribers can create a nickname for each client (e.g. "Tuesday 3pm" or "Client A") and save their default note format, presenting themes, modalities, and diagnosis. No names, DOB, or identifiers — ever. Only you know which profile corresponds to which client.</div>
+          <a href="/subscription.html" style="display:inline-block;margin-top:10px;padding:6px 14px;background:#6B1D34;color:#fff;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none">See Plans →</a>
+        </div>
+      </div>
+      <div id="profileSubscriber" style="display:none">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:160px">
+            <div class="sec-label">Load profile <span class="opt">by nickname</span></div>
+            <select id="profileSelect" class="text-input" onchange="loadProfile(this.value)">
+              <option value="">— New client / one-off note —</option>
+            </select>
+          </div>
+          <button onclick="showSaveProfile()" style="padding:9px 16px;background:rgba(74,124,89,.1);border:1.5px solid #4A7C59;border-radius:8px;color:#4A7C59;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">+ Save current as profile</button>
+          <button id="deleteProfileBtn" onclick="deleteProfile()" style="display:none;padding:9px 14px;background:rgba(107,29,52,.08);border:1.5px solid #6B1D34;border-radius:8px;color:#6B1D34;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">Delete</button>
+        </div>
+        <div id="saveProfilePanel" style="display:none;margin-top:12px;background:var(--cream,#F9F6EF);border-radius:10px;padding:13px 15px">
+          <div class="sec-label" style="margin-bottom:6px">Profile nickname <span class="opt">only you see this — never stored with real names</span></div>
+          <div style="display:flex;gap:8px">
+            <input type="text" id="profileNickname" class="text-input" placeholder="e.g. Tuesday 3pm · Client A · Blue notebook · Anxiety case 1" maxlength="40" style="flex:1">
+            <button onclick="saveProfile()" style="padding:9px 16px;background:#6B1D34;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Save</button>
+            <button onclick="document.getElementById('saveProfilePanel').style.display='none'" style="padding:9px 12px;background:#fff;border:1.5px solid #ddd;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit">×</button>
+          </div>
+          <div style="font-size:11px;color:#888;margin-top:6px">Saves: note format, presenting themes, modalities, diagnosis. Not saved: session-specific details, risk level, or free-text notes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ── STEP 1: SESSION SETUP ── -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(107,29,52,.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B1D34" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div><h2>Session Setup</h2><p>Format, type, and duration</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="sec-label">Note format</div>
+      <div class="format-grid" id="formatGrid">
+        <div class="fmt-tile selected" data-fmt="SOAP" onclick="selectFormat(this)">
+          <div class="fmt-name">SOAP</div>
+          <div class="fmt-full">Subjective · Objective · Assessment · Plan</div>
+        </div>
+        <div class="fmt-tile" data-fmt="DAP" onclick="selectFormat(this)">
+          <div class="fmt-name">DAP</div>
+          <div class="fmt-full">Data · Assessment · Plan</div>
+        </div>
+        <div class="fmt-tile" data-fmt="BIRP" onclick="selectFormat(this)">
+          <div class="fmt-name">BIRP</div>
+          <div class="fmt-full">Behavior · Intervention · Response · Plan</div>
+        </div>
+        <div class="fmt-tile" data-fmt="NARRATIVE" onclick="selectFormat(this)">
+          <div class="fmt-name">Narrative</div>
+          <div class="fmt-full">Free-form clinical narrative</div>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec-label">Session type <span class="opt">tap one</span></div>
+      <div class="chips chip-single" id="sessionTypeChips">
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Individual</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Couples</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Family</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Group</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Intake / Assessment</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Crisis Intervention</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Telehealth</span>
+        <span class="chip" onclick="toggleSingle(this,'sessionTypeChips','sel-b')">Collateral / Case Mgmt</span>
+      </div>
+
+      <div class="sec-label">Duration <span class="opt">tap one</span></div>
+      <div class="chips chip-single" id="durationChips">
+        <span class="chip" onclick="toggleSingle(this,'durationChips','sel-n')">25 min</span>
+        <span class="chip" onclick="toggleSingle(this,'durationChips','sel-n')">38 min</span>
+        <span class="chip sel-n" onclick="toggleSingle(this,'durationChips','sel-n')">50 min</span>
+        <span class="chip" onclick="toggleSingle(this,'durationChips','sel-n')">45 min</span>
+        <span class="chip" onclick="toggleSingle(this,'durationChips','sel-n')">60 min</span>
+        <span class="chip" onclick="toggleSingle(this,'durationChips','sel-n')">90 min</span>
+      </div>
+
+      <hr class="divider">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div>
+          <div class="sec-label">Session date <span class="opt">optional</span></div>
+          <input type="date" id="sessionDate" class="text-input">
+        </div>
+        <div>
+          <div class="sec-label">Session time <span class="opt">optional</span></div>
+          <input type="time" id="sessionTime" class="text-input">
+        </div>
+        <div>
+          <div class="sec-label">Location / setting <span class="opt">optional</span></div>
+          <input type="text" id="sessionLocation" class="text-input" placeholder="e.g. Office · Telehealth · Home visit">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STEP 2: PRESENTING THEMES ── -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(74,124,89,.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div><h2>Presenting Themes</h2><p>What did the client bring to session? Select all that apply</p></div>
+    </div>
+    <div class="card-body">
+      <div class="chips" id="themesChips">
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Anxiety / Worry</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Depression / Low mood</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Trauma processing</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Grief / Loss</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Relationship conflict</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Work stress / Burnout</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Parenting / Family stress</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Anger / Irritability</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Self-esteem / Identity</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Life transitions</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Substance use</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Sleep difficulties</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">OCD / Intrusive thoughts</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">ADHD / Focus</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Boundary setting</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Suicidal ideation</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Safety planning</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Treatment planning / Goal review</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Progress review</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-g')">Medication check-in</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: INTERVENTIONS + RESPONSE ── -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(212,168,85,.15)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div><h2>Interventions &amp; Response</h2><p>What you used and how the client responded</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="sec-label">Modalities used <span class="opt">select all that apply</span></div>
+      <div class="chips" id="modalitiesChips">
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">CBT</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">DBT skills</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">EMDR</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">ACT</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Motivational Interviewing</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Narrative therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Somatic work</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Psychoeducation</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Parts work / IFS</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Play therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Exposure / ERP</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Thought challenging</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Mindfulness / Grounding</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Crisis intervention</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Psychodynamic exploration</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Supportive counseling</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Coordination of care</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Structural family therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Gottman method</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">EFT (couples)</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Solution-focused</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Strength-based</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Reality therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Trauma-focused CBT</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">CPT</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Prolonged exposure</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Interpersonal therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Behavioral activation</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Schema therapy</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Attachment-based</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Anger management</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Relapse prevention</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">12-step facilitation</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Psychopharmacology consult</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Case management</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-gold')">Psychosocial assessment</span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec-label">Client response / engagement <span class="opt">select all that apply</span></div>
+      <div class="chips" id="responseChips">
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Good engagement</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Insight demonstrated</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Mood improved by end</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Tearful / Emotional</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Guarded / Resistant</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Limited verbal response</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Receptive to intervention</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Activated / Dysregulated</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Motivated for change</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Ambivalent</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Denial present</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-b')">Progress toward goals</span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec-label">Previous homework review <span class="opt">tap one</span></div>
+      <div class="chips chip-single" id="hwCompletedChips">
+        <span class="chip" onclick="toggleSingle(this,'hwCompletedChips','sel-g')">Completed ✓</span>
+        <span class="chip" onclick="toggleSingle(this,'hwCompletedChips','sel-b')">Partially completed</span>
+        <span class="chip" onclick="toggleSingle(this,'hwCompletedChips','sel-b')">Not completed</span>
+        <span class="chip" onclick="toggleSingle(this,'hwCompletedChips','sel-n')">Not reviewed this session</span>
+        <span class="chip" onclick="toggleSingle(this,'hwCompletedChips','sel-n')">No prior homework assigned</span>
+      </div>
+
+      <div class="sec-label" style="margin-top:4px">Usefulness rating <span class="opt">if obtained — tap one</span></div>
+      <div class="chips chip-single" id="hwUsefulChips">
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-g')">Very helpful</span>
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-g')">Somewhat helpful</span>
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-b')">Neutral / Unsure</span>
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-b')">Not helpful</span>
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-b')">Found it difficult</span>
+        <span class="chip" onclick="toggleSingle(this,'hwUsefulChips','sel-b')">Not obtained</span>
+      </div>
+
+      <hr class="divider">
+
+      <div class="sec-label">Homework assigned this session <span class="opt">select all that apply</span></div>
+      <div class="chips" id="hwChips">
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Thought record</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Mindfulness practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Journaling</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Between-session reading</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Safety plan review</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Behavioral activation</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Grounding practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Coping skills practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Communication exercise</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Self-monitoring log</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Exposure practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">DBT diary card</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Values clarification exercise</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Relaxation / breathing practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Sleep hygiene plan</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Activity scheduling</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Worry time practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Anger log</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Substance tracking</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Self-compassion exercise</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Positive data log</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Assertiveness practice</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Grief ritual / letter writing</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Referred to support group</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Medication follow-up</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">Referral provided</span>
+        <span class="chip" onclick="toggleMulti(this,'sel-n')">No homework assigned</span>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ── STEP 3.5: SYMPTOM TRACKING (dynamic) ── -->
+  <div class="card" id="symptomCard" style="display:none">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(107,29,52,.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B1D34" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div><h2>Symptom Tracking</h2><p>Client-reported metrics for this week — sliders default to 0 (not tracked)</p></div>
+    </div>
+    <div class="card-body" id="symptomBody"></div>
+  </div>
+
+
+  <!-- ── STEP 4: RISK + CLINICAL CONTEXT ── -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(40,65,87,.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#284157" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div><h2>Risk &amp; Clinical Context</h2><p>Risk level, diagnosis, client info</p></div>
+    </div>
+    <div class="card-body">
+
+      <div class="sec-label">Risk level <span class="opt">tap one</span></div>
+      <div class="chips chip-single" id="riskChips">
+        <span class="chip sel-g" onclick="toggleSingle(this,'riskChips','sel-g')">None identified — no SI/HI</span>
+        <span class="chip" onclick="toggleSingle(this,'riskChips','sel-g')">Low — passive ideation, no plan</span>
+        <span class="chip" onclick="toggleSingle(this,'riskChips','sel-g')">Moderate — passive SI, monitoring</span>
+        <span class="chip" onclick="toggleSingle(this,'riskChips','sel-g')">High — active SI/HI, safety plan completed</span>
+      </div>
+
+      <hr class="divider">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div>
+          <div class="sec-label">Diagnosis <span class="opt">optional</span></div>
+          <input type="text" id="diagnosis" class="text-input" placeholder="e.g. F33.1 MDD, recurrent, moderate">
+        </div>
+        <div>
+          <div class="sec-label">Client initials <span class="opt">no full names</span></div>
+          <input type="text" id="clientInitials" class="text-input" placeholder="e.g. J.D." maxlength="10">
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── STEP 5: UNIQUE SESSION NOTES ── -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-icon" style="background:rgba(107,29,52,.1)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B1D34" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      </div>
+      <div><h2>Unique Session Details</h2><p>What the checkboxes above don't cover — specifics, quotes, context</p></div>
+    </div>
+    <div class="card-body">
+      <div class="disclaimer">
+        <strong>No PHI.</strong> Use client initials only. Notes are not stored after generation.
+      </div>
+      <div class="field">
+        <textarea id="bulletPoints" placeholder="• Ct. described argument with spouse — threatened to leave&#10;• Identified core belief: 'I am unlovable' via downward arrow&#10;• Practiced 4-7-8 breathing during activation spike mid-session&#10;• Reported 6/10 anxiety at start, 3/10 by end&#10;• Next session: continue EMDR processing of childhood memory" maxlength="5000"></textarea>
+        <div class="char-count" id="charCount">0 / 5,000</div>
+      </div>
+      <details style="margin-top:8px">
+        <summary style="font-size:12px;color:#888;cursor:pointer;user-select:none;padding:4px 0">What to include here</summary>
+        <ul style="margin-top:8px;padding-left:0;list-style:none">
+          <li style="font-size:12px;color:#666;padding:3px 0 3px 18px;position:relative"><span style="position:absolute;left:0;color:var(--green);font-weight:700">→</span>Specific content client shared (quotes, examples)</li>
+          <li style="font-size:12px;color:#666;padding:3px 0 3px 18px;position:relative"><span style="position:absolute;left:0;color:var(--green);font-weight:700">→</span>Notable moments, breakthroughs, or setbacks</li>
+          <li style="font-size:12px;color:#666;padding:3px 0 3px 18px;position:relative"><span style="position:absolute;left:0;color:var(--green);font-weight:700">→</span>Specific interventions with client response</li>
+          <li style="font-size:12px;color:#666;padding:3px 0 3px 18px;position:relative"><span style="position:absolute;left:0;color:var(--green);font-weight:700">→</span>SUD ratings before/after if tracked</li>
+          <li style="font-size:12px;color:#666;padding:3px 0 3px 18px;position:relative"><span style="position:absolute;left:0;color:var(--green);font-weight:700">→</span>Anything the checkboxes above couldn't capture</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <button class="generate-btn" id="generateBtn" onclick="generateNote()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    Generate Clinical Note
+  </button>
+
+  <!-- OUTPUT -->
+  <div class="card output-card" id="outputCard" style="margin-top:16px">
+    <div class="output-hdr">
+      <div>
+        <h3 id="outputTitle">SOAP Note</h3>
+        <div class="meta" id="outputMeta">Generated by CounselorReady AI</div>
+      </div>
+      <div class="output-actions">
+        <button class="output-btn btn-copy" id="copyBtn" onclick="copyNote()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copy
+        </button>
+        <button class="output-btn btn-new" onclick="resetForm()">New Note</button>
+      </div>
+    </div>
+    <div class="output-body" id="outputBody"></div>
+  </div>
+
+  <!-- RATE LIMIT -->
+  <div class="card rate-limit-card" id="rateLimitCard" style="margin-top:16px">
+    <div class="output-hdr" style="background:linear-gradient(135deg,var(--burgundy-deep),var(--burgundy))">
+      <div><h3>Daily Limit Reached</h3><div class="meta">Upgrade for more notes</div></div>
+    </div>
+    <div class="rate-limit-body">
+      <h3 id="rateLimitHeading">You've used all your notes for today</h3>
+      <p id="rateLimitMsg">Subscribe to Clinical Tools for $7.95/mo for 30 notes/day.</p>
+      <a href="/subscription.html" class="upgrade-btn">See Plans →</a>
+      <div class="resets-at" id="resetsAt"></div>
+    </div>
+  </div>
+
+  <!-- Email capture placeholder -->
+  <div id="crEmailCapture" style="display:none"></div>
+<script>
+(function(){
+  const API='https://api.counselorready.com';
+  const KEY='cr_email_captured';
+  const DISMISS_KEY='cr_email_dismissed';
+  const SHOW_AFTER=1;
+  let uses=parseInt(sessionStorage.getItem('cr_tool_uses')||'0');
+  function trackUse(){uses++;sessionStorage.setItem('cr_tool_uses',String(uses));maybeShow()}
+  window.crTrackToolUse=trackUse;
+  function maybeShow(){
+    if(localStorage.getItem(KEY)||localStorage.getItem(DISMISS_KEY))return;
+    if(uses<SHOW_AFTER)return;
+    render();
+  }
+  function render(){
+    const el=document.getElementById('crEmailCapture');
+    if(!el)return;
+    el.style.display='block';
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1A2D3D,#284157);border-radius:14px;padding:24px;margin:20px 0;text-align:center;position:relative;box-shadow:0 4px 16px rgba(26,45,61,.3)">
+      <button onclick="document.getElementById('crEmailCapture').style.display='none';localStorage.setItem('${DISMISS_KEY}','1')" style="position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer">&times;</button>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Want more tools like this?</div>
+      <p style="font-size:13px;color:#8AABBE;margin-bottom:16px;line-height:1.5;max-width:440px;margin-left:auto;margin-right:auto">Get notified when we release new free clinical tools, CE course drops, and practice-building resources. No spam — just useful stuff for clinicians.</p>
+      <div style="display:flex;gap:10px;max-width:420px;margin:0 auto">
+        <input id="crEmailInput" type="email" placeholder="you@example.com" style="flex:1;padding:11px 14px;border-radius:8px;border:2px solid #35546B;background:#1A2D3D;color:#E8E8E8;font-family:'Lato',sans-serif;font-size:14px;outline:none">
+        <button onclick="crSubmitEmail()" style="padding:11px 20px;background:linear-gradient(135deg,#D4A855,#C49A40);color:#4A1224;border:none;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap">Keep Me Posted</button>
+      </div>
+      <div id="crEmailMsg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px">No spam. Unsubscribe anytime. We respect your inbox.</div>
+    </div>`;
+  }
+  window.crSubmitEmail=async function(){
+    const input=document.getElementById('crEmailInput');
+    const msg=document.getElementById('crEmailMsg');
+    const email=input.value.trim();
+    if(!email||!email.includes('@')){msg.style.color='#E8A87C';msg.textContent='Please enter a valid email.';return}
+    msg.style.color='#8AABBE';msg.textContent='Saving...';
+    try{
+      const r=await fetch(API+'/api/tools/capture-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:document.title})});
+      if(r.ok){
+        msg.style.color='#5A9469';msg.textContent="You're in! Watch your inbox.";
+        localStorage.setItem(KEY,email);
+        setTimeout(()=>{document.getElementById('crEmailCapture').style.display='none'},2500);
+      } else {
+        const d=await r.json();
+        msg.style.color='#5A9469';msg.textContent=d.message||"You're already subscribed!";
+        localStorage.setItem(KEY,email);
+      }
+    }catch(e){
+      localStorage.setItem(KEY,email);
+      msg.style.color='#5A9469';msg.textContent="Saved! We'll be in touch.";
+    }
+  };
+  setTimeout(maybeShow,3000);
+})();
+</script>
+
+</div>
+
+<div class="tool-footer">
+  <strong style="color:rgba(255,255,255,.8)">Important:</strong> AI-generated notes are drafts. Review and edit before adding to any medical record. CounselorReady is not responsible for clinical decisions based on generated content.<br>
+  <span style="margin-top:6px;display:inline-block"><a href="/terms.html">Terms</a> · <a href="/privacy.html">Privacy</a> · <a href="/help.html">Contact</a> · © 2026 GA Integrated Therapeutic Perspectives LLC. CounselorReady™ is a trademark of GAITP LLC.</span>
+</div>
+
+<script>
+const API_BASE = 'https://api.counselorready.com/api';
+let selectedFormat = 'SOAP';
+
+// ── FORMAT ──────────────────────────────────────────────────
+function selectFormat(el) {
+  document.querySelectorAll('.fmt-tile').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedFormat = el.dataset.fmt;
+}
+
+// ── SINGLE-SELECT CHIPS ──────────────────────────────────────
+function toggleSingle(el, groupId, cls) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.chip').forEach(c => c.classList.remove(cls));
+  if (!el.classList.contains(cls)) el.classList.add(cls);
+}
+
+// ── MULTI-SELECT CHIPS ───────────────────────────────────────
+function toggleMulti(el, cls) {
+  el.classList.toggle(cls);
+}
+
+// ── GET SELECTED CHIPS ───────────────────────────────────────
+function getSelected(groupId, cls) {
+  return Array.from(document.querySelectorAll(`#${groupId} .chip.${cls}`)).map(c => c.textContent.trim());
+}
+
+function getSingleSelected(groupId, cls) {
+  const el = document.querySelector(`#${groupId} .chip.${cls}`);
+  return el ? el.textContent.trim().replace(' min', '') : '';
+}
+
+// ── CHAR COUNTER ─────────────────────────────────────────────
+const bulletEl = document.getElementById('bulletPoints');
+const charCount = document.getElementById('charCount');
+bulletEl.addEventListener('input', () => {
+  const len = bulletEl.value.length;
+  charCount.textContent = `${len.toLocaleString()} / 5,000`;
+  charCount.className = 'char-count' + (len > 4500 ? ' danger' : len > 4000 ? ' warn' : '');
+});
+
+// ── BUILD BULLET POINTS FROM CHIPS + TEXTAREA ────────────────
+function buildBulletPoints() {
+  const parts = [];
+
+  const themes = getSelected('themesChips', 'sel-g');
+  if (themes.length) parts.push('Presenting themes: ' + themes.join(', '));
+
+  // Session header — date, time, location
+  const sessionDate = document.getElementById('sessionDate')?.value;
+  const sessionTime = document.getElementById('sessionTime')?.value;
+  const sessionLocation = document.getElementById('sessionLocation')?.value.trim();
+  const sessionHeaderParts = [];
+  if (sessionDate) {
+    const d = new Date(sessionDate + 'T12:00:00');
+    sessionHeaderParts.push(d.toLocaleDateString('en-US', {weekday:'short', month:'long', day:'numeric', year:'numeric'}));
+  }
+  if (sessionTime) {
+    const [h, m] = sessionTime.split(':');
+    const hr = parseInt(h);
+    sessionHeaderParts.push(`${hr > 12 ? hr - 12 : hr || 12}:${m} ${hr >= 12 ? 'PM' : 'AM'}`);
+  }
+  if (sessionLocation) sessionHeaderParts.push(sessionLocation);
+  if (sessionHeaderParts.length) parts.unshift('Session: ' + sessionHeaderParts.join(' · '));
+
+  const modalities = getSelected('modalitiesChips', 'sel-gold');
+  if (modalities.length) parts.push('Interventions used: ' + modalities.join(', '));
+
+  const responses = getSelected('responseChips', 'sel-b');
+  if (responses.length) parts.push('Client response: ' + responses.join(', '));
+
+  const hwCompleted = getSingleSelected('hwCompletedChips', 'sel-g') || getSingleSelected('hwCompletedChips', 'sel-b') || getSingleSelected('hwCompletedChips', 'sel-n');
+  if (hwCompleted) {
+    const hwUseful = getSingleSelected('hwUsefulChips', 'sel-g') || getSingleSelected('hwUsefulChips', 'sel-b');
+    if (hwUseful && hwCompleted !== 'No prior homework assigned' && hwCompleted !== 'Not reviewed this session') {
+      parts.push(`Previous homework: ${hwCompleted} — usefulness: ${hwUseful}`);
+    } else if (hwCompleted) {
+      parts.push(`Previous homework: ${hwCompleted}`);
+    }
+  }
+
+  const hw = getSelected('hwChips', 'sel-n');
+  if (hw.length) parts.push('Homework assigned this session: ' + hw.join(', '));
+
+  const symptomData = getSymptomData ? getSymptomData() : '';
+  if (symptomData) parts.push(symptomData);
+
+  const freeText = bulletEl.value.trim();
+  if (freeText) parts.push(freeText);
+
+  return parts.join('\n');
+}
+
+// ── GENERATE ─────────────────────────────────────────────────
+async function generateNote() {if(window.posthog)posthog.capture('tool_used',{tool:'note-writer'});
+  const combinedBullets = buildBulletPoints();
+
+  if (!combinedBullets.trim()) {
+    bulletEl.focus();
+    bulletEl.style.borderColor = 'var(--burgundy)';
+    bulletEl.style.boxShadow = '0 0 0 3px rgba(107,29,52,.12)';
+    setTimeout(() => { bulletEl.style.borderColor = ''; bulletEl.style.boxShadow = ''; }, 2000);
+    // Also flash a theme chip hint
+    const themesCard = document.getElementById('themesChips').closest('.card');
+    themesCard.style.outline = '2px solid var(--burgundy)';
+    setTimeout(() => themesCard.style.outline = '', 2000);
+    return;
+  }
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Generating your note…';
+
+  document.getElementById('outputCard').classList.remove('visible');
+  document.getElementById('rateLimitCard').classList.remove('visible');
+
+  const sessionType = getSingleSelected('sessionTypeChips', 'sel-b');
+  const duration = getSingleSelected('durationChips', 'sel-n');
+  const riskRaw = getSingleSelected('riskChips', 'sel-g');
+  const riskLevel = riskRaw || 'None identified';
+
+  const payload = {
+    format: selectedFormat,
+    bulletPoints: combinedBullets,
+    sessionType: sessionType || undefined,
+    duration: duration || undefined,
+    modalities: getSelected('modalitiesChips', 'sel-gold').length ? getSelected('modalitiesChips', 'sel-gold') : undefined,
+    diagnosis: document.getElementById('diagnosis').value.trim() || undefined,
+    riskLevel,
+    clientInitials: document.getElementById('clientInitials').value.trim() || undefined,
+  };
+
+  try {
+    const resp = await fetch(API_BASE + '/tools/generate-note', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    });
+    const data = await resp.json();
+
+    if (resp.status === 429) {
+      document.getElementById('rateLimitHeading').textContent = data.message || "Daily limit reached";
+      document.getElementById('rateLimitMsg').textContent = data.upgrade || 'Upgrade for more notes.';
+      if (data.resetsAt) {
+        const d = new Date(data.resetsAt);
+        document.getElementById('resetsAt').textContent = `Resets at midnight · ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})} your time`;
+      }
+      document.getElementById('rateLimitCard').classList.add('visible');
+      document.getElementById('rateLimitCard').scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+
+    if (!resp.ok || data.error) throw new Error(data.error || 'Generation failed');
+
+    const formatLabels = { SOAP:'SOAP Note', DAP:'DAP Note', BIRP:'BIRP Note', NARRATIVE:'Narrative Note' };
+    document.getElementById('outputTitle').textContent = formatLabels[selectedFormat] || 'Clinical Note';
+
+    const metaParts = [];
+    if (sessionType) metaParts.push(sessionType);
+    if (duration) metaParts.push(duration + ' min');
+    const sessionDate2 = document.getElementById('sessionDate')?.value;
+    if (sessionDate2) {
+      const d = new Date(sessionDate2 + 'T12:00:00');
+      metaParts.push(d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}));
+    }
+    const sessionLocation2 = document.getElementById('sessionLocation')?.value.trim();
+    if (sessionLocation2) metaParts.push(sessionLocation2);
+    const themes = getSelected('themesChips', 'sel-g');
+    if (themes.length) metaParts.push(themes.slice(0, 2).join(', ') + (themes.length > 2 ? '…' : ''));
+    document.getElementById('outputMeta').textContent = metaParts.join(' · ') || 'Generated by CounselorReady AI';
+
+    const noteText = data.note || data.content || '';
+    document.getElementById('outputBody').innerHTML = formatNoteAsHtml(noteText, selectedFormat);
+    document.getElementById('outputCard').classList.add('visible');
+    document.getElementById('outputCard').scrollIntoView({ behavior:'smooth', block:'start' });
+
+    if (window.crTrackToolUse) window.crTrackToolUse();
+
+  } catch (err) {
+    alert('Something went wrong: ' + err.message + '\n\nPlease try again in a moment.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Generate Clinical Note';
+  }
+}
+
+// ── FORMAT NOTE HTML ─────────────────────────────────────────
+function formatNoteAsHtml(text, format) {
+  const sections = { SOAP:['Subjective','Objective','Assessment','Plan'], DAP:['Data','Assessment','Plan'], BIRP:['Behavior','Intervention','Response','Plan'], NARRATIVE:[] };
+  const headers = sections[format] || [];
+  if (!headers.length) return `<div>${escHtml(text).replace(/\n/g,'<br>')}</div>`;
+  let html = text;
+  headers.forEach(h => { html = html.replace(new RegExp(`(${h}:?)`, 'gi'), `\n___H___$1`); });
+  return html.split('___H___').map(chunk => {
+    if (!chunk.trim()) return '';
+    const isH = headers.some(h => chunk.toLowerCase().startsWith(h.toLowerCase()));
+    if (isH) {
+      const ci = chunk.indexOf(':');
+      if (ci > -1) {
+        return `<p class="output-section-head">${escHtml(chunk.slice(0,ci+1).trim())}</p><p>${escHtml(chunk.slice(ci+1).trim()).replace(/\n/g,'<br>')}</p>`;
+      }
+    }
+    return `<p>${escHtml(chunk).replace(/\n/g,'<br>')}</p>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ── COPY ─────────────────────────────────────────────────────
+function copyNote() {
+  const text = document.getElementById('outputBody').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+    }, 2500);
+  }).catch(() => {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById('outputBody'));
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+  });
+}
+
+// ── RESET ────────────────────────────────────────────────────
+function resetForm() {
+  document.getElementById('outputCard').classList.remove('visible');
+  document.getElementById('rateLimitCard').classList.remove('visible');
+  bulletEl.value = '';
+  charCount.textContent = '0 / 5,000';
+  charCount.className = 'char-count';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── SYMPTOM TRACKING ─────────────────────────────────────
+const SYMPTOM_MAP = {
+  'Anxiety / Worry': [
+    { id:'anx_episodes', label:'Anxiety/panic episodes this week', min:0, max:21, step:1, unit:'' },
+    { id:'anx_duration', label:'Avg episode duration (minutes)', min:0, max:120, step:5, unit:' min' },
+    { id:'anx_intensity', label:'Peak intensity (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'anx_avoidance', label:'Avoidance episodes', min:0, max:21, step:1, unit:'' },
+  ],
+  'Depression / Low mood': [
+    { id:'dep_days', label:'Low mood days this week', min:0, max:7, step:1, unit:'/7' },
+    { id:'dep_crying', label:'Crying episodes', min:0, max:21, step:1, unit:'' },
+    { id:'dep_energy', label:'Average energy level (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'dep_withdrawal', label:'Social withdrawal days', min:0, max:7, step:1, unit:'/7' },
+  ],
+  'Anger / Irritability': [
+    { id:'ang_outbursts', label:'Outbursts this week', min:0, max:21, step:1, unit:'' },
+    { id:'ang_intensity', label:'Average intensity (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'ang_regret', label:'Times felt regret/remorse after', min:0, max:21, step:1, unit:'' },
+    { id:'ang_triggers', label:'Identifiable trigger instances', min:0, max:21, step:1, unit:'' },
+  ],
+  'Trauma processing': [
+    { id:'trm_intrusive', label:'Intrusive thoughts/memories (days)', min:0, max:7, step:1, unit:'/7' },
+    { id:'trm_nightmares', label:'Nightmare nights', min:0, max:7, step:1, unit:'/7' },
+    { id:'trm_hypervig', label:'Hypervigilance level avg (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'trm_avoidance', label:'Trauma-related avoidance episodes', min:0, max:21, step:1, unit:'' },
+  ],
+  'OCD / Intrusive thoughts': [
+    { id:'ocd_hrs', label:'Hours/day on compulsions (avg)', min:0, max:12, step:0.5, unit:' hrs' },
+    { id:'ocd_freq', label:'Intrusive thought episodes/day avg', min:0, max:50, step:1, unit:'' },
+    { id:'ocd_distress', label:'Average distress level (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'ocd_resisted', label:'Times successfully resisted compulsion', min:0, max:50, step:1, unit:'' },
+  ],
+  'Suicidal ideation': [
+    { id:'si_days', label:'Days with SI this week', min:0, max:7, step:1, unit:'/7' },
+    { id:'si_intensity', label:'Peak intensity (0–10)', min:0, max:10, step:1, unit:'/10' },
+    { id:'si_duration', label:'Longest ideation episode (minutes)', min:0, max:240, step:5, unit:' min' },
+  ],
+  'Substance use': [
+    { id:'sub_days', label:'Days of use this week', min:0, max:7, step:1, unit:'/7' },
+    { id:'sub_qty', label:'Avg quantity per use day (std units)', min:0, max:20, step:1, unit:'' },
+    { id:'sub_cravings', label:'Craving intensity avg (0–10)', min:0, max:10, step:1, unit:'/10' },
+  ],
+  'Sleep difficulties': [
+    { id:'slp_hours', label:'Average hours/night', min:0, max:12, step:0.5, unit:' hrs' },
+    { id:'slp_onset', label:'Nights with trouble falling asleep', min:0, max:7, step:1, unit:'/7' },
+    { id:'slp_waking', label:'Nights with early waking', min:0, max:7, step:1, unit:'/7' },
+    { id:'slp_quality', label:'Average sleep quality (0–10)', min:0, max:10, step:1, unit:'/10' },
+  ],
+};
+
+function updateSymptoms() {
+  setTimeout(() => {
+    const themes = getSelected('themesChips', 'sel-g');
+    buildSymptomSection(themes);
+  }, 50);
+}
+
+function buildSymptomSection(selectedThemes) {
+  const card = document.getElementById('symptomCard');
+  const body = document.getElementById('symptomBody');
+  const tracked = selectedThemes.filter(t => SYMPTOM_MAP[t]);
+  if (!tracked.length) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  body.innerHTML = tracked.map(theme => {
+    const metrics = SYMPTOM_MAP[theme];
+    const color = theme === 'Suicidal ideation' ? '#C0392B' : '#6B1D34';
+    const rows = metrics.map(m => `
+      <div class="sym-row">
+        <label>${m.label}</label>
+        <div class="slider-wrap">
+          <input type="range" id="${m.id}" min="${m.min}" max="${m.max}" step="${m.step}" value="${m.min}"
+            oninput="document.getElementById('${m.id}_val').textContent=parseFloat(this.value)+'${m.unit}'">
+          <span class="slider-val" id="${m.id}_val">${m.min}${m.unit}</span>
+        </div>
+      </div>`).join('');
+    return `<div class="sym-group">
+      <div class="sym-group-label" style="color:${color}">${theme}</div>
+      <div class="sym-grid">${rows}</div>
+    </div>`;
+  }).join('');
+}
+
+function getSymptomData() {
+  const themes = getSelected('themesChips', 'sel-g');
+  const tracked = themes.filter(t => SYMPTOM_MAP[t]);
+  if (!tracked.length) return '';
+  const lines = tracked.map(theme => {
+    const metrics = SYMPTOM_MAP[theme];
+    const vals = metrics.map(m => {
+      const el = document.getElementById(m.id);
+      if (!el) return null;
+      const v = parseFloat(el.value);
+      if (v === m.min) return null;
+      return `${m.label}: ${v}${m.unit}`;
+    }).filter(Boolean);
+    if (!vals.length) return null;
+    return `Symptom tracking (${theme}): ${vals.join('; ')}`;
+  }).filter(Boolean);
+  return lines.join('\n');
+}
+
+// Patch theme chips to update symptom section on click
+document.querySelectorAll('#themesChips .chip').forEach(chip => {
+  chip.addEventListener('click', updateSymptoms);
+});
+
+// ── CLIENT PROFILES ───────────────────────────────────────
+const PROFILE_KEY = 'cr_client_profiles';
+
+function isSubscriber() {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return false;
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const paid = ['starter','professional','vip','tools','tools_plus'];
+    const plan = payload.subscriptionPlan || payload.subscription?.plan || '';
+    return paid.includes(plan);
+  } catch { return false; }
+}
+
+function initProfiles() {
+  if (isSubscriber()) {
+    document.getElementById('profileFree').style.display = 'none';
+    document.getElementById('profileSubscriber').style.display = 'block';
+    loadProfileDropdown();
+  }
+}
+
+function loadProfileDropdown() {
+  const select = document.getElementById('profileSelect');
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  select.innerHTML = '<option value="">— New client / one-off note —</option>';
+  Object.keys(profiles).sort().forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
+
+function loadProfile(name) {
+  document.getElementById('deleteProfileBtn').style.display = name ? 'block' : 'none';
+  if (!name) return;
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  const p = profiles[name];
+  if (!p) return;
+
+  // Format
+  if (p.format) {
+    document.querySelectorAll('.fmt-tile').forEach(t => t.classList.remove('selected'));
+    const tile = document.querySelector(`.fmt-tile[data-fmt="${p.format}"]`);
+    if (tile) { tile.classList.add('selected'); selectedFormat = p.format; }
+  }
+  // Themes
+  document.querySelectorAll('#themesChips .chip').forEach(c => c.classList.remove('sel-g'));
+  (p.themes||[]).forEach(t => {
+    document.querySelectorAll('#themesChips .chip').forEach(c => {
+      if (c.textContent.trim() === t) c.classList.add('sel-g');
+    });
+  });
+  // Modalities
+  document.querySelectorAll('#modalitiesChips .chip').forEach(c => c.classList.remove('sel-gold'));
+  (p.modalities||[]).forEach(m => {
+    document.querySelectorAll('#modalitiesChips .chip').forEach(c => {
+      if (c.textContent.trim() === m) c.classList.add('sel-gold');
+    });
+  });
+  // Diagnosis
+  if (p.diagnosis) document.getElementById('diagnosis').value = p.diagnosis;
+  // Rebuild symptom section
+  buildSymptomSection(p.themes||[]);
+}
+
+function showSaveProfile() {
+  document.getElementById('saveProfilePanel').style.display = 'block';
+  document.getElementById('profileNickname').focus();
+}
+
+function saveProfile() {
+  const name = document.getElementById('profileNickname').value.trim();
+  if (!name) return;
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  profiles[name] = {
+    format: selectedFormat,
+    themes: getSelected('themesChips','sel-g'),
+    modalities: getSelected('modalitiesChips','sel-gold'),
+    diagnosis: document.getElementById('diagnosis').value.trim(),
+    savedAt: new Date().toISOString(),
+  };
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+  document.getElementById('saveProfilePanel').style.display = 'none';
+  document.getElementById('profileNickname').value = '';
+  loadProfileDropdown();
+  document.getElementById('profileSelect').value = name;
+  document.getElementById('deleteProfileBtn').style.display = 'block';
+}
+
+function deleteProfile() {
+  const name = document.getElementById('profileSelect').value;
+  if (!name || !confirm(`Delete profile "${name}"?`)) return;
+  const profiles = JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}');
+  delete profiles[name];
+  localStorage.setItem(PROFILE_KEY, JSON.stringify(profiles));
+  loadProfileDropdown();
+  document.getElementById('deleteProfileBtn').style.display = 'none';
+}
+
+initProfiles();
+
+// Default session date to today
+const today = new Date();
+const yyyy = today.getFullYear();
+const mm = String(today.getMonth()+1).padStart(2,'0');
+const dd = String(today.getDate()).padStart(2,'0');
+document.getElementById('sessionDate').value = `${yyyy}-${mm}-${dd}`;
+
+</script>
+</body>
+</html>

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Private Practice Startup Checklist — CounselorReady</title>
+<meta name="description" content="Free private practice startup checklist for therapists. Step-by-step guide covering licensing, business setup, insurance paneling, and marketing.">
+<meta property="og:title" content="Practice Startup Checklist — CounselorReady">
+<meta property="og:description" content="Step-by-step private practice startup guide for therapists. Licensing, business setup, insurance, and marketing.">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--burgundy:#6B1D34;--burgundy-light:#8B3A54;--burgundy-deep:#4A1224;--rose:#D0768A;--green:#4A7C59;--gold:#D4A855;--navy:#284157;--navy-deep:#1A2D3D;--stone:#EDEADF;--cream:#F9F6EF}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-height:1.6}
+.hdr{background:linear-gradient(145deg,var(--burgundy-deep),var(--burgundy),var(--burgundy-light));padding:14px 28px 12px;border-bottom:2px solid var(--gold)}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px}
+.hdr-title{color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+.main{max-width:760px;margin:0 auto;padding:24px 20px 60px}
+/* PROGRESS */
+.progress-bar{background:#fff;border-radius:12px;padding:16px 20px;margin-bottom:20px;border:1px solid #E0DBD0;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.progress-track{height:10px;background:#E8E4D8;border-radius:10px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:10px;transition:width .3s}
+/* CATEGORIES */
+.cat{background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:16px}
+.cat-hdr{padding:14px 20px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid #E0DBD0;transition:.15s}
+.cat-hdr:hover{background:rgba(74,124,89,.02)}
+.cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cat-hdr h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:700;color:var(--navy);flex:1}
+.cat-count{font-size:12px;font-weight:700;color:#999;padding:4px 10px;border-radius:12px;background:var(--cream)}
+.cat-count.done{background:rgba(74,124,89,.1);color:var(--green)}
+.cat-chev{transition:transform .2s;color:#ccc}
+.cat-chev.open{transform:rotate(180deg)}
+.cat-body{padding:8px 20px 16px;display:none}
+.cat-body.open{display:block}
+/* ITEMS */
+.item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0f0}
+.item:last-child{border-bottom:none}
+.item-check{width:22px;height:22px;border-radius:6px;border:2px solid #ccc;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.15s;margin-top:2px}
+.item-check.checked{background:var(--green);border-color:var(--green)}
+.item-check svg{opacity:0;transition:.15s}
+.item-check.checked svg{opacity:1}
+.item-text{flex:1}
+.item-title{font-size:14px;font-weight:600;color:var(--navy)}
+.item-title.checked{text-decoration:line-through;color:#aaa}
+.item-desc{font-size:12px;color:#888;line-height:1.5;margin-top:2px}
+.item-link{font-size:11px;margin-top:3px}
+.item-link a{color:var(--burgundy);font-weight:600;text-decoration:none}
+.item-link a:hover{text-decoration:underline}
+.consult-cta{background:linear-gradient(135deg,var(--burgundy-deep),var(--burgundy));border-radius:12px;padding:20px 24px;text-align:center;margin:24px 0}
+.consult-cta h3{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;color:#fff;margin-bottom:8px}
+.consult-cta p{font-size:13px;color:rgba(255,255,255,.65);margin-bottom:14px;line-height:1.5}
+.consult-cta a{display:inline-block;padding:10px 24px;background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);border-radius:8px;font-weight:800;font-size:14px;text-decoration:none}
+.privacy{text-align:center;font-size:11px;color:#aaa;margin-top:16px;line-height:1.5}
+.footer{text-align:center;padding:20px;font-size:12px;color:#999;line-height:1.7;margin-top:20px;background:var(--navy-deep);border-radius:12px}
+</style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body>
+<script>
+(async function() {
+  const token = localStorage.getItem('token');
+  if (!token) return;
+  try {
+    const flagsRes = await fetch('/api/auth/features', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (flagsRes.ok) {
+      const { features } = await flagsRes.json();
+      if (features && features.isPartnerUser && !features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const main = document.querySelector('main');
+          if (main) main.innerHTML = `
+            <div style="max-width:480px;margin:80px auto;text-align:center;padding:40px;">
+              <div style="font-size:48px;margin-bottom:16px;">🔒</div>
+              <h2 style="font-size:24px;color:#6B1D34;margin-bottom:12px;">Feature Not Available</h2>
+              <p style="color:#4A7C59;margin-bottom:24px;">
+                This feature requires the Clinical Tools Suite add-on.
+                Contact your organization administrator to enable it.
+              </p>
+              <a href="/partner-billing.html#addons"
+                 style="display:inline-block;padding:12px 24px;background:#6B1D34;color:white;border-radius:8px;text-decoration:none;">
+                View Add-ons
+              </a>
+            </div>
+          `;
+        });
+        return;
+      }
+      if (features && features.isPartnerUser && features.clinicalTools) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const badge = document.createElement('div');
+          badge.id = 'cr-powered-badge';
+          badge.innerHTML = `
+            <div style="position:fixed;bottom:16px;right:16px;background:white;border:1px solid #E5E5E5;border-radius:8px;padding:8px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.1);z-index:9999;display:flex;align-items:center;gap:6px;font-family:Lato,sans-serif;font-size:12px;color:#6B1D34;">
+              <span style="font-weight:700;">Powered by</span>
+              <span><span style="color:#6B1D34;font-weight:700;">Counselor</span><span style="color:#4A7C59;font-weight:700;">Ready</span>™</span>
+            </div>
+          `;
+          document.body.appendChild(badge);
+        });
+      }
+    }
+  } catch (e) { /* fail-open */ }
+})();
+</script>
+<div class="hdr">
+<div class="hdr-top"><span class="logo"><span style="color:#D0768A">Counselor</span><span style="color:#5A9469">Ready</span></span><span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;letter-spacing:.8px">FREE TOOL</span></div>
+<div class="hdr-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Private Practice Startup Checklist</div>
+<div class="hdr-sub">Every step from "I got my license" to "I'm seeing clients." Check off as you go.</div>
+</div>
+<main class="main" id="app"></main>
+<script>
+const DATA=[
+{cat:"Legal & Business Formation",icon:"#6B1D34",items:[
+{t:"Choose a business structure (LLC recommended for liability protection)",d:"Consult an accountant or attorney. Most solo practitioners form a single-member LLC. S-Corp election can reduce self-employment tax at higher incomes.",link:"https://www.sba.gov/business-guide/launch-your-business/choose-business-structure",linkText:"SBA Business Structure Guide"},
+{t:"Register your business with the state",d:"File Articles of Organization (LLC) with your state's Secretary of State. Cost varies by state ($50–$500)."},
+{t:"Obtain an EIN (Employer Identification Number) from the IRS",d:"Free. Takes 5 minutes online. You need this for taxes, banking, and insurance paneling.",link:"https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online",linkText:"IRS EIN Application"},
+{t:"Open a separate business bank account",d:"Never mix personal and business finances. You need the EIN first. Many banks offer free business checking."},
+{t:"Obtain professional liability (malpractice) insurance",d:"$100–$200/year for most LPCs. HPSO, CPH & Associates, and Preferra are popular options. Get this BEFORE seeing clients.",link:"https://www.cphins.com",linkText:"CPH & Associates"},
+{t:"Check if you need a local business license or occupancy permit",d:"Varies by city/county. Some require a home occupation permit for home-based practices."},
+{t:"Consult with a CPA/tax advisor about quarterly estimated taxes",d:"As a 1099/self-employed clinician, you'll owe quarterly estimated taxes. An accountant familiar with healthcare practices is worth the investment."},
+]},
+{cat:"Licensing & Credentials",icon:"#4A7C59",items:[
+{t:"Verify your license is active and in good standing",d:"Check your state licensing board website. Ensure your license type allows independent practice."},
+{t:"Apply for an NPI (National Provider Identifier)",d:"Free. Required for any insurance billing, even out-of-network. Takes 1–2 weeks.",link:"https://nppes.cms.hhs.gov",linkText:"NPPES NPI Application"},
+{t:"Register with CAQH ProView",d:"Free provider data repository used by most insurance companies. Complete your profile — it's required for credentialing.",link:"https://proview.caqh.org/pr/Registration",linkText:"CAQH ProView"},
+{t:"Decide: insurance panels, private pay, or both",d:"Paneling takes 60–120 days. Start the process early even if you plan to primarily see private-pay clients."},
+{t:"Apply for insurance panel credentialing (if applicable)",d:"Start with the most common insurers in your area. Submit through CAQH. Follow up every 2 weeks — applications get lost."},
+{t:"If providing telehealth: obtain licenses in additional states as needed",d:"You must be licensed where the CLIENT is located. Check PSYPACT (psychologists) or compact agreements for your license type."},
+{t:"Obtain any required specialty certifications",d:"BC-TMH for telehealth, EMDR certification, play therapy credentials, etc. Check if your state requires specific telehealth training."},
+]},
+{cat:"Clinical Documentation & Compliance",icon:"#D4A855",items:[
+{t:"Create your informed consent document",d:"Include: services offered, confidentiality and its limits, fees, cancellation policy, emergency procedures, telehealth consent (if applicable), No Surprises Act language.",link:"/tools/consent-generator.html",linkText:"Use CR Informed Consent Generator"},
+{t:"Create intake forms (demographic, clinical history, insurance info)",d:"Include: personal information, emergency contact, presenting concerns, medical/psychiatric history, substance use history, family history, current medications, prior treatment."},
+{t:"Create a Notice of Privacy Practices (HIPAA)",d:"Required by HIPAA. Templates available from your professional association (ACA, NASW, AAMFT).",link:"https://www.hhs.gov/hipaa/for-professionals/privacy/guidance/model-notices-privacy-practices/index.html",linkText:"HHS Model Notice"},
+{t:"Set up your clinical note templates (SOAP, DAP, or BIRP)",d:"Choose a format and stick with it. Consistency matters more than format choice.",link:"/tools/note-writer.html",linkText:"Use CR Clinical Note Writer"},
+{t:"Create a treatment plan template",d:"Include: presenting problems, goals, measurable objectives, interventions, target dates, review schedule.",link:"/tools/treatment-plan.html",linkText:"Use CR Treatment Plan Builder"},
+{t:"Create a sliding scale fee schedule",d:"Even if you don't plan to use it immediately, having one ready demonstrates ethical practice.",link:"/tools/sliding-scale.html",linkText:"Use CR Sliding Scale Calculator"},
+{t:"Create a Good Faith Estimate template (No Surprises Act)",d:"Required for all self-pay/uninsured clients. Must include expected services, frequency, and costs for 12 months.",link:"https://www.cms.gov/nosurprises",linkText:"CMS No Surprises Act"},
+{t:"Create a crisis safety plan template",d:"Have a blank Stanley-Brown Safety Plan ready for any client who needs one.",link:"/tools/safety-plan.html",linkText:"Use CR Safety Plan Builder"},
+{t:"Set up your record-keeping system (EHR or secure alternative)",d:"Options: full EHR (SimplePractice, TherapyNotes), encrypted cloud folders (Google Workspace with BAA), or encrypted local storage.",link:"/tools/",linkText:"CR Record-Keeping Guidance"},
+{t:"Develop an after-hours crisis protocol",d:"What happens when a client calls at 2am? Document your protocol: voicemail message, crisis line referral (988), local ER info."},
+]},
+{cat:"Practice Setup & Operations",icon:"#284157",items:[
+{t:"Secure a practice location (office, home office, or telehealth-only)",d:"Office sublease, shared space, or fully telehealth. Ensure HIPAA compliance for any location."},
+{t:"Set up a HIPAA-compliant phone system",d:"Google Voice, Spruce, or a dedicated business line. Never use personal cell for clinical calls without a HIPAA-compliant layer."},
+{t:"Set up a HIPAA-compliant email",d:"Google Workspace with BAA ($6/mo) or Microsoft 365 Business with BAA. Never use free Gmail/Yahoo for PHI."},
+{t:"If offering telehealth: select and set up a HIPAA-compliant platform",d:"Doxy.me (free tier), Zoom for Healthcare, SimplePractice Telehealth, or TherapyNotes Telehealth. Get a BAA."},
+{t:"Set up a scheduling system",d:"Calendly (free tier), Acuity, SimplePractice, or your EHR's built-in scheduler. Enable client self-scheduling to reduce admin time."},
+{t:"Set up payment processing",d:"Square, Stripe, Ivy Pay (built for therapists), or your EHR's built-in billing. Get a BAA if the processor handles PHI."},
+{t:"Create a professional voicemail greeting",d:"Include: your name, credentials, practice name, hours, and crisis instructions (988, nearest ER, 911). Keep it brief."},
+{t:"Set up a superbill template (for out-of-network clients)",d:"Clients need this to submit for out-of-network reimbursement.",link:"/tools/superbill.html",linkText:"Use CR Superbill Generator"},
+]},
+{cat:"Marketing & Client Acquisition",icon:"#8B3A54",items:[
+{t:"Create a Psychology Today profile",d:"The #1 therapist directory. $30/month. Include a genuine, warm photo and a profile written in first person that speaks directly to your ideal client.",link:"https://www.psychologytoday.com/us/therapists/signup",linkText:"Psychology Today Signup"},
+{t:"Build a simple professional website",d:"Include: your photo, about page, services, fees, contact/scheduling link. Keep it simple. Wix, Squarespace, or WordPress all work."},
+{t:"Claim your Google Business Profile",d:"Free. Helps you appear in local searches. Essential for 'therapist near me' queries.",link:"https://www.google.com/business/",linkText:"Google Business Profile"},
+{t:"Set up professional social media (optional)",d:"LinkedIn for professional networking. Instagram for community presence. Keep personal and professional separate. Have a social media policy in your informed consent."},
+{t:"Join local referral networks and professional groups",d:"ACA local chapters, NAMI, local therapist Facebook groups, multidisciplinary networking events. Word-of-mouth is the best referral source."},
+{t:"Develop 2–3 niche specialties",d:"Generalist practices struggle to fill caseloads. Specialize in specific populations, issues, or modalities (e.g., 'anxiety in college students,' 'EMDR for first responders')."},
+{t:"Create a referral list for services you don't provide",d:"Psychiatrists, group practices, substance abuse programs, domestic violence resources, child therapists. Having a warm referral network benefits clients and builds your reputation."},
+]},
+{cat:"Professional Development & Self-Care",icon:"#345640",items:[
+{t:"Set up CE tracking for all your licenses",d:"Track requirements by state, category (ethics, clinical, etc.), and renewal date. Don't wait until the last month.",link:"https://counselorready.com",linkText:"Use CounselorReady CE Tracker"},
+{t:"Arrange for clinical consultation or peer supervision",d:"Even if not required for your license, regular consultation protects you clinically, ethically, and emotionally. Find 2–3 trusted colleagues."},
+{t:"Establish a self-care routine before you need it",d:"Burnout starts before you notice it. Schedule non-negotiable self-care: exercise, therapy for yourself, hobbies, time off."},
+{t:"Set clear boundaries around work hours from day one",d:"Define when you're available and when you're not. Communicate this to clients in the informed consent. Protect your evenings and weekends."},
+{t:"Consider joining a professional association",d:"ACA, NASW, AAMFT, APA — professional liability coverage, advocacy, CE discounts, networking, and credibility."},
+]},
+];
+
+let checked={};
+try{const s=localStorage.getItem('cr_checklist');if(s)checked=JSON.parse(s)}catch(e){}
+let openCats={};
+
+function save(){try{localStorage.setItem('cr_checklist',JSON.stringify(checked))}catch(e){}}
+function toggle(key){checked[key]=!checked[key];save();render()}
+function toggleCat(i){openCats[i]=!openCats[i];render()}
+
+function render(){
+  const totalItems=DATA.reduce((s,c)=>s+c.items.length,0);
+  const checkedCount=Object.values(checked).filter(Boolean).length;
+  const pct=Math.round((checkedCount/totalItems)*100);
+
+  let html=`
+  <div class="progress-bar">
+    <div class="progress-label"><span>${checkedCount} of ${totalItems} completed</span><span>${pct}%</span></div>
+    <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+  </div>`;
+
+  DATA.forEach((cat,ci)=>{
+    const catChecked=cat.items.filter((_,ii)=>checked[ci+'-'+ii]).length;
+    const allDone=catChecked===cat.items.length;
+    const isOpen=openCats[ci]!==false; // default open
+
+    html+=`<div class="cat">
+      <div class="cat-hdr" onclick="toggleCat(${ci})">
+        <div class="cat-icon" style="background:${cat.icon}15"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${cat.icon}" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <h3>${cat.cat}</h3>
+        <span class="cat-count ${allDone?'done':''}">${catChecked}/${cat.items.length}</span>
+        <svg class="cat-chev ${isOpen?'open':''}" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="cat-body ${isOpen?'open':''}">`;
+
+    cat.items.forEach((item,ii)=>{
+      const key=ci+'-'+ii;
+      const isChecked=!!checked[key];
+      html+=`<div class="item">
+        <div class="item-check ${isChecked?'checked':''}" onclick="toggle('${key}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="item-text">
+          <div class="item-title ${isChecked?'checked':''}">${item.t}</div>
+          <div class="item-desc">${item.d}</div>
+          ${item.link?`<div class="item-link"><a href="${item.link}" target="_blank">${item.linkText||'Learn more'} →</a></div>`:''}
+        </div>
+      </div>`;
+    });
+
+    html+=`</div></div>`;
+  });
+
+  // Consultation CTA
+  html+=`<div class="consult-cta">
+    <h3>Feeling overwhelmed?</h3>
+    <p>Book a 1:1 Practice Startup Consultation ($105, 60 min). Walk through your specific situation with a licensed clinician who's built a practice from scratch.</p>
+    <a href="https://calendly.com/counselorready/practice-startup" target="_blank">Book a Consultation →</a>
+  </div>`;
+
+  html+=`<div class="privacy">Progress is saved in your browser. CounselorReady does not capture or store any checklist data on our servers.</div>
+  <div style="background:rgba(40,65,87,.04);border:1px solid rgba(40,65,87,.1);border-radius:10px;padding:12px 16px;margin-top:12px;font-size:12px;color:#666;line-height:1.7;max-width:760px"><strong style="color:#284157">CounselorReady Clinical Tools are documentation aids, not an EHR.</strong> You are responsible for maintaining, securing, and storing all clinical records. Evaluate your practice needs regularly and transition to a full EHR when your caseload requires it. <a href="/tools/" style="color:#284157;font-weight:600">Record-keeping guidance →</a></div>
+  <div class="footer"><span style="font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:16px"><span style="color:var(--rose)">Counselor</span><span style="color:#5A9469">Ready</span></span> — Free clinical tools.<br>&copy; 2026 GAITP LLC. All rights reserved. | NBCC ACEP Provider #7760</div>`;
+
+  document.getElementById('app').innerHTML=html;
+}
+render();
+</script>
+<!-- CR Email Capture -->
+<div id="crEmailCapture" style="display:none"></div>
+<script>
+(function(){
+  const API='https://api.counselorready.com';
+  const KEY='cr_email_captured';
+  const DISMISS_KEY='cr_email_dismissed';
+  const SHOW_AFTER=1;
+  let uses=parseInt(sessionStorage.getItem('cr_tool_uses')||'0');
+  function trackUse(){uses++;sessionStorage.setItem('cr_tool_uses',String(uses));maybeShow()}
+  window.crTrackToolUse=trackUse;
+  function maybeShow(){
+    if(localStorage.getItem(KEY)||localStorage.getItem(DISMISS_KEY))return;
+    if(uses<SHOW_AFTER)return;
+    render();
+  }
+  function render(){
+    const el=document.getElementById('crEmailCapture');
+    if(!el)return;
+    el.style.display='block';
+    el.innerHTML=`
+    <div style="background:linear-gradient(135deg,#1A2D3D,#284157);border-radius:14px;padding:24px;margin:20px 0;text-align:center;position:relative;box-shadow:0 4px 16px rgba(26,45,61,.3)">
+      <button onclick="document.getElementById('crEmailCapture').style.display='none';localStorage.setItem('${DISMISS_KEY}','1')" style="position:absolute;top:10px;right:14px;background:none;border:none;color:rgba(255,255,255,.3);font-size:18px;cursor:pointer">&times;</button>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px">Want more tools like this?</div>
+      <p style="font-size:13px;color:#8AABBE;margin-bottom:16px;line-height:1.5;max-width:440px;margin-left:auto;margin-right:auto">Get notified when we release new free clinical tools, CE course drops, and practice-building resources. No spam — just useful stuff for clinicians.</p>
+      <div style="display:flex;gap:10px;max-width:420px;margin:0 auto">
+        <input id="crEmailInput" type="email" placeholder="you@example.com" style="flex:1;padding:11px 14px;border-radius:8px;border:2px solid #35546B;background:#1A2D3D;color:#E8E8E8;font-family:'Lato',sans-serif;font-size:14px;outline:none">
+        <button onclick="crSubmitEmail()" style="padding:11px 20px;background:linear-gradient(135deg,#D4A855,#C49A40);color:#4A1224;border:none;border-radius:8px;font-family:'Lato',sans-serif;font-size:14px;font-weight:800;cursor:pointer;white-space:nowrap">Keep Me Posted</button>
+      </div>
+      <div id="crEmailMsg" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+      <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:8px">No spam. Unsubscribe anytime. We respect your inbox.</div>
+    </div>`;
+  }
+  window.crSubmitEmail=async function(){
+    const input=document.getElementById('crEmailInput');
+    const msg=document.getElementById('crEmailMsg');
+    const email=input.value.trim();
+    if(!email||!email.includes('@')){msg.style.color='#E8A87C';msg.textContent='Please enter a valid email.';return}
+    msg.style.color='#8AABBE';msg.textContent='Saving...';
+    try{
+      const r=await fetch(API+'/api/tools/capture-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,source:document.title})});
+      if(r.ok){
+        msg.style.color='#5A9469';msg.textContent="You're in! Watch your inbox.";
+        localStorage.setItem(KEY,email);
+        setTimeout(()=>{document.getElementById('crEmailCapture').style.display='none'},2500);
+      } else {
+        const d=await r.json();
+        msg.style.color='#5A9469';msg.textContent=d.message||"You're already subscribed!";
+        localStorage.setItem(KEY,email);
+      }
+    }catch(e){
+      localStorage.setItem(KEY,email);
+      msg.style.color='#5A9469';msg.textContent="Saved! We'll be in touch.";
+    }
+  };
+  setTimeout(maybeShow,3000);
+})();
+</script>
+<!-- /CR Email Capture -->
+</body>
+</html>

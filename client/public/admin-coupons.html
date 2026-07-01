@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Coupon Management - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-coupons.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-tags w-5"></i>
+          Coupons
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-900">Coupon Management</h1>
+            <p class="text-forest-600 mt-1">Create and manage discount codes for subscriptions and courses</p>
+          </div>
+          <button onclick="showCreateModal()" class="bg-hunter-500 hover:bg-hunter-600 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-colors">
+            <i class="fas fa-plus"></i>
+            Create Coupon
+          </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-hunter-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-tags text-hunter-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statTotal">-</p>
+                <p class="text-sm text-forest-600">Total Coupons</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statActive">-</p>
+                <p class="text-sm text-forest-600">Active</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-honey-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-receipt text-honey-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statRedemptions">-</p>
+                <p class="text-sm text-forest-600">Total Redemptions</p>
+              </div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border border-burgundy-100 p-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-dollar-sign text-purple-600"></i>
+              </div>
+              <div>
+                <p class="text-2xl font-bold text-burgundy-900" id="statSavings">-</p>
+                <p class="text-sm text-forest-600">Total Discounts Given</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-xl border border-burgundy-100 p-4 mb-6">
+          <div class="flex flex-wrap items-center gap-4">
+            <div class="flex-1 min-w-[200px]">
+              <input type="text" id="searchInput" placeholder="Search by code or name..." 
+                class="w-full px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none"
+                oninput="filterCoupons()">
+            </div>
+            <select id="statusFilter" onchange="filterCoupons()" class="px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <select id="typeFilter" onchange="filterCoupons()" class="px-4 py-2 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+              <option value="all">All Types</option>
+              <option value="percent">Percentage Off</option>
+              <option value="fixed">Fixed Amount</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Coupons Table -->
+        <div class="bg-white rounded-xl border border-burgundy-100 overflow-hidden" id="couponsTableContainer">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-burgundy-50 border-b border-burgundy-100">
+                <tr>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Code</th>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Discount</th>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Duration</th>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Redemptions</th>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Expires</th>
+                  <th class="text-left px-6 py-4 text-sm font-semibold text-burgundy-900">Status</th>
+                  <th class="text-right px-6 py-4 text-sm font-semibold text-burgundy-900">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="couponsTable">
+                <tr>
+                  <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                    <p>Loading coupons...</p>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden bg-white rounded-xl border border-burgundy-100 p-12 text-center">
+          <div class="w-16 h-16 bg-honey-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-tags text-2xl text-honey-500"></i>
+          </div>
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-2">No Coupons Yet</h3>
+          <p class="text-forest-600 mb-4">Create your first coupon to offer discounts to your users.</p>
+          <button onclick="showCreateModal()" class="bg-hunter-500 hover:bg-hunter-600 text-white px-5 py-2.5 rounded-lg font-semibold">
+            Create Your First Coupon
+          </button>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Create/Edit Coupon Modal -->
+  <div id="couponModal" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6 border-b border-burgundy-100">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-2xl font-bold text-burgundy-900" id="modalTitle">Create Coupon</h2>
+          <button onclick="closeModal()" class="text-forest-400 hover:text-burgundy-700 text-xl">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <form id="couponForm" onsubmit="saveCoupon(event)" class="p-6 space-y-5">
+        <!-- Promo Code -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Promo Code *</label>
+          <input type="text" id="promoCode" required placeholder="e.g., LAUNCH25" 
+            class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none uppercase"
+            oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+          <p class="text-xs text-forest-500 mt-1">Letters and numbers only, no spaces</p>
+        </div>
+
+        <!-- Coupon Name -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Display Name</label>
+          <input type="text" id="couponName" placeholder="e.g., Launch Special" 
+            class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+          <p class="text-xs text-forest-500 mt-1">Shown to users when applied (optional)</p>
+        </div>
+
+        <!-- Discount Type -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-2">Discount Type *</label>
+          <div class="grid grid-cols-2 gap-3">
+            <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:border-hunter-500 has-[:checked]:border-hunter-500 has-[:checked]:bg-hunter-50">
+              <input type="radio" name="discountType" value="percent" checked class="text-hunter-500 focus:ring-hunter-500">
+              <div>
+                <p class="font-medium text-burgundy-900">Percentage Off</p>
+                <p class="text-xs text-forest-500">e.g., 20% off</p>
+              </div>
+            </label>
+            <label class="flex items-center gap-3 p-3 border border-forest-200 rounded-lg cursor-pointer hover:border-hunter-500 has-[:checked]:border-hunter-500 has-[:checked]:bg-hunter-50">
+              <input type="radio" name="discountType" value="fixed" class="text-hunter-500 focus:ring-hunter-500">
+              <div>
+                <p class="font-medium text-burgundy-900">Fixed Amount</p>
+                <p class="text-xs text-forest-500">e.g., $10 off</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Discount Value -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Discount Value *</label>
+          <div class="relative">
+            <span id="discountPrefix" class="absolute left-4 top-1/2 -translate-y-1/2 text-forest-500">%</span>
+            <input type="number" id="discountValue" required min="1" max="100" placeholder="20" 
+              class="w-full pl-10 pr-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Duration -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-2">Duration *</label>
+          <select id="duration" class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+            <option value="once">Once - First payment only</option>
+            <option value="repeating">Repeating - Multiple months</option>
+            <option value="forever">Forever - All payments</option>
+          </select>
+        </div>
+
+        <!-- Duration Months (shown when repeating) -->
+        <div id="durationMonthsContainer" class="hidden">
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Number of Months</label>
+          <input type="number" id="durationMonths" min="1" max="24" value="3" 
+            class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+        </div>
+
+        <!-- Max Redemptions -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Max Redemptions</label>
+          <input type="number" id="maxRedemptions" min="1" placeholder="Unlimited" 
+            class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+          <p class="text-xs text-forest-500 mt-1">Leave blank for unlimited uses</p>
+        </div>
+
+        <!-- Expiration Date -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-1">Expiration Date</label>
+          <input type="date" id="expiresAt" 
+            class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+          <p class="text-xs text-forest-500 mt-1">Leave blank for no expiration</p>
+        </div>
+
+        <!-- First-Time Only -->
+        <div>
+          <label class="flex items-center gap-3 cursor-pointer">
+            <input type="checkbox" id="firstTimeOnly" class="w-5 h-5 text-hunter-500 focus:ring-hunter-500 rounded">
+            <div>
+              <p class="font-medium text-burgundy-900">First-time customers only</p>
+              <p class="text-xs text-forest-500">Only users who haven't subscribed before can use this code</p>
+            </div>
+          </label>
+        </div>
+
+        <!-- Applies To -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-900 mb-2">Applies To</label>
+          <select id="appliesTo" class="w-full px-4 py-2.5 border border-forest-200 rounded-lg focus:ring-2 focus:ring-hunter-500 outline-none">
+            <option value="all">All Products (Subscriptions & Courses)</option>
+            <option value="subscriptions">Subscriptions Only</option>
+            <option value="courses">Individual Courses Only</option>
+          </select>
+        </div>
+
+        <!-- Error Message -->
+        <div id="formError" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex gap-3 pt-4">
+          <button type="button" onclick="closeModal()" class="flex-1 px-4 py-2.5 border border-forest-300 text-forest-700 rounded-lg font-medium hover:bg-forest-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" id="submitBtn" class="flex-1 px-4 py-2.5 bg-hunter-500 hover:bg-hunter-600 text-white rounded-lg font-semibold transition-colors">
+            Create Coupon
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    let coupons = [];
+    let filteredCoupons = [];
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadCoupons();
+      setupFormListeners();
+    });
+
+    function checkAuth() {
+      const token = localStorage.getItem('token');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      
+      if (!token || user.role !== 'admin') {
+        window.location.href = '/login.html';
+        return;
+      }
+      
+      document.getElementById('adminEmail').textContent = user.email;
+    }
+
+    function setupFormListeners() {
+      // Toggle discount prefix based on type
+      document.querySelectorAll('input[name="discountType"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          const prefix = document.getElementById('discountPrefix');
+          const input = document.getElementById('discountValue');
+          if (e.target.value === 'percent') {
+            prefix.textContent = '%';
+            input.max = 100;
+            input.placeholder = '20';
+          } else {
+            prefix.textContent = '$';
+            input.max = 9999;
+            input.placeholder = '10';
+          }
+        });
+      });
+
+      // Toggle duration months visibility
+      document.getElementById('duration').addEventListener('change', (e) => {
+        document.getElementById('durationMonthsContainer').classList.toggle('hidden', e.target.value !== 'repeating');
+      });
+    }
+
+    async function loadCoupons() {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/coupons`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (!response.ok) throw new Error('Failed to load coupons');
+        
+        const data = await response.json();
+        coupons = data.coupons || [];
+        
+        // Update stats
+        document.getElementById('statTotal').textContent = data.stats?.total || coupons.length;
+        document.getElementById('statActive').textContent = data.stats?.active || coupons.filter(c => c.active).length;
+        document.getElementById('statRedemptions').textContent = data.stats?.totalRedemptions || 0;
+        document.getElementById('statSavings').textContent = '$' + (data.stats?.totalSavings || 0).toLocaleString();
+        
+        filterCoupons();
+      } catch (error) {
+        console.error('Load coupons error:', error);
+        document.getElementById('couponsTable').innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-red-500">
+              <i class="fas fa-exclamation-circle text-2xl mb-2"></i>
+              <p>Failed to load coupons. Make sure Stripe is configured.</p>
+            </td>
+          </tr>
+        `;
+      }
+    }
+
+    function filterCoupons() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const status = document.getElementById('statusFilter').value;
+      const type = document.getElementById('typeFilter').value;
+      
+      filteredCoupons = coupons.filter(coupon => {
+        const matchesSearch = !search || 
+          coupon.code?.toLowerCase().includes(search) || 
+          coupon.name?.toLowerCase().includes(search);
+        
+        const matchesStatus = status === 'all' || 
+          (status === 'active' && coupon.active) || 
+          (status === 'inactive' && !coupon.active);
+        
+        const matchesType = type === 'all' || 
+          (type === 'percent' && coupon.percentOff) || 
+          (type === 'fixed' && coupon.amountOff);
+        
+        return matchesSearch && matchesStatus && matchesType;
+      });
+      
+      renderCoupons();
+    }
+
+    function renderCoupons() {
+      const tbody = document.getElementById('couponsTable');
+      const tableContainer = document.getElementById('couponsTableContainer');
+      const emptyState = document.getElementById('emptyState');
+      
+      if (filteredCoupons.length === 0 && coupons.length === 0) {
+        tableContainer.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      tableContainer.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      
+      if (filteredCoupons.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-forest-500">
+              No coupons match your filters.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = filteredCoupons.map(coupon => {
+        const discount = coupon.percentOff 
+          ? `${coupon.percentOff}% off` 
+          : `$${(coupon.amountOff / 100).toFixed(0)} off`;
+        
+        const duration = coupon.duration === 'once' ? 'Once' 
+          : coupon.duration === 'forever' ? 'Forever' 
+          : `${coupon.durationMonths} months`;
+        
+        const redemptions = coupon.timesRedeemed || 0;
+        const maxRedemptions = coupon.maxRedemptions ? `/ ${coupon.maxRedemptions}` : '';
+        
+        const expires = coupon.expiresAt 
+          ? new Date(coupon.expiresAt * 1000).toLocaleDateString() 
+          : 'Never';
+        
+        const statusBadge = coupon.active
+          ? '<span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Active</span>'
+          : '<span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">Inactive</span>';
+        
+        return `
+          <tr class="border-b border-burgundy-50 hover:bg-burgundy-50/50">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-2">
+                <code class="bg-burgundy-100 text-burgundy-800 px-2 py-1 rounded font-mono text-sm">${coupon.code}</code>
+                <button onclick="copyCode('${coupon.code}')" class="text-forest-400 hover:text-hunter-600" title="Copy code">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+              ${coupon.name ? `<p class="text-xs text-forest-500 mt-1">${coupon.name}</p>` : ''}
+            </td>
+            <td class="px-6 py-4">
+              <span class="font-semibold ${coupon.percentOff ? 'text-purple-700' : 'text-green-700'}">${discount}</span>
+            </td>
+            <td class="px-6 py-4 text-forest-600">${duration}</td>
+            <td class="px-6 py-4 text-forest-600">${redemptions} ${maxRedemptions}</td>
+            <td class="px-6 py-4 text-forest-600">${expires}</td>
+            <td class="px-6 py-4">${statusBadge}</td>
+            <td class="px-6 py-4 text-right">
+              <div class="flex items-center justify-end gap-2">
+                ${coupon.active ? `
+                  <button onclick="toggleCoupon('${coupon.promoCodeId}', false)" class="text-forest-500 hover:text-red-600 p-2" title="Deactivate">
+                    <i class="fas fa-pause"></i>
+                  </button>
+                ` : `
+                  <button onclick="toggleCoupon('${coupon.promoCodeId}', true)" class="text-forest-500 hover:text-green-600 p-2" title="Activate">
+                    <i class="fas fa-play"></i>
+                  </button>
+                `}
+                <a href="https://dashboard.stripe.com/coupons/${coupon.couponId}" target="_blank" class="text-forest-500 hover:text-burgundy-700 p-2" title="View in Stripe">
+                  <i class="fas fa-external-link-alt"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function copyCode(code) {
+      navigator.clipboard.writeText(code);
+    }
+
+    function showCreateModal() {
+      document.getElementById('modalTitle').textContent = 'Create Coupon';
+      document.getElementById('submitBtn').textContent = 'Create Coupon';
+      document.getElementById('couponForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('durationMonthsContainer').classList.add('hidden');
+      document.getElementById('discountPrefix').textContent = '%';
+      document.getElementById('couponModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('couponModal').classList.add('hidden');
+    }
+
+    async function saveCoupon(event) {
+      event.preventDefault();
+      
+      const token = localStorage.getItem('token');
+      const submitBtn = document.getElementById('submitBtn');
+      const errorDiv = document.getElementById('formError');
+      
+      const code = document.getElementById('promoCode').value.trim();
+      const name = document.getElementById('couponName').value.trim();
+      const discountType = document.querySelector('input[name="discountType"]:checked').value;
+      const discountValue = parseFloat(document.getElementById('discountValue').value);
+      const duration = document.getElementById('duration').value;
+      const durationMonths = parseInt(document.getElementById('durationMonths').value) || 3;
+      const maxRedemptions = document.getElementById('maxRedemptions').value ? parseInt(document.getElementById('maxRedemptions').value) : null;
+      const expiresAt = document.getElementById('expiresAt').value || null;
+      const firstTimeOnly = document.getElementById('firstTimeOnly').checked;
+      const appliesTo = document.getElementById('appliesTo').value;
+      
+      // Validation
+      if (!code) {
+        errorDiv.textContent = 'Promo code is required';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      if (discountType === 'percent' && (discountValue < 1 || discountValue > 100)) {
+        errorDiv.textContent = 'Percentage must be between 1 and 100';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+      errorDiv.classList.add('hidden');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/coupons`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            code,
+            name,
+            discountType,
+            discountValue,
+            duration,
+            durationMonths,
+            maxRedemptions,
+            expiresAt,
+            firstTimeOnly,
+            appliesTo
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create coupon');
+        }
+        
+        closeModal();
+        loadCoupons();
+      } catch (error) {
+        console.error('Save coupon error:', error);
+        errorDiv.textContent = error.message;
+        errorDiv.classList.remove('hidden');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Coupon';
+      }
+    }
+
+    async function toggleCoupon(promoCodeId, activate) {
+      const token = localStorage.getItem('token');
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/coupons/${promoCodeId}`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ active: activate })
+        });
+        
+        if (!response.ok) throw new Error('Failed to update coupon');
+        
+        loadCoupons();
+      } catch (error) {
+        console.error('Toggle coupon error:', error);
+        alert('Failed to update coupon: ' + error.message);
+      }
+    }
+  </script>
+
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

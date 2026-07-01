@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Integrations - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-800 text-white sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/admin-help.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-question-circle"></i>
+          Help
+        </a>
+        <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
+          <i class="fas fa-arrow-left"></i>
+          Exit Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-burgundy-800 min-h-[calc(100vh-116px)] sticky top-[116px] p-4">
+      <nav class="space-y-1">
+        <a href="/admin.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-th-large w-5"></i>
+          Admin Hub
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-chart-line w-5"></i>
+          Analytics
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-users w-5"></i>
+          Users
+        </a>
+        <a href="/admin-courses.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-book w-5"></i>
+          Courses
+        </a>
+        <a href="/admin-course-links.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+          Share Links
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-envelope w-5"></i>
+          Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-id-card w-5"></i>
+          Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-hand-holding-heart w-5"></i>
+          Hardship
+        </a>
+        <a href="/admin-stripe.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fab fa-stripe-s w-5"></i>
+          Stripe
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-burgundy-700 text-white">
+          <i class="fas fa-plug w-5"></i>
+          Integrations
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-burgundy-200 hover:bg-burgundy-700 hover:text-white transition-colors">
+          <i class="fas fa-question-circle w-5"></i>
+          Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-8">
+      <div class="max-w-6xl mx-auto">
+        
+        <!-- Page Header -->
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-bold text-burgundy-900">Platform Integrations</h1>
+            <p class="text-forest-600 mt-1">Connect external LMS platforms, track learning data, and manage imports</p>
+          </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="bg-white rounded-t-xl border border-b-0 border-burgundy-100">
+          <nav class="flex">
+            <button onclick="showTab('imported')" class="tab-btn active px-6 py-4 text-sm font-medium border-b-2 border-burgundy-700 text-burgundy-700" data-tab="imported">
+              <i class="fas fa-file-import mr-2"></i>
+              Imported Courses
+            </button>
+            <button onclick="showTab('lti')" class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-forest-600 hover:text-burgundy-700" data-tab="lti">
+              <i class="fas fa-link mr-2"></i>
+              LTI Connections
+            </button>
+            <button onclick="showTab('xapi')" class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-forest-600 hover:text-burgundy-700" data-tab="xapi">
+              <i class="fas fa-chart-bar mr-2"></i>
+              xAPI / LRS
+            </button>
+            <button onclick="showTab('cebroker')" class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-forest-600 hover:text-burgundy-700" data-tab="cebroker">
+              <i class="fas fa-certificate mr-2"></i>
+              CE Broker
+            </button>
+            <button onclick="showTab('config')" class="tab-btn px-6 py-4 text-sm font-medium border-b-2 border-transparent text-forest-600 hover:text-burgundy-700" data-tab="config">
+              <i class="fas fa-cog mr-2"></i>
+              Configuration
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="bg-white rounded-b-xl border border-t-0 border-burgundy-100 p-6">
+          
+          <!-- Imported Courses Tab -->
+          <div id="tab-imported" class="tab-content">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-xl font-semibold text-burgundy-900">Imported & External Courses</h2>
+                <p class="text-sm text-forest-500">Courses imported via SCORM, xAPI, or added as external links</p>
+              </div>
+              <button onclick="openImportModal()" class="bg-hunter-600 hover:bg-hunter-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2">
+                <i class="fas fa-plus"></i>
+                Import Course
+              </button>
+            </div>
+            
+            <!-- Stats Row -->
+            <div class="grid grid-cols-4 gap-4 mb-6">
+              <div class="bg-hunter-50 rounded-lg p-4 text-center">
+                <p id="statTotalImported" class="text-2xl font-bold text-hunter-700">0</p>
+                <p class="text-xs text-hunter-600">Total Courses</p>
+              </div>
+              <div class="bg-blue-50 rounded-lg p-4 text-center">
+                <p id="statScormCourses" class="text-2xl font-bold text-blue-700">0</p>
+                <p class="text-xs text-blue-600">SCORM Packages</p>
+              </div>
+              <div class="bg-purple-50 rounded-lg p-4 text-center">
+                <p id="statExternalLinks" class="text-2xl font-bold text-purple-700">0</p>
+                <p class="text-xs text-purple-600">External Links</p>
+              </div>
+              <div class="bg-honey-50 rounded-lg p-4 text-center">
+                <p id="statTotalEnrollments" class="text-2xl font-bold text-honey-700">0</p>
+                <p class="text-xs text-honey-600">Total Enrollments</p>
+              </div>
+            </div>
+            
+            <!-- Imported Courses Table -->
+            <div class="border border-forest-200 rounded-lg overflow-hidden">
+              <table class="w-full">
+                <thead class="bg-forest-50">
+                  <tr>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Course</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Type</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">CE Hours</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Enrollments</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Status</th>
+                    <th class="text-left px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Added</th>
+                    <th class="text-right px-4 py-3 text-xs font-semibold text-forest-600 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="importedCoursesTable" class="divide-y divide-forest-100">
+                  <tr>
+                    <td colspan="7" class="px-4 py-8 text-center text-forest-500">
+                      <i class="fas fa-spinner fa-spin text-xl mb-2"></i>
+                      <p>Loading courses...</p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- LTI Tab -->
+          <div id="tab-lti" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-xl font-semibold text-burgundy-900">LTI (Learning Tools Interoperability)</h2>
+                <p class="text-sm text-forest-500">Let other LMS platforms (Canvas, Moodle, Blackboard) embed your courses</p>
+              </div>
+              <span id="ltiStatus" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">Checking...</span>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-6 mb-6">
+              <div class="bg-forest-50 rounded-lg p-4">
+                <label class="block text-sm font-semibold text-forest-800 mb-2">
+                  <i class="fas fa-external-link-alt mr-1"></i> LTI Launch URL
+                </label>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="ltiLaunchUrl" readonly class="flex-1 bg-white px-3 py-2 rounded border border-forest-200 text-sm font-mono">
+                  <button onclick="copyToClipboard('ltiLaunchUrl')" class="bg-forest-200 hover:bg-forest-300 px-3 py-2 rounded text-sm">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </div>
+              </div>
+              
+              <div class="bg-forest-50 rounded-lg p-4">
+                <label class="block text-sm font-semibold text-forest-800 mb-2">
+                  <i class="fas fa-file-code mr-1"></i> LTI Configuration XML
+                </label>
+                <div class="flex items-center gap-2">
+                  <input type="text" id="ltiCartridgeUrl" readonly class="flex-1 bg-white px-3 py-2 rounded border border-forest-200 text-sm font-mono">
+                  <button onclick="copyToClipboard('ltiCartridgeUrl')" class="bg-forest-200 hover:bg-forest-300 px-3 py-2 rounded text-sm">
+                    <i class="fas fa-copy"></i>
+                  </button>
+                  <a id="ltiCartridgeLink" href="#" target="_blank" class="bg-burgundy-100 hover:bg-burgundy-200 px-3 py-2 rounded text-sm text-burgundy-800">
+                    <i class="fas fa-download"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white border border-forest-200 rounded-lg p-4 mb-6">
+              <h3 class="font-semibold text-forest-900 mb-4">LTI Credentials</h3>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-forest-700 mb-1">Consumer Key</label>
+                  <input type="text" id="ltiConsumerKey" placeholder="your-consumer-key" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-forest-700 mb-1">Consumer Secret</label>
+                  <div class="relative">
+                    <input type="password" id="ltiConsumerSecret" placeholder="your-consumer-secret" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm pr-10">
+                    <button onclick="togglePassword('ltiConsumerSecret')" class="absolute right-2 top-1/2 -translate-y-1/2 text-forest-400">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <p class="text-xs text-forest-500 mt-3">
+                <i class="fas fa-info-circle mr-1"></i>
+                Share these credentials with LMS administrators to connect their platform.
+              </p>
+            </div>
+            
+            <div class="bg-white border border-forest-200 rounded-lg p-4">
+              <h3 class="font-semibold text-forest-900 mb-4">Course-Specific Launch URLs</h3>
+              <div id="ltiCourseUrls" class="space-y-2 max-h-64 overflow-y-auto">
+                <p class="text-forest-500 text-center py-4">Loading courses...</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- xAPI Tab -->
+          <div id="tab-xapi" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-xl font-semibold text-burgundy-900">xAPI / Tin Can API</h2>
+                <p class="text-sm text-forest-500">Send learning data to your Learning Record Store (LRS)</p>
+              </div>
+              <span id="xapiStatus" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">Not Configured</span>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-info-circle text-blue-600 mt-1"></i>
+                <div>
+                  <p class="font-medium text-blue-900">What is xAPI?</p>
+                  <p class="text-sm text-blue-700">xAPI (Experience API) tracks detailed learning activities and sends them to a Learning Record Store. This enables advanced analytics, cross-platform tracking, and compliance reporting.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white border border-forest-200 rounded-lg p-4 mb-6">
+              <h3 class="font-semibold text-forest-900 mb-4">LRS Configuration</h3>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-forest-700 mb-1">LRS Endpoint URL</label>
+                  <input type="text" id="xapiEndpoint" placeholder="https://your-lrs.com/xapi" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-forest-700 mb-1">Username / Key</label>
+                    <input type="text" id="xapiUsername" placeholder="LRS username or API key" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-forest-700 mb-1">Password / Secret</label>
+                    <input type="password" id="xapiPassword" placeholder="LRS password or secret" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <button onclick="testXapiConnection()" class="bg-forest-100 hover:bg-forest-200 text-forest-700 px-4 py-2 rounded-lg text-sm font-medium">
+                    <i class="fas fa-plug mr-1"></i> Test Connection
+                  </button>
+                  <button onclick="saveXapiConfig()" class="bg-hunter-600 hover:bg-hunter-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                    <i class="fas fa-save mr-1"></i> Save Configuration
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- CE Broker Tab -->
+          <div id="tab-cebroker" class="tab-content hidden">
+            <div class="flex items-center justify-between mb-6">
+              <div>
+                <h2 class="text-xl font-semibold text-burgundy-900">CE Broker Integration</h2>
+                <p class="text-sm text-forest-500">Automatically report CE completions to Florida and Georgia boards</p>
+              </div>
+              <span id="cebrokerStatus" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm">Not Configured</span>
+            </div>
+            
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-check-circle text-green-600 mt-1"></i>
+                <div>
+                  <p class="font-medium text-green-900">Supported States</p>
+                  <div id="cebrokerStates" class="flex gap-2 mt-2">
+                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">FL</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-sm">GA</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-white border border-forest-200 rounded-lg p-4 mb-6">
+              <h3 class="font-semibold text-forest-900 mb-4">CE Broker API Configuration</h3>
+              <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium text-forest-700 mb-1">Provider ID</label>
+                    <input type="text" id="cebrokerProviderId" placeholder="Your CE Broker Provider ID" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-forest-700 mb-1">API Key</label>
+                    <input type="password" id="cebrokerApiKey" placeholder="Your CE Broker API Key" class="w-full px-3 py-2 border border-forest-200 rounded-lg text-sm">
+                  </div>
+                </div>
+                <div class="flex items-center gap-4">
+                  <label class="flex items-center gap-2">
+                    <input type="checkbox" id="cebrokerSandbox" class="rounded border-forest-300">
+                    <span class="text-sm text-forest-700">Use Sandbox Mode (for testing)</span>
+                  </label>
+                </div>
+                <button onclick="saveCebrokerConfig()" class="bg-hunter-600 hover:bg-hunter-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                  <i class="fas fa-save mr-1"></i> Save Configuration
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Configuration Tab -->
+          <div id="tab-config" class="tab-content hidden">
+            <h2 class="text-xl font-semibold text-burgundy-900 mb-6">Environment Configuration</h2>
+            
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start gap-3">
+                <i class="fas fa-exclamation-triangle text-amber-600 mt-1"></i>
+                <div>
+                  <p class="font-medium text-amber-900">Server Configuration Required</p>
+                  <p class="text-sm text-amber-700">These environment variables must be set on your Render/Vercel server. They cannot be configured from this interface for security reasons.</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="space-y-6">
+              <div class="bg-white border border-forest-200 rounded-lg overflow-hidden">
+                <div class="bg-forest-50 px-4 py-3 border-b border-forest-200">
+                  <h3 class="font-semibold text-forest-900">LTI Configuration</h3>
+                </div>
+                <div class="p-4 font-mono text-sm bg-stone-900 text-stone-100">
+                  <pre>LTI_CONSUMER_KEY=your-consumer-key
+LTI_CONSUMER_SECRET=your-secret-key</pre>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-forest-200 rounded-lg overflow-hidden">
+                <div class="bg-forest-50 px-4 py-3 border-b border-forest-200">
+                  <h3 class="font-semibold text-forest-900">xAPI / LRS Configuration</h3>
+                </div>
+                <div class="p-4 font-mono text-sm bg-stone-900 text-stone-100">
+                  <pre>XAPI_ENDPOINT=https://your-lrs.com/xapi
+XAPI_USERNAME=your-lrs-username
+XAPI_PASSWORD=your-lrs-password</pre>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-forest-200 rounded-lg overflow-hidden">
+                <div class="bg-forest-50 px-4 py-3 border-b border-forest-200">
+                  <h3 class="font-semibold text-forest-900">CE Broker Configuration</h3>
+                </div>
+                <div class="p-4 font-mono text-sm bg-stone-900 text-stone-100">
+                  <pre>CE_BROKER_API_KEY=your-api-key
+CE_BROKER_PROVIDER_ID=your-provider-id
+CE_BROKER_SANDBOX=false</pre>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-forest-200 rounded-lg overflow-hidden">
+                <div class="bg-forest-50 px-4 py-3 border-b border-forest-200">
+                  <h3 class="font-semibold text-forest-900">Stripe Payments</h3>
+                </div>
+                <div class="p-4 font-mono text-sm bg-stone-900 text-stone-100">
+                  <pre>STRIPE_SECRET_KEY=sk_live_xxxxxxxx
+STRIPE_WEBHOOK_SECRET=whsec_xxxxxxxx
+STRIPE_PRICE_STARTER=price_xxxxxxxx
+STRIPE_PRICE_PROFESSIONAL=price_xxxxxxxx
+STRIPE_PRICE_VIP=price_xxxxxxxx</pre>
+                </div>
+              </div>
+              
+              <div class="bg-white border border-forest-200 rounded-lg overflow-hidden">
+                <div class="bg-forest-50 px-4 py-3 border-b border-forest-200">
+                  <h3 class="font-semibold text-forest-900">Twilio SMS (VIP Feature)</h3>
+                </div>
+                <div class="p-4 font-mono text-sm bg-stone-900 text-stone-100">
+                  <pre>TWILIO_ACCOUNT_SID=ACxxxxxxxx
+TWILIO_AUTH_TOKEN=xxxxxxxx
+TWILIO_PHONE_NUMBER=+1234567890</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Import Course Modal -->
+  <div id="importModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl w-full max-w-lg">
+      <div class="p-6 border-b border-forest-200">
+        <div class="flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-forest-900">Import External Course</h3>
+          <button onclick="closeImportModal()" class="text-forest-400 hover:text-forest-600">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Course Title *</label>
+          <input type="text" id="importTitle" placeholder="e.g., Ethics for Counselors" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Import Type</label>
+          <select id="importType" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+            <option value="external">External Link (URL)</option>
+            <option value="scorm">SCORM Package</option>
+            <option value="starter">Starter Course Template</option>
+          </select>
+        </div>
+        <div id="importUrlField">
+          <label class="block text-sm font-medium text-forest-700 mb-1">External URL</label>
+          <input type="url" id="importUrl" placeholder="https://example.com/course" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">CE Hours</label>
+            <input type="number" id="importCeHours" placeholder="3" min="0" step="0.5" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-forest-700 mb-1">Category</label>
+            <select id="importCategory" class="w-full px-3 py-2 border border-forest-200 rounded-lg">
+              <option value="ethics">Ethics</option>
+              <option value="clinical">Clinical Skills</option>
+              <option value="supervision">Supervision</option>
+              <option value="specialty">Specialty</option>
+              <option value="general">General</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-forest-700 mb-1">Description</label>
+          <textarea id="importDescription" rows="3" placeholder="Brief course description..." class="w-full px-3 py-2 border border-forest-200 rounded-lg"></textarea>
+        </div>
+      </div>
+      <div class="p-6 border-t border-forest-200 flex justify-end gap-3">
+        <button onclick="closeImportModal()" class="px-4 py-2 border border-forest-300 rounded-lg text-forest-700 hover:bg-forest-50">
+          Cancel
+        </button>
+        <button onclick="submitImport()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg font-medium">
+          Import Course
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadAllCourses();
+      loadLtiConfig();
+      loadXapiConfig();
+      loadCebrokerConfig();
+    });
+    
+    function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || user.role !== 'admin') {
+        alert('Admin access required');
+        window.location.href = '/dashboard.html';
+      }
+      document.getElementById('adminEmail').textContent = user.email || 'Admin';
+    }
+    
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-burgundy-700', 'text-burgundy-700');
+        btn.classList.add('border-transparent', 'text-forest-600');
+      });
+      const activeBtn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+      if (activeBtn) {
+        activeBtn.classList.add('active', 'border-burgundy-700', 'text-burgundy-700');
+        activeBtn.classList.remove('border-transparent', 'text-forest-600');
+      }
+      
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+      });
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+    }
+    
+    async function loadAllCourses() {
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        const courses = data.courses || data || [];
+        
+        // Update stats
+        document.getElementById('statTotalImported').textContent = courses.length;
+        document.getElementById('statScormCourses').textContent = courses.filter(c => c.source === 'scorm' || c.importType === 'scorm').length;
+        document.getElementById('statExternalLinks').textContent = courses.filter(c => c.isExternal || c.importType === 'external').length;
+        
+        const totalEnrollments = courses.reduce((sum, c) => sum + (c.enrollmentCount || 0), 0);
+        document.getElementById('statTotalEnrollments').textContent = totalEnrollments;
+        
+        renderImportedCoursesTable(courses);
+      } catch (error) {
+        console.error('Load courses error:', error);
+      }
+    }
+    
+    function renderImportedCoursesTable(courses) {
+      const tbody = document.getElementById('importedCoursesTable');
+      
+      if (courses.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="px-4 py-8 text-center text-forest-500">
+              <i class="fas fa-inbox text-3xl mb-2"></i>
+              <p>No courses found</p>
+              <p class="text-sm">Import a course to get started</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = courses.map(course => {
+        const typeLabels = {
+          scorm: { label: 'SCORM', color: 'bg-blue-100 text-blue-700' },
+          external: { label: 'External', color: 'bg-purple-100 text-purple-700' },
+          starter: { label: 'Starter', color: 'bg-honey-100 text-honey-700' }
+        };
+        const type = course.importType || course.source || 'native';
+        const typeInfo = typeLabels[type] || { label: 'Native', color: 'bg-green-100 text-green-700' };
+        
+        const statusColors = {
+          published: 'text-green-600',
+          draft: 'text-yellow-600',
+          archived: 'text-gray-600'
+        };
+        
+        return `
+          <tr class="hover:bg-forest-50">
+            <td class="px-4 py-3">
+              <div class="font-medium text-forest-900">${course.title}</div>
+              <div class="text-xs text-forest-500">${course.category || 'General'}</div>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-1 rounded text-xs font-medium ${typeInfo.color}">${typeInfo.label}</span>
+            </td>
+            <td class="px-4 py-3 text-sm text-forest-700">${course.ceuHours || 0} hrs</td>
+            <td class="px-4 py-3 text-sm text-forest-700">${course.enrollmentCount || 0}</td>
+            <td class="px-4 py-3">
+              <span class="${statusColors[course.status] || statusColors.draft} font-medium text-sm">
+                ${(course.status || 'draft').charAt(0).toUpperCase() + (course.status || 'draft').slice(1)}
+              </span>
+            </td>
+            <td class="px-4 py-3 text-sm text-forest-600">
+              ${course.createdAt ? new Date(course.createdAt).toLocaleDateString() : '--'}
+            </td>
+            <td class="px-4 py-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="/admin-courses.html?edit=${course._id}" class="text-hunter-600 hover:text-hunter-700 text-sm" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <button onclick="deleteCourse('${course._id}', '${course.title.replace(/'/g, "\\'")}')" class="text-red-600 hover:text-red-700 text-sm" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    async function loadLtiConfig() {
+      try {
+        const response = await fetch(`${API_URL}/api/lti/config`);
+        const config = await response.json();
+        
+        document.getElementById('ltiLaunchUrl').value = config.launchUrl || `${API_URL}/api/lti/launch`;
+        document.getElementById('ltiCartridgeUrl').value = `${API_URL}/api/lti/cartridge`;
+        document.getElementById('ltiCartridgeLink').href = `${API_URL}/api/lti/cartridge`;
+        document.getElementById('ltiStatus').textContent = 'Ready';
+        document.getElementById('ltiStatus').className = 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm';
+        
+        const coursesResponse = await fetch(`${API_URL}/api/lti/courses`);
+        const coursesData = await coursesResponse.json();
+        
+        const urlsContainer = document.getElementById('ltiCourseUrls');
+        if (coursesData.courses?.length > 0) {
+          urlsContainer.innerHTML = coursesData.courses.map(course => `
+            <div class="flex items-center justify-between bg-forest-50 px-3 py-2 rounded">
+              <span class="text-forest-800 font-medium">${course.title}</span>
+              <div class="flex items-center gap-2">
+                <code class="text-xs bg-white px-2 py-1 rounded font-mono">${course.launchUrl}</code>
+                <button onclick="copyText('${course.launchUrl}')" class="text-forest-500 hover:text-forest-700">
+                  <i class="fas fa-copy"></i>
+                </button>
+              </div>
+            </div>
+          `).join('');
+        } else {
+          urlsContainer.innerHTML = '<p class="text-forest-500 text-center py-4">No published courses</p>';
+        }
+      } catch (e) {
+        console.error('LTI config error:', e);
+      }
+    }
+    
+    async function loadXapiConfig() {
+      try {
+        const response = await fetch(`${API_URL}/api/xapi/config`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const config = await response.json();
+        
+        if (config.configured) {
+          document.getElementById('xapiStatus').textContent = 'Configured';
+          document.getElementById('xapiStatus').className = 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm';
+          document.getElementById('xapiEndpoint').value = config.endpoint || '';
+        }
+      } catch (e) {
+        console.error('xAPI config error:', e);
+      }
+    }
+    
+    async function loadCebrokerConfig() {
+      try {
+        const response = await fetch(`${API_URL}/api/cebroker/config`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const config = await response.json();
+        
+        if (config.configured) {
+          document.getElementById('cebrokerStatus').textContent = config.sandbox ? 'Sandbox' : 'Live';
+          document.getElementById('cebrokerStatus').className = config.sandbox 
+            ? 'px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm'
+            : 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm';
+        }
+      } catch (e) {
+        console.error('CE Broker config error:', e);
+      }
+    }
+    
+    function openImportModal() {
+      document.getElementById('importModal').classList.remove('hidden');
+    }
+    
+    function closeImportModal() {
+      document.getElementById('importModal').classList.add('hidden');
+    }
+    
+    async function submitImport() {
+      const title = document.getElementById('importTitle').value.trim();
+      const type = document.getElementById('importType').value;
+      const url = document.getElementById('importUrl').value.trim();
+      const ceHours = parseFloat(document.getElementById('importCeHours').value) || 0;
+      const category = document.getElementById('importCategory').value;
+      const description = document.getElementById('importDescription').value.trim();
+      
+      if (!title) {
+        alert('Please enter a course title');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            title,
+            description,
+            category,
+            ceuHours: ceHours,
+            isExternal: type === 'external',
+            externalUrl: url,
+            importType: type,
+            source: type,
+            status: 'draft'
+          })
+        });
+        
+        if (response.ok) {
+          closeImportModal();
+          alert('Course imported successfully');
+          loadAllCourses();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to import course');
+        }
+      } catch (error) {
+        console.error('Import error:', error);
+        alert('Failed to import course');
+      }
+    }
+    
+    async function deleteCourse(courseId, title) {
+      if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/api/admin/courses/${courseId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+          alert('Course deleted');
+          loadAllCourses();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to delete course');
+        }
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete course');
+      }
+    }
+    
+    function copyToClipboard(inputId) {
+      const input = document.getElementById(inputId);
+      input.select();
+      navigator.clipboard.writeText(input.value).then(() => {
+        alert('Copied!');
+      });
+    }
+    
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied!');
+      });
+    }
+    
+    function togglePassword(inputId) {
+      const input = document.getElementById(inputId);
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+  </script>
+<script src="/js/footer.js"></script>
+  <div id="cr-footer"></div>
+</body>
+</html>

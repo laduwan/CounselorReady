@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Board Alerts | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+
+    /* Expandable card animation */
+    .alert-details { max-height: 0; overflow: hidden; transition: max-height 0.35s ease, opacity 0.3s ease; opacity: 0; }
+    .alert-details.open { max-height: 800px; opacity: 1; }
+    .chevron-icon { transition: transform 0.25s ease; }
+    .chevron-icon.open { transform: rotate(180deg); }
+
+    /* Change highlight row */
+    .diff-added { background: #ecfdf5; }
+    .diff-removed { background: #fef2f2; }
+    .diff-changed { background: #fffbeb; }
+  
+    /* Shared nav styles */
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- ═══════ HEADER (matches dashboard.html) ═══════ -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- ═══════ MAIN CONTENT ═══════ -->
+  <main class="max-w-4xl mx-auto px-6 py-8">
+
+    <!-- Breadcrumb -->
+    <a href="/credentials.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Credentials
+    </a>
+
+    <!-- Page Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Board Alerts</h1>
+        <p class="text-gray-500 mt-1">Licensing board rules for your credentials — changes highlighted</p>
+      </div>
+      <div id="unreadBadge" class="hidden px-3 py-1 bg-red-100 text-red-700 text-sm font-bold rounded-full"></div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <div class="flex bg-white border border-gray-200 rounded-lg overflow-hidden">
+        <button onclick="setFilter('all')" data-filter="all" class="filter-btn px-4 py-2 text-sm font-medium bg-burgundy-800 text-white">All</button>
+        <button onclick="setFilter('changes')" data-filter="changes" class="filter-btn px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">Changes</button>
+        <button onclick="setFilter('urgent')" data-filter="urgent" class="filter-btn px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">Urgent</button>
+      </div>
+      <select id="stateFilter" onchange="applyFilters()" class="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white">
+        <option value="">All States</option>
+      </select>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading board rules...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-16">
+      <i class="fas fa-bell-slash text-4xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500">No credentials found. <a href="/credentials.html" class="text-burgundy-700 font-medium hover:underline">Add a credential</a> to see board rules.</p>
+    </div>
+
+    <!-- Alert Cards -->
+    <div id="alertsList" class="space-y-4"></div>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    let allAlerts = [];
+    let currentFilter = 'all';
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!token) { window.location.href = '/login.html?redirect=/board-alerts.html'; return; }
+
+      // Set user avatar
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.firstName) {
+          document.getElementById('userAvatar').textContent = (user.firstName[0] + (user.lastName?.[0] || '')).toUpperCase();
+          document.getElementById('userName').textContent = user.firstName;
+        }
+      } catch(e) {}
+
+      await loadAlerts();
+    });
+
+    // ── Load Alerts ──
+    async function loadAlerts() {
+      try {
+        const res = await fetch(`${API_URL}/api/credentials/board-alerts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) {
+          // Fallback: build alerts client-side from credentials + templates
+          await loadAlertsFallback();
+          return;
+        }
+
+        const data = await res.json();
+        allAlerts = data.alerts || [];
+
+        // Update unread badge
+        const withChanges = allAlerts.filter(a => a.hasChanges).length;
+        if (withChanges > 0) {
+          const badge = document.getElementById('unreadBadge');
+          badge.textContent = withChanges + ' change' + (withChanges > 1 ? 's' : '');
+          badge.classList.remove('hidden');
+        }
+
+        populateStateFilter();
+        renderAlerts();
+      } catch (err) {
+        console.error('Load alerts error:', err);
+        await loadAlertsFallback();
+      }
+    }
+
+    // ── Fallback: build from /api/credentials ──
+    async function loadAlertsFallback() {
+      try {
+        const res = await fetch(`${API_URL}/api/credentials`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const creds = data.data || data.credentials || data || [];
+
+        allAlerts = (Array.isArray(creds) ? creds : [])
+          .filter(c => c.credentialType === 'state_license')
+          .map(cred => ({
+          credentialId: cred._id,
+          code: cred.credentialCode || cred.name?.split(' ')[0] || '??',
+          state: cred.state || '',
+          name: cred.name || 'Unknown',
+          issuingBody: cred.issuingBody || '',
+          renewalCycle: cred.renewalCycle || 24,
+          totalCEUsRequired: cred.totalCEUsRequired || 0,
+          notes: cred.notes || '',
+          renewalUrl: null,
+          boardUrl: null,
+          currentRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
+          savedRules: (cred.requirements || []).map(r => ({ category: r.category, hoursRequired: r.hoursRequired })),
+          changes: [],
+          severity: 'info',
+          hasChanges: false,
+          postedAt: cred.updatedAt || cred.createdAt || new Date().toISOString()
+        }));
+
+        populateStateFilter();
+        renderAlerts();
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('emptyState').classList.remove('hidden');
+      }
+    }
+
+    // ── State Filter ──
+    function populateStateFilter() {
+      const states = [...new Set(allAlerts.map(a => a.state).filter(Boolean))].sort();
+      const sel = document.getElementById('stateFilter');
+      states.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s; opt.textContent = s;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ── Filters ──
+    function setFilter(f) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        const isActive = b.dataset.filter === f;
+        b.className = `filter-btn px-4 py-2 text-sm font-medium ${isActive ? 'bg-burgundy-800 text-white' : 'text-gray-600 hover:bg-gray-50'}`;
+      });
+      applyFilters();
+    }
+
+    function applyFilters() {
+      renderAlerts();
+    }
+
+    function getFiltered() {
+      let filtered = [...allAlerts];
+      const stateVal = document.getElementById('stateFilter').value;
+      if (stateVal) filtered = filtered.filter(a => a.state === stateVal);
+      if (currentFilter === 'changes') filtered = filtered.filter(a => a.hasChanges);
+      if (currentFilter === 'urgent') filtered = filtered.filter(a => a.severity === 'urgent' || a.severity === 'important');
+      return filtered;
+    }
+
+    // ── Render ──
+    function renderAlerts() {
+      document.getElementById('loading').classList.add('hidden');
+      const filtered = getFiltered();
+      const container = document.getElementById('alertsList');
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        document.getElementById('emptyState').classList.remove('hidden');
+        return;
+      }
+      document.getElementById('emptyState').classList.add('hidden');
+
+      container.innerHTML = filtered.map((alert, idx) => {
+        const severityStyles = {
+          urgent: 'border-l-4 border-l-red-500 bg-red-50/50',
+          important: 'border-l-4 border-l-amber-400 bg-amber-50/40',
+          info: 'border-l-4 border-l-blue-300 bg-white'
+        };
+        const severityBadge = {
+          urgent: '<span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-bold rounded-full uppercase">urgent</span>',
+          important: '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-bold rounded-full uppercase">important</span>',
+          info: '<span class="px-2 py-0.5 bg-blue-100 text-blue-600 text-xs font-bold rounded-full uppercase">info</span>'
+        };
+        const iconBg = { urgent: 'bg-red-100 text-red-600', important: 'bg-amber-100 text-amber-600', info: 'bg-blue-100 text-blue-600' };
+        const iconSvg = alert.severity === 'urgent'
+          ? '<i class="fas fa-exclamation-triangle"></i>'
+          : alert.severity === 'important'
+            ? '<i class="fas fa-exclamation-circle"></i>'
+            : '<i class="fas fa-info-circle"></i>';
+
+        // Build summary line
+        const cycleTxt = alert.renewalCycle ? `${alert.renewalCycle / 12}-year cycle` : '';
+        const summary = `${alert.totalCEUsRequired} CE hrs${cycleTxt ? ' per ' + cycleTxt : ''}. ${(alert.notes || '').substring(0, 120)}`;
+
+        // Build category table rows
+        const ruleRows = (alert.currentRules || []).map(r => {
+          const saved = (alert.savedRules || []).find(s => s.category === r.category);
+          const changed = saved && saved.hoursRequired !== r.hoursRequired;
+          const isNew = !saved;
+          const rowClass = isNew ? 'diff-added' : changed ? 'diff-changed' : '';
+          const changeNote = isNew
+            ? '<span class="text-green-600 text-xs font-bold ml-2">NEW</span>'
+            : changed
+              ? `<span class="text-amber-600 text-xs font-bold ml-2">was ${saved.hoursRequired}hr</span>`
+              : '';
+          return `<tr class="${rowClass}">
+            <td class="px-4 py-2 text-sm font-medium text-gray-800">${esc(r.category)}${changeNote}</td>
+            <td class="px-4 py-2 text-sm text-right font-semibold">${r.hoursRequired} hrs</td>
+          </tr>`;
+        }).join('');
+
+        // Check for removed categories
+        const removedRows = (alert.savedRules || [])
+          .filter(s => !(alert.currentRules || []).find(c => c.category === s.category))
+          .map(s => `<tr class="diff-removed">
+            <td class="px-4 py-2 text-sm font-medium text-gray-400 line-through">${esc(s.category)} <span class="text-red-500 text-xs font-bold ml-2">REMOVED</span></td>
+            <td class="px-4 py-2 text-sm text-right text-gray-400 line-through">${s.hoursRequired} hrs</td>
+          </tr>`).join('');
+
+        // Changes summary
+        const changesList = (alert.changes || []).map(c =>
+          `<div class="flex items-center gap-2 text-sm py-1">
+            <span class="w-2 h-2 rounded-full flex-shrink-0 ${c.severity === 'important' ? 'bg-amber-400' : c.severity === 'urgent' ? 'bg-red-500' : 'bg-blue-400'}"></span>
+            <span class="font-medium text-gray-700">${esc(c.label)}:</span>
+            <span class="text-red-500 line-through">${esc(c.oldValue)}</span>
+            <i class="fas fa-arrow-right text-xs text-gray-400"></i>
+            <span class="text-green-700 font-semibold">${esc(c.newValue)}</span>
+          </div>`
+        ).join('');
+
+        // Board URL
+        // Board URL from backend (real state board link)
+        const boardUrl = alert.boardUrl || alert.renewalUrl || null;
+
+        return `
+        <div class="rounded-xl border border-gray-200 overflow-hidden shadow-sm ${severityStyles[alert.severity] || severityStyles.info}">
+          <!-- Card Header (always visible) -->
+          <button onclick="toggleAlert(${idx})" class="w-full text-left px-5 py-4 flex items-start gap-4 hover:bg-gray-50/50 transition-colors" aria-expanded="false" id="alertBtn${idx}">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${iconBg[alert.severity] || iconBg.info}">
+              ${iconSvg}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="font-bold text-gray-900">${esc(alert.code)} ${alert.totalCEUsRequired} CE${cycleTxt ? '/' + cycleTxt.replace(' cycle','') : ''}</span>
+                ${severityBadge[alert.severity] || severityBadge.info}
+                ${alert.state ? `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">${esc(alert.state)}</span>` : ''}
+                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">${esc(alert.code)}</span>
+                ${alert.hasChanges ? '<span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">CHANGED</span>' : ''}
+              </div>
+              <p class="text-sm text-gray-600 truncate">${esc(summary)}</p>
+              <p class="text-xs text-gray-400 mt-1">Posted: ${new Date(alert.postedAt).toLocaleDateString()}</p>
+            </div>
+            <i class="fas fa-chevron-down text-gray-400 mt-1 chevron-icon" id="chevron${idx}"></i>
+          </button>
+
+          <!-- Expandable Detail Panel -->
+          <div class="alert-details" id="alertDetails${idx}">
+            <div class="px-5 pb-5 pt-1 border-t border-gray-100">
+
+              <!-- Full Board Rules Table -->
+              <div class="mb-4">
+                <h3 class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">
+                  <i class="fas fa-gavel mr-1"></i> Current Board Requirements
+                </h3>
+                <table class="w-full border border-gray-200 rounded-lg overflow-hidden">
+                  <thead>
+                    <tr class="bg-gray-50">
+                      <th class="px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase">Category</th>
+                      <th class="px-4 py-2 text-right text-xs font-bold text-gray-500 uppercase">Required</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    ${ruleRows}
+                    ${removedRows}
+                    <tr class="bg-gray-50 font-bold">
+                      <td class="px-4 py-2 text-sm text-gray-900">Total</td>
+                      <td class="px-4 py-2 text-sm text-right text-burgundy-800">${alert.totalCEUsRequired} hrs</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Metadata Row -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Renewal Cycle</p>
+                  <p class="text-sm font-bold text-gray-800">${alert.renewalCycle ? (alert.renewalCycle >= 12 ? (alert.renewalCycle / 12) + ' year' + (alert.renewalCycle > 12 ? 's' : '') : alert.renewalCycle + ' months') : 'N/A'}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Issuing Body</p>
+                  <p class="text-sm font-bold text-gray-800 truncate">${esc(alert.issuingBody || 'N/A')}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">Credential</p>
+                  <p class="text-sm font-bold text-gray-800">${esc(alert.name || alert.code)}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-3">
+                  <p class="text-xs text-gray-500 font-medium">State</p>
+                  <p class="text-sm font-bold text-gray-800">${esc(alert.state || 'National')}</p>
+                </div>
+              </div>
+
+              <!-- Board Notes -->
+              ${alert.notes ? `
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <p class="text-xs font-bold text-blue-700 uppercase mb-1"><i class="fas fa-sticky-note mr-1"></i> Board Notes</p>
+                <p class="text-sm text-blue-900">${esc(alert.notes)}</p>
+              </div>` : ''}
+
+              <!-- Changes Section -->
+              ${alert.hasChanges ? `
+              <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                <p class="text-xs font-bold text-amber-700 uppercase mb-2"><i class="fas fa-exchange-alt mr-1"></i> What Changed</p>
+                ${changesList}
+              </div>` : ''}
+
+              <!-- Board Website Link -->
+              <div class="flex items-center justify-between pt-2">
+                ${boardUrl ? `<a href="${boardUrl}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-medium text-burgundy-700 hover:text-burgundy-900 hover:underline">
+                  <i class="fas fa-external-link-alt text-xs"></i>
+                  Visit ${esc(alert.state || '')} State Board Website
+                </a>` : `<span class="text-xs text-gray-400">Board website not available</span>`}
+                <a href="/credentials.html" class="text-xs text-gray-400 hover:text-gray-600">View My Credential &rarr;</a>
+              </div>
+
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    // ── Toggle expand/collapse ──
+    function toggleAlert(idx) {
+      const details = document.getElementById('alertDetails' + idx);
+      const chevron = document.getElementById('chevron' + idx);
+      const btn = document.getElementById('alertBtn' + idx);
+      const isOpen = details.classList.contains('open');
+      details.classList.toggle('open');
+      chevron.classList.toggle('open');
+      btn.setAttribute('aria-expanded', !isOpen);
+    }
+
+    // ── Escape HTML ──
+    function esc(str) {
+      if (!str) return '';
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+  </script>
+<script src="/js/cr-icons.js"></script>
+
+  <div id="cr-footer"></div>
+</body>
+</html>

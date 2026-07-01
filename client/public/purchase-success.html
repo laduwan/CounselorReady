@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="robots" content="noindex,nofollow">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Purchase Complete | CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Source Sans 3', sans-serif; background: #F8F7F4; }
+    h1, h2 { font-family: 'Merriweather', serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+  <div id="loadingState" class="text-center">
+    <div class="animate-spin rounded-full h-12 w-12 border-4 border-hunter-600 border-t-transparent mx-auto mb-4"></div>
+    <p class="text-forest-700 text-lg">Confirming your purchase...</p>
+  </div>
+  <div id="successState" class="hidden max-w-md w-full">
+    <div class="bg-white rounded-2xl shadow-lg border border-green-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-hunter-600 to-hunter-700 p-6 text-center">
+        <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-3">
+          <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl text-white font-bold">Purchase Complete!</h1>
+      </div>
+      <div class="p-6 text-center">
+        <p class="text-forest-700 mb-2">You now have access to:</p>
+        <h2 id="courseTitle" class="text-lg font-bold text-burgundy-800 mb-6">--</h2>
+        <a id="startCourseBtn" href="#" class="inline-block w-full bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors mb-3">
+          Start Course
+        </a>
+        <a href="/dashboard.html" class="inline-block w-full border border-forest-600 text-forest-700 hover:bg-forest-600 hover:text-white font-medium py-3 px-6 rounded-xl transition-colors">
+          Go to Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+  <div id="errorState" class="hidden max-w-md w-full">
+    <div class="bg-white rounded-2xl shadow-lg border border-red-100 p-6 text-center">
+      <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M12 3a9 9 0 100 18 9 9 0 000-18z"></path>
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold text-red-800 mb-2">Something went wrong</h2>
+      <p id="errorMessage" class="text-red-600 mb-4">We couldn't confirm your purchase.</p>
+      <a href="/courses.html" class="inline-block bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold py-3 px-6 rounded-xl transition-colors">
+        Back to Catalog
+      </a>
+    </div>
+  </div>
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    async function init() {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      const slug = params.get('slug');
+      if (!sessionId || !slug) { showError('Missing purchase confirmation details.'); return; }
+      try {
+        const courseRes = await fetch(`${API_URL}/api/interactive-courses/slug/${slug}`);
+        const courseData = await courseRes.json();
+        const course = courseData.data || courseData.course || courseData;
+        if (course && course.title) {
+          document.getElementById('courseTitle').textContent = course.title;
+          document.getElementById('startCourseBtn').href = `/interactive-course.html?slug=${slug}`;
+        }
+        const token = localStorage.getItem('token');
+        if (token && course._id) {
+          // Retry enrollment — webhook may not have fired yet
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              const enrollRes = await fetch(`${API_URL}/api/interactive-courses/${course._id}/enroll`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+              const enrollData = await enrollRes.json();
+              if (enrollRes.ok || enrollData.message === 'Already enrolled') break;
+              if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+            } catch (e) {
+              if (attempt < 2) await new Promise(r => setTimeout(r, 2000));
+            }
+          }
+        }
+        showSuccess();
+      } catch (err) {
+        console.error('Purchase confirmation error:', err);
+        document.getElementById('courseTitle').textContent = slug.replace(/-/g, ' ');
+        document.getElementById('startCourseBtn').href = `/interactive-course.html?slug=${slug}`;
+        showSuccess();
+      }
+    }
+    function showSuccess() {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('successState').classList.remove('hidden');
+    }
+    function showError(msg) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorMessage').textContent = msg;
+      document.getElementById('errorState').classList.remove('hidden');
+    }
+    init();
+  </script>
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>
