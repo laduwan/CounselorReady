@@ -102,6 +102,7 @@ router.get('/invoices', protect, async (req, res) => {
     // Get invoices from Stripe
     const invoices = await stripe.invoices.list({
       customer: user.subscription.stripeCustomerId,
+      status: 'paid',
       limit: 20
     });
 
@@ -532,6 +533,7 @@ router.get('/billing-history', protect, async (req, res) => {
 
     const invoices = await stripe.invoices.list({
       customer: user.subscription.stripeCustomerId,
+      status: 'paid',
       limit: 20
     });
 
@@ -835,10 +837,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         }
 
         // Handle subscription purchase
-        if (userId && plan) {
+        // Resolve plan from metadata; fall back to price ID lookup so sessions
+        // created before subscription_data.metadata was wired still activate correctly.
+        let resolvedPlan = plan;
+        if (!resolvedPlan && session.subscription) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(session.subscription);
+            const priceId = sub.items?.data?.[0]?.price?.id;
+            if (priceId) {
+              for (const [key, val] of Object.entries(PRICE_IDS)) {
+                if (val === priceId) { resolvedPlan = key; break; }
+              }
+            }
+          } catch (e) {
+            logger.warn({ err: e, userId, requestId: req.requestId }, 'checkout.session.completed: price-ID plan fallback failed');
+          }
+        }
+
+        if (userId && resolvedPlan) {
           await User.findByIdAndUpdate(userId, {
             'subscription.stripeSubscriptionId': session.subscription,
-            'subscription.plan': plan,
+            'subscription.plan': resolvedPlan,
             'subscription.status': 'active',
             'subscription.currentPeriodStart': new Date(),
             'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -846,7 +865,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           });
           const subscriber = await User.findById(userId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
-            plan,
+            plan: resolvedPlan,
             amount: session.amount_total,
             type: 'subscription'
           }, {
@@ -854,13 +873,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             userName: subscriber?.profile?.firstName || '',
             userEmail: subscriber?.email || ''
           }).catch(() => {});
-          logger.info({ userId, plan, requestId: req.requestId, action: 'subscription_activated' }, 'Subscription activated');
+          logger.info({ userId, plan: resolvedPlan, requestId: req.requestId, action: 'subscription_activated' }, 'Subscription activated');
 
           // SMS: new subscription
           if (twilioClient && process.env.ADMIN_PHONE) {
             const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : 'discounted';
             twilioClient.messages.create({
-              body: `CounselorReady: New Subscription\n${subscriber?.email}\nPlan: ${plan} · ${amount}/mo`,
+              body: `CounselorReady: New Subscription\n${subscriber?.email}\nPlan: ${resolvedPlan} · ${amount}/mo`,
               from: process.env.TWILIO_PHONE_NUMBER,
               to: process.env.ADMIN_PHONE
             }).catch(e => logger.error({ err: e, userId, requestId: req.requestId }, 'SMS subscription notification error'));
