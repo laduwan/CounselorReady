@@ -101,6 +101,24 @@
     </div>
   </main>
 
+  <!-- Partner offer banner — shown to non-partner users only -->
+  <div id="partnerOfferBanner" class="max-w-4xl mx-auto px-4 mb-6" style="display:none">
+    <div class="bg-gradient-to-r from-burgundy-50 to-hunter-50 border border-burgundy-200 rounded-xl p-4 flex flex-col sm:flex-row items-center gap-4">
+      <div class="flex-1 text-center sm:text-left">
+        <p class="text-sm font-semibold text-burgundy-900">Do you create CE courses or train other counselors?</p>
+        <p class="text-xs text-stone-500 mt-0.5">Launch your own branded CE academy — white-label platform, direct payouts, 14-day free trial.</p>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <a href="/become-a-partner" class="bg-burgundy-800 hover:bg-burgundy-900 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors">
+          Learn more
+        </a>
+        <button onclick="document.getElementById('partnerOfferBanner').style.display='none';localStorage.setItem('partnerBannerDismissed','1')" class="text-stone-400 hover:text-stone-600 text-xs underline">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer — full burgundy with NBCC badge + provider disclosure + policy links -->
   <div id="cr-footer"></div>
 
@@ -229,6 +247,14 @@
       }).join('');
     }
     loadStats();
+    // Show partner offer banner to non-partner, non-dismissed users
+    (function() {
+      if (localStorage.getItem('partnerBannerDismissed')) return;
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.role === 'partner_admin' || u.role === 'partner_user') return;
+      const banner = document.getElementById('partnerOfferBanner');
+      if (banner) banner.style.display = 'block';
+    })();
     </script>
 </body>
 </html>
