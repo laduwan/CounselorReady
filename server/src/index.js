@@ -144,6 +144,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'https://counselorready.com',
   'https://www.counselorready.com',
+  'https://portal.counselorready.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
