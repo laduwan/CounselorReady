@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title id="page-title">New Course | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld { width:100%; padding:.55rem .75rem; border:1px solid #e7e5e4; border-radius:.5rem; font-size:.875rem; outline:none; background:#fff; }
+    .fld:focus { box-shadow:0 0 0 2px #4A7C59; border-color:#4A7C59; }
+    .lbl { display:block; font-size:.75rem; font-weight:600; color:#57534e; margin-bottom:.35rem; }
+    .section-card { background:#fff; border-radius:.75rem; border:1px solid #e7e5e4; padding:1.5rem; margin-bottom:1.25rem; }
+    .section-header { font-size:.875rem; font-weight:700; color:#4A7C59; text-transform:uppercase; letter-spacing:.05em; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+    .add-row-btn { font-size:.75rem; font-weight:600; color:#284157; border:1px solid #D4A855; background:#fffbeb; padding:.35rem .75rem; border-radius:.4rem; cursor:pointer; }
+    .add-row-btn:hover { background:#fef3c7; }
+    .remove-btn { font-size:.7rem; color:#dc2626; cursor:pointer; padding:.25rem .5rem; border-radius:.3rem; }
+    .remove-btn:hover { background:#fee2e2; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/partner-nav.js"></script>
+
+  <main class="max-w-3xl mx-auto px-6 py-8">
+
+    <a href="/partner-courses.html" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-burgundy-700 mb-4">
+      <i class="fas fa-chevron-left text-xs"></i> Back to Courses
+    </a>
+
+    <div class="mb-6">
+      <h1 id="page-heading" class="font-display text-3xl font-semibold" style="color:#6B1D34">New Course</h1>
+      <p class="text-gray-500 mt-1">Fill in the details below to create or update your course.</p>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="hidden fixed top-6 right-6 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium" style="background:#4A7C59"></div>
+
+    <!-- Loading (edit mode) -->
+    <div id="loading" class="hidden text-center py-16">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-burgundy-200 border-t-burgundy-700 mx-auto mb-4"></div>
+      <p class="text-gray-500">Loading course…</p>
+    </div>
+
+    <!-- Error -->
+    <div id="errorState" class="hidden text-center py-20">
+      <p class="text-lg font-medium text-red-700">Something went wrong</p>
+      <p class="text-sm text-stone-500 mt-1" id="errorMessage"></p>
+      <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
+    </div>
+
+    <!-- Form -->
+    <div id="editor-form">
+
+      <!-- Basic Info -->
+      <div class="section-card">
+        <div class="section-header"><i class="fas fa-info-circle"></i> Basic Info</div>
+        <div class="space-y-4">
+          <div>
+            <label class="lbl" for="f-title">Title <span class="text-red-500">*</span></label>
+            <input type="text" id="f-title" class="fld" placeholder="Course title" required>
+          </div>
+          <div>
+            <label class="lbl" for="f-description">Description <span class="text-red-500">*</span></label>
+            <textarea id="f-description" class="fld" rows="3" placeholder="What will learners gain from this course?"></textarea>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="lbl" for="f-ceHours">CE Hours <span class="text-red-500">*</span></label>
+              <input type="number" id="f-ceHours" class="fld" min="0.5" step="0.5" placeholder="e.g. 3">
+            </div>
+            <div>
+              <label class="lbl" for="f-price">Price (USD) — leave 0 for free</label>
+              <input type="number" id="f-price" class="fld" min="0" step="0.01" value="0" placeholder="0.00">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="lbl" for="f-accessType">Access Type</label>
+              <select id="f-accessType" class="fld">
+                <option value="free">Free</option>
+                <option value="paid">Paid</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl" for="f-status">Status</label>
+              <select id="f-status" class="fld" onchange="onStatusChange(this.value)">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </div>
+          <div id="publish-warning" class="hidden text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5">
+            <i class="fas fa-triangle-exclamation mr-1"></i>Published courses are visible to learners. Ensure your approvals and objectives are complete.
+          </div>
+          <div>
+            <label class="lbl" for="f-categories">Categories <span class="font-normal text-stone-400">(comma-separated)</span></label>
+            <input type="text" id="f-categories" class="fld" placeholder="Ethics, Trauma-Informed Care">
+          </div>
+          <div>
+            <label class="lbl" for="f-targetAudience">Target Audience <span class="font-normal text-stone-400">(comma-separated)</span></label>
+            <input type="text" id="f-targetAudience" class="fld" placeholder="Registered nurses, HR professionals">
+          </div>
+        </div>
+      </div>
+
+      <!-- Learning Objectives -->
+      <div class="section-card">
+        <div class="section-header"><i class="fas fa-bullseye"></i> Learning Objectives</div>
+        <div id="objectives-list" class="space-y-2 mb-3"></div>
+        <button type="button" class="add-row-btn" onclick="addObjective()">+ Add Objective</button>
+      </div>
+
+      <!-- Approvals -->
+      <div class="section-card">
+        <div class="section-header"><i class="fas fa-certificate"></i> Approvals</div>
+        <p class="text-xs text-stone-500 mb-4">List the approving bodies for this course's CE credit.</p>
+        <div id="approvals-list" class="space-y-4 mb-3"></div>
+        <button type="button" class="add-row-btn" onclick="addApproval()">+ Add Approving Body</button>
+      </div>
+
+      <!-- Course Content -->
+      <div class="section-card">
+        <div class="section-header"><i class="fas fa-file-alt"></i> Course Content</div>
+        <label class="lbl" for="f-content">Course content <span class="font-normal text-stone-400">(outline or notes — full block editor coming soon)</span></label>
+        <textarea id="f-content" class="fld" rows="10" placeholder="Paste your course outline, module content, or notes here…"></textarea>
+      </div>
+
+      <!-- Save -->
+      <div class="flex items-center gap-3 mt-2 mb-12">
+        <button onclick="saveCourse()" id="save-btn"
+          class="px-6 py-2.5 rounded-lg text-white font-semibold text-sm transition-opacity hover:opacity-90"
+          style="background:#6B1D34">
+          Save Course
+        </button>
+        <span id="save-msg" class="text-sm"></span>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="cr-footer"></div>
+  <script src="/js/cr-icons.js"></script>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) window.location.href = 'https://portal.counselorready.com/partner-login.html';
+    const AUTH = { 'Authorization': 'Bearer ' + T, 'Content-Type': 'application/json' };
+
+    const params = new URLSearchParams(location.search);
+    const courseId = params.get('id');
+    const isEdit = !!courseId;
+
+    if (isEdit) {
+      document.getElementById('page-title').textContent = 'Edit Course | Partner Portal | CounselorReady';
+      document.getElementById('page-heading').textContent = 'Edit Course';
+    }
+
+    function esc(s) { if (s == null) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function showToast(msg, ok = true) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.background = ok ? '#4A7C59' : '#dc2626';
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3500);
+    }
+
+    function onStatusChange(val) {
+      document.getElementById('publish-warning').classList.toggle('hidden', val !== 'published');
+    }
+
+    // ── Objectives ────────────────────────────────────────────────────────────
+    function addObjective(value = '') {
+      const list = document.getElementById('objectives-list');
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-center';
+      row.innerHTML = `
+        <input type="text" class="fld objective-input" value="${esc(value)}" placeholder="Learners will be able to…">
+        <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+      list.appendChild(row);
+    }
+
+    function getObjectives() {
+      return [...document.querySelectorAll('.objective-input')]
+        .map(i => i.value.trim()).filter(Boolean);
+    }
+
+    // ── Approvals ─────────────────────────────────────────────────────────────
+    const APPROVAL_BODIES = ['NBCC','ACEP','LPCAGA','GSCSW','ACA','NASW','APA','ASWB','AAMFT','State Board','Other'];
+    const DELIVERY_FORMATS = [
+      { value: 'asynchronous', label: 'Asynchronous' },
+      { value: 'live-webinar', label: 'Live Webinar' },
+      { value: 'multi-live-workshop', label: 'Multi-Live Workshop' },
+      { value: 'in-person-single', label: 'In-Person (Single)' },
+      { value: 'in-person-conference', label: 'In-Person (Conference)' },
+    ];
+    const APPROVAL_STATUSES = ['approved','pending','expired','not-applied'];
+
+    function addApproval(data = {}) {
+      const list = document.getElementById('approvals-list');
+      const idx = list.children.length;
+      const wrap = document.createElement('div');
+      wrap.className = 'border border-stone-200 rounded-xl p-4 space-y-3 relative';
+      wrap.dataset.idx = idx;
+
+      const bodyOptions = APPROVAL_BODIES.map(b =>
+        `<option value="${b}" ${data.body === b ? 'selected' : ''}>${b}</option>`).join('');
+      const statusOptions = APPROVAL_STATUSES.map(s =>
+        `<option value="${s}" ${(data.status || 'approved') === s ? 'selected' : ''}>${s}</option>`).join('');
+      const formatOptions = DELIVERY_FORMATS.map(f =>
+        `<option value="${f.value}" ${data.deliveryFormat === f.value ? 'selected' : ''}>${f.label}</option>`).join('');
+
+      const hoursHtml = (data.hours || []).map(h =>
+        `<div class="flex gap-2 items-center hour-row">
+          <input type="text" class="fld hour-label" value="${esc(h.label)}" placeholder="e.g. ethics">
+          <input type="number" class="fld hour-hrs w-24" value="${h.hours || ''}" min="0" step="0.5" placeholder="hrs">
+          <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+        </div>`).join('');
+
+      wrap.innerHTML = `
+        <button type="button" class="remove-btn absolute top-3 right-3" onclick="this.parentElement.remove()">
+          <i class="fas fa-times"></i> Remove
+        </button>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="lbl">Approving Body</label>
+            <select class="fld approval-body">${bodyOptions}</select>
+          </div>
+          <div>
+            <label class="lbl">Status</label>
+            <select class="fld approval-status">${statusOptions}</select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="lbl">Provider Name</label>
+            <input type="text" class="fld approval-providerName" value="${esc(data.providerName || '')}" placeholder="e.g. GAITP LLC">
+          </div>
+          <div>
+            <label class="lbl">Provider Number</label>
+            <input type="text" class="fld approval-providerNumber" value="${esc(data.providerNumber || '')}" placeholder="e.g. 7760">
+          </div>
+        </div>
+        <div>
+          <label class="lbl">Delivery Format</label>
+          <select class="fld approval-deliveryFormat">${formatOptions}</select>
+        </div>
+        <div>
+          <label class="lbl">Hour Breakdown</label>
+          <div class="hours-list space-y-2 mb-2">${hoursHtml}</div>
+          <button type="button" class="add-row-btn text-xs" onclick="addHourRow(this)">+ Add hour type</button>
+        </div>`;
+      list.appendChild(wrap);
+    }
+
+    function addHourRow(btn) {
+      const list = btn.previousElementSibling;
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-center hour-row';
+      row.innerHTML = `
+        <input type="text" class="fld hour-label" placeholder="e.g. ethics">
+        <input type="number" class="fld hour-hrs w-24" min="0" step="0.5" placeholder="hrs">
+        <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+      list.appendChild(row);
+    }
+
+    function getApprovals() {
+      return [...document.querySelectorAll('#approvals-list > div')].map(wrap => {
+        const hours = [...wrap.querySelectorAll('.hour-row')].map(r => ({
+          label: r.querySelector('.hour-label').value.trim(),
+          hours: parseFloat(r.querySelector('.hour-hrs').value) || 0,
+        })).filter(h => h.label);
+        return {
+          body: wrap.querySelector('.approval-body').value,
+          status: wrap.querySelector('.approval-status').value,
+          providerName: wrap.querySelector('.approval-providerName').value.trim(),
+          providerNumber: wrap.querySelector('.approval-providerNumber').value.trim(),
+          deliveryFormat: wrap.querySelector('.approval-deliveryFormat').value,
+          hours,
+        };
+      });
+    }
+
+    // ── Populate form (edit mode) ─────────────────────────────────────────────
+    function populate(course) {
+      document.getElementById('f-title').value = course.title || '';
+      document.getElementById('f-description').value = course.description || '';
+      document.getElementById('f-ceHours').value = course.ceHours || '';
+      document.getElementById('f-price').value = course.price != null ? course.price : 0;
+      document.getElementById('f-accessType').value = course.accessType || 'free';
+      const status = course.status || 'draft';
+      document.getElementById('f-status').value = status;
+      onStatusChange(status);
+      document.getElementById('f-categories').value = (course.categories || []).join(', ');
+      document.getElementById('f-targetAudience').value = (course.targetAudience || []).join(', ');
+
+      (course.objectives || []).forEach(o => addObjective(o));
+      (course.approvals || []).forEach(a => addApproval(a));
+
+      // Flatten existing sections into the content textarea
+      if (course.sections && course.sections.length > 0) {
+        const text = course.sections.map(s =>
+          s.blocks ? s.blocks.filter(b => b.type === 'text').map(b => b.content || '').join('\n\n') : ''
+        ).join('\n\n');
+        document.getElementById('f-content').value = text.replace(/<[^>]+>/g, '');
+      }
+    }
+
+    // ── Save ──────────────────────────────────────────────────────────────────
+    async function saveCourse() {
+      const btn = document.getElementById('save-btn');
+      const msg = document.getElementById('save-msg');
+      btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+
+      const title = document.getElementById('f-title').value.trim();
+      const description = document.getElementById('f-description').value.trim();
+      const ceHours = parseFloat(document.getElementById('f-ceHours').value);
+
+      if (!title) { msg.className = 'text-sm text-red-600'; msg.textContent = 'Title is required.'; btn.disabled = false; btn.textContent = 'Save Course'; return; }
+      if (!description) { msg.className = 'text-sm text-red-600'; msg.textContent = 'Description is required.'; btn.disabled = false; btn.textContent = 'Save Course'; return; }
+      if (!ceHours || ceHours < 0.5) { msg.className = 'text-sm text-red-600'; msg.textContent = 'CE Hours must be at least 0.5.'; btn.disabled = false; btn.textContent = 'Save Course'; return; }
+
+      const rawContent = document.getElementById('f-content').value.trim();
+      const sections = rawContent ? [{
+        title: 'Course Content',
+        blocks: [{ type: 'text', content: `<p>${rawContent.replace(/\n/g, '</p><p>')}</p>` }]
+      }] : [];
+
+      const body = {
+        title,
+        description,
+        ceHours,
+        price: parseFloat(document.getElementById('f-price').value) || 0,
+        accessType: document.getElementById('f-accessType').value,
+        status: document.getElementById('f-status').value,
+        categories: document.getElementById('f-categories').value.split(',').map(s => s.trim()).filter(Boolean),
+        targetAudience: document.getElementById('f-targetAudience').value.split(',').map(s => s.trim()).filter(Boolean),
+        objectives: getObjectives(),
+        approvals: getApprovals(),
+        sections,
+      };
+
+      try {
+        const url = isEdit
+          ? `${API}/api/partners/my/courses/${courseId}`
+          : `${API}/api/partners/my/courses`;
+        const method = isEdit ? 'PUT' : 'POST';
+        const res = await fetch(url, { method, headers: AUTH, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Save failed');
+        showToast('Saved!');
+        setTimeout(() => { window.location.href = '/partner-courses.html'; }, 1500);
+      } catch (err) {
+        msg.className = 'text-sm text-red-600';
+        msg.textContent = err.message;
+        btn.disabled = false;
+        btn.textContent = 'Save Course';
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!isEdit) return; // create mode — form is ready
+
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('editor-form').classList.add('hidden');
+
+      try {
+        const res = await fetch(`${API}/api/partners/my/courses`, { headers: AUTH });
+        if (!res.ok) throw new Error((await res.json()).error || 'Failed to load courses');
+        const { courses } = await res.json();
+        const course = courses.find(c => c._id === courseId || c.slug === courseId);
+        if (!course) throw new Error('Course not found');
+        populate(course);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('editor-form').classList.remove('hidden');
+      } catch (err) {
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('errorMessage').textContent = err.message;
+        document.getElementById('errorState').classList.remove('hidden');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -189,3 +189,108 @@ Return ONLY a JSON array of ${questionCount} questions.`;
 
   return { course, usageTotals };
 }
+
+/**
+ * Compliance-free course draft generator for partner-owned courses.
+ * Partners may train any audience — not necessarily mental health professionals.
+ * No ACEP/NBCC word-count minimums, no CR provider stamp, no hardcoded audience.
+ */
+export async function generatePartnerCourseDraft({ topic, uploadedContent, ceHours, level, category, targetAudience }) {
+  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured on server');
+
+  const usageTotals = { input_tokens: 0, output_tokens: 0 };
+  const audienceLabel = targetAudience || 'adult learners';
+
+  // Step 1: outline
+  const outlinePrompt = uploadedContent
+    ? `Convert this content into a structured ${ceHours}-hour CE course outline with modules and learning objectives:\n\n${uploadedContent}`
+    : `Create a detailed ${ceHours}-hour continuing education course outline on "${topic}". Level: ${level}. Category: ${category}. Include:
+- Course title and description
+- 4-6 learning objectives
+- ${Math.ceil(ceHours / 1.5)} modules with descriptive titles
+- Target audience: ${audienceLabel}`;
+
+  const outlineResponse = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4000,
+    messages: [{ role: 'user', content: outlinePrompt }]
+  });
+  usageTotals.input_tokens += outlineResponse.usage.input_tokens;
+  usageTotals.output_tokens += outlineResponse.usage.output_tokens;
+
+  const outlineText = outlineResponse.content[0].text;
+  const numModules = Math.ceil(ceHours / 1.5);
+  const modules = Array.from({ length: numModules }, (_, i) => ({
+    id: Math.random().toString(36).slice(2, 9),
+    number: i + 1,
+    title: `Module ${i + 1}: ${getModuleTitle(topic || 'this topic', i)}`,
+    blocks: [],
+    knowledgeChecks: 3
+  }));
+
+  const minWordsPerModule = Math.ceil((ceHours * 1500) / numModules);
+
+  // Step 2: per-module content
+  for (let i = 0; i < modules.length; i++) {
+    const module = modules[i];
+    const contentPrompt = `Create educational content for "${module.title}" in a course about ${topic || 'this topic'}.
+
+Requirements:
+- Write ${minWordsPerModule} words minimum
+- Include practical examples and evidence-based information
+- Use clear headings and paragraphs
+- Distribute 3 knowledge check questions throughout the content (place one after every 2-3 paragraphs, NOT all at the end)
+- Format as HTML with <h3>, <p>, <ul>, <strong> tags
+- Target audience: ${audienceLabel}`;
+
+    const contentResponse = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 8000,
+      messages: [{ role: 'user', content: contentPrompt }]
+    });
+    usageTotals.input_tokens += contentResponse.usage.input_tokens;
+    usageTotals.output_tokens += contentResponse.usage.output_tokens;
+
+    module.blocks = parseContentIntoBlocks(contentResponse.content[0].text, module.number);
+  }
+
+  // Step 3: assessment (proportional, no 15-question minimum from ACEP)
+  const questionCount = Math.max(5, Math.ceil(ceHours) * 3);
+  const assessmentPrompt = `Create ${questionCount} multiple-choice assessment questions for a ${ceHours}-hour course on ${topic || 'this topic'} aimed at ${audienceLabel}.
+
+Format each as:
+{"question": "Question text", "options": ["A", "B", "C", "D"], "correctAnswer": 0, "explanation": "Why this is correct"}
+
+Return ONLY a JSON array of ${questionCount} questions.`;
+
+  const assessmentResponse = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8000,
+    messages: [{ role: 'user', content: assessmentPrompt }]
+  });
+  usageTotals.input_tokens += assessmentResponse.usage.input_tokens;
+  usageTotals.output_tokens += assessmentResponse.usage.output_tokens;
+
+  let assessmentQuestions = [];
+  try {
+    const assessmentText = assessmentResponse.content[0].text
+      .replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    assessmentQuestions = JSON.parse(assessmentText);
+  } catch {
+    assessmentQuestions = generateDefaultAssessment();
+  }
+
+  const course = {
+    title: topic || `${ceHours}-Hour CE Course`,
+    ceHours: parseFloat(ceHours) || 3,
+    level,
+    category,
+    description: `A ${ceHours}-hour course for ${audienceLabel} on ${topic || 'this topic'}.`,
+    objectives: extractObjectives(outlineText),
+    targetAudience: [audienceLabel],
+    modules,
+    assessment: { questions: assessmentQuestions, passThreshold: 0.70 }
+  };
+
+  return { course, usageTotals };
+}
