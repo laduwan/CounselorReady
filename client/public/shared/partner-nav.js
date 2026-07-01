@@ -10,7 +10,7 @@
 (function () {
   const token = localStorage.getItem('token');
   if (!token) {
-    window.location.href = 'https://counselorready.com/login.html';
+    window.location.href = 'https://portal.counselorready.com/partner-login.html';
     return;
   }
 
