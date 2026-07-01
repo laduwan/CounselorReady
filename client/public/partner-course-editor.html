@@ -131,9 +131,11 @@
       <!-- Course Content -->
       <div class="section-card">
         <div class="section-header"><i class="fas fa-file-alt"></i> Course Content</div>
-        <label class="lbl" for="f-content">Course content <span class="font-normal text-stone-400">(outline or notes — full block editor coming soon)</span></label>
-        <textarea id="f-content" class="fld" rows="10" placeholder="Paste your course outline, module content, or notes here…"></textarea>
+        <p class="text-xs text-stone-500 mb-4">Build your course as one or more sections (modules). Each section can hold text, callouts, key takeaways, knowledge-check questions, and references. NBCC/ACEP courses typically need 2–5 knowledge checks per module.</p>
+        <div id="sections-list" class="space-y-4 mb-3"></div>
+        <button type="button" class="add-row-btn" onclick="addSection()">+ Add Section</button>
       </div>
+
 
       <!-- Save -->
       <div class="flex items-center gap-3 mt-2 mb-12">
@@ -292,7 +294,213 @@
       });
     }
 
-    // ── Populate form (edit mode) ─────────────────────────────────────────────
+    // ── Course Content: Sections & Blocks ───────────────────────────────────────
+    // Block field shapes below match server/src/models/InteractiveCourse.js and
+    // client/src/components/CourseViewer.jsx's BLOCK_DEFAULTS exactly, so content
+    // built here renders correctly in the same viewer as admin-authored courses.
+    const BLOCK_TYPES = [
+      { value: 'text', label: 'Text' },
+      { value: 'callout', label: 'Callout' },
+      { value: 'keyTakeaway', label: 'Key Takeaway' },
+      { value: 'multipleChoice', label: 'Knowledge Check (multiple choice)' },
+      { value: 'references', label: 'References' },
+    ];
+    const CALLOUT_TYPES = ['info', 'warning', 'ethics', 'clinical', 'tip', 'key', 'donot', 'protocol'];
+
+    function addSection(data = {}) {
+      const list = document.getElementById('sections-list');
+      const wrap = document.createElement('div');
+      wrap.className = 'border border-stone-200 rounded-xl p-4 space-y-3 section-wrap';
+      wrap.innerHTML = `
+        <div class="flex items-center gap-2">
+          <input type="text" class="fld section-title" value="${esc(data.title || '')}" placeholder="Section title, e.g. Module 1: Foundations">
+          <button type="button" class="remove-btn flex-shrink-0" onclick="this.closest('.section-wrap').remove()"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="blocks-list space-y-3 pl-3" style="border-left:2px solid #e7e5e4"></div>
+        <div class="flex items-center gap-2">
+          <select class="fld block-type-picker" style="max-width:220px">
+            ${BLOCK_TYPES.map(t => `<option value="${t.value}">${t.label}</option>`).join('')}
+          </select>
+          <button type="button" class="add-row-btn text-xs" onclick="addBlockFromPicker(this)">+ Add Block</button>
+        </div>`;
+      list.appendChild(wrap);
+
+      const blocksList = wrap.querySelector('.blocks-list');
+      (data.blocks || []).forEach(b => addBlock(blocksList, b.type, b));
+      return wrap;
+    }
+
+    function addBlockFromPicker(btn) {
+      const wrap = btn.closest('.section-wrap');
+      const type = wrap.querySelector('.block-type-picker').value;
+      addBlock(wrap.querySelector('.blocks-list'), type);
+    }
+
+    function moveBlock(btn, dir) {
+      const row = btn.closest('.block-row');
+      const sib = dir === 'up' ? row.previousElementSibling : row.nextElementSibling;
+      if (!sib) return;
+      dir === 'up' ? row.parentElement.insertBefore(row, sib) : row.parentElement.insertBefore(sib, row);
+    }
+
+    function addBlock(blocksList, type, data = {}) {
+      const row = document.createElement('div');
+      row.className = 'block-row border border-stone-200 rounded-lg p-3 space-y-2 bg-stone-50';
+      row.dataset.type = type;
+
+      const header = `
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-semibold uppercase tracking-wide" style="color:#4A7C59">${(BLOCK_TYPES.find(t => t.value === type) || {}).label || type}</span>
+          <div class="flex items-center gap-1">
+            <button type="button" class="remove-btn text-xs" onclick="moveBlock(this,'up')" title="Move up"><i class="fas fa-arrow-up"></i></button>
+            <button type="button" class="remove-btn text-xs" onclick="moveBlock(this,'down')" title="Move down"><i class="fas fa-arrow-down"></i></button>
+            <button type="button" class="remove-btn text-xs" onclick="this.closest('.block-row').remove()"><i class="fas fa-times"></i> Remove</button>
+          </div>
+        </div>`;
+
+      let body = '';
+      if (type === 'text') {
+        body = `<textarea class="fld b-content" rows="4" placeholder="Paragraph text…">${esc(data.content || '')}</textarea>`;
+      } else if (type === 'callout') {
+        body = `
+          <div class="grid grid-cols-2 gap-2">
+            <select class="fld b-calloutType">${CALLOUT_TYPES.map(c => `<option value="${c}" ${(data.calloutType || 'info') === c ? 'selected' : ''}>${c}</option>`).join('')}</select>
+            <input type="text" class="fld b-title" value="${esc(data.title || '')}" placeholder="Callout title (optional)">
+          </div>
+          <textarea class="fld b-content" rows="2" placeholder="Callout body text (optional)">${esc(data.content || '')}</textarea>
+          <textarea class="fld b-calloutItems" rows="2" placeholder="Bullet items, one per line (optional)">${esc((data.calloutItems || []).join('\n'))}</textarea>`;
+      } else if (type === 'keyTakeaway') {
+        body = `
+          <input type="text" class="fld b-title" value="${esc(data.title || 'Key Takeaways')}" placeholder="Key Takeaways">
+          <textarea class="fld b-takeaways" rows="3" placeholder="One takeaway per line">${esc((data.takeaways || []).join('\n'))}</textarea>`;
+      } else if (type === 'multipleChoice') {
+        const opts = (data.options && data.options.length ? data.options : [{}, {}, {}, {}]);
+        const optId = 'mc-' + Math.random().toString(36).slice(2, 8);
+        body = `
+          <textarea class="fld b-question" rows="2" placeholder="Question text">${esc(data.question || '')}</textarea>
+          <div class="options-list space-y-1">
+            ${opts.map(o => `
+              <div class="flex items-center gap-2 option-row">
+                <input type="radio" name="${optId}" class="option-correct" ${o.isCorrect ? 'checked' : ''}>
+                <input type="text" class="fld option-text" value="${esc(o.text || '')}" placeholder="Option text">
+                <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+              </div>`).join('')}
+          </div>
+          <button type="button" class="add-row-btn text-xs" onclick="addOptionRow(this)">+ Add Option</button>
+          <textarea class="fld b-explanation" rows="2" placeholder="Explanation shown after answering">${esc(data.explanation || '')}</textarea>`;
+      } else if (type === 'references') {
+        const refs = (data.references || []).length ? data.references : [{}];
+        body = `
+          <div class="refs-list space-y-1">
+            ${refs.map(r => `
+              <div class="flex items-center gap-2 ref-row">
+                <input type="text" class="fld ref-formatted" value="${esc(r.formatted || '')}" placeholder="Full citation, e.g. American Psychiatric Association. (2022). DSM-5-TR.">
+                <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>
+              </div>`).join('')}
+          </div>
+          <button type="button" class="add-row-btn text-xs" onclick="addRefRow(this)">+ Add Reference</button>`;
+      }
+
+      row.innerHTML = header + body;
+      blocksList.appendChild(row);
+    }
+
+    function addOptionRow(btn) {
+      const list = btn.previousElementSibling;
+      const name = list.querySelector('input[type=radio]')?.name || ('mc-' + Math.random().toString(36).slice(2, 8));
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 option-row';
+      row.innerHTML = `
+        <input type="radio" name="${name}" class="option-correct">
+        <input type="text" class="fld option-text" placeholder="Option text">
+        <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+      list.appendChild(row);
+    }
+
+    function addRefRow(btn) {
+      const list = btn.previousElementSibling;
+      const row = document.createElement('div');
+      row.className = 'flex items-center gap-2 ref-row';
+      row.innerHTML = `
+        <input type="text" class="fld ref-formatted" placeholder="Full citation">
+        <button type="button" class="remove-btn flex-shrink-0" onclick="this.parentElement.remove()"><i class="fas fa-times"></i></button>`;
+      list.appendChild(row);
+    }
+
+    function readBlock(row) {
+      const type = row.dataset.type;
+      if (type === 'text') {
+        const raw = row.querySelector('.b-content').value.trim();
+        return { type, content: raw ? `<p>${raw.replace(/\n/g, '</p><p>')}</p>` : '' };
+      }
+      if (type === 'callout') {
+        const rawContent = row.querySelector('.b-content').value.trim();
+        return {
+          type,
+          calloutType: row.querySelector('.b-calloutType').value,
+          title: row.querySelector('.b-title').value.trim(),
+          content: rawContent.replace(/\n/g, '<br>'),
+          calloutItems: row.querySelector('.b-calloutItems').value.split('\n').map(s => s.trim()).filter(Boolean),
+        };
+      }
+      if (type === 'keyTakeaway') {
+        return {
+          type,
+          title: row.querySelector('.b-title').value.trim() || 'Key Takeaways',
+          takeaways: row.querySelector('.b-takeaways').value.split('\n').map(s => s.trim()).filter(Boolean),
+        };
+      }
+      if (type === 'multipleChoice') {
+        const options = [...row.querySelectorAll('.option-row')].map(r => ({
+          text: r.querySelector('.option-text').value.trim(),
+          isCorrect: r.querySelector('.option-correct').checked,
+        })).filter(o => o.text);
+        return {
+          type,
+          question: row.querySelector('.b-question').value.trim(),
+          options,
+          explanation: row.querySelector('.b-explanation').value.trim(),
+        };
+      }
+      if (type === 'references') {
+        const references = [...row.querySelectorAll('.ref-row')].map(r => ({
+          formatted: r.querySelector('.ref-formatted').value.trim(),
+        })).filter(r => r.formatted);
+        return { type, references };
+      }
+      return null;
+    }
+
+    function getSections() {
+      return [...document.querySelectorAll('#sections-list > .section-wrap')].map(wrap => {
+        const blocks = [...wrap.querySelectorAll('.block-row')]
+          .map((row, i) => {
+            const b = readBlock(row);
+            if (!b) return null;
+            b.order = i;
+            return b;
+          })
+          .filter(Boolean);
+        return {
+          title: wrap.querySelector('.section-title').value.trim() || 'Untitled Section',
+          blocks,
+        };
+      });
+    }
+
+    function populateSections(sections) {
+      (sections || []).forEach(s => {
+        const cleaned = {
+          ...s,
+          blocks: (s.blocks || []).map(b =>
+            b.type === 'text' ? { ...b, content: (b.content || '').replace(/<\/p>\s*<p>/gi, '\n\n').replace(/<[^>]+>/g, '') } : b
+          ),
+        };
+        addSection(cleaned);
+      });
+    }
+
+
     function populate(course) {
       document.getElementById('f-title').value = course.title || '';
       document.getElementById('f-description').value = course.description || '';
@@ -308,13 +516,8 @@
       (course.objectives || []).forEach(o => addObjective(o));
       (course.approvals || []).forEach(a => addApproval(a));
 
-      // Flatten existing sections into the content textarea
-      if (course.sections && course.sections.length > 0) {
-        const text = course.sections.map(s =>
-          s.blocks ? s.blocks.filter(b => b.type === 'text').map(b => b.content || '').join('\n\n') : ''
-        ).join('\n\n');
-        document.getElementById('f-content').value = text.replace(/<[^>]+>/g, '');
-      }
+      // Load existing sections into the block editor
+      populateSections(course.sections || []);
     }
 
     // ── Save ──────────────────────────────────────────────────────────────────
@@ -331,11 +534,7 @@
       if (!description) { msg.className = 'text-sm text-red-600'; msg.textContent = 'Description is required.'; btn.disabled = false; btn.textContent = 'Save Course'; return; }
       if (!ceHours || ceHours < 0.5) { msg.className = 'text-sm text-red-600'; msg.textContent = 'CE Hours must be at least 0.5.'; btn.disabled = false; btn.textContent = 'Save Course'; return; }
 
-      const rawContent = document.getElementById('f-content').value.trim();
-      const sections = rawContent ? [{
-        title: 'Course Content',
-        blocks: [{ type: 'text', content: `<p>${rawContent.replace(/\n/g, '</p><p>')}</p>` }]
-      }] : [];
+      const sections = getSections();
 
       const body = {
         title,
