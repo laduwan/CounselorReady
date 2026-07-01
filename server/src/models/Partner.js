@@ -67,6 +67,8 @@ const partnerSchema = new mongoose.Schema({
   // Billing
   billing: {
     stripeCustomerId: { type: String },
+    connectAccountId: { type: String },           // Stripe Express account id (acct_...)
+    connectOnboardingComplete: { type: Boolean, default: false }, // charges_enabled confirmed
     stripeSubscriptionId: { type: String },
     plan: {
       type: String,

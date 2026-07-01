@@ -395,6 +395,11 @@ router.post('/admin/commissions/settle', protect, requireAdmin, async (req, res)
 
     let payoutRef = reference || null;
 
+    // Connect: money already routed at charge time via destination charge — bookkeeping only
+    if (method === 'connect') {
+      payoutRef = pending[0]?.paymentIntentId || 'connect-destination';
+    }
+
     // Cheapest path: apply as account credit against their CounselorReady partner invoice
     if (method === 'credit') {
       const partner = await Partner.findById(partnerId);
@@ -421,6 +426,81 @@ router.post('/admin/commissions/settle', protect, requireAdmin, async (req, res)
     );
 
     res.json({ message: `Settled $${owedRounded.toFixed(2)} across ${upd.modifiedCount} entr${upd.modifiedCount !== 1 ? 'ies' : 'y'}`, settled: owedRounded, count: upd.modifiedCount, method, payoutRef });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: initiate Stripe Connect Express onboarding ──
+router.post('/my/connect/onboard', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment system not configured' });
+    const partnerId = req.partnerId || req.user.partnerId;
+    if (!partnerId) return res.status(400).json({ error: 'No partner association found' });
+
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    if (partner.billing?.connectAccountId && partner.billing?.connectOnboardingComplete) {
+      return res.json({ alreadyConnected: true });
+    }
+
+    let connectAccountId = partner.billing?.connectAccountId;
+    if (!connectAccountId) {
+      const account = await stripe.accounts.create({
+        type: 'express',
+        email: partner.contact?.email || req.user.email,
+        metadata: { partnerId: partner._id.toString() }
+      });
+      connectAccountId = account.id;
+      partner.billing.connectAccountId = connectAccountId;
+      await partner.save();
+    }
+
+    const CLIENT_URL = process.env.CLIENT_URL || 'https://counselorready.com';
+    const accountLink = await stripe.accountLinks.create({
+      account: connectAccountId,
+      refresh_url: `${CLIENT_URL}/partner/connect?refresh=1`,
+      return_url: `${CLIENT_URL}/partner/connect?success=1`,
+      type: 'account_onboarding'
+    });
+
+    res.json({ url: accountLink.url });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Partner admin: check Stripe Connect status ──
+router.get('/my/connect/status', protect, requirePartnerAdmin, async (req, res) => {
+  try {
+    if (!stripe) return res.status(503).json({ error: 'Payment system not configured' });
+    const partnerId = req.partnerId || req.user.partnerId;
+    if (!partnerId) return res.status(400).json({ error: 'No partner association found' });
+
+    const partner = await Partner.findById(partnerId);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const connectAccountId = partner.billing?.connectAccountId || null;
+    let chargesEnabled = false;
+    let payoutsEnabled = false;
+
+    if (connectAccountId) {
+      const account = await stripe.accounts.retrieve(connectAccountId);
+      chargesEnabled = !!account.charges_enabled;
+      payoutsEnabled = !!account.payouts_enabled;
+      if (chargesEnabled && !partner.billing.connectOnboardingComplete) {
+        partner.billing.connectOnboardingComplete = true;
+        await partner.save();
+      }
+    }
+
+    res.json({
+      connectAccountId,
+      onboardingComplete: partner.billing?.connectOnboardingComplete || false,
+      chargesEnabled,
+      payoutsEnabled
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

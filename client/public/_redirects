@@ -60,6 +60,8 @@
 /partner-email-templates  /partner-email-templates.html  200
 /partner/domain           /partner-domain.html           200
 /partner-domain           /partner-domain.html           200
+/partner/connect          /partner-connect.html          200
+/partner-connect          /partner-connect.html          200
 /partner/bulk-upload      /partner-bulk-upload.html      200
 /partner-bulk-upload      /partner-bulk-upload.html      200
 /admin-payouts       /admin-payouts.html        200
