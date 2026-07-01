@@ -249,7 +249,7 @@
         if (!res.ok) throw new Error(data.error || 'Could not create your account');
         localStorage.setItem('token', data.token);
         msg.className = 'text-sm text-center text-hunter-700'; msg.textContent = 'Account created — taking you to your portal…';
-        window.location.href = data.next || '/partner-billing.html';
+        window.location.href = 'https://portal.counselorready.com' + (data.next || '/partner-billing.html');
       } catch (err) {
         msg.className = 'text-sm text-center text-red-600'; msg.textContent = err.message;
         btn.disabled = false; btn.textContent = 'Create account & continue';

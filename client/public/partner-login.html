@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Sign In | Partner Portal | CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .fld { width:100%; padding:.6rem .85rem; border:1px solid #e7e5e4; border-radius:.5rem; font-size:.9rem; outline:none; background:#fff; }
+    .fld:focus { box-shadow:0 0 0 2px #4A7C59; border-color:#4A7C59; }
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen flex flex-col items-center justify-center px-4 py-12">
+
+  <!-- Partner-branded header (no nav — pre-auth page) -->
+  <div class="mb-8 text-center">
+    <a href="https://counselorready.com" class="inline-block mb-3">
+      <span class="font-bold text-2xl leading-none" style="font-family:'Cormorant Garamond',Georgia,serif">
+        <span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span>™
+      </span>
+    </a>
+    <p class="text-sm text-stone-500 font-medium tracking-wide uppercase">Partner Portal</p>
+  </div>
+
+  <!-- Login card -->
+  <div class="w-full max-w-sm bg-white rounded-2xl border border-stone-200 shadow-sm p-8">
+    <h1 class="font-display text-2xl font-semibold text-burgundy-900 mb-6 text-center" style="color:#6B1D34">Sign in to your account</h1>
+
+    <form id="login-form" onsubmit="handleLogin(event)" novalidate class="space-y-5">
+      <div>
+        <label for="email" class="block text-xs font-semibold text-stone-600 mb-1.5">Email address</label>
+        <input type="email" id="email" name="email" autocomplete="email" required
+          class="fld" placeholder="you@yourcompany.com">
+      </div>
+
+      <div>
+        <label for="password" class="block text-xs font-semibold text-stone-600 mb-1.5">Password</label>
+        <div class="relative">
+          <input type="password" id="password" name="password" autocomplete="current-password" required
+            class="fld pr-10" placeholder="••••••••">
+          <button type="button" onclick="togglePassword()"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 text-sm"
+            id="pw-toggle-btn" aria-label="Show password">
+            <i class="fas fa-eye" id="pw-toggle-icon"></i>
+          </button>
+        </div>
+      </div>
+
+      <div id="error-msg" class="hidden text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+
+      <button type="submit" id="submit-btn"
+        class="w-full py-2.5 rounded-lg text-white font-semibold text-sm transition-opacity hover:opacity-90"
+        style="background:#6B1D34">
+        Sign in to Partner Portal
+      </button>
+    </form>
+
+    <div class="mt-5 text-center">
+      <a href="https://counselorready.com/forgot-password.html"
+        class="text-sm text-stone-500 hover:text-stone-700 transition-colors">
+        Forgot password?
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer links -->
+  <div class="mt-8 text-center space-y-2">
+    <p class="text-sm text-stone-500">
+      Not a partner?
+      <a href="https://counselorready.com/become-a-partner" class="font-medium hover:underline" style="color:#6B1D34">Join the partner program</a>
+    </p>
+    <p class="text-xs text-stone-400">Powered by CounselorReady™</p>
+  </div>
+
+  <script src="/js/cr-icons.js"></script>
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    // Already logged in — skip the login page
+    if (localStorage.getItem('token')) {
+      window.location.href = 'https://portal.counselorready.com/partner-dashboard.html';
+    }
+
+    function togglePassword() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('pw-toggle-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.className = 'fas fa-eye-slash';
+      } else {
+        input.type = 'password';
+        icon.className = 'fas fa-eye';
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Signing in…';
+
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Sign in failed');
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+
+        if (data.user && data.user.role === 'partner_admin') {
+          window.location.href = 'https://portal.counselorready.com/partner-dashboard.html';
+        } else {
+          // Learners, admins, etc. belong on the main site
+          window.location.href = 'https://counselorready.com/login.html';
+        }
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Sign in to Partner Portal';
+      }
+    }
+  </script>
+</body>
+</html>
