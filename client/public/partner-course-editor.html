@@ -303,6 +303,8 @@
       { value: 'callout', label: 'Callout' },
       { value: 'keyTakeaway', label: 'Key Takeaway' },
       { value: 'multipleChoice', label: 'Knowledge Check (multiple choice)' },
+      { value: 'image', label: 'Image' },
+      { value: 'videoEmbed', label: 'Video' },
       { value: 'references', label: 'References' },
     ];
     const CALLOUT_TYPES = ['info', 'warning', 'ethics', 'clinical', 'tip', 'key', 'donot', 'protocol'];
@@ -388,6 +390,15 @@
           </div>
           <button type="button" class="add-row-btn text-xs" onclick="addOptionRow(this)">+ Add Option</button>
           <textarea class="fld b-explanation" rows="2" placeholder="Explanation shown after answering">${esc(data.explanation || '')}</textarea>`;
+      } else if (type === 'image') {
+        body = `
+          <input type="text" class="fld b-imageUrl" value="${esc(data.imageUrl || '')}" placeholder="Image URL (e.g. https://…)">
+          <input type="text" class="fld b-imageAltText" value="${esc(data.imageAltText || '')}" placeholder="Alt text (required for accessibility)">
+          <input type="text" class="fld b-imageCaption" value="${esc(data.imageCaption || '')}" placeholder="Caption (optional)">`;
+      } else if (type === 'videoEmbed') {
+        body = `
+          <input type="text" class="fld b-videoUrl" value="${esc(data.videoUrl || '')}" placeholder="Video URL (YouTube, Vimeo, or hosted link)">
+          <input type="text" class="fld b-videoTitle" value="${esc(data.videoTitle || '')}" placeholder="Video title (optional)">`;
       } else if (type === 'references') {
         const refs = (data.references || []).length ? data.references : [{}];
         body = `
@@ -460,6 +471,23 @@
           question: row.querySelector('.b-question').value.trim(),
           options,
           explanation: row.querySelector('.b-explanation').value.trim(),
+        };
+      }
+      if (type === 'image') {
+        return {
+          type,
+          imageUrl: row.querySelector('.b-imageUrl').value.trim(),
+          imageAltText: row.querySelector('.b-imageAltText').value.trim(),
+          imageCaption: row.querySelector('.b-imageCaption').value.trim(),
+          imageSize: 'full',
+          imageAlignment: 'center',
+        };
+      }
+      if (type === 'videoEmbed') {
+        return {
+          type,
+          videoUrl: row.querySelector('.b-videoUrl').value.trim(),
+          videoTitle: row.querySelector('.b-videoTitle').value.trim(),
         };
       }
       if (type === 'references') {
