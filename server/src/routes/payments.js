@@ -584,6 +584,24 @@ router.post('/create-course-checkout', protect, async (req, res) => {
       return res.status(400).json({ error: 'Course is free' });
     }
 
+    // ── If partner-owned course: route through Connect destination charge ──
+    const isPartnerCourse = !!course.partnerId;
+    let connectAccountId = null;
+    let applicationFeeAmount = null;
+
+    if (isPartnerCourse) {
+      const coursePartner = await Partner.findById(course.partnerId)
+        .select('billing.connectAccountId billing.connectOnboardingComplete').lean();
+      if (!coursePartner?.billing?.connectAccountId || !coursePartner?.billing?.connectOnboardingComplete) {
+        return res.status(402).json({
+          error: 'This course is not yet available for purchase — provider has not completed payment setup.',
+          code: 'CONNECT_NOT_READY'
+        });
+      }
+      connectAccountId = coursePartner.billing.connectAccountId;
+      applicationFeeAmount = Math.round(course.price * 100 * 0.15); // CR's 15%
+    }
+
     const user = await User.findById(req.user._id);
 
     // Create or get Stripe customer
@@ -621,8 +639,15 @@ router.post('/create-course-checkout', protect, async (req, res) => {
         type: 'course_purchase',
         courseId: course._id.toString(),
         userId: req.user._id.toString(),
-        slug: course.slug || ''
-      }
+        slug: course.slug || '',
+        partnerId: course.partnerId?.toString() || ''
+      },
+      ...(connectAccountId ? {
+        payment_intent_data: {
+          application_fee_amount: applicationFeeAmount,
+          transfer_data: { destination: connectAccountId }
+        }
+      } : {})
     });
 
     res.json({ sessionId: session.id, url: session.url });
@@ -1064,6 +1089,20 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         break;
       }
       
+      case 'account.updated': {
+        const account = event.data.object;
+        const partnerId = account.metadata?.partnerId;
+        if (!partnerId) break;
+        if (account.charges_enabled) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.connectOnboardingComplete': true,
+            'billing.connectAccountId': account.id
+          });
+          logger.info({ partnerId, accountId: account.id, requestId: req.requestId }, 'Connect account charges enabled');
+        }
+        break;
+      }
+
       default:
         logger.info({ eventType: event.type, requestId: req.requestId }, 'Unhandled Stripe event type');
     }
