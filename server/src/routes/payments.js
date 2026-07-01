@@ -9,7 +9,9 @@ import Stripe from 'stripe';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 import Partner from '../models/Partner.js';
-import { protect } from '../middleware/auth.js';
+import { protect, requirePartnerAdmin } from '../middleware/auth.js';
+import { PREMIUM_ADDONS, PREMIUM_BUNDLE_PRICE_CENTS } from '../utils/planLimits.js';
+import { bustAddonCache } from '../middleware/partnerFeatureGate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
@@ -693,6 +695,25 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const purchaseType = session.metadata?.type;
         const partnerId = session.metadata?.partnerId;
 
+        // Handle partner add-on purchase (must precede partner-plan block)
+        if (purchaseType === 'addon_purchase' && partnerId) {
+          const ak = session.metadata?.addonKey;
+          if (ak) {
+            const keys = ak === 'bundle'
+              ? ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools']
+              : [ak];
+            const addonUpdate = {};
+            for (const k of keys) {
+              addonUpdate[`premiumAddons.${k}.enabled`] = true;
+              addonUpdate[`premiumAddons.${k}.enabledAt`] = new Date();
+            }
+            await Partner.findByIdAndUpdate(partnerId, addonUpdate);
+            bustAddonCache(partnerId);
+            logger.info({ partnerId, addonKey: ak, requestId: req.requestId }, 'Partner addon enabled via checkout');
+          }
+          break;
+        }
+
         // Handle partner subscription checkout
         if (partnerId && plan) {
           await Partner.findByIdAndUpdate(partnerId, {
@@ -1013,6 +1034,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const subscription = event.data.object;
         const userId = subscription.metadata?.userId;
         const partnerId = subscription.metadata?.partnerId;
+
+        // Partner add-on subscription canceled (must precede plan-cancel block)
+        if (subscription.metadata?.type === 'addon' && partnerId) {
+          const ak = subscription.metadata?.addonKey;
+          if (ak) {
+            const keys = ak === 'bundle'
+              ? ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools']
+              : [ak];
+            const addonUpdate = {};
+            for (const k of keys) {
+              addonUpdate[`premiumAddons.${k}.enabled`] = false;
+            }
+            await Partner.findByIdAndUpdate(partnerId, addonUpdate);
+            bustAddonCache(partnerId);
+            logger.info({ partnerId, addonKey: ak, requestId: req.requestId }, 'Partner addon disabled via subscription cancellation');
+          }
+          break;
+        }
 
         // Partner subscription canceled
         if (partnerId) {
@@ -1369,6 +1408,85 @@ router.get('/purchased-courses', protect, async (req, res) => {
   } catch (error) {
     logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get purchased courses error');
     res.status(500).json({ error: 'Failed to fetch purchased courses' });
+  }
+});
+
+// ============================================
+// PARTNER ADD-ON PURCHASE
+// ============================================
+
+// @route   POST /api/payments/addon-checkout
+// @desc    Create Stripe Checkout session for a partner premium add-on
+// @access  Partner admin only
+const VALID_ADDON_KEYS = ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools', 'bundle'];
+
+router.post('/addon-checkout', protect, requirePartnerAdmin, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  try {
+    const { addonKey } = req.body;
+    if (!VALID_ADDON_KEYS.includes(addonKey)) {
+      return res.status(400).json({ error: 'Invalid addonKey' });
+    }
+
+    const partner = await Partner.findById(req.user.partnerId);
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    // Ensure Stripe customer
+    let customerId = partner.billing?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: partner.contact?.email || req.user.email,
+        name: partner.name,
+        metadata: { partnerId: partner._id.toString() }
+      });
+      customerId = customer.id;
+      partner.billing = partner.billing || {};
+      partner.billing.stripeCustomerId = customerId;
+      await partner.save();
+    }
+
+    const unitAmount = addonKey === 'bundle'
+      ? PREMIUM_BUNDLE_PRICE_CENTS
+      : PREMIUM_ADDONS[addonKey].monthlyPriceCents;
+
+    const addonName = addonKey === 'bundle'
+      ? 'Premium Add-Ons Bundle (All 4)'
+      : PREMIUM_ADDONS[addonKey].name;
+
+    const sessionMeta = {
+      type: 'addon_purchase',
+      partnerId: partner._id.toString(),
+      addonKey
+    };
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: unitAmount,
+          recurring: { interval: 'month' },
+          product_data: { name: addonName }
+        },
+        quantity: 1
+      }],
+      metadata: sessionMeta,
+      subscription_data: { metadata: sessionMeta },
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-billing.html?addon=${addonKey}&status=success`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-billing.html#addons`
+    });
+
+    logger.info({ partnerId: partner._id, addonKey, requestId: req.requestId }, 'Addon checkout session created');
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Addon checkout error');
+    res.status(500).json({ error: 'Failed to create addon checkout session' });
   }
 });
 

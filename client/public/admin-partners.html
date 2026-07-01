@@ -929,11 +929,18 @@
           <!-- Premium Addons Card -->
           <div class="bg-white rounded-xl border border-forest-200 p-5">
             <h3 class="text-xs font-semibold text-forest-400 uppercase tracking-wider mb-4">Premium Add-ons</h3>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="space-y-2" id="addonToggles-${drawerPartnerId}">
               ${addonList.map(a => `
-                <div class="flex items-center gap-2 text-sm">
-                  <i class="fas fa-${addons[a.key] ? 'check-circle text-green-500' : 'times-circle text-stone-300'} w-4"></i>
-                  <span class="${addons[a.key] ? 'text-forest-700 font-medium' : 'text-stone-400'}">${a.label}</span>
+                <div class="flex items-center justify-between gap-2 text-sm py-1">
+                  <span class="${addons[a.key]?.enabled ? 'text-forest-700 font-medium' : 'text-stone-400'}">${a.label}</span>
+                  <button
+                    data-partner="${drawerPartnerId}"
+                    data-key="${a.key}"
+                    data-enabled="${addons[a.key]?.enabled ? '1' : '0'}"
+                    onclick="toggleAddon(this)"
+                    class="px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${addons[a.key]?.enabled ? 'bg-hunter-50 border-hunter-300 text-hunter-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700' : 'bg-stone-50 border-stone-300 text-stone-600 hover:bg-hunter-50 hover:border-hunter-300 hover:text-hunter-700'}">
+                    ${addons[a.key]?.enabled ? 'Disable' : 'Enable'}
+                  </button>
                 </div>`).join('')}
             </div>
           </div>
@@ -1281,6 +1288,34 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  async function toggleAddon(btn) {
+    const partnerId = btn.dataset.partner;
+    const addonKey = btn.dataset.key;
+    const currentlyEnabled = btn.dataset.enabled === '1';
+    const newEnabled = !currentlyEnabled;
+    btn.disabled = true;
+    btn.textContent = '...';
+    try {
+      const res = await apiFetch('/api/partners/' + partnerId + '/addons', {
+        method: 'PATCH',
+        body: JSON.stringify({ addonKey, enabled: newEnabled })
+      });
+      btn.dataset.enabled = newEnabled ? '1' : '0';
+      btn.textContent = newEnabled ? 'Disable' : 'Enable';
+      if (newEnabled) {
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-medium border transition-colors bg-hunter-50 border-hunter-300 text-hunter-700 hover:bg-red-50 hover:border-red-300 hover:text-red-700';
+        btn.previousElementSibling && (btn.previousElementSibling.className = 'text-forest-700 font-medium');
+      } else {
+        btn.className = 'px-3 py-1 rounded-lg text-xs font-medium border transition-colors bg-stone-50 border-stone-300 text-stone-600 hover:bg-hunter-50 hover:border-hunter-300 hover:text-hunter-700';
+        btn.previousElementSibling && (btn.previousElementSibling.className = 'text-stone-400');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = currentlyEnabled ? 'Disable' : 'Enable';
+      alert('Failed to update add-on: ' + err.message);
+    }
   }
 </script>
 
