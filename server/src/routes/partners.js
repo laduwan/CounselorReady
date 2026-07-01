@@ -1709,6 +1709,14 @@ router.get('/my/onboarding', protect, requirePartnerAdmin, async (req, res) => {
         completed: !!partner.domainVerification?.verified,
         link: '/partner/domain',
         optional: true
+      },
+      {
+        id: 'connect',
+        title: 'Set up payouts',
+        description: 'Connect your Stripe account to receive course revenue directly',
+        completed: !!(partner.billing?.connectOnboardingComplete && partner.billing?.connectAccountId),
+        link: '/partner/connect',
+        optional: true
       }
     ];
 
