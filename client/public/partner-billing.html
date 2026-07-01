@@ -56,6 +56,11 @@
       <button onclick="location.reload()" class="mt-4 px-4 py-2 text-sm rounded-lg border border-stone-300 text-stone-600 hover:bg-stone-50">Try Again</button>
     </div>
 
+    <div id="addonBanner" class="hidden mb-6 bg-white border border-hunter-200 rounded-xl p-4 flex items-center gap-3" style="background:#f0fdf4">
+      <i class="fas fa-check-circle text-hunter-600"></i>
+      <p class="text-sm text-stone-700">Add-on activated successfully. It may take a moment to reflect.</p>
+    </div>
+
     <div id="content" class="hidden space-y-6">
 
       <!-- Current plan + usage -->
@@ -98,6 +103,13 @@
         <p id="checkoutMsg" class="text-xs mt-3 text-red-600"></p>
       </div>
 
+      <!-- Premium Add-Ons -->
+      <div id="addons">
+        <h2 class="text-sm font-semibold text-stone-900 mb-3">Premium Add-Ons</h2>
+        <div id="addonsGrid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="addonMsg" class="text-xs mt-3 text-red-600"></p>
+      </div>
+
     </div>
   </main>
 
@@ -121,6 +133,10 @@
     // Success / cancel banner from Stripe redirect
     (function(){
       const params = new URLSearchParams(location.search);
+      if (params.get('status') === 'success' && params.get('addon')) {
+        document.getElementById('addonBanner').classList.remove('hidden');
+        return;
+      }
       const b = document.getElementById('banner');
       if (params.get('success') === 'true') {
         b.className = 'mb-6 bg-white border border-hunter-200 rounded-xl p-4 flex items-center gap-3';
@@ -139,22 +155,25 @@
 
     async function init() {
       try {
-        const res = await fetch(`${API}/api/partners/my/billing`, { headers: AUTH }).catch(() => null);
-        if (!res || res.status === 400 || res.status === 403 || res.status === 404) {
-          // distinguish "not a partner" from real error
-          const my = await fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null);
-          if (!my || !my.ok) {
+        const [billingRes, partnerRes] = await Promise.all([
+          fetch(`${API}/api/partners/my/billing`, { headers: AUTH }).catch(() => null),
+          fetch(`${API}/api/partners/my`, { headers: AUTH }).catch(() => null)
+        ]);
+        if (!billingRes || billingRes.status === 400 || billingRes.status === 403 || billingRes.status === 404) {
+          if (!partnerRes || !partnerRes.ok) {
             document.getElementById('loading').classList.add('hidden');
             document.getElementById('emptyState').classList.remove('hidden');
             return;
           }
         }
-        if (!res || !res.ok) throw new Error('Failed to load billing');
-        const data = await res.json();
+        if (!billingRes || !billingRes.ok) throw new Error('Failed to load billing');
+        const data = await billingRes.json();
+        const partnerData = partnerRes && partnerRes.ok ? await partnerRes.json() : {};
 
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('content').classList.remove('hidden');
         render(data);
+        renderAddons(partnerData.partner?.premiumAddons || partnerData.premiumAddons || {});
       } catch (err) {
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('errorMessage').textContent = err.message || 'Failed to load billing';
@@ -247,6 +266,57 @@
       } catch (err) {
         document.getElementById('checkoutMsg').textContent = err.message;
         btn.disabled = false;
+      }
+    }
+
+    const ADDON_DEFS = [
+      { key: 'certTracking',         name: 'Certificate Tracking',  price: '$25/mo', icon: 'fa-certificate' },
+      { key: 'credentialManagement', name: 'Credential Management', price: '$20/mo', icon: 'fa-id-card' },
+      { key: 'complianceTracking',   name: 'Compliance Tracking',   price: '$25/mo', icon: 'fa-clipboard-check' },
+      { key: 'clinicalTools',        name: 'Clinical Tools Suite',  price: '$30/mo', icon: 'fa-stethoscope' },
+      { key: 'bundle',               name: 'Full Bundle (All 4)',   price: '$100/mo', icon: 'fa-layer-group' }
+    ];
+
+    function renderAddons(premiumAddons) {
+      const grid = document.getElementById('addonsGrid');
+      grid.innerHTML = ADDON_DEFS.map(a => {
+        const enabled = a.key === 'bundle'
+          ? ['certTracking','credentialManagement','complianceTracking','clinicalTools'].every(k => premiumAddons[k]?.enabled)
+          : !!premiumAddons[a.key]?.enabled;
+        const badge = enabled
+          ? '<span class="inline-flex items-center gap-1 text-xs font-medium text-hunter-700 bg-hunter-50 border border-hunter-200 rounded-full px-2 py-0.5"><i class="fas fa-check text-[10px]"></i> Active</span>'
+          : '';
+        const btn = enabled
+          ? `<button disabled class="w-full py-2 rounded-lg text-sm font-medium bg-stone-100 text-stone-400 cursor-default">Active</button>`
+          : `<button onclick="addonCheckout('${a.key}', this)" class="w-full py-2 rounded-lg text-sm font-medium text-white bg-burgundy-800 hover:bg-burgundy-900">Subscribe ${a.price}</button>`;
+        return `
+          <div class="bg-white rounded-xl border border-gray-200 p-5 flex flex-col gap-3">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-hunter-600"><i class="fas ${a.icon} text-sm"></i></span>
+                <div>
+                  <p class="text-sm font-semibold text-stone-900">${esc(a.name)}</p>
+                  <p class="text-xs text-stone-500">${a.price}</p>
+                </div>
+              </div>
+              ${badge}
+            </div>
+            ${btn}
+          </div>`;
+      }).join('');
+    }
+
+    async function addonCheckout(addonKey, btn) {
+      const msg = document.getElementById('addonMsg'); msg.textContent = '';
+      btn.disabled = true; btn.textContent = 'Redirecting...';
+      try {
+        const res = await fetch(`${API}/api/payments/addon-checkout`, { method: 'POST', headers: AUTH, body: JSON.stringify({ addonKey }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not start checkout');
+        if (data.url) { location.href = data.url; return; }
+        throw new Error('No checkout URL returned');
+      } catch (err) {
+        msg.textContent = err.message; btn.disabled = false; btn.textContent = `Subscribe`;
       }
     }
   </script>

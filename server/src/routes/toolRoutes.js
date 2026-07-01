@@ -5,6 +5,7 @@
 import express from 'express';
 import { ToolLicense, ToolUsageLog } from '../models/ToolAccess.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -237,7 +238,7 @@ router.get('/:tool/check-license', async (req, res) => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // GET /api/tools/admin/licenses — List all tool licenses
-router.get('/admin/licenses', async (req, res) => {
+router.get('/admin/licenses', protect, requireAdmin, async (req, res) => {
   try {
     const { tool, status, state, page = 1, limit = 50 } = req.query;
     const filter = {};
@@ -268,7 +269,7 @@ router.get('/admin/licenses', async (req, res) => {
 });
 
 // GET /api/tools/admin/usage — Usage analytics
-router.get('/admin/usage', async (req, res) => {
+router.get('/admin/usage', protect, requireAdmin, async (req, res) => {
   try {
     const { tool, event, days = 30 } = req.query;
     const since = new Date(Date.now() - parseInt(days) * 24 * 60 * 60 * 1000);
@@ -341,7 +342,7 @@ router.get('/admin/usage', async (req, res) => {
 });
 
 // GET /api/tools/admin/licenses/expiring — Licenses expiring within N days
-router.get('/admin/licenses/expiring', async (req, res) => {
+router.get('/admin/licenses/expiring', protect, requireAdmin, async (req, res) => {
   try {
     const { days = 30 } = req.query;
     const cutoff = new Date(Date.now() + parseInt(days) * 24 * 60 * 60 * 1000);

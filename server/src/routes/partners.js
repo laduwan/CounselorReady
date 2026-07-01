@@ -2708,6 +2708,41 @@ router.post('/:id/quick-fix/billing-status', protect, requireAdmin, async (req, 
   }
 });
 
+// ── Admin: toggle partner premium add-on ──
+import { bustAddonCache } from '../middleware/partnerFeatureGate.js';
+const VALID_ADDON_KEYS_ADMIN = ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools', 'bundle'];
+
+router.patch('/:id/addons', protect, requireAdmin, async (req, res) => {
+  try {
+    const { addonKey, enabled } = req.body;
+    if (!VALID_ADDON_KEYS_ADMIN.includes(addonKey)) {
+      return res.status(400).json({ error: 'Invalid addonKey' });
+    }
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ error: 'Partner not found' });
+
+    const keys = addonKey === 'bundle'
+      ? ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools']
+      : [addonKey];
+    if (!partner.premiumAddons) partner.premiumAddons = {};
+    for (const k of keys) {
+      if (!partner.premiumAddons[k]) partner.premiumAddons[k] = {};
+      partner.premiumAddons[k].enabled = !!enabled;
+      if (enabled) partner.premiumAddons[k].enabledAt = partner.premiumAddons[k].enabledAt || new Date();
+    }
+    partner.markModified('premiumAddons');
+    await partner.save();
+    bustAddonCache(partner._id);
+
+    await logPartnerAction(partner._id, 'addon_toggled', req.user._id, 'admin',
+      `${addonKey} ${enabled ? 'enabled' : 'disabled'} by admin`);
+
+    res.json({ premiumAddons: partner.premiumAddons });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Export for use in auth.js
 export { sendPartnerWelcomeEmail, logPartnerAction };
 
