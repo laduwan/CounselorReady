@@ -919,38 +919,61 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const userId = subscription.metadata?.userId;
         const partnerId = subscription.metadata?.partnerId;
 
+        // Stripe API 2025-12-15+ moved current_period_* from the subscription object
+        // to the subscription ITEM. Read item-level first; fall back to the legacy
+        // top-level field so this is correct across API versions.
+        const item = subscription.items?.data?.[0];
+        const rawStart = item?.current_period_start ?? subscription.current_period_start;
+        const rawEnd   = item?.current_period_end   ?? subscription.current_period_end;
+
         // Partner subscription update
         if (partnerId) {
-          await Partner.findByIdAndUpdate(partnerId, {
-            'billing.status': subscription.status === 'active' ? 'active' : subscription.status,
-            'billing.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
-          });
+          const partnerUpdate = {
+            'billing.status': subscription.status === 'active' ? 'active' : subscription.status
+          };
+          if (Number.isFinite(rawEnd)) {
+            partnerUpdate['billing.currentPeriodEnd'] = new Date(rawEnd * 1000);
+          }
+          await Partner.findByIdAndUpdate(partnerId, partnerUpdate);
           logger.info({ partnerId, status: subscription.status, requestId: req.requestId }, 'Partner subscription updated');
         }
 
-        // User subscription update
+        // Resolve the user: prefer metadata.userId, fall back to stripeCustomerId.
+        let resolvedUser = null;
         if (userId) {
-          await User.findByIdAndUpdate(userId, {
+          resolvedUser = await User.findById(userId).select('_id email profile.firstName subscription.plan').catch(() => null);
+        }
+        if (!resolvedUser) {
+          resolvedUser = await User.findOne({ 'subscription.stripeCustomerId': subscription.customer }).select('_id email profile.firstName subscription.plan');
+        }
+
+        if (resolvedUser) {
+          const userUpdate = {
             'subscription.status': subscription.status,
-            'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end,
-            'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
-          });
+            'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
+          };
+          if (Number.isFinite(rawStart)) {
+            userUpdate['subscription.currentPeriodStart'] = new Date(rawStart * 1000);
+          }
+          if (Number.isFinite(rawEnd)) {
+            userUpdate['subscription.currentPeriodEnd'] = new Date(rawEnd * 1000);
+          }
+          await User.findByIdAndUpdate(resolvedUser._id, userUpdate);
           // Notify admin when a new subscription becomes active
           if (subscription.status === 'active') {
-            const subUser = await User.findById(userId).select('email profile.firstName');
             logActivity(ACTIVITY_TYPES.SUBSCRIPTION_STARTED, {
               plan: subscription.metadata?.plan || 'unknown',
               status: subscription.status
             }, {
-              userId,
-              userName: subUser?.profile?.firstName || '',
-              userEmail: subUser?.email || ''
+              userId: resolvedUser._id,
+              userName: resolvedUser?.profile?.firstName || '',
+              userEmail: resolvedUser?.email || ''
             }).catch(() => {});
           }
           try {
             if (global.posthog) {
               global.posthog.capture({
-                distinctId: userId.toString(),
+                distinctId: resolvedUser._id.toString(),
                 event: 'subscription_activated',
                 properties: {
                   plan: subscription.metadata?.plan || 'unknown',
@@ -959,8 +982,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 }
               });
             }
-          } catch (phErr) { logger.error({ err: phErr, userId, requestId: req.requestId }, 'PostHog subscription_activated failed'); }
-          logger.info({ userId, status: subscription.status, requestId: req.requestId, action: 'subscription_updated' }, 'Subscription updated');
+          } catch (phErr) { logger.error({ err: phErr, userId: resolvedUser._id, requestId: req.requestId }, 'PostHog subscription_activated failed'); }
+          logger.info({ userId: resolvedUser._id, status: subscription.status, requestId: req.requestId, action: 'subscription_updated' }, 'Subscription updated');
+        } else {
+          logger.warn({ customerId: subscription.customer, userId, requestId: req.requestId }, 'subscription.updated: no user found; acknowledging 200 to stop retries');
         }
         break;
       }
