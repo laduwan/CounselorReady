@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -12,7 +13,7 @@ const COURSE = {
   description: 'This course provides licensed mental health clinicians with a comprehensive framework for understanding and treating Complex PTSD (C-PTSD). Participants will explore the ICD-11 diagnostic criteria for C-PTSD, distinguish it from PTSD and borderline personality disorder, apply phase-based treatment models, and integrate evidence-based interventions targeting the disturbances in self-organization that characterize this diagnosis.',
   ceHours: 3,
   nbccContentArea: 'trauma',
-  deliveryFormat: 'online',
+  deliveryFormat: 'async',
   presenter: {
     name: 'Kejuiana Johnson',
     credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
@@ -143,7 +144,10 @@ const COURSE = {
 <p>The second element is humility about the limits of any single model or technique. No one approach holds a monopoly on effective complex trauma treatment, and the evidence base, while growing, does not yet definitively privilege one model over all others for C-PTSD specifically. What the evidence and clinical wisdom converge on is the importance of phase-based sequencing, the centrality of the therapeutic relationship, the necessity of stabilization before processing, and the value of addressing the disturbances in self-organization rather than traumatic memory alone. Within that broad framework, competent clinicians integrate techniques from multiple models — drawing on the regulation skills of dialectical behavior therapy, the processing power of EMDR or cognitive approaches, the body-based wisdom of somatic therapies, and the parts-based compassion of internal family systems — selecting and sequencing according to the individual client rather than applying a single manualized protocol to every presentation.</p>
 <p>The third element is an unwavering commitment to working within one's scope of competence while pursuing the additional training, consultation, and supervision that complex trauma work demands. The presentations described in this course range from those well within the reach of any well-trained generalist clinician to those — severe structural dissociation, dissociative identity disorder, active high-risk behaviors — that require specialized expertise and, in some cases, referral. Recognizing the boundaries of one's own competence is not a limitation to be ashamed of but a core ethical obligation and a mark of clinical maturity. The remainder of this course is designed to build the foundational knowledge that allows a clinician to recognize Complex PTSD, formulate it accurately, sequence treatment responsibly, work skillfully within the therapeutic relationship, and know when and how to seek consultation or refer. With that orientation established, the course now turns to the detailed work of diagnosis and clinical formulation.</p>`
         }
-      ]
+      ,
+{ type: 'multipleChoice', question: "Complex PTSD (ICD-11) is distinguished from PTSD primarily by the addition of:", options: [{ text: "A shorter symptom duration", isCorrect: false }, { text: "Disturbances in self-organization: affect dysregulation, negative self-concept, and relational difficulties", isCorrect: true }, { text: "The absence of intrusion symptoms", isCorrect: false }, { text: "A purely biological, non-experiential cause", isCorrect: false }], correctAnswer: 1, explanation: "CPTSD includes the three core PTSD clusters plus three disturbances in self-organization (DSO)—affect dysregulation, negative self-concept, and disturbed relationships." },
+{ type: 'multipleChoice', question: "The broadly recommended overall structure for treating complex trauma is:", options: [{ text: "Immediate, detailed exposure to trauma memories in the first session", isCorrect: false }, { text: "A phase-based approach beginning with safety and stabilization", isCorrect: true }, { text: "Medication as the sole intervention", isCorrect: false }, { text: "Avoiding any reference to the trauma throughout treatment", isCorrect: false }], correctAnswer: 1, explanation: "Phase-based (sequenced) treatment—establishing safety and stabilization before trauma processing and later reintegration—is the consensus framework for complex trauma." }
+]
     },
     {
       title: 'Diagnosis and Clinical Formulation of Complex PTSD',
@@ -335,7 +339,9 @@ const COURSE = {
             'A trauma-informed formulation organizing around trauma history, developmental impact, current presentations, and resilience resources provides a more useful clinical guide than diagnostic labels alone.'
           ]
         }
-      ]
+      ,
+{ type: 'cardSort', instructions: 'Sort each clinical feature into the cluster it best represents: core PTSD symptoms versus the disturbances in self-organization that distinguish Complex PTSD.', categories: ['Core PTSD','Disturbance in Self-Organization (CPTSD)'], items: [ { text: 'Re-experiencing/intrusions (flashbacks, nightmares)', category: 'Core PTSD' }, { text: 'Avoidance of trauma reminders', category: 'Core PTSD' }, { text: 'Persistent sense of current threat (hypervigilance, startle)', category: 'Core PTSD' }, { text: 'Pervasive difficulty regulating emotions', category: 'Disturbance in Self-Organization (CPTSD)' }, { text: 'Persistent negative self-concept (worthlessness, shame)', category: 'Disturbance in Self-Organization (CPTSD)' }, { text: 'Chronic difficulty sustaining relationships and closeness', category: 'Disturbance in Self-Organization (CPTSD)' } ], accessibility: { ariaLabel: 'Card sort: PTSD versus Complex PTSD features', role: 'application' } }
+]
     },
     {
       title: 'Phase-Based Treatment for Complex PTSD',
@@ -1039,15 +1045,17 @@ if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
 if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
