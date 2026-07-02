@@ -685,7 +685,7 @@ const COURSE = {
             { name: 'American Foundation for Suicide Prevention (AFSP)', url: 'https://afsp.org', description: 'National nonprofit funding research, education, advocacy, and survivor/loss support, with clinician and public resources on suicide prevention.', type: 'website' },
             { name: 'Zero Suicide Institute', url: 'https://zerosuicide.edc.org', description: 'A framework and toolkit for systematic, safer suicide care within health and behavioral health systems, including safety planning and lethal means resources.', type: 'website' },
             { name: 'SAMHSA Suicide Prevention', url: 'https://www.samhsa.gov/find-help/suicide-prevention', description: 'Federal resources, data, and grant programs supporting suicide prevention, the 988 Lifeline, and behavioral health crisis services.', type: 'website' },
-            { name: 'Counseling on Access to Lethal Means (CALM)', url: 'https://www.sprc.org/online-library/calm-counseling-on-access-to-lethal-means', description: 'A free online training that teaches clinicians how to counsel clients and families on reducing access to lethal means, especially firearms and medications.', type: 'training' },
+            { name: 'Counseling on Access to Lethal Means (CALM)', url: 'https://www.sprc.org/online-library/calm-counseling-on-access-to-lethal-means', description: 'A free online training that teaches clinicians how to counsel clients and families on reducing access to lethal means, especially firearms and medications.', type: 'guide' },
             { name: 'Veterans Crisis Line', url: 'https://www.veteranscrisisline.net', description: 'Specialized 24/7 crisis support for veterans and their families: dial 988 then press 1, text 838255, or chat online.', type: 'website' },
             { name: 'The Trevor Project', url: 'https://www.thetrevorproject.org', description: 'Crisis intervention and suicide prevention services for LGBTQ+ young people, including 24/7 support and clinician resources.', type: 'website' }
           ]
@@ -953,6 +953,7 @@ const COURSE = {
 // ============================================================
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -984,15 +985,17 @@ if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
 if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

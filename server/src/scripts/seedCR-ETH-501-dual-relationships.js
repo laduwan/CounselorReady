@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -83,7 +84,10 @@ const COURSE = {
           imageAlt: 'A small rural main street with a single storefront counseling office, symbolizing the overlap of professional and community life.',
           imagePosition: 'right'
         }
-      ]
+      ,
+{ type: 'multipleChoice', question: "In rural and small-community practice, the ACA Code of Ethics treats nonprofessional (dual) relationships as:", options: [{ text: "Always prohibited under all circumstances", isCorrect: false }, { text: "Sometimes unavoidable, to be managed through boundaries, consultation, and documentation", isCorrect: true }, { text: "Ethical only when the second relationship is sexual", isCorrect: false }, { text: "Permitted without any special consideration", isCorrect: false }], correctAnswer: 1, explanation: "In small communities overlapping relationships are often unavoidable; the ethical obligation is to anticipate, manage, and document them—minimizing risk of harm and exploitation—not to assume they are automatically prohibited or harmless." },
+{ type: 'multipleChoice', question: "When a counselor anticipates an unavoidable overlapping relationship with a prospective client, the most appropriate first step is to:", options: [{ text: "Refuse to see the client under any circumstance", isCorrect: false }, { text: "Ignore it unless the client raises a concern", isCorrect: false }, { text: "Discuss potential effects with the client, document the reasoning, and seek consultation", isCorrect: true }, { text: "Keep the overlap secret to protect the alliance", isCorrect: false }], correctAnswer: 2, explanation: "Proactive discussion of potential risks, informed consent, documentation, and consultation are the recognized safeguards for managing unavoidable dual relationships in underserved settings." }
+]
     },
     // ===================== SECTION 1: CE HOUR 1 — FOUNDATIONS =====================
     {
@@ -853,15 +857,17 @@ if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
 if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
