@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -17,12 +18,12 @@ const COURSE = {
   subtitle: 'An Evidence-Based Introduction to Eye Movement Desensitization and Reprocessing',
   description: 'A 2-hour intermediate continuing-education course providing licensed mental health professionals with a foundational, evidence-grounded understanding of Eye Movement Desensitization and Reprocessing (EMDR) therapy. Covers the history and development of the approach, the Adaptive Information Processing model, the eight-phase protocol, target selection, measurement scales, contraindications, work with complex trauma, resource installation, and the ethical scope-of-practice boundaries that govern EMDR delivery. This is an introductory, didactic course; it is not a substitute for EMDRIA-approved basic training and does not certify or qualify any clinician to deliver full-protocol EMDR.',
   ceHours: 2, ceuHours: 2, credits: 2, ceuEligible: true,
-  category: 'clinical', ceCategory: 'Clinical', contentArea: 'Counseling Theory/Practice and the Counseling Relationship',
+  category: 'clinical', ceCategory: 'Clinical', contentArea: 'Counseling Theory/Practice',
   level: 'Intermediate', difficulty: 'intermediate', deliveryMethod: 'Asynchronous Online',
   approvingBody: 'NBCC', approvalNumber: '7760', acepNumber: '7760',
   provider: { name: 'GA Integrated Therapeutic Perspectives LLC', shortName: 'GAITP LLC', acepNumber: '7760', approvalBody: 'NBCC' },
   approvals: [{ body: 'NBCC', number: '#7760', providerNumber: '7760', providerName: 'GA Integrated Therapeutic Perspectives LLC', status: 'approved', hourBreakdown: [{ label: 'core', hours: 2 }], deliveryFormat: 'asynchronous' }],
-  nbccContentAreas: ['Counseling Theory/Practice and the Counseling Relationship'],
+  nbccContentAreas: ['Counseling Theory/Practice'],
   presenter: { name: 'Kejuiana Johnson', credentials: 'MA, LPC, NCC, CPCS, BC-TMH', degree: 'MA', licenseNumber: 'LPC009587', licenseState: 'Georgia', licenseType: 'LPC', qualificationStatement: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH, is a licensed professional counselor and approved clinical supervisor in Georgia with expertise in trauma-informed clinical practice and counselor education.' },
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
   author: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH',
@@ -77,7 +78,10 @@ const COURSE = {
 <p>Consider an analogy from medicine. A thoughtful primary-care provider can read about a surgical procedure, understand its indications and risks, explain it accurately to a patient, and refer appropriately to a surgeon, all without being qualified to perform the operation. No one would regard that boundary as an arbitrary obstacle; it reflects the reality that performing surgery safely requires supervised training that reading cannot provide. The same logic applies to EMDR. The knowledge this course conveys is real and valuable, and it does important clinical work in the domains of communication, referral, and decision-making. The competence to deliver the procedure is a separate matter that lies on the other side of formal training, and respecting that boundary is part of what it means to practice responsibly.</p>`,
           image: '', imageAlt: 'Conceptual illustration distinguishing introductory education from clinical certification', imagePosition: 'right',
         },
-      ],
+      
+{ type: 'multipleChoice', question: "EMDR’s Adaptive Information Processing (AIP) model proposes that trauma symptoms arise from:", options: [{ text: "Purely genetic factors", isCorrect: false }, { text: "Inadequately processed memories stored with the original disturbing emotions, beliefs, and sensations", isCorrect: true }, { text: "A lack of willpower", isCorrect: false }, { text: "Medication side effects", isCorrect: false }], correctAnswer: 1, explanation: "The AIP model holds that distressing symptoms stem from memories that were maladaptively stored; EMDR facilitates adaptive reprocessing of these memory networks." },
+{ type: 'multipleChoice', question: "Within EMDR’s eight-phase protocol, bilateral stimulation is used primarily during:", options: [{ text: "The intake phase only", isCorrect: false }, { text: "Desensitization and reprocessing of targeted memories", isCorrect: true }, { text: "Billing and documentation", isCorrect: false }, { text: "Termination sessions only", isCorrect: false }], correctAnswer: 1, explanation: "Bilateral (dual-attention) stimulation is applied during the desensitization/reprocessing phases as the client attends to targeted memory material within the structured 8-phase protocol." }
+],
     },
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -342,11 +346,11 @@ const COURSE = {
             { name: 'EMDR International Association (EMDRIA)', url: 'https://www.emdria.org', description: 'The professional association governing EMDR training standards, basic-training requirements, and certification in North America; the authoritative source on what training is required to practice EMDR.', type: 'organization' },
             { name: 'EMDR Institute', url: 'https://www.emdr.com', description: 'The training organization founded by Francine Shapiro, offering background on the approach, the AIP model, and EMDRIA-approved basic training programs.', type: 'organization' },
             { name: 'EMDR Europe Association', url: 'https://emdr-europe.org', description: 'The European professional body for EMDR, with standards, accreditation information, and resources for clinicians and the public.', type: 'organization' },
-            { name: 'World Health Organization — Guidelines for the Management of Conditions Specifically Related to Stress', url: 'https://www.who.int/publications/i/item/9789241505406', description: 'WHO clinical guidelines that recommend trauma-focused therapies, including EMDR, for the treatment of PTSD in adults and children.', type: 'guideline' },
-            { name: 'American Psychological Association — PTSD Treatment Guideline', url: 'https://www.apa.org/ptsd-guideline', description: 'The APA\'s clinical practice guideline for the treatment of PTSD, summarizing the evidence base for trauma-focused approaches including EMDR.', type: 'guideline' },
+            { name: 'World Health Organization — Guidelines for the Management of Conditions Specifically Related to Stress', url: 'https://www.who.int/publications/i/item/9789241505406', description: 'WHO clinical guidelines that recommend trauma-focused therapies, including EMDR, for the treatment of PTSD in adults and children.', type: 'guidelines' },
+            { name: 'American Psychological Association — PTSD Treatment Guideline', url: 'https://www.apa.org/ptsd-guideline', description: 'The APA\'s clinical practice guideline for the treatment of PTSD, summarizing the evidence base for trauma-focused approaches including EMDR.', type: 'guidelines' },
             { name: 'International Society for Traumatic Stress Studies (ISTSS)', url: 'https://istss.org', description: 'A leading professional society for traumatic stress, providing treatment guidelines, research, and continuing education relevant to EMDR and other trauma therapies.', type: 'organization' },
             { name: 'U.S. Department of Veterans Affairs — National Center for PTSD', url: 'https://www.ptsd.va.gov', description: 'Evidence-based information on PTSD treatments, including EMDR, with materials for both clinicians and patients from the VA/DoD clinical community.', type: 'website' },
-            { name: 'Journal of EMDR Practice and Research', url: 'https://connect.springerpub.com/content/sgremdr', description: 'The peer-reviewed journal dedicated to EMDR theory, research, and clinical practice, a primary venue for the empirical literature on the approach.', type: 'journal' },
+            { name: 'Journal of EMDR Practice and Research', url: 'https://connect.springerpub.com/content/sgremdr', description: 'The peer-reviewed journal dedicated to EMDR theory, research, and clinical practice, a primary venue for the empirical literature on the approach.', type: 'research' },
           ],
         },
       ],
@@ -432,15 +436,17 @@ if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
 if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

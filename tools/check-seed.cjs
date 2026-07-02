@@ -84,9 +84,13 @@ const FORBIDDEN_FILE = [
 const REQUIRED_ANY = [
   {
     id: 'real-model-import',
+    // Accept an optional .js/.cjs/.mjs extension: ES-module ("type":"module")
+    // seeds MUST include the extension on relative imports, so the extensionless
+    // form alone produced false negatives for every ESM seed (including the
+    // canonical _seedTemplate.js, which imports '../models/InteractiveCourse.js').
     rxs: [
-      /require\s*\(\s*['"`][^'"`]*\/models\/InteractiveCourse['"`]\s*\)/,
-      /from\s+['"`][^'"`]*\/models\/InteractiveCourse['"`]/,
+      /require\s*\(\s*['"`][^'"`]*\/models\/InteractiveCourse(?:\.(?:js|cjs|mjs))?['"`]\s*\)/,
+      /from\s+['"`][^'"`]*\/models\/InteractiveCourse(?:\.(?:js|cjs|mjs))?['"`]/,
     ],
     msg: 'Seed file does not import the real InteractiveCourse model. ' +
          "Add: const InteractiveCourse = require('../models/InteractiveCourse'); " +

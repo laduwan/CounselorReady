@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -12,7 +13,7 @@ const COURSE = {
   description: 'This course equips licensed mental health professionals with a comprehensive, multidimensional framework for trauma-informed assessment. Participants will move beyond the ACE questionnaire to understand developmental trauma trajectories, somatic and dissociative presentations, cultural considerations, and integrative tools for building a complete trauma picture that informs treatment planning.',
   ceHours: 2,
   nbccContentArea: 'trauma',
-  deliveryFormat: 'online',
+  deliveryFormat: 'async',
   presenter: {
     name: 'Kejuiana Johnson',
     credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
@@ -130,7 +131,10 @@ const COURSE = {
           type: 'text',
           content: `<p>As this opening section closes, it is worth naming the shift in clinical identity that trauma-informed assessment asks of us. Moving beyond the ACE score is not merely the addition of a few more instruments to an intake packet; it is a change in how the clinician understands the very purpose of assessment. The aim is no longer to classify a person quickly against a category or a risk threshold, but to understand a person deeply enough to help them — to build, with their participation, a contextualized account of what they have lived through, how it shaped them, what strengths they carry, and what would constitute healing in their own terms. Everything that follows in this course serves that aim: the multidimensional framework and validated instruments of the next section, and the somatic, dissociative, and culturally responsive skills of the section after. Held together, they replace a single number with a living, working understanding of a human being — which is, in the end, what assessment was always meant to provide.</p>`
         }
-      ]
+      ,
+{ type: 'multipleChoice', question: "A central limitation of the ACE score in clinical use is that it:", options: [{ text: "Cannot be measured reliably", isCorrect: false }, { text: "Predicts risk at the population level but should not be used as an individual diagnostic or prognostic instrument", isCorrect: true }, { text: "Includes too many protective factors", isCorrect: false }, { text: "Applies only to adults over 65", isCorrect: false }], correctAnswer: 1, explanation: "ACE research demonstrates population-level dose-response associations; applying a score deterministically to an individual ignores timing, severity, chronicity, and protective/resilience factors." },
+{ type: 'multipleChoice', question: "Trauma-informed assessment emphasizes which of the following?", options: [{ text: "Rapid, exhaustive trauma disclosure regardless of client readiness", isCorrect: false }, { text: "Safety, choice, collaboration, and appropriate pacing/titration", isCorrect: true }, { text: "Avoiding all trauma-related topics entirely", isCorrect: false }, { text: "Producing a numeric score as the sole output", isCorrect: false }], correctAnswer: 1, explanation: "Trauma-informed assessment centers safety, choice, collaboration, transparency, and titration to gather meaningful information without re-traumatizing the client." }
+]
     },
     {
       title: 'A Multidimensional Framework for Trauma Assessment',
@@ -881,15 +885,17 @@ if((c.assessment?.questions?.length||0)<15)e.push('CRITICAL:exam<15');
 if((c.references?.length||0)<15)e.push('CRITICAL:refs<15');return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

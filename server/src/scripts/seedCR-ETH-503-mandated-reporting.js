@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -128,7 +129,10 @@ const COURSE = {
             },
           ],
         },
-      ],
+      
+{ type: 'multipleChoice', question: "The legal threshold that triggers a mandated report of suspected child abuse in most U.S. jurisdictions is:", options: [{ text: "Proof beyond a reasonable doubt", isCorrect: false }, { text: "The client’s explicit admission", isCorrect: false }, { text: "Reasonable suspicion", isCorrect: true }, { text: "A court order compelling the report", isCorrect: false }], correctAnswer: 2, explanation: "Mandated reporting statutes require a report when the clinician has reasonable cause to suspect abuse or neglect—not proof, not certainty, and not a client admission." },
+{ type: 'multipleChoice', question: "When a counselor is unsure whether an ambiguous disclosure meets the reporting threshold, the best practice is to:", options: [{ text: "Wait indefinitely until certainty is achieved", isCorrect: false }, { text: "Never report, to preserve the therapeutic alliance", isCorrect: false }, { text: "Consult, document the reasoning, and report when reasonable suspicion exists", isCorrect: true }, { text: "Ask the client to decide whether a report should be filed", isCorrect: false }], correctAnswer: 2, explanation: "Consultation and contemporaneous documentation support sound clinical judgment; once reasonable suspicion exists the duty to report attaches regardless of alliance concerns." }
+],
     },
 
     // =========================================================================
@@ -1218,34 +1222,18 @@ function validate(c) {
 // SEED RUNNER
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function main() {
-  await mongoose.connect(MONGODB_URI);
-  const db = mongoose.connection.db;
-  const col = db.collection('interactivecourses');
-
-  const { wc, e } = validate(COURSE);
-  COURSE.wordCount = wc;
-
-  console.log(`${COURSE.courseCode} | ${wc}w / ${COURSE.ceHours * 6000} req | ${COURSE.sections.length} sec | ${COURSE.assessment?.questions?.length} exam | ${COURSE.references?.length} refs`);
-
-  const crit = e.filter(x => x.startsWith('CRITICAL'));
-  if (crit.length) {
-    console.error('❌ Critical validation failures:', crit.join('; '));
-    await mongoose.disconnect();
-    process.exit(1);
-  }
-  if (e.length) e.forEach(x => console.warn('⚠️', x));
-
-  const ex = await col.findOne({ slug: SLUG });
-  if (ex) {
-    await col.updateOne({ slug: SLUG }, { $set: { ...COURSE, updatedAt: new Date() } });
-    console.log('✅ Updated existing course');
-  } else {
-    await col.insertOne({ ...COURSE, createdAt: new Date(), updatedAt: new Date() });
-    console.log('✅ Inserted new course');
-  }
-
+async function main(){
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
   await mongoose.disconnect();
 }
-
-main().catch(e => { console.error(e); process.exit(1); });
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
