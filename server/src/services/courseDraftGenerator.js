@@ -3,8 +3,14 @@
  * All rights reserved. Proprietary and confidential.
  */
 import Anthropic from '@anthropic-ai/sdk';
+import { createLocalClient } from './localAIClient.js';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// AI_BACKEND=local -> generate with your own on-prem model (Ollama), grounded in
+// your corpus. Unset (or anything else) -> unchanged cloud behavior via Anthropic.
+const USE_LOCAL = process.env.AI_BACKEND === 'local';
+const anthropic = USE_LOCAL
+  ? createLocalClient()
+  : new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function getModuleTitle(topic, index) {
   const templates = [
@@ -90,7 +96,7 @@ function generateDefaultAssessment() {
  * Throws on generation failure — caller must NOT charge on throw.
  */
 export async function generateCourseDraft({ topic, uploadedContent, ceHours, level, category }) {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured on server');
+  if (!USE_LOCAL && !process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured on server');
 
   const usageTotals = { input_tokens: 0, output_tokens: 0 };
 
@@ -196,7 +202,7 @@ Return ONLY a JSON array of ${questionCount} questions.`;
  * No ACEP/NBCC word-count minimums, no CR provider stamp, no hardcoded audience.
  */
 export async function generatePartnerCourseDraft({ topic, uploadedContent, ceHours, level, category, targetAudience }) {
-  if (!process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured on server');
+  if (!USE_LOCAL && !process.env.ANTHROPIC_API_KEY) throw new Error('ANTHROPIC_API_KEY not configured on server');
 
   const usageTotals = { input_tokens: 0, output_tokens: 0 };
   const audienceLabel = targetAudience || 'adult learners';
