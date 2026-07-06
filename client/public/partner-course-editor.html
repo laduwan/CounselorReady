@@ -410,6 +410,11 @@
               </div>`).join('')}
           </div>
           <button type="button" class="add-row-btn text-xs" onclick="addRefRow(this)">+ Add Reference</button>`;
+      } else {
+        // Safety-net: unknown block type (e.g. sectionDivider from the AI generator).
+        // Preserve the original block untouched so it round-trips instead of dropping on save.
+        row.dataset.raw = JSON.stringify(data || {});
+        body = `<div class="text-xs italic" style="color:#8a8a8a">Preserved block — type "${type}" isn't editable here, but is kept exactly as-is on save.</div>`;
       }
 
       row.innerHTML = header + body;
@@ -440,6 +445,10 @@
 
     function readBlock(row) {
       const type = row.dataset.type;
+      // Safety-net: a preserved unknown-type block re-emits its original data verbatim.
+      if (row.dataset.raw) {
+        try { return JSON.parse(row.dataset.raw); } catch (e) { return null; }
+      }
       if (type === 'text') {
         const raw = row.querySelector('.b-content').value.trim();
         return { type, content: raw ? `<p>${raw.replace(/\n/g, '</p><p>')}</p>` : '' };
