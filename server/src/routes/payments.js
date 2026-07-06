@@ -16,6 +16,7 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
+import { constructStripeEvent } from '../utils/verifyStripeSignature.js';
 import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import twilio from 'twilio';
 import logger from '../utils/logger.js';
@@ -679,7 +680,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   let event;
   
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    event = constructStripeEvent(stripe, req.body, sig, webhookSecret);
   } catch (err) {
     logger.error({ err, requestId: req.requestId }, 'Webhook signature verification failed');
     return res.status(400).send(`Webhook Error: ${err.message}`);
