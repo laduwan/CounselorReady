@@ -363,6 +363,9 @@
           <button onclick="showModalTab('certificates')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="certificates">
             Certificates
           </button>
+          <button onclick="showModalTab('diagnostics')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="diagnostics">
+            Diagnostics
+          </button>
           <button onclick="showModalTab('actions')" class="modal-tab px-6 py-3 text-sm font-medium text-forest-600 border-b-2 border-transparent hover:text-burgundy-700" data-tab="actions">
             Admin Actions
           </button>
@@ -544,6 +547,22 @@
               Loading certificates...
             </div>
           </div>
+        </div>
+
+        <!-- Diagnostics Tab -->
+        <div id="tab-diagnostics" class="modal-tab-content hidden">
+          <h3 class="font-semibold text-forest-900 mb-2">Support Diagnostics</h3>
+          <p class="text-sm text-forest-500 mb-4">Trace why something isn't working for this user. Read-only &mdash; nothing is changed.</p>
+          <div class="mb-3">
+            <label class="block text-xs text-forest-500 mb-1">Course (title, slug, or ID) &mdash; needed for the certificate &amp; unlock checks</label>
+            <input id="diagCourse" type="text" placeholder="e.g. Ethics and Boundaries" class="w-full border border-forest-200 rounded-lg px-3 py-2 text-sm">
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button onclick="runDiagnostic('certificate')" class="bg-burgundy-700 hover:bg-burgundy-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Why no certificate?</button>
+            <button onclick="runDiagnostic('credential-tracker')" class="bg-burgundy-700 hover:bg-burgundy-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Credential tracker</button>
+            <button onclick="runDiagnostic('payment-unlock')" class="bg-burgundy-700 hover:bg-burgundy-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Why didn't it unlock?</button>
+          </div>
+          <div id="diagResult"></div>
         </div>
 
         <!-- Admin Actions Tab -->
@@ -961,6 +980,39 @@
       `).join('');
     }
     
+    async function runDiagnostic(type) {
+      const token = localStorage.getItem('token');
+      const course = (document.getElementById('diagCourse')?.value || '').trim();
+      const resultEl = document.getElementById('diagResult');
+      const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      resultEl.innerHTML = '<div class="text-forest-500 text-sm py-2">Running…</div>';
+      try {
+        const resp = await fetch(`${API_URL}/api/admin/users/${currentUserId}/diagnose`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ type, course })
+        });
+        const data = await resp.json();
+        if (!resp.ok) { resultEl.innerHTML = `<div class="text-red-600 text-sm">${esc(data.error || 'Error')}</div>`; return; }
+        const gates = (data.gates || []).map(g =>
+          `<div class="flex items-start gap-2 text-sm py-1">
+             <span class="${g.ok ? 'text-green-600' : 'text-red-600'} font-semibold" style="min-width:44px">${g.ok ? 'OK' : 'FAIL'}</span>
+             <span><b>${esc(g.label)}</b>${g.detail ? ' — ' + esc(g.detail) : ''}</span>
+           </div>`).join('');
+        resultEl.innerHTML =
+          `<div class="border border-forest-200 rounded-lg p-4 space-y-1">
+             ${gates}
+             <div class="mt-3 pt-3 border-t border-forest-100">
+               <div class="text-sm"><b>Verdict:</b> ${esc(data.verdict)}</div>
+               <div class="text-sm text-forest-600 mt-1">${esc(data.detail)}</div>
+               <div class="text-sm mt-2 bg-burgundy-50 rounded p-2"><b>Fix:</b> ${esc(data.fix)}</div>
+             </div>
+           </div>`;
+      } catch (e) {
+        resultEl.innerHTML = `<div class="text-red-600 text-sm">${esc(e.message)}</div>`;
+      }
+    }
+
     function showModalTab(tab) {
       // Update tab buttons
       document.querySelectorAll('.modal-tab').forEach(btn => {
