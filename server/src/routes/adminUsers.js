@@ -12,8 +12,10 @@ import { Course as InteractiveCourse, CourseProgress } from '../models/Interacti
 import Certificate from '../models/Certificate.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
+import Evaluation from '../models/Evaluation.js';
 import { protect } from '../middleware/auth.js';
 import { getRecentActivity } from '../services/activityTrackingService.js';
+import { diagnoseCertificateChain, diagnoseCredentialTracker, diagnosePaymentUnlock } from '../services/diagnosticsService.js';
 
 const router = express.Router();
 
@@ -999,5 +1001,55 @@ router.delete('/users/:userId/enrollments/:courseId', protect, adminOnly, async 
   }
 });
 
+
+// @route   POST /api/admin/users/:userId/diagnose
+// @desc    Run a support diagnostic (certificate | credential-tracker | payment-unlock) for a user
+// @access  Admin only
+router.post('/users/:userId/diagnose', protect, adminOnly, async (req, res) => {
+  try {
+    const { type, course: courseArg } = req.body || {};
+    const user = await User.findById(req.params.userId).lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Resolve the course if one was supplied (by _id, slug, or title).
+    let course = null;
+    if (courseArg) {
+      const esc = String(courseArg).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      if (mongoose.Types.ObjectId.isValid(courseArg)) course = await InteractiveCourse.findById(courseArg).lean();
+      if (!course) course = await InteractiveCourse.findOne({ $or: [{ slug: courseArg }, { title: new RegExp(esc, 'i') }] }).lean();
+      if (!course) course = await Course.findOne({ $or: [{ slug: courseArg }, { title: new RegExp(esc, 'i') }] }).lean();
+    }
+
+    let result;
+    if (type === 'certificate') {
+      if (!course) return res.status(400).json({ error: 'A course is required for the certificate diagnostic.' });
+      const progress = await CourseProgress.findOne({ userId: user._id, courseId: course._id }).lean();
+      const evaluationDoc = await Evaluation.findOne({ user: user._id, course: course._id, status: 'submitted' }).lean();
+      const certificateDoc = await Certificate.findOne({ userId: user._id, courseId: course._id, source: 'platform' }).lean();
+      result = diagnoseCertificateChain({ user, course, progress, evaluationDoc, certificateDoc });
+    } else if (type === 'credential-tracker') {
+      let entitlement = { isPartnerUser: false, addonEnabled: true };
+      if (user.partnerId && user.role !== 'admin') {
+        entitlement = { isPartnerUser: true, addonEnabled: null };
+        try {
+          const { getPartnerAddons } = await import('../middleware/partnerFeatureGate.js');
+          const addons = await getPartnerAddons(user.partnerId);
+          entitlement.addonEnabled = !!addons?.credentialManagement?.enabled;
+        } catch (e) { /* leave null -> reported as unverified */ }
+      }
+      const credentials = await UserCredential.find({ userId: user._id }).lean();
+      const certificates = await Certificate.find({ userId: user._id, source: 'platform' }).lean();
+      result = diagnoseCredentialTracker({ user, entitlement, credentials, certificates });
+    } else if (type === 'payment-unlock') {
+      if (!course) return res.status(400).json({ error: 'A course is required for the payment-unlock diagnostic.' });
+      result = diagnosePaymentUnlock({ user, course });
+    } else {
+      return res.status(400).json({ error: 'Unknown diagnostic type. Use certificate | credential-tracker | payment-unlock.' });
+    }
+    return res.json(result);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 export default router;
