@@ -1,0 +1,53 @@
+courseCode,title,ceHours,isPublished,note
+CR-104,Suicide Risk Assessment: Evidence-Based Approaches for Mental Health Professionals,4,True,
+CR-102,Crisis Intervention and Suicide Prevention: A Comprehensive Clinical Guide,4,True,
+CR-418,The Neurobiology of Trauma,4,True,
+CR-419,Trauma-Informed Care: Foundations for Clinical Practice,4,True,
+CR-202,See Something? Say Something: Your Duty as a Mandated Reporter,3,True,
+CR-307,"Foundations of Cultural Competence, Ethics, and Risk Reduction",3,True,
+CR-401,28 Days Later: Understanding Addiction and Recovery,3,True,
+CR-402,Motivational Interviewing: From Ambivalence to Action,3,True,
+CR-412,The CBT Toolbox: Core Techniques for Clinical Practice,3,True,
+CR-415,The Elephant in the Room: Navigating Difficult Conversations in Therapy,3,True,
+CR-420,Foundations of Trauma-Informed Care: Assessment and Stabilization,3,True,
+CR-439,The Pursuit of Happyness: Treating Anxiety and Depression,3,True,
+CR-501,Psychopharmacology for Counselors: Understanding Medications in Mental Health,3,True,
+CR-601,TeleMental Health Supervision,3,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-103,Suicide Assessment and Safety Planning: Evidence-Based Approaches,3,True,
+CR-428,"The Final Chapter: End-of-Life Counseling, Death Anxiety, and Meaning-Making",3,True,
+CR-INS-401,Instructional Design for Mental Health Professionals,3,True,
+CR-302,Beyond the Surface: Multicultural Competence in Clinical Practice,3,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-303,Cultural Humility in Clinical Practice: Beyond Cultural Competence,3,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-301,Lost in Translation: Bridging Cultural Divides,3,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-502,Psychiatric Medications: What Non-Prescribers Need to Know,2,True,
+CR-410,DBT Skills in Action: Practical Applications for Emotional Dysregulation,2,True,
+CR-305,"Small Warriors, Big Battles: Counseling Children Navigating Parental Incarceration",2,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-304,Beyond the Uniform: Culturally Responsive Counseling with First Responder Families,2,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-411,Plot Twist: Narrative Therapy Techniques That Actually Work in Session,2,True,
+CR-417,Moral Injury in Clinical Practice,2,True,
+CR-306,Racial Trauma and Affirming Clinical Practice,2,True,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-801,AI Ethics in Clinical Mental Health Practice,2,True,
+CR-203,Clinician Burnout and Sustainable Practice,2,True,
+CR-416,Neurodivergent-Affirming Clinical Practice,2,True,
+CR-SATC-201,What the Chicken Dance Got Right,2,True,
+CR-105,When Safety Overrides Consent: A Clinician's Guide to Involuntary Psychiatric Holds,1,True,
+CR-414,Existential Theory in Clinical Practice: Applications and Interventions,1,True,
+CR-413,Motivational Interviewing in First Sessions: Empowering Clients for Change,1,True,
+CR-204,Mental Health Billing Essentials for Licensed Professional Counselors,1,True,
+CR-423,Introduction to Mindfulness in Clinical Practice,1,True,
+CR-408,Building Therapeutic Rapport: The First Sessions,1,True,
+CR-435,Black Swan: Perfectionism and Anxiety Disorders in Clinical Practice,1,True,
+CR-436,Ordinary People: Family Systems and Grief in Clinical Practice,1,True,
+CR-437,The Sixth Sense: Clinical Intuition and Assessment in Counseling,1,True,
+CR-409,"Dialectical Behavior Therapy: Foundations, Clinical Applications, and Evidence-Based Integration",5,False,
+CR-304,"Sexuality, Identity, and Mental Health: Affirming Clinical Practice with LGBTQ+ Clients",3,False,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-305,"Sexual Trauma: Assessment, Treatment, and Evidence-Based Interventions",3,False,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-306,Sex Therapy Foundations: Integrating Sexual Health Into Counseling Practice,3,False,"duplicate courseCode elsewhere in catalog — verify by title, not code, when sourcing"
+CR-424,"Unretiring the Self: Identity, Purpose, and Depression in Later Life",3,False,
+CR-425,"The Long Goodbye: Clinical Practice with Dementia, Grief, and Family Systems",3,False,
+CR-TMH603-FL,Telehealth for Florida Mental Health Professionals,3,False,
+CR-426,Still Standing: Geriatric Suicide Risk Assessment and Safety Planning,2,False,
+CR-427,Seasoned and Struggling: Substance Use Disorders in Older Adults,2,False,
+CR-TMH602-TX,Technology-Assisted Services: Texas-Compliant Telehealth Practice,2,False,
+CR-438,A Beautiful Mind: Understanding and Treating Serious Mental Illness,1,False,
+CR-406,Active Listening: The Foundation of Effective Therapy,1,False,
