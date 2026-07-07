@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if(!MONGODB_URI){console.error('MONGODB_URI not found');process.exit(1);}
@@ -19,7 +20,7 @@ const COURSE = {
   approvalNumber: '#7760',
   creditType: 'NBCC',
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
-  accessType: 'paid',
+  accessType: 'purchase',
   price: 39.99,
   status: 'draft',
   isPublished: false,
@@ -47,7 +48,9 @@ const COURSE = {
         { type: 'callout', title: 'Scope of Practice Reminder', calloutType: 'ethics', content: '<p>This course prepares generalist counselors to address sexual concerns within couples work and to refer appropriately. It does not certify you as a sex therapist. Practice within your competence, seek consultation and supervision for complex cases, and refer to medical and specialized providers when indicated. Document referrals and informed consent carefully.</p>' },
         { type: 'text', content: '<p>To orient your learning, it helps to understand how the field has evolved. The modern clinical treatment of sexual dysfunction is often traced to the pioneering work of William Masters and Virginia Johnson in the 1960s and 1970s, who reframed sexual problems as learned patterns amenable to behavioral intervention rather than as expressions of deep individual pathology. Their introduction of sensate focus, a structured series of touching exercises designed to reduce performance pressure and rebuild sensual connection, remains a cornerstone of sex therapy to this day. Helen Singer Kaplan subsequently integrated psychodynamic and behavioral perspectives and emphasized the role of desire, expanding the simple arousal-orgasm model into a more complete account of the sexual response cycle. These early figures established the principle that sexual problems are best understood and treated in context, frequently with both partners present.</p><p>Over the following decades the field diversified. The pharmacological revolution of the late 1990s, marked by the introduction of effective oral treatments for erectile difficulty, profoundly changed the landscape, sometimes for better and sometimes for worse. On one hand, effective medical treatments brought relief to many. On the other, the medicalization of sexuality risked reducing complex relational and emotional problems to a mechanical fix, with the unintended consequence that the relational dimensions of a couple’s difficulty went unaddressed. A man might regain physiological function only to discover that the resentment, avoidance, and disconnection that had accumulated during years of difficulty remained untouched. This history underscores a recurring theme: medical and relational approaches are complementary, not competing, and the counselor’s role is to ensure that the relational dimension is not lost.</p><p>Contemporary practice increasingly embraces a biopsychosocial model that holds biological, psychological, interpersonal, and sociocultural factors in continuous interaction. The biopsychosocial model is not merely a list of factors to consider; it is a way of thinking that resists premature closure on any single explanatory level. When a couple presents with low desire, the biopsychosocial clinician asks simultaneously about hormones and medications, about depression and body image, about relationship conflict and the division of household labor, and about cultural and religious messages regarding sexuality. The same model guides intervention: medical referral, individual psychological work, couples intervention, and psychoeducation may all play a part, sequenced and combined according to the specific case. This integrative, multi-level stance is the intellectual backbone of the present course, and we will return to it repeatedly as we move from theory to assessment to intervention.</p><p>As you progress through the four sections of this course, you will encounter knowledge checks, interactive activities, reflection prompts, and clinical vignettes designed to consolidate your learning. Approach these as opportunities to rehearse the clinical reasoning you will use with real couples. The material is dense and the stakes for clients are high; take your time, and return to sections as needed.</p><p>One final orienting principle deserves emphasis before we proceed. The treatment of sexual concerns in couples is unusually dependent on the quality of the therapeutic relationship and the safety of the clinical space. Sexuality is, for most people, the most private and vulnerable domain of their lives, freighted with shame, fear of judgment, and the weight of cultural and religious prohibition. Clients will disclose meaningful information only to the degree that they feel safe, respected, and unjudged, and they will attempt the exercises and conversations that treatment requires only if they trust the clinician s competence and good faith. For this reason, the technical content of this course, the models, assessments, and interventions, must always rest on a foundation of warmth, non-judgment, cultural humility, and genuine respect for each couple s autonomy and values. A clinician who masters every technique but cannot create this foundation will accomplish little, while a clinician who creates this foundation will frequently help couples even with a modest technical repertoire. As you study the material that follows, keep this relational foundation continually in view, for it is the soil in which every intervention either takes root or withers.</p>' },
         { type: 'videoEmbed', title: 'Orientation: A Relational View of Sexual Difficulty', videoUrl: 'https://www.youtube.com/embed/PLACEHOLDER_COUPLES', description: 'An introductory overview framing sexual dysfunction as a co-created relational process rather than an isolated individual symptom.', accessibility: { ariaLabel: 'Introductory orientation video on relational views of sexual difficulty', role: 'complementary' } },
-        { type: 'keyTakeaway', title: 'Key Takeaways', takeaways: [
+        { type: 'multipleChoice', question: "According to this course’s central premise, sexual dysfunction in a partnered context is best understood as:", options: [{ text: "A purely individual medical malfunction unrelated to the relationship", isCorrect: false }, { text: "A relational process that both partners construct and maintain together", isCorrect: true }, { text: "Something that should be treated only through medication", isCorrect: false }, { text: "A condition that resolves on its own without intervention", isCorrect: false }], correctAnswer: 1, explanation: "The course states explicitly that sexual dysfunction in a partnered context is almost never purely individual; its meaning, maintenance, and resolution unfold within the relationship system, making the couple — not just the symptom-bearing partner — the unit of treatment." },
+{ type: 'multipleChoice', question: "The biopsychosocial model, as described in this course, is best characterized as:", options: [{ text: "A checklist that isolates the single most likely cause of a sexual concern", isCorrect: false }, { text: "A way of thinking that holds biological, psychological, interpersonal, and sociocultural factors in continuous interaction, resisting premature closure on one explanation", isCorrect: true }, { text: "A framework used only when medical causes have been ruled out", isCorrect: false }, { text: "An approach that replaces the need for couples-based intervention", isCorrect: false }], correctAnswer: 1, explanation: "The course is explicit that the biopsychosocial model is not merely a list of factors to check off but a stance that keeps multiple explanatory levels in view simultaneously, guiding both assessment and a sequenced, combined intervention plan." },
+{ type: 'keyTakeaway', title: 'Key Takeaways', takeaways: [
           'Sexual difficulties are common, distressing, and frequently presented indirectly within couples counseling.',
           'In a partnered context, sexual dysfunction is co-created and maintained within the relationship system rather than residing solely in one individual.',
           'A biopsychosocial model integrates biological, psychological, interpersonal, and sociocultural factors and resists premature reduction to any single level.',
@@ -396,15 +399,17 @@ function validate(c){const e=[],w=[];const wc=countWords(c);
     for(const b of s.contentBlocks||[])if(b.options?.length&&typeof b.options[0]==='string')e.push('CRITICAL:flat_options');
   }return{wc,e,w};}
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e,w}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`\n📊 ${COURSE.courseCode}: ${COURSE.title}\n   Words: ${wc}/${COURSE.ceHours*6000} | Sections: ${COURSE.sections.length} | Exam: ${COURSE.assessment?.questions?.length} | Refs: ${COURSE.references?.length}`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(w.length)w.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

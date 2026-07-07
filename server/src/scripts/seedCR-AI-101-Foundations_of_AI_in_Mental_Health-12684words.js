@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -551,7 +552,8 @@ const COURSE = {
 <li><strong>Disclose and consult.</strong> Within 60 days, review your informed-consent process and, where an artificial-intelligence tool materially affects client care or data, add appropriate disclosure; if you are uncertain about a tool's compliance or evidence, consult a supervisor, your ethics body, or an informatics colleague before adopting it.</li>
 </ol>`,
         },
-        {
+        { type: 'multipleChoice', question: "Which statement best reflects this course’s guidance on evaluating vendor claims about an AI tool?", options: [{ text: "Marketing language such as \"clinically validated\" is equivalent to peer-reviewed evidence", isCorrect: false }, { text: "Absence of independent evidence should be weighted as a reason for caution, not treated as proof of safety", isCorrect: true }, { text: "If a tool is widely adopted, it can be assumed to be well-validated", isCorrect: false }, { text: "Vendor-reported outcome data is sufficient to establish clinical efficacy", isCorrect: false }], correctAnswer: 1, explanation: "The course is explicit that marketing is not evidence and that the standard evidence hierarchy still applies to AI tools; the absence of independent, peer-reviewed validation should be weighted as a caution flag rather than assumed away." },
+{
           type: 'keyTakeaway', order: 8, title: 'Key Takeaways',
           takeaways: [
             'Artificial intelligence does not change what counseling is: the client is a person, the relationship is the active ingredient, and the clinician remains accountable.',
@@ -651,19 +653,17 @@ function validate(course){
   return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings,total}=validate(COURSE);
-  COURSE.wordCount=total;
-  warnings.forEach(w=>console.warn('⚠️',w));
-  if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
-  if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
-  await mongoose.connect(MONGODB_URI);
-  const col=mongoose.connection.db.collection('interactivecourses');
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated:',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted:',SLUG);}
-  const saved=await col.findOne({slug:SLUG});
-  const blocks=(saved.sections||[]).reduce((n,s)=>n+(s.contentBlocks?.length||0),0);
-  console.log(`Sections:${saved.sections?.length}|Blocks:${blocks}|Qs:${saved.assessment?.questions?.length}|Refs:${saved.references?.length}|isPublished:${saved.isPublished}`);
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e.message);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

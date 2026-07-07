@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -434,7 +435,8 @@ const COURSE = {
           ],
           explanation: 'Incident response moves from receiving the report, to protecting affected clients and the record, to the suspension decision, to investigation and regulatory assessment, and finally to systematic learning that improves the framework. Suspension defaults to yes when safety is genuinely in question.',
         },
-        {
+        { type: 'multipleChoice', question: "According to this section, what is the safe default when an AI tool is found to be behaving unsafely or unequally across populations?", options: [{ text: "Continue use while quietly monitoring the situation", isCorrect: false }, { text: "Suspend use of the tool until the problem is understood and resolved", isCorrect: true }, { text: "Only restrict use for the specific clients who were affected", isCorrect: false }, { text: "Wait for the vendor to issue a public statement before acting", isCorrect: false }], correctAnswer: 1, explanation: "The course specifies suspension as the safe default: suspension is reversible, while a harm reaching a client may not be, so practices should pause use until the issue is understood and resolved." },
+{
           type: 'reflection', order: 11, question: 'For the most clinically significant artificial-intelligence tool in your setting, what would happen right now if it produced a harmful error? Who would be notified, who would decide whether to suspend it, and how would an affected client be protected? If those answers are unclear, what part of an incident-response process would you build first?' },
         {
           type: 'keyTakeaway', order: 12, title: 'Key Takeaways',
@@ -635,19 +637,17 @@ function validate(course){
   return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings,total}=validate(COURSE);
-  COURSE.wordCount=total;
-  warnings.forEach(w=>console.warn('⚠️',w));
-  if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
-  if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
-  await mongoose.connect(MONGODB_URI);
-  const col=mongoose.connection.db.collection('interactivecourses');
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated:',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted:',SLUG);}
-  const saved=await col.findOne({slug:SLUG});
-  const blocks=(saved.sections||[]).reduce((n,s)=>n+(s.contentBlocks?.length||0),0);
-  console.log(`Sections:${saved.sections?.length}|Blocks:${blocks}|Qs:${saved.assessment?.questions?.length}|Refs:${saved.references?.length}|isPublished:${saved.isPublished}`);
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e.message);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
