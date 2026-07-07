@@ -14,6 +14,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -382,7 +383,8 @@ const COURSE = {
             { id: 's5', text: 'Remediate the root cause and update the incident-response plan', order: 5 },
           ], explanation: 'Contain first to stop the bleeding and preserve evidence, then assess whether the event is a reportable breach, then meet notification deadlines, then mitigate and document, and finally fix the underlying cause so it cannot recur.' },
 
-        { type: 'reflection', order: 10, question: 'If you discovered today that an AI tool you use had been retaining and training on every prompt you ever sent it — including client information — would you know exactly what to do in the first hour? Who would you notify, and within what deadline?' },
+        { type: 'multipleChoice', question: "Using the \"concentric rings\" safeguard model from this section, which law sits at the outer ring as the federal floor?", options: [{ text: "42 CFR Part 2", isCorrect: false }, { text: "HIPAA", isCorrect: true }, { text: "State-level CMIA-type statutes", isCorrect: false }, { text: "Vendor terms of service", isCorrect: false }], correctAnswer: 1, explanation: "HIPAA is described as the outer ring — the federal floor — with stricter state law and special-category rules like 42 CFR Part 2 sitting inside it as additional, more protective layers." },
+{ type: 'reflection', order: 10, question: 'If you discovered today that an AI tool you use had been retaining and training on every prompt you ever sent it — including client information — would you know exactly what to do in the first hour? Who would you notify, and within what deadline?' },
 
         { type: 'keyTakeaway', order: 11, title: 'Key Takeaways', takeaways: [
           'Genuine de-identification — Safe Harbor (removing all eighteen identifiers) or Expert Determination — removes information from PHI status; informal "disguising" reliably fails.',
@@ -701,19 +703,17 @@ function validate(course){
   return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings,total}=validate(COURSE);
-  COURSE.wordCount=total;
-  warnings.forEach(w=>console.warn('⚠️',w));
-  if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
-  if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
-  await mongoose.connect(MONGODB_URI);
-  const col=mongoose.connection.db.collection('interactivecourses');
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated:',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted:',SLUG);}
-  const saved=await col.findOne({slug:SLUG});
-  const blocks=(saved.sections||[]).reduce((n,s)=>n+(s.contentBlocks?.length||0),0);
-  console.log(`Sections:${saved.sections?.length}|Blocks:${blocks}|Qs:${saved.assessment?.questions?.length}|Refs:${saved.references?.length}|isPublished:${saved.isPublished}`);
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e.message);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

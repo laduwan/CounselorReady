@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if(!MONGODB_URI){console.error('MONGODB_URI not found');process.exit(1);}
@@ -19,7 +20,7 @@ const COURSE = {
   approvalNumber: "#7760",
   creditType: "NBCC",
   instructor: "GA Integrated Therapeutic Perspectives LLC",
-  accessType: "paid",
+  accessType: "purchase",
   price: 59.99,
   status: "draft",
   isPublished: false,
@@ -488,15 +489,17 @@ function validate(c){const e=[],w=[];const wc=countWords(c);
     for(const b of s.contentBlocks||[])if(b.options?.length&&typeof b.options[0]==='string')e.push('CRITICAL:flat_options');
   }return{wc,e,w};}
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e,w}=validate(COURSE);COURSE.wordCount=wc;
-  console.log(`\n📊 ${COURSE.courseCode}: ${COURSE.title}\n   Words: ${wc}/${COURSE.ceHours*6000} | Sections: ${COURSE.sections.length} | Exam: ${COURSE.assessment?.questions?.length} | Refs: ${COURSE.references?.length}`);
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  if(w.length)w.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });

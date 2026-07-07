@@ -12,6 +12,7 @@
  */
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -379,7 +380,8 @@ COURSE.sections.push({
       { id: 's3', text: 'A structured clinical assessment establishes the actual clinical picture.', order: 3 },
       { id: 's4', text: 'A collaborative safety plan including 988 is built, and proportionate follow-up is documented.', order: 4 }
     ], explanation: 'The flag prompts outreach; outreach enables assessment; assessment determines a proportionate response; and collaborative safety planning with 988, with clear documentation, completes the integration. At every step the human clinician holds authority.' },
-    { type: 'reflection', order: 9, question: 'Name one realistic situation in your own practice where an algorithmic or system-generated risk flag could appear. Walk through, in writing, how you would apply the prompt-not-verdict principle, avoid both failure modes, and integrate 988 into collaborative safety planning.' },
+    { type: 'multipleChoice', question: "In the Marcus case used to integrate this course’s lessons, what made the clinician’s response effective?", options: [{ text: "Relying on the algorithmic flag alone to determine the treatment plan", isCorrect: false }, { text: "Treating the flag as a hypothesis to explore collaboratively with Marcus, integrating it with clinical judgment", isCorrect: true }, { text: "Dismissing the flag because algorithms are known to be unreliable", isCorrect: false }, { text: "Informing Marcus that the system had already decided he was high-risk", isCorrect: false }], correctAnswer: 1, explanation: "The course’s central lesson is that a predictive flag is a hypothesis, not a verdict; the effective response integrates the flag with direct clinical engagement and judgment rather than either deferring to it blindly or ignoring it." },
+{ type: 'reflection', order: 9, question: 'Name one realistic situation in your own practice where an algorithmic or system-generated risk flag could appear. Walk through, in writing, how you would apply the prompt-not-verdict principle, avoid both failure modes, and integrate 988 into collaborative safety planning.' },
     { type: 'resources', order: 10, title: 'Suicide Prevention & Crisis Resources', resources: [
       { title: '988 Suicide & Crisis Lifeline', url: 'https://988lifeline.org', type: 'link', description: 'Free, confidential, 24/7 crisis support across the United States by call or text to 988 and by online chat. The central resource to integrate into every safety plan.' },
       { title: 'SAMHSA — Substance Abuse and Mental Health Services Administration', url: 'https://www.samhsa.gov', type: 'link', description: 'Federal agency leading public-health efforts on mental health and substance use, including 988 implementation, crisis-system guidance, and the SAMHSA National Helpline.' },
@@ -587,19 +589,17 @@ function validate(course){
   return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings,total}=validate(COURSE);
-  COURSE.wordCount=total;
-  warnings.forEach(w=>console.warn('⚠️',w));
-  if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
-  if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
-  await mongoose.connect(MONGODB_URI);
-  const col=mongoose.connection.db.collection('interactivecourses');
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated:',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted:',SLUG);}
-  const saved=await col.findOne({slug:SLUG});
-  const blocks=(saved.sections||[]).reduce((n,s)=>n+(s.contentBlocks?.length||0),0);
-  console.log(`Sections:${saved.sections?.length}|Blocks:${blocks}|Qs:${saved.assessment?.questions?.length}|Refs:${saved.references?.length}|isPublished:${saved.isPublished}`);
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e.message);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
