@@ -3,7 +3,6 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-#!/usr/bin/env node
 /**
  * findDuplicateCourseCodes.js — Read-only audit for duplicate `courseCode` values
  * (e.g. two different courses both stamped "CR-301").
