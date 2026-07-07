@@ -4,6 +4,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -1031,18 +1032,17 @@ function validate(c){
 }
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);
-  const db=mongoose.connection.db;
-  const col=db.collection('interactivecourses');
-  const{wc,e,w}=validate(COURSE);
-  COURSE.wordCount=wc;
-  console.log(`Word count: ${wc} (required: ${COURSE.ceHours*6000})`);
-  if(w.length)w.forEach(x=>console.warn('⚠️',x));
-  const crit=e.filter(x=>x.startsWith('CRITICAL'));
-  if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted',SLUG);}
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
