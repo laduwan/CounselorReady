@@ -116,3 +116,6 @@ AI Assistant tab now accepts an existing outline by paste or .docx upload instea
 
 ### 2026-06-13 — Trial gate over-granted (FIXED); seat-timer still broken
 hasPaidOrFreeAccess listed 'trial' as unlimited, bypassing the 1-CE-hour cap and course count. A no-card trial user took 10 CE hours free. Policy enforced now: no-card trial = 2 one-CE courses lifetime (trialCoursesUsed); card-on-file = 4 one-CE/month. Distinguish via subscription.stripeCustomerId. SEPARATE open issue: totalTimeSpent reads 0 platform-wide (front-end not posting timeSpent) — contact-hour evidence gap, cert-issuance chain (assessment+evaluation+attestation) itself is sound. Lesson: every CourseProgress-creating route (3 of them) must run the shared gate; fixing the shared fns fixed all three.
+
+### 2026-07-07 — Diagnostic Model design spec added (docs/DIAGNOSTIC_MODEL_SPEC.md)
+On-prem support-diagnosis design brief committed for future reference: investigate real state → trace → localize → report; auto-fix only proven-deterministic signatures (novel/uncertain → report only). Includes a failure-signature table and a Phase-2 tool build order. Design brief only — nothing runs yet; its file/line anchors (e.g. the interactiveCourseRoutes POST endpoint line numbers) should be re-verified against current code before any Phase-2 tool is built.
