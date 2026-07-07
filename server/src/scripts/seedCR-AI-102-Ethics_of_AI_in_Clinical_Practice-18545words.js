@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -399,7 +400,12 @@ const COURSE = {
           { term: 'Therapeutic relationship', definition: 'A human-centered driver of outcomes that AI should protect rather than displace.' },
           { term: 'Professional identity', definition: 'The internalized values and responsibilities that set the boundaries of ethical AI use.' }
         ] },
-        { type: 'reflection', order: 12, question: 'Describe how you understand your own professional identity as a counselor. Then consider one way AI could tempt you to act against that identity, perhaps through convenience, efficiency, or profit. What internal commitment would help you hold your identity steady in that moment?' },
+        { type: 'flashcardDeck', title: 'Liability and Professional Identity: Key Terms', cards: [
+      { front: 'If an AI tool contributes to a clinical error, who remains professionally responsible?', back: 'The counselor who used it. Vendor claims of validation, compliance, or "proof" do not transfer liability or relieve the duty of care.' },
+      { front: 'What is the "standard of care" in the context of AI-assisted practice?', back: 'The diligence a reasonably prudent counselor would exercise; careless AI use can fall below it, and the standard may evolve as tools become more accepted.' },
+      { front: 'In the "hub and spokes" metaphor used in this section, what does the hub represent?', back: 'The therapeutic relationship. AI tools are spokes that only add value insofar as they strengthen, rather than weaken, that central relationship.' }
+    ], accessibility: { ariaLabel: 'Flashcard deck on liability and professional identity in AI-assisted practice', role: 'application' } },
+{ type: 'reflection', order: 12, question: 'Describe how you understand your own professional identity as a counselor. Then consider one way AI could tempt you to act against that identity, perhaps through convenience, efficiency, or profit. What internal commitment would help you hold your identity steady in that moment?' },
         { type: 'keyTakeaway', order: 13, title: 'Key Takeaways', takeaways: [
           'The standard of care governs AI liability; careless use can fall below it, and the standard may evolve as tools become accepted.',
           'The counselor remains professionally and ethically responsible for client care even when an AI tool contributed to an error.',
@@ -682,19 +688,17 @@ function validate(course){
   return{errors,warnings,total};
 }
 async function main(){
-  const{errors,warnings,total}=validate(COURSE);
-  COURSE.wordCount=total;
-  warnings.forEach(w=>console.warn('⚠️',w));
-  if(errors.length){errors.forEach(e=>console.error('❌',e));process.exit(1);}
-  if(process.env.DRY_RUN){console.log('✅ DRY_RUN validation passed —',SLUG);process.exit(0);}
-  await mongoose.connect(MONGODB_URI);
-  const col=mongoose.connection.db.collection('interactivecourses');
-  const existing=await col.findOne({slug:SLUG});
-  if(existing){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated:',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted:',SLUG);}
-  const saved=await col.findOne({slug:SLUG});
-  const blocks=(saved.sections||[]).reduce((n,s)=>n+(s.contentBlocks?.length||0),0);
-  console.log(`Sections:${saved.sections?.length}|Blocks:${blocks}|Qs:${saved.assessment?.questions?.length}|Refs:${saved.references?.length}|isPublished:${saved.isPublished}`);
-  await mongoose.disconnect();process.exit(0);
+  if(!process.env.MONGODB_URI){ console.error('MONGODB_URI not set'); process.exit(1); }
+  await mongoose.connect(process.env.MONGODB_URI);
+  // schema requires an explicit order on every section and content block
+  COURSE.sections.forEach((s,si)=>{ if(s.order==null)s.order=si; (s.contentBlocks||[]).forEach((b,bi)=>{ if(b.order==null)b.order=bi; }); });
+  let doc = await InteractiveCourse.findOne({ slug: SLUG });
+  const action = doc ? 'Updated' : 'Inserted';
+  if(doc){ doc.set(COURSE); } else { doc = new InteractiveCourse(COURSE); }
+  await doc.save(); // fires pre-save hook -> canonical wordCount, totalContentBlocks; runs schema validation
+  const floor = doc.ceHours*6000;
+  const flag = doc.wordCount < floor ? '  \u26a0\ufe0f BELOW FLOOR' : '';
+  console.log(`\u2705 ${action}: ${doc.courseCode} | ${doc.wordCount}w (floor ${floor}) | ${doc.totalContentBlocks} blocks | ${doc.sections.length} sec${flag}`);
+  await mongoose.disconnect();
 }
-main().catch(e=>{console.error(e.message);process.exit(1);});
+main().catch(e=>{ console.error('\u274c', e.message); process.exit(1); });
