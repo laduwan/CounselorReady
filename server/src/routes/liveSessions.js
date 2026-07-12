@@ -95,14 +95,6 @@ router.get('/:id', async (req, res) => {
 // POST /api/live-sessions/:id/register
 router.post('/:id/register', protect, async (req, res) => {
   try {
-    if (req.user.role !== 'admin' && !req.user.isVip()) {
-      return res.status(403).json({
-        error: 'Live sessions are a VIP subscriber benefit.',
-        reason: 'VIP subscription required',
-        requiredTier: 'vip'
-      });
-    }
-
     const session = await findByIdOrSlug(req.params.id);
     if (!session || !session.isPublished) return res.status(404).json({ error: 'Session not found' });
     if (!['scheduled', 'live'].includes(session.status)) {
@@ -115,8 +107,23 @@ router.post('/:id/register', protect, async (req, res) => {
       return res.status(400).json({ error: 'This session is full.' });
     }
 
-    // Paid sessions → Stripe Checkout; fulfillment registers via webhook (WIRING.md)
-    if (session.price > 0) {
+    const isAdmin = req.user.role === 'admin';
+    // Same currency check as canBookConsultation(): VIP-tier plan AND subscription actually active.
+    const isActiveVip = req.user.isVip() &&
+      (req.user.subscription.status === 'active' || req.user.subscription.status === 'lifetime');
+
+    // Live sessions are free for current VIP subscribers. Everyone else must pay per-session
+    // when the session is priced; if it isn't priced, there's no non-VIP path in.
+    if (!isAdmin && !isActiveVip && !(session.price > 0)) {
+      return res.status(403).json({
+        error: 'Live sessions are a VIP subscriber benefit, or available for individual purchase.',
+        reason: 'VIP subscription required',
+        requiredTier: 'vip'
+      });
+    }
+
+    // Paid sessions → Stripe Checkout for non-VIP; fulfillment registers via webhook (WIRING.md)
+    if (!isAdmin && !isActiveVip && session.price > 0) {
       if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
       const checkout = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -156,13 +163,6 @@ router.post('/:id/join', protect, async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
     const isAdmin = req.user.role === 'admin';
-    if (!isAdmin && !req.user.isVip()) {
-      return res.status(403).json({
-        error: 'Live sessions are a VIP subscriber benefit.',
-        reason: 'VIP subscription required',
-        requiredTier: 'vip'
-      });
-    }
     if (!isAdmin && !session.isRegistered(req.user._id)) {
       return res.status(403).json({ error: 'You are not registered for this session.' });
     }
