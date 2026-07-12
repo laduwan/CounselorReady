@@ -24,7 +24,8 @@ export default function Register() {
     lastName: '',
     email: '',
     password: '',
-    state: ''
+    state: '',
+    website: '' // honeypot: hidden from real users, catches bots that auto-fill every field
   });
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
@@ -148,6 +149,19 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Honeypot field: hidden from real users, bots that auto-fill forms will populate it */}
+            <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+              <label htmlFor="website">Leave this field blank</label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                value={formData.website}
+                onChange={handleChange}
+                tabIndex="-1"
+                autoComplete="off"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
