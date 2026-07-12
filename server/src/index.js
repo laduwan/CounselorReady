@@ -119,6 +119,7 @@ import { runBlogAutoGen } from './jobs/blogAutoGen.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
+import mongoSanitize from 'express-mongo-sanitize';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -168,6 +169,10 @@ app.use('/api/webhooks/resend', express.raw({ type: 'application/json' }));
 app.use('/api/webhooks/whereby', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Strip $ and . from user-supplied keys in body/query/params to block
+// NoSQL injection (e.g. {"email": {"$gt": ""}}). Must run after body parsers.
+app.use(mongoSanitize());
 
 app.use(requestId);
 
