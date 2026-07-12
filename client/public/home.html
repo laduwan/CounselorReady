@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CounselorReady | CE for LPCs, LMFTs &amp; LCSWs | NBCC ACEP #7760</title>
+  <meta name="description" content="Earn continuing education credits online. CounselorReady is an NBCC Approved Continuing Education Provider (ACEP #7760) offering interactive CE courses for licensed counselors — trauma, ethics, telemental health, clinical skills. Georgia, Texas, Florida &amp; nationwide.">
+  <link rel="canonical" href="https://counselorready.com/">
+  <meta name="theme-color" content="#6B1D34">
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="CounselorReady">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://counselorready.com/">
+  <meta property="og:title" content="CounselorReady | CE for LPCs, LMFTs &amp; LCSWs | NBCC ACEP #7760">
+  <meta property="og:description" content="Interactive CE courses for licensed counselors. NBCC Approved Continuing Education Provider (ACEP #7760). Trauma, ethics, telemental health, and clinical skills.">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="CounselorReady — NBCC Approved Continuing Education Provider (ACEP #7760)">
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@CounselorReady">
+  <meta name="twitter:title" content="CounselorReady | CE for LPCs, LMFTs &amp; LCSWs | NBCC ACEP #7760">
+  <meta name="twitter:description" content="Interactive CE courses for licensed counselors. NBCC Approved Continuing Education Provider (ACEP #7760). Trauma, ethics, telemental health, and clinical skills.">
+  <meta name="twitter:image" content="https://counselorready.com/images/og-social.png">
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "EducationalOrganization",
+        "@id": "https://counselorready.com/#org",
+        "name": "CounselorReady",
+        "alternateName": "GA Integrated Therapeutic Perspectives LLC",
+        "url": "https://counselorready.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://counselorready.com/images/og-social.png",
+          "width": 1200,
+          "height": 630
+        },
+        "description": "CounselorReady is an NBCC Approved Continuing Education Provider (ACEP #7760) offering interactive CE courses for licensed mental health professionals — credential tracking, audit-ready certificates, and clinical skills courses.",
+        "email": "support@counselorready.com",
+        "telephone": "+1-678-664-4003",
+        "address": {
+          "@type": "PostalAddress",
+          "postOfficeBoxNumber": "PO Box 1417",
+          "addressLocality": "Hinesville",
+          "addressRegion": "GA",
+          "postalCode": "31310",
+          "addressCountry": "US"
+        },
+        "areaServed": ["Georgia", "Texas", "Florida", "United States"],
+        "hasCredential": {
+          "@type": "EducationalOccupationalCredential",
+          "name": "NBCC ACEP #7760",
+          "credentialCategory": "Approved Continuing Education Provider",
+          "recognizedBy": {
+            "@type": "Organization",
+            "name": "National Board for Certified Counselors",
+            "url": "https://www.nbcc.org"
+          }
+        },
+        "knowsAbout": ["Continuing Education", "Mental Health Counseling", "NBCC CE", "Professional Counseling", "Clinical Social Work", "Telemental Health"],
+        "sameAs": [
+          "https://www.facebook.com/CounselorReady",
+          "https://www.linkedin.com/company/counselorready",
+          "https://www.instagram.com/counselorready"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://counselorready.com/#website",
+        "url": "https://counselorready.com",
+        "name": "CounselorReady",
+        "publisher": { "@id": "https://counselorready.com/#org" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://counselorready.com/courses?q={search_term_string}" },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            burgundy: {
+              50: '#fdf5f6',
+              100: '#fae8eb',
+              200: '#f5d0d6',
+              300: '#eba9b5',
+              400: '#dd768a',
+              500: '#c94d65',
+              600: '#a83350',
+              700: '#8b2542',
+              800: '#6b1d34',
+              900: '#4a1524',
+              950: '#2d0a14'
+            },
+            hunter: {
+              50: '#f5f8f5',
+              100: '#eaf0eb',
+              200: '#d5e1d7',
+              300: '#b5ccb9',
+              400: '#8fb096',
+              500: '#6a9472',
+              600: '#4A7C59',
+              700: '#355E3B',
+              800: '#2D4F33',
+              900: '#1F3825',
+              950: '#121f15'
+            },
+            honey: {
+              50: '#fdf9f0',
+              100: '#f9f0db',
+              200: '#f3e0b5',
+              300: '#eacd86',
+              400: '#D4A855',
+              500: '#c49545',
+              600: '#a67936',
+              700: '#865e2c',
+              800: '#6b4a25',
+              900: '#4d351b'
+            },
+            azure: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              200: '#bae0fd',
+              300: '#7dc8fb',
+              400: '#38aaf6',
+              500: '#0e8fe7',
+              600: '#0270c5',
+              700: '#0359a0',
+              800: '#074b84',
+              900: '#0c406e'
+            },
+            navy: {
+              700: '#284157',
+            }
+          },
+          fontFamily: {
+            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
+            'body': ['Lato', 'system-ui', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { 
+      font-family: 'Lato', system-ui, sans-serif; 
+    }
+    .font-display {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+    .bg-texture {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+    .gradient-border {
+      background: linear-gradient(135deg, #6b1d34, #2b4133);
+      padding: 2px;
+    }
+    .gradient-border-inner {
+      background: white;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .float-animation {
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .shimmer {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      background-size: 200% 100%;
+      animation: shimmer 3s infinite;
+    }
+    .card-hover {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-4px);
+    }
+  </style>
+</head>
+<body class="bg-stone-50 text-gray-900 antialiased">
+  
+  <!-- Header -->
+  <header class="border-b border-hunter-100 bg-white/80 backdrop-blur-sm sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg shadow-hunter-900/20" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-semibold text-2xl tracking-wide">
+            <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          </span>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#features" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">Features</a>
+        <a href="#pricing" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">Pricing</a>
+        <a href="/about.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">About</a>
+        <a href="/partner.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium tracking-wide transition-colors">For CE Providers</a>
+      </nav>
+      <div class="flex items-center gap-4">
+       <a href="/login.html" class="text-hunter-700 hover:text-hunter-500 text-sm font-medium transition-colors">Sign in</a>
+<a href="/register.html" class="bg-gradient-to-r from-hunter-700 to-hunter-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">Start Free Trial</a>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="relative py-24 px-4 overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 bg-gradient-to-br from-stone-50 via-burgundy-50/30 to-hunter-50/20"></div>
+    <div class="absolute top-20 right-10 w-72 h-72 bg-honey-200/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-10 left-10 w-96 h-96 bg-azure-200/15 rounded-full blur-3xl"></div>
+    
+    <!-- Decorative Elements -->
+    <div class="absolute top-32 left-20 w-2 h-2 bg-honey-400 rounded-full float-animation"></div>
+    <div class="absolute top-48 right-32 w-3 h-3 bg-azure-400 rounded-full float-animation" style="animation-delay: 1s;"></div>
+    <div class="absolute bottom-32 left-40 w-2 h-2 bg-burgundy-400 rounded-full float-animation" style="animation-delay: 2s;"></div>
+    
+    <div class="max-w-5xl mx-auto text-center relative z-10">
+      <div class="inline-flex items-center gap-2 bg-hunter-800 text-honey-300 text-sm font-medium px-5 py-2 rounded-full mb-8 shadow-lg tracking-widest">
+        Learn. License. Lead.
+      </div>
+      
+      <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-semibold text-burgundy-950 mb-6 leading-tight">
+        Your CE Credits.<br>
+        <span class="bg-gradient-to-r from-hunter-700 to-hunter-600 bg-clip-text text-transparent">Finally Organized.</span>
+      </h1>
+      
+      <p class="text-xl text-hunter-800/80 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
+        Track credentials, complete courses, and stay audit-ready — all in one elegant platform designed for mental health professionals.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+        <a href="/register.html" class="group bg-gradient-to-r from-burgundy-800 to-burgundy-700 hover:from-burgundy-900 hover:to-burgundy-800 text-white text-lg font-medium px-8 py-4 rounded-xl flex items-center gap-3 transition-all shadow-xl shadow-burgundy-900/20 hover:shadow-2xl hover:shadow-burgundy-900/30">
+          Start 7-Day Free Trial 
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <a href="#features" class="text-hunter-700 hover:text-burgundy-700 font-medium flex items-center gap-2 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          Learn more
+        </a>
+      </div>
+      
+      <p class="mt-6 text-sm text-hunter-600/70">No credit card required • Cancel anytime</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-24 px-4 bg-white">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-16">
+        <span class="text-honey-600 font-medium text-sm tracking-widest uppercase">Features</span>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold text-burgundy-950 mt-3 mb-4">
+          Everything you need to stay compliant
+        </h2>
+        <p class="text-hunter-700/80 max-w-2xl mx-auto text-lg font-light">
+          Stop juggling spreadsheets and email folders. CounselorReady keeps everything in one place.
+        </p>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Courses -->
+        <div class="group aspect-square bg-gradient-to-br from-burgundy-800 to-burgundy-900 rounded-2xl p-6 flex flex-col items-center justify-center text-center card-hover hover:shadow-2xl cursor-pointer">
+          <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-8 h-8 text-honey-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <h3 class="font-display text-xl font-semibold text-white mb-1">Courses</h3>
+          <p class="text-burgundy-200 text-sm">ACEP #7760</p>
+        </div>
+        
+        <!-- Tracker -->
+        <div class="group aspect-square bg-gradient-to-br from-hunter-700 to-hunter-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center card-hover hover:shadow-2xl cursor-pointer">
+          <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-8 h-8 text-honey-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 class="font-display text-xl font-semibold text-white mb-1">Tracker</h3>
+          <p class="text-hunter-200 text-sm">Multi-state tracking</p>
+        </div>
+        
+        <!-- Storage -->
+        <div class="group aspect-square bg-gradient-to-br from-navy-700 to-slate-800 rounded-2xl p-6 flex flex-col items-center justify-center text-center card-hover hover:shadow-2xl cursor-pointer">
+          <div class="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-8 h-8 text-honey-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+          </div>
+          <h3 class="font-display text-xl font-semibold text-white mb-1">Storage</h3>
+          <p class="text-slate-300 text-sm">Certificate vault</p>
+        </div>
+        
+        <!-- Audit Ready -->
+        <div class="group aspect-square bg-gradient-to-br from-honey-500 to-honey-600 rounded-2xl p-6 flex flex-col items-center justify-center text-center card-hover hover:shadow-2xl cursor-pointer">
+          <div class="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-8 h-8 text-burgundy-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">Audit Ready</h3>
+          <p class="text-burgundy-800 text-sm">One-click packages</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="py-20 px-4 bg-gradient-to-br from-burgundy-900 via-burgundy-800 to-hunter-900 relative overflow-hidden">
+    <div class="absolute inset-0 bg-texture opacity-5"></div>
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-honey-400 via-azure-400 to-honey-400"></div>
+    
+    <div class="max-w-6xl mx-auto relative z-10">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="p-6">
+          <div class="font-display text-5xl font-semibold text-honey-300 mb-2">50</div>
+          <div class="text-burgundy-200 text-sm tracking-wide uppercase">States Supported</div>
+        </div>
+        <div class="p-6">
+          <div class="font-display text-5xl font-semibold text-honey-300 mb-2">24/7</div>
+          <div class="text-burgundy-200 text-sm tracking-wide uppercase">Access Anytime</div>
+        </div>
+        <div class="p-6">
+          <div class="font-display text-5xl font-semibold text-honey-300 mb-2">100%</div>
+          <div class="text-burgundy-200 text-sm tracking-wide uppercase">Online Courses</div>
+        </div>
+        <div class="p-6">
+          <div class="font-display text-5xl font-semibold text-honey-300 mb-2">Free</div>
+          <div class="text-burgundy-200 text-sm tracking-wide uppercase">7-Day Trial</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       WHAT'S INCLUDED — drop between Stats and Pricing in landing.html
+       Pure HTML/CSS/vanilla JS — no React, no dependencies beyond
+       the Tailwind CDN + Google Fonts already loaded on the page.
+       ═══════════════════════════════════════════════════════════════ -->
+  <section id="whats-included" class="py-24 px-4" style="background:#F8F7F4">
+    <div class="max-w-3xl mx-auto">
+      <!-- Section heading -->
+      <div class="text-center" style="margin-bottom:40px">
+        <span style="display:inline-block;margin-bottom:10px;background:#F9F0DB;border:1px solid #D4A855;border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;color:#A67936;letter-spacing:0.06em;text-transform:uppercase;font-family:'Lato',sans-serif">
+          NBCC ACEP Provider #7760
+        </span>
+        <h2 class="font-display" style="font-size:clamp(24px,4vw,34px);font-weight:700;color:#1a1a1a;line-height:1.2;margin-bottom:8px">
+          What You Get with
+          <span style="color:#6B1D34">Counselor</span><span style="color:#4A7C59">Ready</span>
+        </h2>
+        <p style="font-size:15px;color:#6B7280;max-width:480px;margin:0 auto;line-height:1.6;font-family:'Lato',sans-serif">
+          CE that respects your time, your license, and your clinical standards. Tap any benefit to learn more.
+        </p>
+        <!-- Async callout -->
+        <div style="display:inline-flex;align-items:center;gap:8px;margin-top:16px;background:#F0F4F7;border:1px solid rgba(40,65,87,0.13);border-radius:10px;padding:10px 18px;max-width:560px;text-align:left">
+          <svg style="flex-shrink:0;color:#284157" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2.5"/><path stroke-linecap="round" stroke-width="2.5" d="M12 6v6l4 2"/></svg>
+          <p style="font-size:13px;color:#284157;line-height:1.5;margin:0;font-family:'Lato',sans-serif">
+            <strong>All courses are self-paced and asynchronous</strong> — complete them on your schedule, 24/7. Any synchronous or live requirements will be clearly marked.
+          </p>
+        </div>
+      </div>
+      <!-- Benefit cards -->
+      <div id="benefitList" style="display:flex;flex-direction:column;gap:10px;margin-bottom:56px">
+        <!-- 1 — NBCC-Approved CE Courses -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#6B1D34">
+          <div class="cr-benefit-icon" style="background:#FDF5F7">
+            <svg width="22" height="22" fill="none" stroke="#6B1D34" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M22 10v6M2 10l10-5 10 5-10 5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">NBCC-Approved CE Courses</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">50+ interactive courses built to ACEP standards with real clinical depth.</p>
+            <div class="cr-benefit-detail">
+              <p>Every course is approved through NBCC ACEP Provider #7760 and meets rigorous standards: 6,000+ words of instructional content per CE hour, 2–3 knowledge checks per module, and comprehensive final exams requiring an 80% pass rate. Accepted by licensing boards nationwide for LPCs, LMHCs, LCSWs, LMFTs, NCCs, and more.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 2 — Interactive Course Experience -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#4A7C59">
+          <div class="cr-benefit-icon" style="background:#F2F7F4">
+            <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Interactive Course Experience</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Clinical vignettes, decision trees, scenario branching — not walls of text.</p>
+            <div class="cr-benefit-detail">
+              <p>Courses feature continuing clinical characters, branching scenarios that put you in the clinician's chair, accordion deep-dives, flashcard decks, card sorts, reflection exercises, and detailed feedback for every choice — including the consequences of less-optimal decisions.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 3 — Instant Certificates -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#D4A855">
+          <div class="cr-benefit-icon" style="background:#FDF9F0">
+            <svg width="22" height="22" fill="none" stroke="#D4A855" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Instant Certificates</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Pass your posttest — certificate generates immediately.</p>
+            <div class="cr-benefit-detail">
+              <p>Complete your final assessment and your certificate is generated on the spot with a unique Certificate ID, NBCC ACEP stamp, content area designation, and full compliance metadata. No waiting, no emailing, no manual requests. Hours auto-allocate to your linked credentials.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 4 — AI Certificate Scanner -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#284157">
+          <div class="cr-benefit-icon" style="background:#F0F4F7">
+            <svg width="22" height="22" fill="none" stroke="#284157" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">AI Certificate Scanner</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Upload certificates from any provider — AI extracts the details automatically.</p>
+            <div class="cr-benefit-detail">
+              <p>Earned CE hours somewhere else? Upload your certificate and our AI scanner extracts the course title, provider name, CE hours, content category, and approving body — then files it under the right credential automatically. Works with certificates from any CE provider.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 5 — Multi-State Credential Tracking -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#6B1D34">
+          <div class="cr-benefit-icon" style="background:#FDF5F7">
+            <svg width="22" height="22" fill="none" stroke="#6B1D34" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Multi-State Credential Tracking</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Track every license, certification, and specialty in one dashboard.</p>
+            <div class="cr-benefit-detail">
+              <p>Licensed in multiple states? Hold an NCC and BC-TMH? CounselorReady tracks them all simultaneously — each with its own requirements, progress bars, and deadlines. The platform tracks state-specific distinctions like synchronous vs. asynchronous requirements automatically.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 6 — Audit-Ready Reports -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#4A7C59">
+          <div class="cr-benefit-icon" style="background:#F2F7F4">
+            <svg width="22" height="22" fill="none" stroke="#4A7C59" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Audit-Ready Reports</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">One click generates a comprehensive compliance report.</p>
+            <div class="cr-benefit-detail">
+              <p>Generate a full audit report showing every completed CE hour, certificate, content area allocation, and compliance status — organized by credential and renewal period. No scrambling through email inboxes or file folders.</p>
+            </div>
+          </div>
+        </button>
+        <!-- 7 — Signature Course Series -->
+        <button class="cr-benefit" onclick="toggleBenefit(this)" data-color="#D4A855">
+          <div class="cr-benefit-icon" style="background:#FDF9F0">
+            <svg width="22" height="22" fill="none" stroke="#D4A855" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <div class="cr-benefit-body">
+            <div class="cr-benefit-header">
+              <span class="font-display cr-benefit-title">Signature Course Series</span>
+              <svg class="cr-benefit-chev" width="18" height="18" fill="none" stroke="#9CA3AF" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 9l6 6 6-6"/></svg>
+            </div>
+            <p class="cr-benefit-short">Cinema CE and Sounds Like Therapy — clinical rigor meets culture.</p>
+            <div class="cr-benefit-detail">
+              <p>Our Cinema Series brings clinical concepts to life through movie-themed CE. Sounds Like Therapy explores therapeutic themes through the lens of music. These are clinically rigorous courses wrapped in engaging frameworks that make learning stick.</p>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+    <style>
+      .cr-benefit{
+        width:100%;text-align:left;cursor:pointer;
+        background:#FFFFFF;border:1.5px solid #E2DED3;border-radius:12px;
+        padding:18px 22px;
+        transition:all .3s cubic-bezier(.4,0,.2,1);
+        box-shadow:0 1px 3px rgba(0,0,0,.04);
+        font-family:inherit;
+      }
+      .cr-benefit:hover{box-shadow:0 4px 12px rgba(107,29,52,.06);border-color:#C9D7CD}
+      .cr-benefit.open{background:#F2F7F4;border-color:#4A7C59;box-shadow:0 4px 16px rgba(74,124,89,.1)}
+      .cr-benefit .cr-benefit-icon{
+        flex-shrink:0;width:42px;height:42px;border-radius:10px;
+        display:flex;align-items:center;justify-content:center;
+        transition:background .3s;
+      }
+      .cr-benefit.open .cr-benefit-icon{background:#FFFFFF !important}
+      .cr-benefit .cr-benefit-body{flex:1;min-width:0}
+      .cr-benefit .cr-benefit-header{display:flex;justify-content:space-between;align-items:center}
+      .cr-benefit .cr-benefit-title{font-size:17px;font-weight:700;color:#284157}
+      .cr-benefit .cr-benefit-chev{
+        flex-shrink:0;transition:transform .3s,color .3s;
+      }
+      .cr-benefit.open .cr-benefit-chev{transform:rotate(180deg)}
+      .cr-benefit.open .cr-benefit-chev path{stroke:#4A7C59}
+      .cr-benefit .cr-benefit-short{
+        margin:3px 0 0;font-size:14px;color:#6B7280;line-height:1.5;
+        font-family:'Lato',sans-serif;
+      }
+      .cr-benefit .cr-benefit-detail{
+        max-height:0;opacity:0;overflow:hidden;
+        transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s ease;
+      }
+      .cr-benefit.open .cr-benefit-detail{max-height:240px;opacity:1}
+      .cr-benefit .cr-benefit-detail p{
+        margin:10px 0 0;font-size:14px;color:#2C2C2C;line-height:1.75;
+        font-family:'Lato',sans-serif;
+      }
+      /* Layout: icon + body side by side */
+      .cr-benefit>div:first-child,.cr-benefit{display:flex;align-items:flex-start;gap:14px}
+    </style>
+    <script>
+      function toggleBenefit(btn){
+        const wasOpen=btn.classList.contains('open');
+        // Optionally close others (accordion mode):
+        // document.querySelectorAll('.cr-benefit.open').forEach(b=>{if(b!==btn)b.classList.remove('open')});
+        btn.classList.toggle('open',!wasOpen);
+      }
+    </script>
+  </section>
+
+  <!-- Pricing -->
+  <section id="pricing" class="py-24 px-4 bg-stone-50">
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <span class="text-honey-600 font-medium text-sm tracking-widest uppercase">Pricing</span>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold text-burgundy-950 mt-3 mb-4">
+          Simple, transparent pricing
+        </h2>
+        <p class="text-hunter-700/80 text-lg font-light">
+          Choose the plan that works best for your practice
+        </p>
+      </div>
+      
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Free -->
+        <div class="bg-white rounded-2xl p-6 border border-hunter-100 shadow-sm card-hover hover:shadow-xl hover:border-hunter-200">
+          <div class="text-hunter-600 font-medium uppercase text-sm tracking-wide mb-3">Free</div>
+          <div class="flex items-baseline gap-1 mb-6">
+            <span class="font-display text-4xl font-semibold text-burgundy-900">$0</span>
+            <span class="text-hunter-500 font-light">/forever</span>
+          </div>
+          <ul class="space-y-3 mb-8 text-sm">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>4 CE hours</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Unlimited certificate uploads</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Secure document vault</span>
+            </li>
+          </ul>
+          <a href="/register.html" class="block text-center w-full py-3 border-2 border-hunter-600 text-hunter-700 font-semibold rounded-xl hover:bg-hunter-50 transition-all text-sm">
+            Get Started Free
+          </a>
+        </div>
+        
+        <!-- Starter -->
+        <div class="bg-white rounded-2xl p-6 border border-hunter-100 shadow-sm card-hover hover:shadow-xl hover:border-hunter-200">
+          <div class="text-hunter-600 font-medium uppercase text-sm tracking-wide mb-3">Starter</div>
+          <div class="flex items-baseline gap-1 mb-6">
+            <span class="font-display text-4xl font-semibold text-burgundy-900">$19.99</span>
+            <span class="text-hunter-500 font-light">/mo</span>
+          </div>
+          <p class="text-xs text-hunter-500 mb-4">Everything in Free, plus:</p>
+          <ul class="space-y-3 mb-8 text-sm">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Unlimited CE hours</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>CE tracking</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>AI credential scanning</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Audit-ready reports</span>
+            </li>
+          </ul>
+          <a href="/register.html?plan=starter" class="block text-center w-full py-3 bg-hunter-600 text-white font-semibold rounded-xl hover:bg-hunter-700 transition-all text-sm">
+            Start Starter
+          </a>
+        </div>
+        
+        <!-- Professional -->
+        <div class="bg-white rounded-2xl p-6 border-2 border-honey-400 shadow-lg card-hover hover:shadow-xl relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-honey-400 text-burgundy-900 text-xs font-bold px-3 py-1 rounded-full">
+            POPULAR
+          </div>
+          <div class="text-honey-600 font-medium uppercase text-sm tracking-wide mb-3">Professional</div>
+          <div class="flex items-baseline gap-1 mb-6">
+            <span class="font-display text-4xl font-semibold text-burgundy-900">$29.99</span>
+            <span class="text-hunter-500 font-light">/mo</span>
+          </div>
+          <p class="text-xs text-hunter-500 mb-4">Everything in Starter, plus:</p>
+          <ul class="space-y-3 mb-8 text-sm">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Specialty credential tracking (BC-TMH, CPCS, etc.)</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Access to certification courses (Grief, Anger Mgmt, Business Coaching)</span>
+            </li>
+          </ul>
+          <a href="/register.html?plan=professional" class="block text-center w-full py-3 bg-honey-500 text-burgundy-900 font-semibold rounded-xl hover:bg-honey-400 transition-all text-sm">
+            Go Professional
+          </a>
+        </div>
+        
+        <!-- VIP -->
+        <div class="relative bg-gradient-to-br from-burgundy-800 via-burgundy-700 to-hunter-800 rounded-2xl p-6 text-white shadow-2xl card-hover overflow-hidden">
+          <div class="absolute inset-0 bg-texture opacity-5"></div>
+          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-honey-400 to-hunter-400"></div>
+          
+          <div class="relative z-10">
+            <div class="text-honey-300 font-medium uppercase text-sm tracking-wide mb-3">VIP</div>
+            <div class="flex items-baseline gap-1 mb-6">
+              <span class="font-display text-4xl font-semibold">$49.99</span>
+              <span class="text-burgundy-200 font-light">/mo</span>
+            </div>
+            <p class="text-xs text-burgundy-200 mb-4">Everything in Professional, plus:</p>
+            <ul class="space-y-3 mb-8 text-sm">
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Multi-state license tracking</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Renewal reminders (text & calendar)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>1 hardship month/year (rolls over)</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Quarterly 1:1 strategy session</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                <span>Early access to live webinars</span>
+              </li>
+            </ul>
+            <a href="/register.html?plan=vip" class="block text-center w-full py-3 bg-honey-400 text-burgundy-900 font-bold rounded-xl hover:bg-honey-300 transition-all text-sm">
+              Go VIP
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+
+
+  <!-- Testimonial / Trust -->
+  <section class="py-20 px-4 bg-white border-t border-hunter-100">
+    <div class="max-w-4xl mx-auto text-center">
+      <div class="flex justify-center gap-1 mb-6">
+        <svg class="w-6 h-6 text-honey-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        <svg class="w-6 h-6 text-honey-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        <svg class="w-6 h-6 text-honey-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        <svg class="w-6 h-6 text-honey-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+        <svg class="w-6 h-6 text-honey-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+      </div>
+      <blockquote class="font-display text-2xl md:text-3xl text-burgundy-900 font-medium italic mb-6 leading-relaxed">
+        "Finally, a CE platform that understands what counselors actually need. I went from dreading renewal time to feeling completely organized."
+      </blockquote>
+      <div class="text-hunter-600">
+        <span class="font-semibold">Dr. Sarah Mitchell</span> • Licensed Professional Counselor, Georgia
+      </div>
+    </div>
+  </section>
+
+  <!-- Partner offer -->
+  <section class="py-16 px-4 bg-stone-100 border-y border-stone-200">
+    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-8">
+      <div class="flex-1 text-center md:text-left">
+        <div class="inline-block bg-honey-100 text-honey-800 text-xs font-semibold px-3 py-1 rounded-full mb-3 tracking-wide uppercase">For CE Providers & Educators</div>
+        <h2 class="font-display text-2xl md:text-3xl font-bold text-burgundy-900 mb-3">Do you create or deliver continuing education?</h2>
+        <p class="text-stone-600 text-base mb-1">Launch your own branded CE academy on CounselorReady's platform. Issue credits under your own approving body, set your own pricing, and earn on every sale.</p>
+        <p class="text-stone-500 text-sm">White-label platform · Direct Stripe payouts · 14-day free trial</p>
+      </div>
+      <div class="flex-shrink-0">
+        <a href="/become-a-partner" class="inline-flex items-center gap-2 bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-7 py-3.5 rounded-xl transition-colors shadow-md">
+          Become a Partner
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
+        <p class="text-xs text-stone-400 text-center mt-2">No card required to start</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-24 px-4 bg-gradient-to-br from-hunter-800 via-hunter-700 to-burgundy-800 relative overflow-hidden">
+    <div class="absolute inset-0 bg-texture opacity-5"></div>
+    <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-honey-400 via-azure-400 to-honey-400"></div>
+    
+    <div class="max-w-3xl mx-auto text-center relative z-10">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-white mb-4">
+        Ready to simplify your CE tracking?
+      </h2>
+      <p class="text-hunter-200 mb-10 text-lg font-light">
+        Join counselors across the country who trust CounselorReady to keep their credentials organized.
+      </p>
+      <a href="/register.html" class="group inline-flex items-center gap-3 bg-white text-burgundy-800 font-semibold px-8 py-4 rounded-xl hover:bg-honey-50 transition-all shadow-2xl">
+        Start Your Free Trial 
+        <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-16 px-4 bg-hunter-900">
+    <div class="max-w-6xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+            <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
+          </div>
+          <span class="font-display font-semibold text-2xl">
+            <span class="text-white">Counselor</span><span class="text-honey-300">Ready</span>
+          </span>
+        </div>
+        <nav class="flex items-center gap-8">
+          <a href="#features" class="text-hunter-300 hover:text-white text-sm transition-colors">Features</a>
+          <a href="#pricing" class="text-hunter-300 hover:text-white text-sm transition-colors">Pricing</a>
+          <a href="/about.html" class="text-hunter-300 hover:text-white text-sm transition-colors">About</a>
+          <a href="/help.html" class="text-hunter-300 hover:text-white text-sm transition-colors">Help</a>
+          <a href="mailto:support@counselorready.com" class="text-hunter-300 hover:text-white text-sm transition-colors">Contact</a>
+        </nav>
+      </div>
+      
+      <!-- NBCC Badge and ACEP Disclosure -->
+      <div class="border-t border-hunter-700 py-8 mb-6">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
+          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
+          <div class="text-center md:text-left">
+            <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
+            <p class="text-burgundy-300 text-sm">ACEP #7760</p>
+          </div>
+        </div>
+        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
+          CounselorReady is operated by Ga Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE® is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
+        </p>
+      </div>
+      
+      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        <p class="text-burgundy-400 text-sm">© 2026 CounselorReady. All rights reserved.</p>
+        <div class="flex items-center gap-6">
+          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
+          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms of Service</a>
+          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refund Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
