@@ -785,7 +785,12 @@
                 </div>
                 <div>
                   <p class="font-medium text-forest-900">${name}</p>
-                  <p class="text-xs text-forest-500">${user.email}</p>
+                  <div class="flex items-center gap-1.5">
+                    <p class="text-xs text-forest-500">${user.email}</p>
+                    ${user.emailVerified
+                      ? '<span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-green-100 text-green-700">Verified</span>'
+                      : '<span class="px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-red-100 text-red-700">Unverified</span>'}
+                  </div>
                 </div>
               </div>
             </td>

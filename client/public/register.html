@@ -67,6 +67,11 @@
 
         <!-- Form -->
         <form id="registerForm" class="space-y-5">
+          <!-- Honeypot field: hidden from real users, bots that auto-fill forms will populate it -->
+          <div style="position:absolute; left:-9999px; top:-9999px;" aria-hidden="true">
+            <label for="website">Leave this field blank</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label for="firstName" class="block text-sm font-medium text-forest-700 mb-2">
@@ -233,6 +238,7 @@
         const lastName = document.getElementById('lastName').value;
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
+        const website = document.getElementById('website').value;
         const agreeTerms = document.getElementById('agreeTerms').checked;
         const submitBtn = form.querySelector('button[type="submit"]');
 
@@ -265,9 +271,10 @@
             },
             body: JSON.stringify({ 
               firstName, 
-              lastName, 
-              email, 
+              lastName,
+              email,
               password,
+              website,
               agreedToTerms: true,
               agreedAt: new Date().toISOString()
             }),
