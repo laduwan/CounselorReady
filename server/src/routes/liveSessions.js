@@ -95,6 +95,14 @@ router.get('/:id', async (req, res) => {
 // POST /api/live-sessions/:id/register
 router.post('/:id/register', protect, async (req, res) => {
   try {
+    if (req.user.role !== 'admin' && !req.user.isVip()) {
+      return res.status(403).json({
+        error: 'Live sessions are a VIP subscriber benefit.',
+        reason: 'VIP subscription required',
+        requiredTier: 'vip'
+      });
+    }
+
     const session = await findByIdOrSlug(req.params.id);
     if (!session || !session.isPublished) return res.status(404).json({ error: 'Session not found' });
     if (!['scheduled', 'live'].includes(session.status)) {
@@ -148,6 +156,13 @@ router.post('/:id/join', protect, async (req, res) => {
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
     const isAdmin = req.user.role === 'admin';
+    if (!isAdmin && !req.user.isVip()) {
+      return res.status(403).json({
+        error: 'Live sessions are a VIP subscriber benefit.',
+        reason: 'VIP subscription required',
+        requiredTier: 'vip'
+      });
+    }
     if (!isAdmin && !session.isRegistered(req.user._id)) {
       return res.status(403).json({ error: 'You are not registered for this session.' });
     }
