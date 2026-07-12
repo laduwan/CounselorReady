@@ -22,15 +22,20 @@
     "@tiptap/extension-link": "^3.22.1",
     "@tiptap/react": "^3.22.1",
     "@tiptap/starter-kit": "^3.22.1",
-    "axios": "1.13.6",
-    "dompurify": "3.3.2",
-    "jspdf": "2.5.2",
+    "axios": "1.18.1",
+    "dompurify": "3.4.12",
+    "jspdf": "4.2.1",
     "lucide-react": "0.294.0",
     "mammoth": "1.11.0",
     "pdfjs-dist": "5.5.207",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-router-dom": "6.30.3"
+    "react-router-dom": "6.30.4"
+  },
+  "overrides": {
+    "jspdf": {
+      "dompurify": "$dompurify"
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
@@ -41,7 +46,7 @@
     "@vitejs/plugin-react": "4.7.0",
     "autoprefixer": "10.4.27",
     "jsdom": "^28.1.0",
-    "postcss": "8.5.8",
+    "postcss": "8.5.17",
     "tailwindcss": "3.4.19",
     "vite": "5.4.21",
     "vitest": "^4.1.0"
