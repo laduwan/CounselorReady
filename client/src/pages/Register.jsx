@@ -48,6 +48,15 @@ export default function Register() {
     }
   }, [location.search]);
 
+  useEffect(() => {
+    if (document.getElementById('cf-turnstile-script')) return;
+    const s = document.createElement('script');
+    s.id = 'cf-turnstile-script';
+    s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+    s.async = true;
+    document.head.appendChild(s);
+  }, []);
+
   const handleChange = (e) => {
     setFormData(prev => ({
       ...prev,
@@ -68,6 +77,7 @@ export default function Register() {
     
     try {
       const payload = { ...formData };
+      payload.turnstileToken = document.querySelector('[name="cf-turnstile-response"]')?.value || '';
       const slug = new URLSearchParams(location.search).get('partner') || localStorage.getItem('cr_partner_slug');
       if (slug) payload.partnerSlug = slug;
       await register(payload);
@@ -251,6 +261,8 @@ export default function Register() {
                 ))}
               </select>
             </div>
+
+            <div className="cf-turnstile" data-sitekey="YOUR_SITE_KEY_HERE"></div>
 
             <button
               type="submit"
