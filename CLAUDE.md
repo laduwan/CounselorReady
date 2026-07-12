@@ -9,6 +9,9 @@ If a file is not listed in the task, do not open it, do not edit it, do not refa
 > **Fix what is broken. Nothing else.**
 Do not change colors, fonts, components, emojis, sizing, layout, variable names, or file structure unless explicitly asked. Do not refactor working code. Do not rename things for consistency. Do not reorganize imports. Do not upgrade patterns. If it works, leave it alone.
 ---
+## Commit & PR Hygiene
+Never add Co-Authored-By lines or "Generated with Claude Code" footers to commits or PR descriptions.
+---
 ## Architecture: Two `index.html` files (READ BEFORE TOUCHING EITHER)
 CounselorReady is **static-HTML-first** (82 `.html` pages in `client/public/`), but a
 few routes are **React** — most importantly the **course-builder**. This creates a
