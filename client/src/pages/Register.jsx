@@ -262,7 +262,7 @@ export default function Register() {
               </select>
             </div>
 
-            <div className="cf-turnstile" data-sitekey="YOUR_SITE_KEY_HERE"></div>
+            <div className="cf-turnstile" data-sitekey=0x4AAAAAAD0NAWFFy22Hlr7f></div>
 
             <button
               type="submit"
