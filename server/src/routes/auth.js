@@ -33,8 +33,17 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Register
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, firstName, lastName, state, partnerSlug, referralCode } = req.body;
-    
+    const { email, password, firstName, lastName, state, partnerSlug, referralCode, website } = req.body;
+
+    // Honeypot check: "website" is a hidden field real users never see or fill.
+    // Bots that auto-fill every input will populate it, so we quietly pretend
+    // to succeed without creating an account or sending a verification email.
+    if (website) {
+      return res.status(201).json({
+        message: 'Registration successful. Please check your email to verify your account.'
+      });
+    }
+
     if (!email || !password || !firstName) {
       return res.status(400).json({ error: 'Email, password, and first name are required' });
     }
