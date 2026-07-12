@@ -8,7 +8,7 @@
 # ═══════════════════════════════════════════════════════════════
 
 # ── Root ──
-/                    /index.html               200
+/                    /home.html                200
 
 # ── User-facing pages ──
 /dashboard           /dashboard.html           200
