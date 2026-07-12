@@ -29,6 +29,7 @@
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
   </style>
 <script src="/js/cr-gtag.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body class="bg-stone-50 min-h-screen flex flex-col">
   
@@ -164,7 +165,9 @@
             </label>
           </div>
 
-          <button 
+          <div class="cf-turnstile" data-sitekey="YOUR_SITE_KEY_HERE"></div>
+
+          <button
             type="submit"
             class="w-full bg-gradient-to-r from-burgundy-800 to-burgundy-700 hover:from-burgundy-900 hover:to-burgundy-800 text-white font-semibold py-3 px-4 rounded-xl transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -275,6 +278,7 @@
               email,
               password,
               website,
+              turnstileToken: document.querySelector('[name="cf-turnstile-response"]')?.value || '',
               agreedToTerms: true,
               agreedAt: new Date().toISOString()
             }),

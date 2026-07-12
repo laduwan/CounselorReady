@@ -44,6 +44,33 @@ router.post('/register', async (req, res) => {
       });
     }
 
+    // Cloudflare Turnstile verification — only enforced when the secret is
+    // configured, so deploys are safe before the env var exists.
+    if (process.env.TURNSTILE_SECRET_KEY) {
+      const token = req.body.turnstileToken;
+      if (!token) {
+        return res.status(400).json({ error: 'Verification challenge missing. Please refresh and try again.' });
+      }
+      try {
+        const tsRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            secret: process.env.TURNSTILE_SECRET_KEY,
+            response: token,
+            remoteip: req.ip
+          })
+        });
+        const tsData = await tsRes.json();
+        if (!tsData.success) {
+          return res.status(400).json({ error: 'Verification failed. Please refresh and try again.' });
+        }
+      } catch (e) {
+        // Cloudflare unreachable — fail open so real users aren't locked out
+        console.error('Turnstile verify error:', e.message);
+      }
+    }
+
     if (!email || !password || !firstName) {
       return res.status(400).json({ error: 'Email, password, and first name are required' });
     }
