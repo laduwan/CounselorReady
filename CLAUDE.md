@@ -11,6 +11,8 @@ Do not change colors, fonts, components, emojis, sizing, layout, variable names,
 ---
 ## Commit & PR Hygiene
 Never add Co-Authored-By lines or "Generated with Claude Code" footers to commits or PR descriptions.
+After cloning this repo, run `bash tools/install-hooks.sh` before your first commit — it installs a
+commit-msg hook that strips these footers if they slip through.
 ---
 ## Architecture: Two `index.html` files (READ BEFORE TOUCHING EITHER)
 CounselorReady is **static-HTML-first** (82 `.html` pages in `client/public/`), but a
