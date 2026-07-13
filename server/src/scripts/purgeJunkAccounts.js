@@ -14,10 +14,11 @@
  *   - purchasedCourses: empty array
  *   - stripeCustomerId: absent/empty (no Stripe customer)
  *   - subscription.plan: 'free'
- *   - NO UserCourseProgress records (free/trial course access tracked separately)
+ *   - NO records in any known progress collection (usercourseprogresses,
+ *     interactivecourseprogresses, articleprogresses)
  *
- * ⚠️  Course enrollment is tracked in UserCourseProgress, NOT purchasedCourses.
- *     The script cross-checks both. Do NOT remove the progress exclusion step.
+ * ⚠️  Course/article progress is tracked across multiple collections, one per
+ *     content type. All are checked. Do NOT remove any from the list.
  *
  * Usage:
  *   node src/scripts/purgeJunkAccounts.js               # dry run (default)
@@ -35,6 +36,14 @@ if (!MONGODB_URI) { console.error('❌ MONGODB_URI not set'); process.exit(1); }
 
 const HARD_CAP = 200;
 
+// Collections backed by an actual Mongoose model (verified against
+// server/src/models/) that track course/article progress.
+const PROGRESS_COLLECTIONS = [
+  'usercourseprogresses',        // UserCourseProgress model
+  'interactivecourseprogresses', // InteractiveCourseProgress model (InteractiveCourse.js)
+  'articleprogresses',           // ArticleProgress model (ScholarlyArticle.js)
+];
+
 const args = process.argv.slice(2);
 const execute = args.includes('--execute');
 const daysIdx = args.indexOf('--days');
@@ -48,7 +57,6 @@ async function run() {
   await mongoose.connect(MONGODB_URI);
   const db = mongoose.connection.db;
   const users = db.collection('users');
-  const progress = db.collection('usercourseprogresses');
 
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
@@ -71,22 +79,25 @@ async function run() {
     .sort({ createdAt: -1 })
     .toArray();
 
-  // Cross-check: exclude anyone with a UserCourseProgress record.
-  // Free/trial course access is tracked there, NOT in purchasedCourses.
+  // Cross-check ALL progress collections — a user with records in any of them is kept.
   const candidateIds = candidates.map(u => u._id);
-  const hasProgress = candidateIds.length > 0
-    ? await progress.distinct('userId', { userId: { $in: candidateIds } })
-    : [];
-  const hasProgressSet = new Set(hasProgress.map(id => id.toString()));
+  const hasActivitySet = new Set();
 
-  const matches = candidates.filter(u => !hasProgressSet.has(u._id.toString()));
+  if (candidateIds.length > 0) {
+    for (const colName of PROGRESS_COLLECTIONS) {
+      const ids = await db.collection(colName).distinct('userId', { userId: { $in: candidateIds } });
+      ids.forEach(id => hasActivitySet.add(id.toString()));
+    }
+  }
+
+  const matches = candidates.filter(u => !hasActivitySet.has(u._id.toString()));
   const excluded = candidates.length - matches.length;
 
   console.log(`\n${'─'.repeat(60)}`);
   console.log(`  purgeJunkAccounts — ${execute ? '⚠️  EXECUTE MODE' : 'DRY RUN (pass --execute to delete)'}`);
   console.log(`  Age threshold : ${days} day(s) (older than ${cutoff.toISOString()})`);
   console.log(`  Candidates    : ${candidates.length} account(s)`);
-  console.log(`  Excluded      : ${excluded} (have course progress — kept)`);
+  console.log(`  Excluded      : ${excluded} (have course/article progress — kept)`);
   console.log(`  To delete     : ${matches.length} account(s)`);
   console.log(`${'─'.repeat(60)}\n`);
 
