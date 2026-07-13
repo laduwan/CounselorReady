@@ -1,5 +1,5 @@
 // reconcileDuplicates.js
-// Reconciles duplicate interactivecourses documents in three parts.
+// Reconciles duplicate interactivecourses documents in four parts.
 // DRY RUN by default — pass --execute to write changes.
 // Run: node reconcileDuplicates.js [--execute]
 // Requires: MONGODB_URI environment variable
@@ -130,6 +130,47 @@ async function run() {
 
     console.log('');
   }
+
+  // ── PART 4: Assign new codes to collision losers ──────────────────────────
+  console.log('── PART 4: Assigning new codes ────────────────────────────────────────────\n');
+  const reassignments = [
+    { slug: 'beyond-the-uniform-first-responder-families', code: 'CR-307' },
+    { slug: 'small-warriors-big-battles-parental-incarceration', code: 'CR-308' },
+    { slug: 'racial-trauma-affirming-practice', code: 'CR-309' },
+    { slug: 'cultural-humility-in-counseling-practice', code: 'CR-310' },
+  ];
+  for (const r of reassignments) {
+    const taken = await col.findOne({ courseCode: r.code });
+    if (taken != null && taken.slug !== r.slug) {
+      console.log(`  ERROR  code ${r.code} already taken by a different doc`);
+      errors++;
+      continue;
+    }
+    const doc = await col.findOne({ slug: r.slug });
+    if (!doc) {
+      console.log(`  ERROR  doc not found: ${r.slug}`);
+      errors++;
+      continue;
+    }
+    const action = EXECUTE ? 'SET    ' : 'WOULD SET';
+    console.log(`  ${action} courseCode ${r.code} on: ${label(doc)}`);
+    if (EXECUTE) await col.updateOne({ _id: doc._id }, { $set: { courseCode: r.code } });
+    codesTransferred++;
+    console.log('');
+  }
+
+  const chCopy = await col.findOne({ slug: 'cultural-humility-in-counseling-practice-copy' });
+  if (!chCopy) {
+    console.log('  NOTE   cultural-humility copy not found (nothing to delete)');
+  } else {
+    console.log(`  Verify doc to delete: ${label(chCopy)} slug: ${chCopy.slug}`);
+    const action = EXECUTE ? 'DELETED' : 'WOULD DELETE';
+    console.log(`  ${action} cultural-humility copy`);
+    if (EXECUTE) await col.deleteOne({ _id: chCopy._id });
+    docsDeleted++;
+  }
+
+  console.log('');
 
   // ── SUMMARY ───────────────────────────────────────────────────────────────
   console.log('── Summary ───────────────────────────────────────────────────────────────');
