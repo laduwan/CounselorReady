@@ -1,5 +1,5 @@
 // reconcileDuplicates.js
-// Reconciles duplicate interactivecourses documents in three parts.
+// Reconciles duplicate interactivecourses documents in four parts.
 // DRY RUN by default — pass --execute to write changes.
 // Run: node reconcileDuplicates.js [--execute]
 // Requires: MONGODB_URI environment variable
