@@ -14,10 +14,10 @@
  *   - purchasedCourses: empty array
  *   - stripeCustomerId: absent/empty (no Stripe customer)
  *   - subscription.plan: 'free'
+ *   - NO UserCourseProgress records (free/trial course access tracked separately)
  *
- * ⚠️  ~74 TalentLMS-migrated users may have emailVerified: false but are real
- *     customers. The never-logged-in + no-purchases + free-plan guards protect
- *     them. Do NOT weaken any criterion.
+ * ⚠️  Course enrollment is tracked in UserCourseProgress, NOT purchasedCourses.
+ *     The script cross-checks both. Do NOT remove the progress exclusion step.
  *
  * Usage:
  *   node src/scripts/purgeJunkAccounts.js               # dry run (default)
@@ -48,6 +48,7 @@ async function run() {
   await mongoose.connect(MONGODB_URI);
   const db = mongoose.connection.db;
   const users = db.collection('users');
+  const progress = db.collection('usercourseprogresses');
 
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
@@ -63,17 +64,30 @@ async function run() {
     ],
   };
 
-  const matches = await users
+  const candidates = await users
     .find(safeQuery, {
       projection: { email: 1, 'profile.firstName': 1, 'profile.lastName': 1, createdAt: 1 },
     })
     .sort({ createdAt: -1 })
     .toArray();
 
+  // Cross-check: exclude anyone with a UserCourseProgress record.
+  // Free/trial course access is tracked there, NOT in purchasedCourses.
+  const candidateIds = candidates.map(u => u._id);
+  const hasProgress = candidateIds.length > 0
+    ? await progress.distinct('userId', { userId: { $in: candidateIds } })
+    : [];
+  const hasProgressSet = new Set(hasProgress.map(id => id.toString()));
+
+  const matches = candidates.filter(u => !hasProgressSet.has(u._id.toString()));
+  const excluded = candidates.length - matches.length;
+
   console.log(`\n${'─'.repeat(60)}`);
   console.log(`  purgeJunkAccounts — ${execute ? '⚠️  EXECUTE MODE' : 'DRY RUN (pass --execute to delete)'}`);
   console.log(`  Age threshold : ${days} day(s) (older than ${cutoff.toISOString()})`);
-  console.log(`  Matched       : ${matches.length} account(s)`);
+  console.log(`  Candidates    : ${candidates.length} account(s)`);
+  console.log(`  Excluded      : ${excluded} (have course progress — kept)`);
+  console.log(`  To delete     : ${matches.length} account(s)`);
   console.log(`${'─'.repeat(60)}\n`);
 
   if (matches.length === 0) {
