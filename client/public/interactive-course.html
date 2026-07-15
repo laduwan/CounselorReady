@@ -3465,6 +3465,174 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — END PHASE 5 — */
 
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 6 — COMPONENT POLISH (crisp panel language, additive)
+   Unifies section headers, callouts, key takeaways and the
+   knowledge-check component into one consistent card system.
+   CSS only — no render functions or content touched.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ---- Section header: crisp number badge + hairline (non-banner) ---- */
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) {
+  display: flex !important;
+  align-items: center;
+  gap: 14px;
+  padding: 0 0 18px !important;
+  margin-bottom: 30px !important;
+  background: none !important;
+  border: none !important;
+  border-bottom: 1px solid var(--cr-border, #E0DACE) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) .cr-section-divider-number {
+  flex-shrink: 0;
+  width: 44px !important;
+  height: 44px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  background: var(--cr-burgundy, #6B1D34) !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-family: 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+  margin: 0 !important;
+}
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) .cr-section-divider-number::after {
+  content: none !important;
+}
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) h2 {
+  font-size: 22px !important;
+  margin: 0 !important;
+}
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) p {
+  margin-top: 4px !important;
+}
+
+/* ---- Callouts: crisp card, hairline + colored left accent, sans micro-label ---- */
+.cr-callout {
+  border-top: 1px solid var(--cr-border, #E0DACE) !important;
+  border-right: 1px solid var(--cr-border, #E0DACE) !important;
+  border-bottom: 1px solid var(--cr-border, #E0DACE) !important;
+  border-left-width: 3px !important;
+  border-left-style: solid !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+  padding: 14px 16px !important;
+}
+.cr-callout-icon { display: none !important; }
+.cr-callout-title,
+.cr-callout > h4:first-child {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  margin: 0 0 7px !important;
+}
+
+/* ---- Key takeaway: crisp white card, hunter top accent (override inline styles) ---- */
+.cr-block[data-block-type="keyTakeaway"] > div {
+  background: #fff !important;
+  border: 1px solid var(--cr-border, #E0DACE) !important;
+  border-top: 3px solid var(--cr-hunter, #4A7C59) !important;
+  border-radius: 10px !important;
+  padding: 15px 17px !important;
+}
+.cr-block[data-block-type="keyTakeaway"] > div > div:first-child > span:first-child {
+  display: none !important;
+}
+.cr-block[data-block-type="keyTakeaway"] > div > div:first-child > span:last-child {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--cr-hunter, #4A7C59) !important;
+}
+
+/* ---- Knowledge check: expanded state becomes one cohesive panel ---- */
+.cr-kc.cr-collapsible.cr-kc-open {
+  background: #fff !important;
+  border: 1.5px solid var(--cr-burgundy, #6B1D34) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  padding: 0 !important;
+}
+.cr-kc.cr-collapsible.cr-kc-open::before { display: none !important; }
+.cr-kc.cr-kc-open .cr-kc-reveal {
+  margin: 0 !important;
+  border: none !important;
+  border-bottom: 1px solid #EBD7DD !important;
+  border-radius: 0 !important;
+  background: rgba(107, 29, 52, 0.04) !important;
+}
+.cr-kc.cr-kc-open .cr-kc-question { margin: 18px 18px 16px !important; }
+.cr-kc.cr-kc-open .cr-kc-options { margin: 0 18px !important; border-top: none !important; }
+.cr-kc.cr-kc-open .cr-kc-submit { margin: 16px 18px 4px !important; }
+.cr-kc.cr-kc-open .cr-kc-explanation { margin: 16px 18px 18px !important; }
+
+/* ---- KC options: clean rounded rows with live states ---- */
+.cr-kc-options { gap: 9px !important; border-top: none !important; }
+.cr-kc-option {
+  border: 1.5px solid var(--cr-border, #E0DACE) !important;
+  border-radius: 10px !important;
+  background: #fff !important;
+  padding: 13px 15px !important;
+  align-items: flex-start !important;
+}
+.cr-kc-option:hover:not(.answered) {
+  border-color: var(--cr-burgundy-light, #8A3A52) !important;
+  background: var(--cr-burgundy-faded, rgba(107, 29, 52, 0.04)) !important;
+}
+.cr-kc-option.selected {
+  border-color: var(--cr-burgundy, #6B1D34) !important;
+  background: rgba(107, 29, 52, 0.05) !important;
+}
+.cr-kc-option.correct {
+  border-color: var(--cr-success, #4A7C59) !important;
+  border-bottom-color: var(--cr-success, #4A7C59) !important;
+  background: rgba(74, 124, 89, 0.06) !important;
+}
+.cr-kc-option.incorrect {
+  border-color: var(--cr-danger, #B91C1C) !important;
+  border-bottom-color: var(--cr-danger, #B91C1C) !important;
+  background: rgba(185, 28, 28, 0.05) !important;
+}
+
+/* ---- Check Answer: filled hunter-green button ---- */
+.cr-kc-submit {
+  background: var(--cr-hunter, #4A7C59) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 11px 22px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+.cr-kc-submit:hover:not(:disabled),
+.cr-kc-submit:focus:not(:disabled) {
+  background: #3E6B4C !important;
+  color: #fff !important;
+}
+.cr-kc-submit:disabled {
+  background: var(--cr-border, #E0DACE) !important;
+  color: var(--cr-text-muted, #9CA3AF) !important;
+  border: none !important;
+  opacity: 1 !important;
+}
+
+/* — END PHASE 6 — */
+
 </style>
 <!-- .docx parsing -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
