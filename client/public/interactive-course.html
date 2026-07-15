@@ -3221,6 +3221,50 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 /* — END PHASE 3 — */
 
 
+/* ---- Knowledge checks: collapsed behind a reveal bar until the learner is ready ---- */
+.cr-kc.cr-collapsible { padding-top: 0 !important; }
+.cr-kc.cr-collapsible::before { display: none !important; }
+.cr-kc-reveal {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  margin: 0; padding: 13px 18px;
+  background: var(--cr-surface, #fff);
+  border: 1.5px solid var(--cr-border, #E0DACE);
+  border-radius: 999px;
+  cursor: pointer; text-align: left;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.cr-kc-reveal:hover {
+  border-color: var(--cr-burgundy-light, #8A3A52);
+  background: var(--cr-burgundy-faded, rgba(107, 29, 52, 0.04));
+}
+.cr-kc-reveal-icon {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--cr-hunter, #4A7C59); color: #fff;
+  font-size: 13px; font-weight: 700; line-height: 1;
+}
+.cr-kc-reveal-label {
+  font-size: 12.5px; font-weight: 700; letter-spacing: 0.07em;
+  text-transform: uppercase; color: var(--cr-burgundy, #6B1D34);
+}
+.cr-kc-reveal-hint {
+  margin-left: auto; font-size: 12.5px; font-style: italic;
+  color: var(--cr-text-muted, #6B7280);
+}
+.cr-kc-reveal-chevron {
+  flex-shrink: 0; margin-left: 10px; font-size: 18px; line-height: 1;
+  color: var(--cr-text-muted, #6B7280); transition: transform 0.18s ease;
+}
+.cr-kc.cr-kc-open .cr-kc-reveal-chevron { transform: rotate(90deg); }
+.cr-kc.cr-kc-open .cr-kc-reveal-hint { display: none; }
+.cr-kc.cr-kc-open .cr-kc-reveal {
+  margin-bottom: 20px;
+  border-color: var(--cr-burgundy, #6B1D34);
+}
+.cr-kc.cr-collapsible:not(.cr-kc-open) > :not(.cr-kc-reveal) { display: none !important; }
+
+
 /* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
    May 22, 2026
@@ -8763,5 +8807,55 @@ function dismissNPS() {
 })();
 </script>
 <script src="cr-retrieval-popup.js" defer></script>
+<script>
+/* Collapsible knowledge checks — additive enhancement, no render fns touched.
+   Each .cr-kc (multipleChoice / multiSelect) starts collapsed behind a reveal
+   bar so questions don't distract during reading; tap to expand when ready. */
+(function () {
+  function makeReveal(kc) {
+    if (!kc || kc.dataset.crCollapsible) return;
+    kc.dataset.crCollapsible = '1';
+    kc.classList.add('cr-collapsible');
+    var bar = document.createElement('button');
+    bar.type = 'button';
+    bar.className = 'cr-kc-reveal';
+    bar.setAttribute('aria-expanded', 'false');
+    bar.innerHTML =
+      '<span class="cr-kc-reveal-icon" aria-hidden="true">?</span>' +
+      '<span class="cr-kc-reveal-label">Knowledge check</span>' +
+      '<span class="cr-kc-reveal-hint">Tap when you\u2019re ready</span>' +
+      '<span class="cr-kc-reveal-chevron" aria-hidden="true">\u203A</span>';
+    bar.addEventListener('click', function () {
+      var open = kc.classList.toggle('cr-kc-open');
+      bar.setAttribute('aria-expanded', String(open));
+    });
+    kc.insertBefore(bar, kc.firstChild);
+  }
+  function scan(root) {
+    var list = (root || document).querySelectorAll('.cr-kc');
+    for (var i = 0; i < list.length; i++) makeReveal(list[i]);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { scan(); });
+  } else { scan(); }
+  try {
+    var mo = new MutationObserver(function (muts) {
+      for (var i = 0; i < muts.length; i++) {
+        var added = muts[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var n = added[j];
+          if (n.nodeType !== 1) continue;
+          if (n.classList && n.classList.contains('cr-kc')) makeReveal(n);
+          else if (n.querySelectorAll) {
+            var inner = n.querySelectorAll('.cr-kc');
+            for (var k = 0; k < inner.length; k++) makeReveal(inner[k]);
+          }
+        }
+      }
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
