@@ -1,3 +1,12 @@
+/**
+ * ⚠️  LEGACY — DO NOT EXTEND.
+ *
+ * The live course viewer is client/public/interactive-course.html (static, single-file).
+ * This component exports CourseBuilderV2 and is retained only for that export.
+ *
+ * New viewer features go in interactive-course.html. React solutions break the
+ * static-HTML-first architecture. See CLAUDE.md.
+ */
 // DROP INTO: /client/src/components/CourseBuilder.jsx
 
 import { useState, useCallback, useRef, useEffect } from "react";
