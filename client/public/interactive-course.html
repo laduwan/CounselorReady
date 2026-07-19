@@ -1967,13 +1967,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 /* Section/module title — burgundy to match the italic numeral.
    The section divider uses its own markup (not h2/h3), so it needs
    explicit selectors to inherit the H1 brand color. */
-.cr-block[data-block-type="sectionDivider"] h1,
-.cr-block[data-block-type="sectionDivider"] h2,
-.cr-block[data-block-type="sectionDivider"] .cr-section-title,
-.cr-block[data-block-type="sectionDivider"] [data-section-title],
-.cr-section-divider h1,
-.cr-section-divider h2,
-.cr-section-divider .cr-section-title,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) h1,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) h2,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) .cr-section-title,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) [data-section-title],
+.cr-section-divider:not(.has-banner) h1,
+.cr-section-divider:not(.has-banner) h2,
+.cr-section-divider:not(.has-banner) .cr-section-title,
 .cr-divider-title {
   font-family: var(--cr-font-serif);
   font-size: 24px;
