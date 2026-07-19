@@ -487,7 +487,7 @@
       const ch = document.getElementById('ceHoursFilter').value;
 
       filtered = allCourses.filter(c => {
-        const mQ = !q || (c.title || '').toLowerCase().includes(q) || (c.slug || '').includes(q);
+        const mQ = !q || (c.title || '').toLowerCase().includes(q) || (c.slug || '').includes(q) || (c.courseCode || '').toLowerCase().includes(q);
         const mS = !st || c.status === st;
         const mC = !ct || c._health === ct;
         const hrs = c.ceHours || c.ceuHours || 0;
@@ -567,6 +567,7 @@
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <h3 class="font-display text-lg font-semibold text-burgundy-900">${esc(c.title || 'Untitled')}</h3>
+                ${c.courseCode ? `<span class="text-xs font-mono text-burgundy-700 bg-burgundy-50 px-2 py-0.5 rounded border border-burgundy-200">${esc(c.courseCode)}</span>` : `<span class="text-xs font-mono text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-200">no code</span>`}
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${h.bg} ${h.text} ${h.border} whitespace-nowrap">
                   ${h.label}
                 </span>
