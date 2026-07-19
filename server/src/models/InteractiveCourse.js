@@ -430,6 +430,11 @@ const CourseSchema = new mongoose.Schema({
     enum: ['free', 'subscription', 'purchase'],
     default: 'subscription'
   },
+  visibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
   approvalBody: { type: String, default: 'NBCC' },
   price: Number,
 

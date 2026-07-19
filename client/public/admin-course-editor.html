@@ -106,6 +106,7 @@
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Status</label><select id="f-status" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Price ($)</label><input type="number" id="f-price" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"></div>
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Access Type</label><select id="f-accessType" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="subscription">Subscription</option><option value="purchase">Purchase</option><option value="free">Free</option></select></div>
+        <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Visibility</label><select id="f-visibility" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="public">Public (in catalog)</option><option value="private">Private (code only)</option></select></div>
       </div>
     </div>
     <div class="bg-gradient-to-br from-forest-50 to-blue-50 border-2 border-forest-200 rounded-xl p-5 mb-4">
@@ -299,6 +300,7 @@ function populateForm() {
   setVal('f-courseCode', c.courseCode); setVal('f-ceHours', c.ceHours || c.ceuHours);
   setVal('f-ceCategory', c.ceCategory); setVal('f-status', c.isPublished ? 'published' : (c.status || 'draft'));
   setVal('f-price', c.price); setVal('f-accessType', c.accessType);
+  setVal('f-visibility', c.visibility || 'public');
   setVal('f-minimumTimeMinutes', c.minimumTimeMinutes || ''); updateTimerDisplay();
   setVal('f-r-passThreshold', c.passThreshold || c.assessment?.passingScore || 80);
   setVal('f-r-maxAttempts', c.maxAttempts || c.assessment?.attemptsAllowed || 3);
@@ -440,6 +442,7 @@ async function saveAll() {
     ceCategory: document.getElementById('f-ceCategory').value, status, isPublished: status === 'published',
     price: parseFloat(document.getElementById('f-price').value) || 0,
     accessType: document.getElementById('f-accessType').value,
+    visibility: document.getElementById('f-visibility').value,
     minimumTimeMinutes: parseInt(document.getElementById('f-minimumTimeMinutes').value) || 0,
     passThreshold: parseInt(document.getElementById('f-r-passThreshold').value) || 80,
     maxAttempts: parseInt(document.getElementById('f-r-maxAttempts').value) || 3,

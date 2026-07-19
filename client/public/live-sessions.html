@@ -34,6 +34,15 @@
     </header>
 
     <div id="alert" class="hidden mb-6 rounded-lg px-4 py-3 text-sm"></div>
+
+    <div class="mb-8 bg-white rounded-xl border p-4 flex items-end gap-3 flex-wrap" style="border-color:#EDE9E3;">
+      <div class="flex-1 min-w-[220px]">
+        <label for="sessionCodeInput" class="block text-sm font-medium mb-2" style="color:#284157;">Have a private session code?</label>
+        <input type="text" id="sessionCodeInput" placeholder="Enter code" onkeydown="if(event.key==='Enter'){event.preventDefault();lookupSessionByCode(this.value);}" class="w-full px-4 py-3 border rounded-xl outline-none" style="border-color:#EDE9E3;">
+      </div>
+      <button type="button" onclick="lookupSessionByCode(document.getElementById('sessionCodeInput').value)" class="cta rounded-lg px-4 py-3 font-semibold text-sm">Go</button>
+    </div>
+
     <div id="sessions" class="grid gap-5">
       <div class="text-center py-16" style="color:#284157;" id="loading">Loading upcoming sessions…</div>
     </div>
@@ -99,6 +108,18 @@
         }
       } catch (e) {
         document.getElementById('sessions').innerHTML = '<div class="text-center py-16 text-red-700">Could not load sessions. Please refresh.</div>';
+      }
+    }
+
+    async function lookupSessionByCode(code) {
+      if (!code || !code.trim()) return;
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/code/${encodeURIComponent(code.trim())}`);
+        if (!res.ok) { showAlert('No session found for that code.', false); return; }
+        const { session } = await res.json();
+        window.location.href = `/live-room.html?session=${encodeURIComponent(session.slug)}`;
+      } catch (error) {
+        showAlert('Network error. Please try again.', false);
       }
     }
 
