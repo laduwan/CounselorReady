@@ -8176,11 +8176,20 @@ function buildTitlePageOverview() {
   h += '<div style="text-align:center;margin-top:30px">'
      + '<button class="cr-btn cr-btn-primary" style="font-size:1.1em;padding:14px 40px" data-action="goToSection" data-idx="1">Begin Course →</button></div>';
 
+  const firstSectionDivider = course.sections[0]?.contentBlocks?.find(b => b && b.type === 'sectionDivider');
+  const overviewBanner = firstSectionDivider && typeof firstSectionDivider.bannerImage === 'string' ? firstSectionDivider.bannerImage : null;
+
   course.sections.unshift({
     title: 'Course Overview',
     _isOverview: true,
     contentBlocks: [
-      { type: 'sectionDivider', title: course.title, sectionNumber: '', subtitle: 'Course Overview' },
+      {
+        type: 'sectionDivider',
+        title: course.title,
+        sectionNumber: '',
+        subtitle: 'Course Overview',
+        ...(overviewBanner ? { bannerImage: overviewBanner, bannerAlt: course.title } : {}),
+      },
       { type: 'text', content: h }
     ]
   });
