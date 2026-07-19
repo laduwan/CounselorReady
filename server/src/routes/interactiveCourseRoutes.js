@@ -292,6 +292,7 @@ router.get('/', async (req, res) => {
         { partnerId: { $in: listedIds } }
       ]
     }]);
+    query.visibility = { $ne: 'private' };
 
     const courses = await Course.find(query)
       .select('title slug status courseCode description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber partnerId')
@@ -366,6 +367,29 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
     res.json({ success: true, data: gated });
   } catch (error) {
     console.error('Error fetching course:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch course' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/code/:courseCode
+ * Direct lookup by courseCode — works for public AND private courses.
+ * This is the only way to reach a private course without knowing its slug/id.
+ */
+router.get('/code/:courseCode', optionalAuth, async (req, res) => {
+  try {
+    const escapedCode = req.params.courseCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const course = await Course.findOne({
+      courseCode: new RegExp(`^${escapedCode}$`, 'i'),
+      status: 'published'
+    });
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
+  } catch (error) {
+    console.error('Error fetching course by code:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
   }
 });

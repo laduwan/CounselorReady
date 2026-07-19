@@ -216,6 +216,22 @@
           </div>
         </div>
 
+        <!-- Visibility & Access Code -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Visibility</label>
+            <select name="visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+              <option value="public">Public (in catalog)</option>
+              <option value="private">Private (code only)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
+            <input type="text" name="accessCode" placeholder="e.g. ETHICS2026"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+
         <!-- Attendance Threshold -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
@@ -585,7 +601,9 @@
         price: parseFloat(fd.get('price') || '0'),
         attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
         recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
-        isPublished: !!fd.get('isPublished')
+        isPublished: !!fd.get('isPublished'),
+        visibility: fd.get('visibility') || 'public',
+        accessCode: (fd.get('accessCode') || '').trim()
       };
 
       try {

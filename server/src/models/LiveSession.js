@@ -106,6 +106,12 @@ const liveSessionSchema = new mongoose.Schema({
   capacity: { type: Number, default: 50, min: 1, max: 200 },
   price: { type: Number, default: 0, min: 0 }, // USD; 0 = free / included
   isPublished: { type: Boolean, default: false, index: true },
+  visibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
+  accessCode: { type: String, trim: true, uppercase: true },
 
   registrants: [registrantSchema],
   attendance: [attendanceSchema],

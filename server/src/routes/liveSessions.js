@@ -37,7 +37,8 @@ router.get('/upcoming', async (req, res) => {
       isPublished: true,
       sessionType: 'live-course',
       status: { $in: ['scheduled', 'live'] },
-      scheduledEnd: { $gte: new Date() }
+      scheduledEnd: { $gte: new Date() },
+      visibility: { $ne: 'private' }
     }).sort({ scheduledStart: 1 }).limit(50);
     res.json({ sessions: sessions.map(s => s.toPublicJSON()) });
   } catch (err) {
@@ -76,6 +77,22 @@ router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[live] admin/all:', err.message);
     res.status(500).json({ error: 'Failed to load sessions' });
+  }
+});
+
+// GET /api/live-sessions/code/:accessCode — direct lookup, public AND private sessions
+router.get('/code/:accessCode', async (req, res) => {
+  try {
+    const session = await LiveSession.findOne({
+      accessCode: req.params.accessCode.toUpperCase().trim()
+    });
+    if (!session || (!session.isPublished && session.sessionType === 'live-course')) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+    res.json({ session: session.toPublicJSON() });
+  } catch (err) {
+    console.error('[live] code lookup:', err.message);
+    res.status(500).json({ error: 'Failed to load session' });
   }
 });
 
