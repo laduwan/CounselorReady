@@ -8139,6 +8139,8 @@ function buildTitlePageOverview() {
 
   const ceHours = course.ceHours || course.ceuHours || 0;
   const mins = ceHours ? Math.round(ceHours * 60) : 0;
+  const description = course.description || '';
+  const targetAudience = Array.isArray(course.targetAudience) ? course.targetAudience : [];
   const objectives = Array.isArray(course.objectives) ? course.objectives : [];
   const areas = Array.isArray(course.nbccContentAreas) ? course.nbccContentAreas : [];
   const instructor = course.instructor || '';
@@ -8154,6 +8156,12 @@ function buildTitlePageOverview() {
   if (mins) {
     h += '<div style="display:inline-block;background:var(--cr-navy-faded);border-radius:8px;padding:8px 12px;margin-bottom:18px">'
        + '<span style="font-family:var(--cr-font-sans);font-size:12px;color:var(--cr-navy)"><strong>Estimated time:</strong> ~' + Math.round(mins / 60 * 10) / 10 + ' hr</span></div>';
+  }
+  if (description) {
+    h += '<p style="font-family:var(--cr-font-sans);font-size:14px;line-height:1.6;color:var(--cr-text-secondary);margin:0 0 18px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
+  }
+  if (targetAudience.length) {
+    h += '<p style="font-family:var(--cr-font-sans);font-size:13px;color:var(--cr-text-secondary);margin:0 0 18px"><strong style="color:var(--cr-navy)">Intended for:</strong> ' + esc(targetAudience.join(', ')) + '</p>';
   }
   if (objectives.length) {
     h += '<h2>Learning Objectives</h2><ol style="padding-left:1.2em">';
