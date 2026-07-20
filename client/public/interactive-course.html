@@ -3310,6 +3310,107 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 .cr-kc.cr-collapsible:not(.cr-kc-open) > :not(.cr-kc-reveal) { display: none !important; }
 
+/* ═══════════════════════════════════════════════════════════════
+   PRECOMMIT — v1
+   preCommit: respond-before-you-read prompt (minimal, borderless,
+   mirrors .cr-reflection conventions). preCommitReveal: two-column
+   self-comparison — the learner's own response beside the expert
+   model response. No scoring UI.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-precommit {
+  background: transparent;
+  border: none;
+  padding: 4px 0 8px;
+  margin: 0 0 32px;
+  max-width: 640px;
+}
+.cr-precommit-prompt {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 19px;
+  font-style: italic;
+  color: var(--cr-navy, #284157);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.cr-precommit textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--cr-border, #C4BCAB);
+  padding: 12px 4px;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body, #1F2937);
+  min-height: 90px;
+  width: 100%;
+  outline: none;
+  resize: vertical;
+  transition: border-bottom-color 0.18s ease;
+}
+.cr-precommit textarea:focus { border-bottom-color: var(--cr-burgundy, #6B1D34); border-bottom-width: 2px; }
+.cr-precommit textarea:disabled { opacity: 0.65; resize: none; }
+.cr-precommit-commit {
+  margin-top: 12px;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-burgundy, #6B1D34);
+  background: transparent;
+  border: 1.5px solid var(--cr-burgundy, #6B1D34);
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.cr-precommit-confirm {
+  margin-top: 12px;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--cr-text-muted, #6B7280);
+}
+
+.cr-precommit-reveal {
+  display: flex;
+  gap: 32px;
+  margin: 0 0 32px;
+}
+.cr-precommit-reveal-col { flex: 1 1 0; min-width: 0; }
+.cr-precommit-reveal-yours {
+  border-right: 1px solid rgba(40, 65, 87, 0.18);
+  padding-right: 32px;
+}
+.cr-precommit-reveal-label {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cr-burgundy, #6B1D34);
+  margin: 0 0 10px;
+}
+.cr-precommit-reveal-yours-text,
+.cr-precommit-reveal-expert .cr-prose {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body, #1F2937);
+}
+.cr-precommit-reveal-skipped {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--cr-text-muted, #6B7280);
+  margin: 0 0 10px;
+}
+@media (max-width: 640px) {
+  .cr-precommit-reveal { flex-direction: column; gap: 24px; }
+  .cr-precommit-reveal-yours {
+    border-right: none;
+    border-bottom: 1px solid rgba(40, 65, 87, 0.18);
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
@@ -5222,6 +5323,8 @@ function renderBlock(block, index) {
     case 'timeline': return renderTimeline(wrap, block, index);
     case 'hotspot': return renderHotspot(wrap, block, index);
     case 'reflection': return renderReflection(wrap, block, index);
+    case 'preCommit': return renderPreCommit(wrap, block, index);
+    case 'preCommitReveal': return renderPreCommitReveal(wrap, block, index);
     case 'resources':
     case 'deliverables': return renderResources(wrap, block);
     case 'videoEmbed': return renderVideoEmbed(wrap, block);
@@ -6023,6 +6126,69 @@ function crEarnReflection(blockDomId) {
     }
   })
   .catch(() => {}); // Fire-and-forget; never block the UI on network errors.
+}
+
+// ─── PRE-COMMIT (respond-before-you-read) ───
+// Client-side only in v1: the learner's response is kept in sessionStorage,
+// keyed by course slug/id + preCommitId, purely so the paired preCommitReveal
+// block later in the same section can show it beside the expert model
+// response. Nothing is graded or transmitted to the server.
+function crPreCommitKey(preCommitId) {
+  return 'crPreCommit:' + crSlugOrId() + ':' + (preCommitId || '');
+}
+
+function renderPreCommit(wrap, block, blockIndex) {
+  const id = `precommit-${currentSectionIndex}-${blockIndex}`;
+  const key = crPreCommitKey(block.preCommitId);
+  const saved = sessionStorage.getItem(key);
+  let html = '<div class="cr-precommit">'
+    + '<div class="cr-precommit-prompt">' + esc(block.question || 'Before reading on, what would you say?') + '</div>';
+  if (saved !== null) {
+    html += '<textarea id="' + id + '-textarea" disabled>' + esc(saved) + '</textarea>'
+      + "<div class=\"cr-precommit-confirm\">Saved — you'll revisit this at the end of the section.</div>";
+  } else {
+    html += '<textarea id="' + id + '-textarea" placeholder="Write your response here…"></textarea>'
+      + '<button class="cr-precommit-commit" data-action="preCommitCommit" data-target="' + id + '" data-key="' + esc(key) + '">Commit my response</button>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+function preCommitCommit(el) {
+  const targetId = el.dataset.target;
+  const key = el.dataset.key;
+  const textarea = document.getElementById(targetId + '-textarea');
+  if (!textarea) return;
+  sessionStorage.setItem(key, textarea.value);
+  textarea.disabled = true;
+  el.insertAdjacentHTML('afterend', "<div class=\"cr-precommit-confirm\">Saved — you'll revisit this at the end of the section.</div>");
+  el.remove();
+}
+
+function renderPreCommitReveal(wrap, block, blockIndex) {
+  const key = crPreCommitKey(block.preCommitId);
+  const saved = sessionStorage.getItem(key);
+  let yourResponseHtml;
+  if (saved !== null) {
+    yourResponseHtml = '<div class="cr-precommit-reveal-yours-text cr-prose"><p>' + esc(saved) + '</p></div>';
+  } else {
+    const id = `precommitreveal-${currentSectionIndex}-${blockIndex}`;
+    yourResponseHtml = '<p class="cr-precommit-reveal-skipped">You skipped the earlier prompt — jot your thinking now</p>'
+      + '<textarea id="' + id + '-textarea" placeholder="Write your response here…"></textarea>';
+  }
+  let html = '<div class="cr-precommit-reveal">'
+    + '<div class="cr-precommit-reveal-col cr-precommit-reveal-yours">'
+    +   '<p class="cr-precommit-reveal-label">Your response</p>'
+    +   yourResponseHtml
+    + '</div>'
+    + '<div class="cr-precommit-reveal-col cr-precommit-reveal-expert">'
+    +   '<p class="cr-precommit-reveal-label">Expert model</p>'
+    +   '<div class="cr-prose">' + (block.modelResponse || '') + '</div>'
+    + '</div>'
+    + '</div>';
+  wrap.innerHTML = html;
+  return wrap;
 }
 
 // ─── RESOURCES ───
@@ -8505,7 +8671,8 @@ document.addEventListener('click', function(e) {
     case 'ttsPause': ttsPause(); break;
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
-    
+    case 'preCommitCommit': preCommitCommit(el); break;
+
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;
     case 'retryAssessmentSave': retryAssessmentSave(); break;
