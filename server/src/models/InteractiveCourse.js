@@ -51,6 +51,8 @@ const ContentBlockSchema = new mongoose.Schema({
       'matching',
       'multiSelect',
       'multipleChoice',
+      'preCommit',
+      'preCommitReveal',
       'quiz',
       'references',
       'reflection',
@@ -119,7 +121,11 @@ const ContentBlockSchema = new mongoose.Schema({
   
   // Reflection
   minLength: { type: Number, default: 50 },
-  
+
+  // ── preCommit / preCommitReveal ──
+  preCommitId: String,   // shared key linking the pair within a section
+  modelResponse: String, // HTML — expert answer, shown only on reveal
+
   // Resources
   resources: [{
     title: String,

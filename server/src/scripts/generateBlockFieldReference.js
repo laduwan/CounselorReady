@@ -58,6 +58,8 @@ const RENDER_TO_TYPE = {
   renderCallout: 'callout',
   renderFillInBlank: 'fillInBlank',
   renderKeyTakeaway: 'keyTakeaway',
+  renderPreCommit: 'preCommit',
+  renderPreCommitReveal: 'preCommitReveal',
   renderStatCard: 'statCard',
   renderCaseStudy: 'caseStudy',
   renderPullQuote: 'pullQuote',

@@ -500,7 +500,18 @@ These are the EXACT field shapes the CReady Viewer renders. Using anything else 
 // ── keyTakeaway ──
 { type: "keyTakeaway", title: "Key Takeaways",
   takeaways: ["Point 1", "Point 2", "Point 3"] }
+
+// ── preCommit / preCommitReveal (respond-before-you-read pair) ──
+{ type: "preCommit", preCommitId: "shared-key-1", question: "Before reading on, what would YOU say to this client?" }
+// ... teaching content in between ...
+{ type: "preCommitReveal", preCommitId: "shared-key-1",
+  modelResponse: "<p>HTML — the expert's answer, shown beside the learner's own response.</p>" }
 ```
+
+**preCommit authoring rule:** a `preCommit` / `preCommitReveal` pair MUST share the same
+`preCommitId`. The `preCommitReveal` must appear in the SAME section as its `preCommit`,
+after the teaching content it precedes, and before that section's final knowledge check.
+Max 1 preCommit/preCommitReveal pair per section.
 
 ---
 
