@@ -1,6 +1,6 @@
 # BLOCK FIELD REFERENCE (Tier 1 — GENERATED, DO NOT HAND-EDIT)
 
-> Source hash `45870fea891f` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
+> Source hash `00a010b503c2` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
 > **Source of truth:** the `renderX()` functions in `client/public/interactive-course.html`.
 > Field names below are extracted from `block.<field>` reads in those functions.
 > If a seed or the builder writes a field NOT listed here, the viewer ignores it
