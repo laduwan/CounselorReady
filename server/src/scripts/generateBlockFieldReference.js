@@ -46,6 +46,7 @@ const RENDER_TO_TYPE = {
   renderImage: 'image',
   renderAccordion: 'accordion',
   renderMultipleChoice: 'multipleChoice',
+  renderTranscriptCoding: 'transcriptCoding',
   renderMultiSelect: 'multiSelect',
   renderMatching: 'matching',
   renderFlashcardDeck: 'flashcardDeck',

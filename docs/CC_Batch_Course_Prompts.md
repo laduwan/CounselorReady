@@ -506,12 +506,27 @@ These are the EXACT field shapes the CReady Viewer renders. Using anything else 
 // ... teaching content in between ...
 { type: "preCommitReveal", preCommitId: "shared-key-1",
   modelResponse: "<p>HTML — the expert's answer, shown beside the learner's own response.</p>" }
+
+// ── transcriptCoding ── (scored like multipleChoice — reuses options/correctAnswer/explanation)
+{ type: "transcriptCoding",
+  transcript: [
+    { speaker: "client", text: "..." },
+    { speaker: "counselor", text: "..." }
+  ],
+  codingQuestion: "Which skill is the counselor using?",
+  options: [{ text: "...", isCorrect: false }, { text: "...", isCorrect: true }, ...],
+  correctAnswer: 1,
+  explanation: "..." }
 ```
 
 **preCommit authoring rule:** a `preCommit` / `preCommitReveal` pair MUST share the same
 `preCommitId`. The `preCommitReveal` must appear in the SAME section as its `preCommit`,
 after the teaching content it precedes, and before that section's final knowledge check.
 Max 1 preCommit/preCommitReveal pair per section.
+
+**transcriptCoding authoring rule:** transcripts are 2–5 turns of verbatim-plausible
+clinical dialogue (`speaker` is `"client"` or `"counselor"`). Exactly one `codingQuestion`
+per block. Options ALWAYS use `{text, isCorrect}` — never a flat array of strings.
 
 ---
 
