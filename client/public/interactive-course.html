@@ -3492,6 +3492,64 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-pulse-done .cr-pulse-eyebrow::after { content: ' ✓'; }
 
 /* ═══════════════════════════════════════════════════════════════
+   CHANGELOG — v1
+   "Updated since your last completion" banner (renewal-cycle retakes)
+   + gold section-nav pills for the sections a changeLog entry affects.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-changelog-banner {
+  border-left: 3px solid var(--cr-gold, #D4A855);
+  background: var(--cr-gold-faded, rgba(212, 168, 85, 0.08));
+  border-radius: var(--cr-radius, 8px);
+  padding: 16px 20px;
+  margin: 0 0 24px;
+  max-width: 720px;
+  position: relative;
+}
+.cr-changelog-banner-title {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--cr-navy, #284157);
+  margin: 0 0 8px;
+}
+.cr-changelog-banner-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cr-text-body, #1F2937);
+}
+.cr-changelog-banner-list li { margin-bottom: 4px; }
+.cr-changelog-banner-dismiss {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-navy, #284157);
+  background: transparent;
+  border: 1.5px solid var(--cr-navy, #284157);
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.cr-updated-pill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cr-gold, #D4A855);
+  color: #fff;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
    May 22, 2026
    Goals: Mindsmith-tier richness — section hero bands ready for
@@ -8832,6 +8890,7 @@ document.addEventListener('click', function(e) {
     case 'ttsRestart': ttsRestart(); break;
     case 'preCommitCommit': preCommitCommit(el); break;
     case 'pulseContinue': pulseContinue(el); break;
+    case 'dismissChangeLogBanner': dismissChangeLogBanner(el); break;
 
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;
@@ -9412,6 +9471,106 @@ function dismissNPS() {
     });
     mo.observe(document.body, { childList: true, subtree: true });
   } catch (e) {}
+})();
+</script>
+<script>
+/* CHANGELOG — v1: "Updated since your last completion" banner + section-nav
+   pills for renewal-cycle retakes. Additive enhancement only — no render fns
+   touched. Driven entirely by course.changeLog (author-maintained) and
+   course.userCompletedAt (embedded by the /slug/:slug and /:id routes for
+   the current learner). A first-time learner has no userCompletedAt, so
+   nothing renders. */
+(function () {
+  function dismissKey(slug, newestDateStr) {
+    return 'crChangeLogDismissed:' + slug + ':' + newestDateStr;
+  }
+
+  // Entries whose date is after the learner's last completion of this
+  // course, newest first. Returns null if there's nothing to show.
+  function relevantChangeLog() {
+    if (typeof course === 'undefined' || !course) return null;
+    if (!Array.isArray(course.changeLog) || !course.changeLog.length) return null;
+    if (!course.userCompletedAt) return null; // first-time learner
+    const completedAtMs = new Date(course.userCompletedAt).getTime();
+    const relevant = course.changeLog
+      .filter(function (e) { return e && e.date && new Date(e.date).getTime() > completedAtMs; })
+      .sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    return relevant.length ? relevant : null;
+  }
+
+  function syncBanner() {
+    const area = document.getElementById('crContentArea');
+    if (!area) return;
+    const updates = relevantChangeLog();
+    const existing = document.getElementById('crChangeLogBanner');
+    if (!updates) { if (existing) existing.remove(); return; }
+
+    const slug = (typeof course !== 'undefined' && course && course.slug) || (typeof crSlugOrId === 'function' ? crSlugOrId() : '');
+    const key = dismissKey(slug, updates[0].date);
+    if (localStorage.getItem(key)) { if (existing) existing.remove(); return; }
+    if (existing) return; // already showing this cycle's banner
+
+    const escFn = typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); };
+    const banner = document.createElement('div');
+    banner.id = 'crChangeLogBanner';
+    banner.className = 'cr-changelog-banner';
+    banner.innerHTML =
+      '<p class="cr-changelog-banner-title">Updated since you last completed this course</p>' +
+      '<ul class="cr-changelog-banner-list">' +
+        updates.map(function (e) { return '<li>' + escFn(e.summary || '') + '</li>'; }).join('') +
+      '</ul>' +
+      '<button type="button" class="cr-changelog-banner-dismiss" data-action="dismissChangeLogBanner" data-key="' + escFn(key) + '">Dismiss</button>';
+    area.prepend(banner);
+  }
+
+  function syncNavPills() {
+    const nav = document.getElementById('crSectionNav');
+    if (!nav) return;
+    const existingPills = nav.querySelectorAll('.cr-updated-pill');
+    for (let p = 0; p < existingPills.length; p++) existingPills[p].remove();
+
+    const updates = relevantChangeLog();
+    if (!updates) return;
+    const updatedSections = {};
+    updates.forEach(function (e) {
+      (e.sectionIndexes || []).forEach(function (i) { updatedSections[i] = true; });
+    });
+
+    // Nav items are appended in ascending, overview-excluded section order,
+    // so the Nth (0-based) .cr-nav-item corresponds to authored section N —
+    // the same indexing makeNavItem() uses for its display number.
+    const items = nav.querySelectorAll('.cr-nav-item');
+    items.forEach(function (item, j) {
+      if (!updatedSections[j]) return;
+      const pill = document.createElement('span');
+      pill.className = 'cr-updated-pill';
+      pill.textContent = 'Updated';
+      item.appendChild(pill);
+    });
+  }
+
+  window.dismissChangeLogBanner = function (el) {
+    const key = el && el.dataset ? el.dataset.key : null;
+    if (key) localStorage.setItem(key, '1');
+    const banner = document.getElementById('crChangeLogBanner');
+    if (banner) banner.remove();
+  };
+
+  // React to every section render (crContentArea is cleared/repopulated on
+  // each navigation) and every nav rebuild (buildSectionNav() does the same
+  // to #crSectionNav) — same MutationObserver pattern as the collapsible-KC
+  // enhancement above.
+  try {
+    const contentArea = document.getElementById('crContentArea');
+    if (contentArea) new MutationObserver(syncBanner).observe(contentArea, { childList: true });
+    const nav = document.getElementById('crSectionNav');
+    if (nav) new MutationObserver(syncNavPills).observe(nav, { childList: true });
+  } catch (e) {}
+
+  // Safety-net first pass in case content/nav already rendered before this
+  // script ran (course data loads asynchronously, so in practice it hasn't).
+  syncBanner();
+  syncNavPills();
 })();
 </script>
 </body>

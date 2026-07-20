@@ -195,6 +195,24 @@ async function gateContent(courseObj, user) {
   return stripped;
 }
 
+/**
+ * Renewal-cycle "updated since your last completion" viewer feature.
+ * Embeds the learner's most recent completedAt for THIS course (if any)
+ * into the course payload the viewer already fetches — no second round
+ * trip needed. The course's own `changeLog` needs no extra plumbing here:
+ * gateContent() above returns the full course object (or a stripped
+ * preview object), and Mongoose serializes every schema field —
+ * changeLog included — by default.
+ */
+async function withUserCompletedAt(gated, user, courseId) {
+  const obj = gated.toObject ? gated.toObject() : gated;
+  if (user) {
+    const progress = await CourseProgress.findOne({ userId: user._id, courseId }, 'completedAt');
+    if (progress?.completedAt) obj.userCompletedAt = progress.completedAt;
+  }
+  return obj;
+}
+
 // Export for testing
 export { gateContent as _gateContent, stripContent as _stripContent };
 
@@ -364,7 +382,8 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
     }
 
     const gated = await gateContent(course, req.user);
-    res.json({ success: true, data: gated });
+    const responseData = await withUserCompletedAt(gated, req.user, course._id);
+    res.json({ success: true, data: responseData });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -441,7 +460,8 @@ router.get('/:id', optionalAuth, async (req, res) => {
     }
 
     const gated = await gateContent(course, req.user);
-    res.json({ success: true, data: gated });
+    const responseData = await withUserCompletedAt(gated, req.user, course._id);
+    res.json({ success: true, data: responseData });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
