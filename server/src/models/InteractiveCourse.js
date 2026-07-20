@@ -401,12 +401,23 @@ const CourseSchema = new mongoose.Schema({
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: { 
-    type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'draft' 
+  status: {
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+    default: 'draft'
   },
-  
+
+  // ── Renewal-cycle content revision log ──
+  // Author-maintained. Powers the viewer's "Updated since your last
+  // completion" banner for retaking learners: if the learner completed
+  // the course before an entry's date, the viewer shows the banner and
+  // badges the affected sections (see sectionIndexes, 0-based).
+  changeLog: [{
+    date: Date,
+    summary: String,          // e.g. "FL telehealth rule amended — §3 revised"
+    sectionIndexes: [Number]  // affected sections, 0-based
+  }],
+
   // Delivery & compliance
   deliveryFormat: { 
     type: String, 

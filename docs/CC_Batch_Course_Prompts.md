@@ -615,4 +615,24 @@ node server/src/scripts/seed[NEW].js
 
 ---
 
+## Course-Level changeLog (Renewal-Cycle Content Revisions)
+
+**Admin rule:** every substantive content revision to a published course MUST append a
+`changeLog` entry to that course document:
+
+```js
+changeLog: [{
+  date: Date,               // when the revision was made
+  summary: String,          // one-line, learner-facing — e.g. "FL telehealth rule amended — §3 revised"
+  sectionIndexes: [Number]  // affected sections, 0-based, in authored (pre-overview) order
+}]
+```
+
+This drives the viewer's "Updated since your last completion" banner and section-nav
+`Updated` pills for learners retaking the course on a renewal cycle. Do not backfill
+`changeLog` for the course's initial publish — only for revisions made AFTER a course
+has learners who may have already completed it.
+
+---
+
 *CounselorReady · GAITP LLC · NBCC ACEP #7760 · counselorready.com*
