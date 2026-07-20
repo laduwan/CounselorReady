@@ -63,6 +63,7 @@ const ContentBlockSchema = new mongoose.Schema({
       'sequencing',
       'text',
       'timeline',
+      'transcriptCoding',
       'video',
       'videoEmbed',
       'statCard',
@@ -242,7 +243,12 @@ const ContentBlockSchema = new mongoose.Schema({
   // ── tableBlock ──
   tableHeaders: [String],
   tableRows: [[String]],
-  tableCaption: String
+  tableCaption: String,
+
+  // ── transcriptCoding ── (scored like multipleChoice: reuses
+  // question/options/correctAnswer/explanation/remediation above)
+  transcript: [{ speaker: String, text: String }], // speaker: 'client' | 'counselor'
+  codingQuestion: String // e.g. "Which skill is the counselor using?"
 }, { _id: false, strict: false });
 
 const SectionSchema = new mongoose.Schema({
