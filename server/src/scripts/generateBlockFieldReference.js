@@ -60,6 +60,7 @@ const RENDER_TO_TYPE = {
   renderKeyTakeaway: 'keyTakeaway',
   renderPreCommit: 'preCommit',
   renderPreCommitReveal: 'preCommitReveal',
+  renderPulseCheck: 'pulseCheck',
   renderStatCard: 'statCard',
   renderCaseStudy: 'caseStudy',
   renderPullQuote: 'pullQuote',

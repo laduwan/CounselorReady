@@ -1,6 +1,6 @@
 # BLOCK FIELD REFERENCE (Tier 1 — GENERATED, DO NOT HAND-EDIT)
 
-> Source hash `0c38941f6397` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
+> Source hash `32fcda09fbb8` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
 > **Source of truth:** the `renderX()` functions in `client/public/interactive-course.html`.
 > Field names below are extracted from `block.<field>` reads in those functions.
 > If a seed or the builder writes a field NOT listed here, the viewer ignores it
@@ -172,6 +172,13 @@ word count unaffected, but renders blank.
 | `modelResponse` | data |
 | `preCommitId` | data |
 
+### `pulseCheck`  ·  renders via `renderPulseCheck()`
+| field | classification |
+|---|---|
+| `content` | prose (word-counted) |
+| `pulsePrompt` | data |
+| `title` | prose (word-counted) |
+
 ### `statCard`  ·  renders via `renderStatCard()`
 | field | classification |
 |---|---|
@@ -220,7 +227,7 @@ word count unaffected, but renders blank.
 
 ## Viewer-supported block types
 
-`sectionDivider`, `text`, `imageText`, `image`, `accordion`, `multipleChoice`, `multiSelect`, `matching`, `flashcardDeck`, `scenarioTree`, `cardSort`, `sequencing`, `timeline`, `hotspot`, `reflection`, `callout`, `fillInBlank`, `keyTakeaway`, `preCommit`, `preCommitReveal`, `statCard`, `caseStudy`, `pullQuote`, `table`, `resources`, `videoEmbed`
+`sectionDivider`, `text`, `imageText`, `image`, `accordion`, `multipleChoice`, `multiSelect`, `matching`, `flashcardDeck`, `scenarioTree`, `cardSort`, `sequencing`, `timeline`, `hotspot`, `reflection`, `callout`, `fillInBlank`, `keyTakeaway`, `preCommit`, `preCommitReveal`, `pulseCheck`, `statCard`, `caseStudy`, `pullQuote`, `table`, `resources`, `videoEmbed`
 
 > If the course builder's block picker offers fewer types than this list,
 > the missing ones are unexposed capability — they render fine if seeded, but
