@@ -3550,6 +3550,88 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   ASK PRESENTER — v1
+   Course-scoped Q&A panel — matches the glossary/references drawer
+   pattern exactly (floating circular tab + slide-in right panel).
+   ═══════════════════════════════════════════════════════════════ */
+.cr-presenter-btn {
+  position: fixed; bottom: 24px; right: 208px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--cr-navy, #284157);
+  color: #fff; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(40,65,87,0.35);
+  z-index: 50; font-size: 20px;
+  transition: transform var(--cr-transition);
+}
+.cr-presenter-btn:hover { transform: scale(1.1); }
+.cr-presenter-btn.visible { display: flex; }
+
+.cr-presenter-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 380px; max-width: 92vw;
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-presenter-panel.open { transform: translateX(0); }
+.cr-presenter-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cr-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cr-presenter-header h3 {
+  font-family: var(--cr-font-display); font-weight: 700; font-size: 1.2em; color: var(--cr-navy, #284157);
+  margin: 0; display: flex; align-items: center; gap: 8px;
+}
+.cr-presenter-body {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.cr-presenter-passage {
+  font-size: 0.82em; font-style: italic; color: var(--cr-text-secondary);
+  background: var(--cr-navy-faded, rgba(40,65,87,0.06));
+  border-left: 3px solid var(--cr-navy, #284157);
+  padding: 8px 12px; border-radius: 4px;
+}
+.cr-presenter-input {
+  width: 100%; box-sizing: border-box;
+  padding: 10px 12px; border: 1.5px solid var(--cr-border); border-radius: 8px;
+  font-size: 0.9em; font-family: inherit; resize: vertical;
+}
+.cr-presenter-input:focus { outline: none; border-color: var(--cr-navy, #284157); }
+.cr-presenter-submit {
+  align-self: flex-start;
+  padding: 8px 20px; border: none; border-radius: 999px;
+  background: var(--cr-navy, #284157); color: #fff;
+  font-size: 0.85em; font-weight: 700; cursor: pointer;
+}
+.cr-presenter-submit:disabled { opacity: 0.6; cursor: default; }
+.cr-presenter-answer {
+  font-size: 0.9em; line-height: 1.55; color: var(--cr-text);
+  min-height: 0;
+}
+.cr-presenter-answer.loading { color: var(--cr-text-muted); font-style: italic; }
+.cr-presenter-answer.error { color: var(--cr-burgundy, #6B1D34); }
+.cr-presenter-answer-attribution {
+  display: block; margin-top: 10px;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--cr-navy, #284157);
+}
+.cr-presenter-remaining {
+  font-size: 0.78em; color: var(--cr-text-muted);
+}
+.cr-presenter-disclaimer {
+  font-size: 0.75em; color: var(--cr-text-muted); font-style: italic;
+  margin: 0; padding-top: 8px; border-top: 1px solid var(--cr-border);
+}
+
+/* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
    May 22, 2026
    Goals: Mindsmith-tier richness — section hero bands ready for
@@ -4188,11 +4270,29 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   <div class="cr-refs-list" id="crRefsList"></div>
 </div>
 
+<!-- ASK THE PRESENTER BUTTON + PANEL — course-scoped Q&A, follows the References/Glossary tab pattern -->
+<button class="cr-presenter-btn" id="crPresenterBtn" data-action="toggleAskPresenter" aria-label="Ask the Presenter" title="Ask the Presenter">🎤</button>
+<div class="cr-presenter-panel" id="crPresenterPanel">
+  <div class="cr-presenter-header">
+    <h3>🎤 Ask the Presenter</h3>
+    <button data-action="toggleAskPresenter" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close Ask the Presenter">✕</button>
+  </div>
+  <div class="cr-presenter-body">
+    <div class="cr-presenter-passage" id="crPresenterPassage" style="display:none"></div>
+    <textarea class="cr-presenter-input" id="crPresenterInput" placeholder="Ask a question about this course…" rows="3"></textarea>
+    <button class="cr-presenter-submit" id="crPresenterSubmit" data-action="submitPresenterQuestion">Ask</button>
+    <div class="cr-presenter-answer" id="crPresenterAnswer"></div>
+    <div class="cr-presenter-remaining" id="crPresenterRemaining"></div>
+    <p class="cr-presenter-disclaimer">Answers are drawn from this course's content only.</p>
+  </div>
+</div>
+
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
 <div class="cr-highlight-toolbar" id="crHighlightToolbar">
   <button data-action="highlightSelection" title="Highlight">🖍️</button>
   <button data-action="annotateSelection" title="Add note">📝</button>
   <button data-action="removeHighlight" title="Remove">✕</button>
+  <button data-action="askPresenterFromSelection" title="Ask the Presenter">🎤</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -4664,6 +4764,7 @@ function loadCourse(data) {
   restoreProgress();
   buildGlossary();
   buildReferences();
+  showAskPresenterButton();
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
@@ -8395,6 +8496,106 @@ function toggleReferences() {
   document.getElementById('crRefsPanel').classList.toggle('open');
 }
 
+// ─── ASK THE PRESENTER — course-scoped Q&A (mirrors the glossary/references drawer) ───
+let crPresenterPassage = '';
+
+// Shown unconditionally once a course loads (unlike glossary/references,
+// which gate on content presence) — hidden reactively only if a request
+// 404s, meaning the backend endpoint isn't deployed on this environment.
+function showAskPresenterButton() {
+  const btn = document.getElementById('crPresenterBtn');
+  if (btn) btn.classList.add('visible');
+}
+
+function toggleAskPresenter() {
+  document.getElementById('crPresenterPanel').classList.toggle('open');
+}
+
+// Opens the panel pre-loaded with the current text selection as the passage.
+function askPresenterFromSelection() {
+  const sel = window.getSelection();
+  const text = sel && !sel.isCollapsed ? sel.toString().trim() : '';
+  crPresenterPassage = text;
+  const passageEl = document.getElementById('crPresenterPassage');
+  if (text) {
+    passageEl.textContent = '“' + (text.length > 200 ? text.slice(0, 200) + '…' : text) + '”';
+    passageEl.style.display = 'block';
+  } else {
+    passageEl.style.display = 'none';
+  }
+  hideHighlightToolbar();
+  document.getElementById('crPresenterPanel').classList.add('open');
+  document.getElementById('crPresenterInput').focus();
+}
+
+async function submitPresenterQuestion() {
+  const input = document.getElementById('crPresenterInput');
+  const submitBtn = document.getElementById('crPresenterSubmit');
+  const answerEl = document.getElementById('crPresenterAnswer');
+  const remainingEl = document.getElementById('crPresenterRemaining');
+  const question = (input.value || '').trim();
+  if (!question) return;
+
+  const headers = crAuthHeaders();
+  if (!headers) {
+    answerEl.className = 'cr-presenter-answer error';
+    answerEl.textContent = 'Please sign in to ask the presenter.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  answerEl.className = 'cr-presenter-answer loading';
+  answerEl.textContent = 'Asking the presenter…';
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+
+  try {
+    const res = await fetch(crApiBase() + '/api/ask-presenter', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        slug: (course && course.slug) || crSlugOrId(),
+        question,
+        passage: crPresenterPassage || undefined,
+      }),
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+
+    if (res.status === 404) {
+      // Feature not deployed on this environment — hide gracefully, don't error-spam.
+      document.getElementById('crPresenterBtn').classList.remove('visible');
+      document.getElementById('crPresenterPanel').classList.remove('open');
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.success) {
+      answerEl.className = 'cr-presenter-answer error';
+      answerEl.textContent = data.error || "Couldn't reach the presenter — try again";
+      return;
+    }
+
+    answerEl.className = 'cr-presenter-answer';
+    answerEl.innerHTML = esc(data.answer || '')
+      + (data.answeredFromSection ? '<span class="cr-presenter-answer-attribution">From ' + esc(data.answeredFromSection) + '</span>' : '');
+    remainingEl.textContent = typeof data.remaining === 'number'
+      ? data.remaining + ' question' + (data.remaining === 1 ? '' : 's') + ' remaining today'
+      : '';
+    input.value = '';
+    crPresenterPassage = '';
+    document.getElementById('crPresenterPassage').style.display = 'none';
+  } catch (e) {
+    clearTimeout(timer);
+    answerEl.className = 'cr-presenter-answer error';
+    answerEl.textContent = "Couldn't reach the presenter — try again";
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
 // Build the references drawer from course.references[] (APA 7th). Mirrors buildGlossary.
 function buildReferences() {
   const btn = document.getElementById('crRefsBtn');
@@ -8879,6 +9080,9 @@ document.addEventListener('click', function(e) {
     // ─── New Features ───
     case 'toggleGlossary': toggleGlossary(); break;
     case 'toggleReferences': toggleReferences(); break;
+    case 'toggleAskPresenter': toggleAskPresenter(); break;
+    case 'askPresenterFromSelection': askPresenterFromSelection(); break;
+    case 'submitPresenterQuestion': submitPresenterQuestion(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
