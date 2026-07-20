@@ -51,6 +51,7 @@ async function main() {
       contentAreasCount: areas.length,
       contentAreas: areas,
       objectivesCount: objectives.length,
+      objectives,
       hasDescription,
       targetAudienceCount: targetAudience.length,
       targetAudience,
@@ -92,11 +93,17 @@ async function main() {
     console.log('--- COURSES WITH ANY OVERVIEW GAP ---');
     for (const r of anyGaps) {
       console.log(`  [${r.courseCode || 'NO-CODE'}] ${r.title}  missing: ${r.overviewGaps.join(', ')}  (published=${r.isPublished})`);
+      if (r.objectives.length) {
+        console.log(`      objectives: ${r.objectives.join(' · ')}`);
+      }
     }
 
     console.log('\n--- COURSES WITH FULLY POPULATED OVERVIEW ---');
     for (const r of noGaps) {
       console.log(`  [${r.courseCode || 'NO-CODE'}] ${r.title}`);
+      if (r.objectives.length) {
+        console.log(`      objectives: ${r.objectives.join(' · ')}`);
+      }
     }
   }
 
