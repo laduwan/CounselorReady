@@ -3413,47 +3413,40 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   PULSE CHECK — v1
-   Private, unlogged self-check card for emotionally heavy courses.
-   Quiet by design: hunter rule, no fill, serif body, secondary button.
+   TRANSCRIPT CODING — v1
+   Styled like a typed session excerpt: hanging speaker labels, hairline
+   rules between turns, no chat bubbles. Client turns left-aligned plain;
+   counselor turns indented with a burgundy speaker tag.
    ═══════════════════════════════════════════════════════════════ */
-.cr-pulse {
-  border-left: 3px solid var(--cr-hunter, var(--cr-green, #4A7C59));
-  background: transparent;
-  padding: 20px 24px;
-  margin: 28px 0;
-  max-width: 720px;
+.cr-transcript {
+  margin: 0 0 20px;
+  max-width: 640px;
 }
-.cr-pulse-eyebrow {
+.cr-transcript-turn {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(40, 65, 87, 0.14);
+}
+.cr-transcript-turn:first-child { padding-top: 0; }
+.cr-transcript-turn:last-child { border-bottom: none; }
+.cr-transcript-speaker {
+  display: block;
   font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--cr-hunter, var(--cr-green, #4A7C59));
-  margin: 0 0 10px;
+  color: var(--cr-text-muted, #6B7280);
+  margin-bottom: 6px;
 }
-.cr-pulse-body {
+.cr-transcript-counselor { padding-left: 24px; }
+.cr-transcript-counselor .cr-transcript-speaker { color: var(--cr-burgundy, #6B1D34); }
+.cr-transcript-text {
   font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
   font-size: 16px;
-  line-height: 1.65;
-  color: var(--cr-text-body);
-  margin-bottom: 16px;
+  line-height: 1.6;
+  color: var(--cr-text-body, #1F2937);
+  margin: 0;
 }
-.cr-pulse-continue {
-  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--cr-hunter, var(--cr-green, #4A7C59));
-  background: transparent;
-  border: 1.5px solid var(--cr-hunter, var(--cr-green, #4A7C59));
-  border-radius: 999px;
-  padding: 10px 22px;
-  cursor: pointer;
-}
-.cr-pulse-done .cr-pulse-continue { display: none; }
-.cr-pulse-done .cr-pulse-eyebrow::after { content: ' ✓'; }
 
 /* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
@@ -5357,6 +5350,7 @@ function renderBlock(block, index) {
     case 'image': return renderImage(wrap, block);
     case 'accordion': return renderAccordion(wrap, block, index);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
+    case 'transcriptCoding': return renderTranscriptCoding(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
     case 'flashcardDeck': return renderFlashcardDeck(wrap, block, index);
@@ -5377,7 +5371,6 @@ function renderBlock(block, index) {
     case 'callout': return renderCallout(wrap, block);
     case 'fillInBlank': return renderFillInBlank(wrap, block, index);
     case 'keyTakeaway': return renderKeyTakeaway(wrap, block);
-    case 'pulseCheck': return renderPulseCheck(wrap, block);
     default: {
       // Convention-based dispatch for newer block types whose renderers are
       // named render<Type> (e.g. a "statCard" block resolves to the matching
@@ -5670,6 +5663,58 @@ function submitMC(id, correctIdx) {
   if (submitBtn) submitBtn.style.display = 'none';
   if (isWrong) revealRemediationButton(el);
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
+}
+
+// ─── TRANSCRIPT CODING ───
+// Session-transcript coding: renders a short client/counselor exchange as a
+// styled transcript above a multipleChoice-style question. Reuses the
+// selectMC/submitMC/buildRemediationButtonHTML/revealRemediationButton
+// wiring verbatim — same option/answer/explanation/remediation behavior as
+// renderMultipleChoice, just with a transcript prepended. The `cr-kc`
+// wrapper class means it also picks up the collapsible reveal-bar
+// enhancement automatically, same as any other knowledge check.
+function renderTranscriptCoding(wrap, block, blockIndex) {
+  const id = `tc-${currentSectionIndex}-${blockIndex}`;
+  let correctIdx = 0;
+  if (typeof block.correctAnswer === 'number') {
+    correctIdx = block.correctAnswer;
+  } else if (Array.isArray(block.options)) {
+    correctIdx = block.options.findIndex(o => typeof o === 'object' ? o.isCorrect : false);
+    if (correctIdx === -1) correctIdx = 0;
+  }
+
+  const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  const transcript = block.transcript || [];
+
+  let transcriptHtml = '<div class="cr-transcript">';
+  transcript.forEach(turn => {
+    const isCounselor = (turn.speaker || '').toString().toLowerCase() === 'counselor';
+    transcriptHtml += '<div class="cr-transcript-turn ' + (isCounselor ? 'cr-transcript-counselor' : 'cr-transcript-client') + '">'
+      + '<span class="cr-transcript-speaker">' + (isCounselor ? 'COUNSELOR' : 'CLIENT') + '</span>'
+      + '<p class="cr-transcript-text">' + esc(turn.text || '') + '</p>'
+      + '</div>';
+  });
+  transcriptHtml += '</div>';
+
+  let html = `<div class="cr-kc" id="${id}">`
+    + transcriptHtml
+    + `<div class="cr-kc-question">${esc(block.codingQuestion || '')}</div>
+    <div class="cr-kc-options">`;
+
+  options.forEach((opt, i) => {
+    html += `<div class="cr-kc-option" data-idx="${i}" data-action="selectMC" data-target="${id}" data-idx="${i}">
+      <span class="cr-kc-radio"></span>
+      <span>${esc(opt)}</span>
+    </div>`;
+  });
+
+  html += `</div>
+    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
+    <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
+  </div>`;
+  wrap.innerHTML = html;
+  return wrap;
 }
 
 // ─── MULTI SELECT ───
@@ -6322,32 +6367,6 @@ function renderKeyTakeaway(wrap, block) {
   html += '</div>';
   wrap.innerHTML = html;
   return wrap;
-}
-
-// ─── PULSE CHECK — private, unlogged self-check. No storage, no analytics. ───
-function renderPulseCheck(wrap, block) {
-  let html = '<div class="cr-pulse">'
-    + '<p class="cr-pulse-eyebrow">' + esc(block.title || 'Check in with yourself') + '</p>'
-    + '<div class="cr-pulse-body cr-prose">' + (block.pulsePrompt ? '<p>' + esc(block.pulsePrompt) + '</p>' : (block.content || '')) + '</div>'
-    + '<button class="cr-pulse-continue" data-action="pulseContinue">Continue when ready</button>'
-    + '</div>';
-  wrap.innerHTML = html;
-  return wrap;
-}
-
-// Delegated handler for the pulseCheck "Continue when ready" button.
-// Purely local DOM state — never writes to localStorage, a progress API,
-// or analytics, matching the block's private/unlogged design guarantee.
-function pulseContinue(el) {
-  const card = el.closest('.cr-pulse');
-  if (!card) return;
-  card.classList.add('cr-pulse-done');
-  const blockWrap = card.closest('.cr-block');
-  const next = blockWrap ? blockWrap.nextElementSibling : null;
-  if (next) {
-    if (!next.hasAttribute('tabindex')) next.setAttribute('tabindex', '-1');
-    next.focus();
-  }
 }
 
 // ─── STAT CARD ───
@@ -8742,7 +8761,6 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     case 'preCommitCommit': preCommitCommit(el); break;
-    case 'pulseContinue': pulseContinue(el); break;
 
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;
