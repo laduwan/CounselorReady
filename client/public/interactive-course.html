@@ -9125,6 +9125,19 @@ function dismissNPS() {
   .cr-block[data-block-type="text"]:has(.cr-prose > p:only-child[style*="text-align: center"]) .cr-prose {
     padding: 0 !important;
   }
+
+  /* ── KC REVEAL FIX — Jul 20 2026: restore pill affordance, drop duplicate Phase-2 tag ── */
+  .cr-block[data-block-type="multipleChoice"]::before,
+  .cr-block[data-block-type="multiSelect"]::before {
+    display: none !important;
+  }
+  .cr-kc-reveal {
+    border: 1.5px solid var(--cr-burgundy, #6B1D34) !important;
+    background: #fff !important;
+  }
+  .cr-kc-reveal:hover {
+    background: var(--cr-burgundy-faded, rgba(107,29,52,0.05)) !important;
+  }
 </style>
 <script>
 /* Stage 5e-int — tappable alert popup + acknowledge (completes March 23 design) */
