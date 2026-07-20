@@ -3286,10 +3286,11 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: var(--cr-burgundy-faded, rgba(107, 29, 52, 0.04));
 }
 .cr-kc-reveal-icon {
-  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--cr-hunter, #4A7C59); color: #fff;
-  font-size: 13px; font-weight: 700; line-height: 1;
+  font-size: 15px; font-weight: 700; line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 .cr-kc-reveal-label {
   font-size: 12.5px; font-weight: 700; letter-spacing: 0.07em;
@@ -3342,7 +3343,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider-banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(40, 65, 87, 0.06), rgba(40, 65, 87, 0.55));
+  background: linear-gradient(180deg, rgba(40, 65, 87, 0.02), rgba(40, 65, 87, 0.36));
 }
 
 .cr-section-divider.has-banner .cr-section-divider-inner {
@@ -3358,6 +3359,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider.has-banner h2,
 .cr-section-divider.has-banner p {
   color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 /* ---- Course-level hero (top of section 1, when course.headerImage is set) ---- */
@@ -3561,27 +3563,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   margin-top: 4px !important;
 }
 
-/* ---- Callouts: crisp card, hairline + colored left accent, sans micro-label ---- */
-.cr-callout {
-  border-top: 1px solid var(--cr-border, #E0DACE) !important;
-  border-right: 1px solid var(--cr-border, #E0DACE) !important;
-  border-bottom: 1px solid var(--cr-border, #E0DACE) !important;
-  border-left-width: 3px !important;
-  border-left-style: solid !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  padding: 14px 16px !important;
-}
-.cr-callout-icon { display: none !important; }
-.cr-callout-title,
-.cr-callout > h4:first-child {
-  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif) !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  margin: 0 0 7px !important;
-}
+/* ---- Callouts: superseded by the icon-badge + thin-rule redesign
+   (see .cr-callout / .cr-callout-icon / .cr-callout-inner rules above).
+   Legacy boxed-card override intentionally removed — it was silently
+   forcing the old style via !important over the newer design. ---- */
 
 /* ---- Key takeaway: crisp white card, hunter top accent (override inline styles) ---- */
 .cr-block[data-block-type="keyTakeaway"] > div {
