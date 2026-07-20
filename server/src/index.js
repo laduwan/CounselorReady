@@ -100,6 +100,7 @@ import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
+import askPresenterRoutes from './routes/askPresenterRoutes.js';
 import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -307,6 +308,7 @@ app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/admin/video-audit', videoAuditRoutes);
 app.use('/api/orgs', orgRoutes);
+app.use('/api/ask-presenter', askPresenterRoutes);
 app.use('/api', complianceRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));
