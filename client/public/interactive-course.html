@@ -3413,6 +3413,49 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   PULSE CHECK — v1
+   Private, unlogged self-check card for emotionally heavy courses.
+   Quiet by design: hunter rule, no fill, serif body, secondary button.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-pulse {
+  border-left: 3px solid var(--cr-hunter, var(--cr-green, #4A7C59));
+  background: transparent;
+  padding: 20px 24px;
+  margin: 28px 0;
+  max-width: 720px;
+}
+.cr-pulse-eyebrow {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  margin: 0 0 10px;
+}
+.cr-pulse-body {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body);
+  margin-bottom: 16px;
+}
+.cr-pulse-continue {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  background: transparent;
+  border: 1.5px solid var(--cr-hunter, var(--cr-green, #4A7C59));
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.cr-pulse-done .cr-pulse-continue { display: none; }
+.cr-pulse-done .cr-pulse-eyebrow::after { content: ' ✓'; }
+
+/* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
    May 22, 2026
    Goals: Mindsmith-tier richness — section hero bands ready for
@@ -5334,6 +5377,7 @@ function renderBlock(block, index) {
     case 'callout': return renderCallout(wrap, block);
     case 'fillInBlank': return renderFillInBlank(wrap, block, index);
     case 'keyTakeaway': return renderKeyTakeaway(wrap, block);
+    case 'pulseCheck': return renderPulseCheck(wrap, block);
     default: {
       // Convention-based dispatch for newer block types whose renderers are
       // named render<Type> (e.g. a "statCard" block resolves to the matching
@@ -6278,6 +6322,32 @@ function renderKeyTakeaway(wrap, block) {
   html += '</div>';
   wrap.innerHTML = html;
   return wrap;
+}
+
+// ─── PULSE CHECK — private, unlogged self-check. No storage, no analytics. ───
+function renderPulseCheck(wrap, block) {
+  let html = '<div class="cr-pulse">'
+    + '<p class="cr-pulse-eyebrow">' + esc(block.title || 'Check in with yourself') + '</p>'
+    + '<div class="cr-pulse-body cr-prose">' + (block.pulsePrompt ? '<p>' + esc(block.pulsePrompt) + '</p>' : (block.content || '')) + '</div>'
+    + '<button class="cr-pulse-continue" data-action="pulseContinue">Continue when ready</button>'
+    + '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// Delegated handler for the pulseCheck "Continue when ready" button.
+// Purely local DOM state — never writes to localStorage, a progress API,
+// or analytics, matching the block's private/unlogged design guarantee.
+function pulseContinue(el) {
+  const card = el.closest('.cr-pulse');
+  if (!card) return;
+  card.classList.add('cr-pulse-done');
+  const blockWrap = card.closest('.cr-block');
+  const next = blockWrap ? blockWrap.nextElementSibling : null;
+  if (next) {
+    if (!next.hasAttribute('tabindex')) next.setAttribute('tabindex', '-1');
+    next.focus();
+  }
 }
 
 // ─── STAT CARD ───
@@ -8672,6 +8742,7 @@ document.addEventListener('click', function(e) {
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
     case 'preCommitCommit': preCommitCommit(el); break;
+    case 'pulseContinue': pulseContinue(el); break;
 
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;

@@ -53,6 +53,7 @@ const ContentBlockSchema = new mongoose.Schema({
       'multipleChoice',
       'preCommit',
       'preCommitReveal',
+      'pulseCheck',
       'quiz',
       'references',
       'reflection',
@@ -146,6 +147,9 @@ const ContentBlockSchema = new mongoose.Schema({
 
   // ── keyTakeaway ──
   takeaways: [String],
+
+  // ── pulseCheck — private self-check; never persisted or reported ──
+  pulsePrompt: String,
 
   // ── video / videoEmbed ──
   videoTitle: String,
