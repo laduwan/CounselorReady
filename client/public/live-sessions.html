@@ -113,29 +113,37 @@
 
     async function lookupSessionByCode(code) {
       if (!code || !code.trim()) return;
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/code/${encodeURIComponent(code.trim())}`);
         if (!res.ok) { showAlert('No session found for that code.', false); return; }
         const { session } = await res.json();
-        window.location.href = `/live-room.html?session=${encodeURIComponent(session.slug)}`;
+        const ok = await register(session._id, code.trim());
+        if (ok) window.location.href = `/live-room.html?session=${encodeURIComponent(session.slug)}`;
       } catch (error) {
         showAlert('Network error. Please try again.', false);
       }
     }
 
-    async function register(id) {
-      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
+    async function register(id, code) {
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return false; }
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${id}/register`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(code ? { code } : {})
         });
         const data = await res.json();
-        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return; }
-        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); }
-        else showAlert(data.error || 'Registration failed.', false);
-      } catch { showAlert('Registration failed. Please try again.', false); }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return false; }
+        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); return true; }
+        showAlert(data.error || 'Registration failed.', false);
+        return false;
+      } catch {
+        showAlert('Registration failed. Please try again.', false);
+        return false;
+      } finally {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}

@@ -129,9 +129,16 @@ router.post('/:id/register', protect, async (req, res) => {
     const isActiveVip = req.user.isVip() &&
       (req.user.subscription.status === 'active' || req.user.subscription.status === 'lifetime');
 
+    // For private sessions, a correct access code is itself the authorization —
+    // it stands in for VIP tier for THIS session only. Public sessions are untouched.
+    const suppliedCode = (req.body.code || '').toUpperCase().trim();
+    const hasValidPrivateCode = session.visibility === 'private' &&
+      session.accessCode &&
+      suppliedCode === session.accessCode;
+
     // Live sessions are free for current VIP subscribers. Everyone else must pay per-session
     // when the session is priced; if it isn't priced, there's no non-VIP path in.
-    if (!isAdmin && !isActiveVip && !(session.price > 0)) {
+    if (!isAdmin && !isActiveVip && !hasValidPrivateCode && !(session.price > 0)) {
       return res.status(403).json({
         error: 'Live sessions are a VIP subscriber benefit, or available for individual purchase.',
         reason: 'VIP subscription required',
@@ -140,7 +147,7 @@ router.post('/:id/register', protect, async (req, res) => {
     }
 
     // Paid sessions → Stripe Checkout for non-VIP; fulfillment registers via webhook (WIRING.md)
-    if (!isAdmin && !isActiveVip && session.price > 0) {
+    if (!isAdmin && !isActiveVip && !hasValidPrivateCode && session.price > 0) {
       if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
       const checkout = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
