@@ -38,6 +38,7 @@ async function wherebyFetch(path, options = {}) {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    console.log('[whereby debug] error response body:', body);
     throw new Error(`Whereby API ${res.status} on ${path}: ${body}`);
   }
   // DELETE returns 204 No Content
@@ -72,6 +73,7 @@ export async function createMeeting(session) {
           : { type: 'none', destination: null })
   };
 
+  console.log('[whereby debug] outgoing body:', JSON.stringify(body, null, 2));
   const data = await wherebyFetch('/meetings', {
     method: 'POST',
     body: JSON.stringify(body)
