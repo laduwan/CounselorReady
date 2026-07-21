@@ -29,6 +29,8 @@
     #nowPrompt{font-size:13px;color:#44403c;line-height:1.5;margin-bottom:6px;}
     #nowCountdown{font-size:12px;color:#7a5c1e;font-weight:600;}
     #breakoutBadge{display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;}
+    /* .hidden (Tailwind display:none) can't override an inline display; drive the overlay's flex layout from a rule so classList toggling actually hides it */
+    #checkinModal:not(.hidden){display:flex;align-items:center;justify-content:center;}
   </style>
 </head>
 <body>
@@ -89,6 +91,13 @@
             <div id="handouts" class="flex flex-col gap-2">
               <p class="text-sm" style="color:#57534e;">No handouts for this session.</p>
             </div>
+          </div>
+          <div class="bg-white rounded-xl border p-4 mt-4" style="border-color:#EDE9E3;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#284157;cursor:pointer;">
+              <input type="checkbox" id="cameraOptOutToggle" onchange="onCameraToggle(this.checked)">
+              I will not have my camera on
+            </label>
+            <p style="font-size:11px;color:#78716c;margin-top:4px;">You'll get a quick pop-up every 15&ndash;20 minutes to confirm you're still here &mdash; answer within 3 minutes.</p>
           </div>
           <div id="ceNote" class="hidden mt-4 rounded-xl p-4 text-xs leading-relaxed" style="background:#FBF6EC;color:#7a5c1e;border:1px solid #EFE0C2;">
             <strong>CE credit requires live attendance.</strong> Your join and leave times are verified automatically. Stay for at least the required portion of the session and your certificate will be issued after the webinar ends — no quiz required for live credit.
@@ -287,6 +296,71 @@
     let breakAlarmFiredFor = null;
     let lastKnownChecklist = [];
 
+    // Camera-off presence check-in state
+    let checkinDeadlineMs = null;
+    let checkinTickTimer = null;
+    let lastWarnedCheckinKey = null;
+
+    async function onCameraToggle(checked) {
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/camera-status`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cameraOptOut: checked })
+        });
+      } catch { /* will resync on next poll */ }
+    }
+
+    function updateMyCheckin(myCheckin) {
+      if (!myCheckin) return;
+
+      if (myCheckin.removed) {
+        window.location.href = '/live-sessions.html?removed=checkin';
+        return;
+      }
+
+      if (myCheckin.justMissedWarning && lastWarnedCheckinKey !== myCheckin.pending?.deadline) {
+        lastWarnedCheckinKey = myCheckin.pending?.deadline || 'warned';
+        alert("You missed a check-in. If you miss another one, you'll be removed from this session.");
+      }
+
+      const modal = document.getElementById('checkinModal');
+      if (myCheckin.pending) {
+        modal.classList.remove('hidden');
+        checkinDeadlineMs = new Date(myCheckin.pending.deadline).getTime();
+        if (!checkinTickTimer) checkinTickTimer = setInterval(tickCheckinTimer, 500);
+      } else {
+        modal.classList.add('hidden');
+        checkinDeadlineMs = null;
+        if (checkinTickTimer) { clearInterval(checkinTickTimer); checkinTickTimer = null; }
+      }
+    }
+
+    function tickCheckinTimer() {
+      if (!checkinDeadlineMs) return;
+      const remaining = Math.max(0, Math.round((checkinDeadlineMs - Date.now()) / 1000));
+      const m = Math.floor(remaining / 60), s = remaining % 60;
+      document.getElementById('checkinTimer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      if (remaining <= 0) {
+        // Client-side enforcement — don't wait for the next server poll
+        clearInterval(checkinTickTimer);
+        checkinTickTimer = null;
+        window.location.href = '/live-sessions.html?removed=checkin';
+      }
+    }
+
+    async function respondToCheckin() {
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/checkin/respond`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+      } catch { /* will resync on next poll regardless */ }
+      document.getElementById('checkinModal').classList.add('hidden');
+      if (checkinTickTimer) { clearInterval(checkinTickTimer); checkinTickTimer = null; }
+      checkinDeadlineMs = null;
+    }
+
     function beep(freq, durMs) {
       try {
         const Ctx = window.AudioContext || window.webkitAudioContext;
@@ -313,6 +387,7 @@
         updateNowCard(data.currentSegment, data.liveState);
         updateWatchParty(data.liveState);
         updateHostPanel(data);
+        updateMyCheckin(data.myCheckin);
         if (data.status === 'completed' && syncInterval) {
           clearInterval(syncInterval);
           syncInterval = null;
@@ -360,6 +435,19 @@
       const hc = data.currentlyPresent || [];
       document.getElementById('hostHeadcount').textContent =
         hc.length ? `${hc.length} present: ${hc.join(', ')}` : 'No one currently in the room.';
+
+      const alerts = data.checkinAlerts || [];
+      const alertsHtml = alerts.length
+        ? alerts.map(a => `<div style="font-size:12px;color:${a.removed ? '#b91c1c' : '#c0392b'};">${a.removed ? '⚠ Removed (2 missed check-ins): ' : '⚠ Missed a check-in: '}${escHtmlHost(a.displayName)}</div>`).join('')
+        : '';
+      let alertsBox = document.getElementById('hostCheckinAlerts');
+      if (!alertsBox) {
+        alertsBox = document.createElement('div');
+        alertsBox.id = 'hostCheckinAlerts';
+        alertsBox.style.marginBottom = '10px';
+        document.getElementById('hostHeadcount').insertAdjacentElement('afterend', alertsBox);
+      }
+      alertsBox.innerHTML = alertsHtml;
 
       // Break status + end-of-break alarm
       const breakEl = document.getElementById('hostBreakStatus');
@@ -566,5 +654,14 @@
 
     init();
   </script>
+
+  <div id="checkinModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;">
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:360px;text-align:center;">
+      <h2 style="font-size:18px;font-weight:700;color:#6B1D34;margin-bottom:8px;">Still with us?</h2>
+      <p style="font-size:14px;color:#44403c;margin-bottom:6px;">Please confirm you're still present.</p>
+      <div id="checkinTimer" style="font-size:28px;font-weight:800;color:#b91c1c;margin-bottom:16px;"></div>
+      <button onclick="respondToCheckin()" style="background:#6B1D34;color:#fff;border-radius:10px;padding:10px 24px;font-size:15px;font-weight:700;">I'm here</button>
+    </div>
+  </div>
 </body>
 </html>

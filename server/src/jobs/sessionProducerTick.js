@@ -23,6 +23,7 @@ import {
   processDropDetection,
   processBreakReminders,
   processBreakageDetection,
+  processCheckins,
   runWrapUp
 } from '../services/sessionProducer.js';
 
@@ -53,6 +54,7 @@ export async function runSessionProducerTick() {
         await processDropDetection(session);
         await processBreakReminders(session);
         await processBreakageDetection(session);
+        await processCheckins(session);
       }
 
       // Wrap-up: completed sessions ended ≥ 5 min ago, wrap-up not yet sent
