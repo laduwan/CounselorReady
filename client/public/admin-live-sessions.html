@@ -680,6 +680,7 @@
         title: a.title || '',
         durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
         prompt: a.prompt || '',
+        speakerNotes: a.speakerNotes || '',
         clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
       }));
       renderRunOfShow();
@@ -827,8 +828,10 @@
               <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
             </div>
           </div>
-          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional)" ${ro ? 'disabled' : ''}
+          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional, shown to attendees)" ${ro ? 'disabled' : ''}
             class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <textarea id="ros_notes_${i}" placeholder="Speaker notes (private — only you see this in the room)" ${ro ? 'disabled' : ''}
+            rows="2" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.speakerNotes)}</textarea>
           ${clipCell}
         </div>`;
       }).join('');
@@ -856,11 +859,13 @@
         const tiEl = document.getElementById('ros_title_' + i);
         const dEl = document.getElementById('ros_dur_' + i);
         const pEl = document.getElementById('ros_prompt_' + i);
+        const nEl = document.getElementById('ros_notes_' + i);
         const cEl = document.getElementById('ros_clip_' + i);
         if (tEl) a.type = tEl.value;
         if (tiEl) a.title = tiEl.value;
         if (dEl) a.durationMin = dEl.value;
         if (pEl) a.prompt = pEl.value;
+        if (nEl) a.speakerNotes = nEl.value;
         if (cEl) a.clipIndex = cEl.value;
         else if (a.type !== 'clip') a.clipIndex = '';
       });
@@ -875,7 +880,7 @@
 
     function addAgendaRow() {
       syncAgendaFromDom();
-      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', clipIndex: '' });
+      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', speakerNotes: '', clipIndex: '' });
       renderRosAgenda();
     }
 
@@ -904,6 +909,7 @@
         const dur = parseInt(a.durationMin, 10);
         if (a.durationMin !== '' && Number.isFinite(dur) && dur >= 1) row.durationMin = dur;
         if ((a.prompt || '').trim()) row.prompt = a.prompt.trim();
+        if ((a.speakerNotes || '').trim()) row.speakerNotes = a.speakerNotes.trim();
         if (a.type === 'clip' && a.clipIndex !== '' && a.clipIndex != null) {
           const ci = parseInt(a.clipIndex, 10);
           if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
