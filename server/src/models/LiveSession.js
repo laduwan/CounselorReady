@@ -34,7 +34,18 @@ const attendanceSchema = new mongoose.Schema({
   leftAt: Date,
   durationMin: { type: Number, default: 0 },
   rejoinNudgeSentAt: Date,    // set when a drop-detection nudge fires; prevents duplicate sends
-  catchupSummary: String      // cached AI-generated gap summary (live-course only)
+  catchupSummary: String,     // cached AI-generated gap summary (live-course only)
+  // Camera-off presence check-ins (host-configured 3-min response window)
+  cameraOptOut: { type: Boolean, default: false },
+  nextCheckinDueAt: Date, // when the next random check-in should fire
+  consecutiveMissedCheckins: { type: Number, default: 0 },
+  removedForMissedCheckins: { type: Boolean, default: false },
+  checkins: [{
+    promptedAt: { type: Date, required: true },
+    deadline: { type: Date, required: true }, // promptedAt + 3 min
+    respondedAt: Date,
+    missed: { type: Boolean, default: false }
+  }]
 }, { _id: true });
 
 const handoutSchema = new mongoose.Schema({

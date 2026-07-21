@@ -638,6 +638,67 @@ export async function processBreakageDetection(session) {
   await session.save();
 }
 
+const CHECKIN_WINDOW_MIN = 3;
+const CHECKIN_MIN_GAP_MIN = 15;
+const CHECKIN_MAX_GAP_MIN = 20;
+
+function randomNextCheckinDueAt(from) {
+  const gapMin = CHECKIN_MIN_GAP_MIN + Math.random() * (CHECKIN_MAX_GAP_MIN - CHECKIN_MIN_GAP_MIN);
+  return new Date(from.getTime() + gapMin * 60000);
+}
+
+/**
+ * Random presence check-ins for camera-off attendees on live-course sessions.
+ * Fires a challenge every 15–20 min; a missed 3-min window is a strike,
+ * second consecutive strike removes the attendee (client redirect on poll).
+ */
+export async function processCheckins(session) {
+  if (session.sessionType !== 'live-course') return; // no camera-off mechanic on supervision
+  const now = new Date();
+  let changed = false;
+
+  for (const att of session.attendance) {
+    if (att.leftAt || !att.cameraOptOut || att.removedForMissedCheckins) continue;
+
+    const lastCheckin = att.checkins[att.checkins.length - 1];
+    const hasPendingUnanswered = lastCheckin && !lastCheckin.respondedAt && !lastCheckin.missed;
+
+    if (hasPendingUnanswered) {
+      if (now > lastCheckin.deadline) {
+        lastCheckin.missed = true;
+        att.consecutiveMissedCheckins = (att.consecutiveMissedCheckins || 0) + 1;
+        changed = true;
+        if (att.consecutiveMissedCheckins >= 2) {
+          att.removedForMissedCheckins = true;
+        } else {
+          att.nextCheckinDueAt = randomNextCheckinDueAt(now);
+        }
+      }
+      continue;
+    }
+
+    // No pending challenge — is it time for a new one?
+    if (!att.nextCheckinDueAt) {
+      att.nextCheckinDueAt = randomNextCheckinDueAt(now);
+      changed = true;
+      continue;
+    }
+    if (now >= att.nextCheckinDueAt) {
+      att.checkins.push({
+        promptedAt: now,
+        deadline: new Date(now.getTime() + CHECKIN_WINDOW_MIN * 60000)
+      });
+      att.nextCheckinDueAt = undefined;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    session.markModified('attendance');
+    await session.save();
+  }
+}
+
 export default {
   onClientLeft,
   onSessionEnded,
@@ -647,5 +708,6 @@ export default {
   processDropDetection,
   processBreakReminders,
   processBreakageDetection,
+  processCheckins,
   computeGaps
 };

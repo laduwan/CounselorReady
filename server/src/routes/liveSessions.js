@@ -423,6 +423,22 @@ router.get('/:id/live-state', protect, async (req, res) => {
       scheduledEnd: session.scheduledEnd
     };
 
+    // Per-user check-in status — every attendee gets their own, not host-only
+    const myAtt = (session.attendance || []).find(
+      a => a.user && a.user.toString() === req.user._id.toString() && !a.leftAt
+    );
+    if (myAtt) {
+      const lastCheckin = myAtt.checkins?.[myAtt.checkins.length - 1];
+      payload.myCheckin = {
+        cameraOptOut: !!myAtt.cameraOptOut,
+        removed: !!myAtt.removedForMissedCheckins,
+        pending: (lastCheckin && !lastCheckin.respondedAt && !lastCheckin.missed)
+          ? { promptedAt: lastCheckin.promptedAt, deadline: lastCheckin.deadline }
+          : null,
+        justMissedWarning: !!(lastCheckin && lastCheckin.missed && myAtt.consecutiveMissedCheckins === 1)
+      };
+    }
+
     if (isAdmin) {
       payload.agenda = session.agenda || [];
       payload.breaks = session.breaks || [];
@@ -432,6 +448,11 @@ router.get('/:id/live-state', protect, async (req, res) => {
       payload.currentlyPresent = (session.attendance || [])
         .filter(a => !a.leftAt)
         .map(a => a.displayName || 'Unnamed attendee');
+      // Recent missed check-ins, for host awareness (last 5 min)
+      const fiveMinAgo = Date.now() - 5 * 60000;
+      payload.checkinAlerts = (session.attendance || [])
+        .filter(a => a.checkins?.some(c => c.missed && new Date(c.deadline).getTime() > fiveMinAgo))
+        .map(a => ({ displayName: a.displayName || 'Unnamed attendee', removed: !!a.removedForMissedCheckins }));
     }
 
     res.json(payload);
@@ -538,6 +559,63 @@ router.post('/:id/live-state/playback', protect, requireAdmin, async (req, res) 
   } catch (err) {
     console.error('[live] playback:', err.message);
     res.status(500).json({ error: 'Failed to update playback state' });
+  }
+});
+
+// POST /api/live-sessions/:id/camera-status — attendee toggles their own camera-off status
+router.post('/:id/camera-status', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const att = session.attendance.find(
+      a => a.user && a.user.toString() === req.user._id.toString() && !a.leftAt
+    );
+    if (!att) return res.status(403).json({ error: 'Not currently checked in to this session.' });
+
+    att.cameraOptOut = !!req.body.cameraOptOut;
+    if (att.cameraOptOut && !att.nextCheckinDueAt) {
+      const gapMin = 15 + Math.random() * 5;
+      att.nextCheckinDueAt = new Date(Date.now() + gapMin * 60000);
+    }
+    if (!att.cameraOptOut) {
+      // Neutralize any outstanding challenge — no penalty for turning camera back on
+      const last = att.checkins[att.checkins.length - 1];
+      if (last && !last.respondedAt && !last.missed) last.respondedAt = new Date();
+      att.nextCheckinDueAt = undefined;
+    }
+    session.markModified('attendance');
+    await session.save();
+    res.json({ cameraOptOut: att.cameraOptOut });
+  } catch (err) {
+    console.error('[live] camera-status:', err.message);
+    res.status(500).json({ error: 'Failed to update camera status' });
+  }
+});
+
+// POST /api/live-sessions/:id/checkin/respond — attendee answers a pending check-in
+router.post('/:id/checkin/respond', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const att = session.attendance.find(
+      a => a.user && a.user.toString() === req.user._id.toString() && !a.leftAt
+    );
+    if (!att) return res.status(403).json({ error: 'Not currently checked in to this session.' });
+
+    const last = att.checkins[att.checkins.length - 1];
+    if (last && !last.respondedAt) {
+      last.respondedAt = new Date();
+      att.consecutiveMissedCheckins = 0;
+      att.nextCheckinDueAt = new Date(Date.now() + (15 + Math.random() * 5) * 60000);
+      session.markModified('attendance');
+      await session.save();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[live] checkin respond:', err.message);
+    res.status(500).json({ error: 'Failed to record check-in response' });
   }
 });
 
