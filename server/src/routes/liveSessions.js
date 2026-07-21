@@ -410,9 +410,13 @@ router.get('/:id/live-state', protect, async (req, res) => {
     }
 
     const seg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
+    // speakerNotes is host-only — strip it before sending to non-admin viewers
+    const segOut = seg && !isAdmin ? { ...seg, speakerNotes: undefined } : seg;
     res.json({
       liveState: session.liveState,
-      currentSegment: seg,
+      currentSegment: segOut,
+      agendaLength: session.agenda?.length || 0,
+      isHost: isAdmin,
       status: session.status
     });
   } catch (err) {

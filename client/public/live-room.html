@@ -58,6 +58,14 @@
             <div id="nowPrompt"></div>
             <div id="nowCountdown"></div>
           </div>
+          <div id="hostPanel" class="hidden mt-3 rounded-xl p-4" style="background:#FBF6EC;border:1px solid #EFE0C2;">
+            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c1e;margin-bottom:6px;">Host Prompter (only you see this)</h3>
+            <div id="hostNotes" style="font-size:13px;color:#44403c;line-height:1.5;white-space:pre-wrap;margin-bottom:10px;"></div>
+            <div style="display:flex;gap:8px;">
+              <button id="hostPrevBtn" onclick="advanceSegment(-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #EFE0C2;background:#fff;font-size:12px;font-weight:600;color:#7a5c1e;">◀ Prev</button>
+              <button id="hostNextBtn" onclick="advanceSegment(1)" style="padding:6px 12px;border-radius:8px;background:#6B1D34;color:#fff;font-size:12px;font-weight:600;">Next ▶</button>
+            </div>
+          </div>
           <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Handouts</h2>
             <div id="handouts" class="flex flex-col gap-2">
@@ -244,6 +252,9 @@
       syncInterval = setInterval(() => pollLiveState(sessionId), 3000);
     }
 
+    let agendaLength = 0;
+    let currentSegIndex = 0;
+
     async function pollLiveState(sessionId) {
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(sessionId)}/live-state`, {
@@ -253,11 +264,36 @@
         const data = await res.json();
         updateNowCard(data.currentSegment, data.liveState);
         updateWatchParty(data.liveState);
+        updateHostPanel(data);
         if (data.status === 'completed' && syncInterval) {
           clearInterval(syncInterval);
           syncInterval = null;
         }
       } catch { /* network hiccup — try again next tick */ }
+    }
+
+    function updateHostPanel(data) {
+      const panel = document.getElementById('hostPanel');
+      if (!data.isHost) { panel.classList.add('hidden'); return; }
+      panel.classList.remove('hidden');
+      agendaLength = data.agendaLength || 0;
+      currentSegIndex = data.liveState?.currentSegment ?? 0;
+      document.getElementById('hostNotes').textContent =
+        (data.currentSegment && data.currentSegment.speakerNotes) || '(no notes for this segment)';
+      document.getElementById('hostPrevBtn').disabled = currentSegIndex <= 0;
+      document.getElementById('hostNextBtn').disabled = currentSegIndex >= agendaLength - 1;
+    }
+
+    async function advanceSegment(dir) {
+      const next = currentSegIndex + dir;
+      if (next < 0 || (agendaLength && next >= agendaLength)) return;
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/segment`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segment: next })
+        });
+      } catch { /* poll will retry on next 3s cycle */ }
     }
 
     function updateNowCard(seg, liveState) {

@@ -143,6 +143,7 @@ const liveSessionSchema = new mongoose.Schema({
     title: String,
     durationMin: { type: Number, min: 1 },
     prompt: String,
+    speakerNotes: String, // host-only — never sent to non-admin viewers, see GET /:id/live-state
     clipIndex: Number
   }],
 
