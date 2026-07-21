@@ -59,12 +59,30 @@
             <div id="nowCountdown"></div>
           </div>
           <div id="hostPanel" class="hidden mt-3 rounded-xl p-4" style="background:#FBF6EC;border:1px solid #EFE0C2;">
-            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c1e;margin-bottom:6px;">Host Prompter (only you see this)</h3>
-            <div id="hostNotes" style="font-size:13px;color:#44403c;line-height:1.5;white-space:pre-wrap;margin-bottom:10px;"></div>
-            <div style="display:flex;gap:8px;">
+            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c1e;margin-bottom:6px;">Host Dashboard (only you see this)</h3>
+
+            <div id="hostClock" style="font-size:12px;color:#284157;margin-bottom:8px;"></div>
+
+            <div id="hostNotes" style="font-size:13px;color:#44403c;line-height:1.5;white-space:pre-wrap;margin-bottom:8px;"></div>
+
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
               <button id="hostPrevBtn" onclick="advanceSegment(-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #EFE0C2;background:#fff;font-size:12px;font-weight:600;color:#7a5c1e;">◀ Prev</button>
               <button id="hostNextBtn" onclick="advanceSegment(1)" style="padding:6px 12px;border-radius:8px;background:#6B1D34;color:#fff;font-size:12px;font-weight:600;">Next ▶</button>
+              <select id="hostJumpSelect" onchange="jumpToSegment(this.value)" style="padding:6px 8px;border-radius:8px;border:1px solid #EFE0C2;font-size:12px;max-width:180px;"></select>
             </div>
+
+            <div id="hostBreakStatus" class="hidden" style="font-size:13px;font-weight:700;color:#3B5FCC;margin-bottom:10px;"></div>
+
+            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Who's here</div>
+            <div id="hostHeadcount" style="font-size:12px;color:#44403c;margin-bottom:10px;"></div>
+
+            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Checklist</div>
+            <div id="hostChecklistBox" style="margin-bottom:10px;"></div>
+
+            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Scratchpad</div>
+            <textarea id="hostScratchpad" rows="4" placeholder="Notes to yourself during the session..."
+              style="width:100%;border:1px solid #EFE0C2;border-radius:8px;padding:8px;font-size:13px;"
+              oninput="onScratchpadInput()"></textarea>
           </div>
           <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Handouts</h2>
@@ -255,6 +273,36 @@
     let agendaLength = 0;
     let currentSegIndex = 0;
 
+    // Host instructor-dashboard state
+    let alarmLeadSec = 60;
+    let isHostGlobal = false;
+    let fullAgenda = [];
+    let lastSegAlarmKey = null;
+    let warnedForSeg = false;
+    let urgentFiredForSeg = false;
+    let scheduledStartMs = null;
+    let scheduledEndMs = null;
+    let scratchpadLoaded = false;
+    let scratchpadSaveTimer = null;
+    let breakAlarmFiredFor = null;
+    let lastKnownChecklist = [];
+
+    function beep(freq, durMs) {
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        const ctx = new Ctx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + durMs / 1000);
+      } catch { /* audio unavailable — visual alarm still shows */ }
+    }
+
     async function pollLiveState(sessionId) {
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(sessionId)}/live-state`, {
@@ -276,12 +324,130 @@
       const panel = document.getElementById('hostPanel');
       if (!data.isHost) { panel.classList.add('hidden'); return; }
       panel.classList.remove('hidden');
+
+      isHostGlobal = true;
       agendaLength = data.agendaLength || 0;
       currentSegIndex = data.liveState?.currentSegment ?? 0;
+      if (typeof data.alarmLeadSec === 'number') alarmLeadSec = data.alarmLeadSec;
+
       document.getElementById('hostNotes').textContent =
         (data.currentSegment && data.currentSegment.speakerNotes) || '(no notes for this segment)';
       document.getElementById('hostPrevBtn').disabled = currentSegIndex <= 0;
       document.getElementById('hostNextBtn').disabled = currentSegIndex >= agendaLength - 1;
+
+      // Overall session clock
+      if (data.scheduledStart && data.scheduledEnd) {
+        scheduledStartMs = new Date(data.scheduledStart).getTime();
+        scheduledEndMs = new Date(data.scheduledEnd).getTime();
+        const now = Date.now();
+        const totalMin = Math.round((scheduledEndMs - scheduledStartMs) / 60000);
+        const elapsedMin = Math.max(0, Math.round((now - scheduledStartMs) / 60000));
+        const remainingMin = Math.max(0, Math.round((scheduledEndMs - now) / 60000));
+        document.getElementById('hostClock').textContent =
+          `Session: ${elapsedMin}m elapsed / ${remainingMin}m remaining (of ${totalMin}m total)`;
+      }
+
+      // Jump-to-segment dropdown
+      if (Array.isArray(data.agenda) && data.agenda.length) {
+        fullAgenda = data.agenda;
+        const sel = document.getElementById('hostJumpSelect');
+        sel.innerHTML = data.agenda.map((a, i) =>
+          `<option value="${i}" ${i === currentSegIndex ? 'selected' : ''}>${i + 1}. ${escHtmlHost(a.title || a.type)}</option>`
+        ).join('');
+      }
+
+      // Live headcount
+      const hc = data.currentlyPresent || [];
+      document.getElementById('hostHeadcount').textContent =
+        hc.length ? `${hc.length} present: ${hc.join(', ')}` : 'No one currently in the room.';
+
+      // Break status + end-of-break alarm
+      const breakEl = document.getElementById('hostBreakStatus');
+      const now = Date.now();
+      const activeBreak = (data.breaks || []).find(b => {
+        const start = new Date(b.startsAt).getTime();
+        const end = start + (b.durationMin || 0) * 60000;
+        return now >= start && now <= end + 60000; // 1-min grace for the alarm to still show
+      });
+      if (activeBreak) {
+        const start = new Date(activeBreak.startsAt).getTime();
+        const end = start + (activeBreak.durationMin || 0) * 60000;
+        const remainingSec = Math.max(0, Math.round((end - now) / 1000));
+        const m = Math.floor(remainingSec / 60), s = remainingSec % 60;
+        breakEl.classList.remove('hidden');
+        breakEl.textContent = remainingSec > 0
+          ? `On break ("${activeBreak.label || 'Break'}") — ${m}:${s.toString().padStart(2, '0')} remaining`
+          : `Break ("${activeBreak.label || 'Break'}") is over — resume now`;
+        const breakKey = activeBreak.startsAt;
+        if (remainingSec <= 0 && breakAlarmFiredFor !== breakKey) {
+          breakAlarmFiredFor = breakKey;
+          beep(880, 220);
+          setTimeout(() => beep(880, 220), 300);
+        }
+      } else {
+        breakEl.classList.add('hidden');
+      }
+
+      // Checklist
+      const checklistBox = document.getElementById('hostChecklistBox');
+      const items = data.hostChecklist || [];
+      lastKnownChecklist = items;
+      checklistBox.innerHTML = items.length
+        ? items.map((c, i) => `
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#44403c;margin-bottom:4px;">
+              <input type="checkbox" ${c.done ? 'checked' : ''} onchange="toggleChecklistItem(${i}, this.checked)">
+              <span style="${c.done ? 'text-decoration:line-through;opacity:.6;' : ''}">${escHtmlHost(c.text)}</span>
+            </label>`).join('')
+        : '<p style="font-size:12px;color:#78716c;">No checklist items — add them ahead of time in Run of Show.</p>';
+
+      // Scratchpad — only set the value once, so we don't overwrite while she's typing
+      if (!scratchpadLoaded) {
+        document.getElementById('hostScratchpad').value = data.hostScratchpad || '';
+        scratchpadLoaded = true;
+      }
+    }
+
+    function escHtmlHost(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    async function jumpToSegment(index) {
+      const idx = parseInt(index, 10);
+      if (!Number.isFinite(idx) || idx < 0 || idx >= agendaLength) return;
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/segment`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segment: idx })
+        });
+      } catch { /* poll will retry next tick */ }
+    }
+
+    async function toggleChecklistItem(idx, done) {
+      lastKnownChecklist[idx] = { ...lastKnownChecklist[idx], done };
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hostChecklist: lastKnownChecklist })
+        });
+      } catch { /* will retry visually on next poll */ }
+    }
+
+    function onScratchpadInput() {
+      clearTimeout(scratchpadSaveTimer);
+      scratchpadSaveTimer = setTimeout(async () => {
+        const val = document.getElementById('hostScratchpad').value;
+        try {
+          await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}`, {
+            method: 'PATCH',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hostScratchpad: val })
+          });
+        } catch { /* will retry on next input pause */ }
+      }, 1500);
     }
 
     async function advanceSegment(dir) {
@@ -310,13 +476,36 @@
       const badge = document.getElementById('breakoutBadge');
       badge.style.display = seg.type === 'breakout' ? '' : 'none';
 
-      // Countdown
+      const segKey = (seg.title || '') + '|' + (seg.durationMin || '') + '|' + (liveState?.currentSegment ?? '');
+      if (segKey !== lastSegAlarmKey) {
+        lastSegAlarmKey = segKey;
+        warnedForSeg = false;
+        urgentFiredForSeg = false;
+      }
+
       const countEl = document.getElementById('nowCountdown');
       if (seg.durationMin && liveState?.segmentStartedAt) {
         const elapsed = (Date.now() - new Date(liveState.segmentStartedAt).getTime()) / 1000;
         const remaining = Math.max(0, seg.durationMin * 60 - elapsed);
         const m = Math.floor(remaining / 60), s = Math.floor(remaining % 60);
         countEl.textContent = `${m}:${s.toString().padStart(2, '0')} remaining`;
+        countEl.style.color = remaining <= 0 ? '#b91c1c' : (remaining <= alarmLeadSec ? '#c0392b' : '#7a5c1e');
+        countEl.style.fontWeight = remaining <= alarmLeadSec ? '800' : '600';
+
+        if (isHostGlobal) {
+          // Warning tone: fires once, alarmLeadSec before the segment ends
+          if (remaining <= alarmLeadSec && remaining > 0 && !warnedForSeg) {
+            warnedForSeg = true;
+            beep(660, 180);
+          }
+          // Urgent tone: fires once, exactly when the segment time is up — distinct
+          // double-tone, higher pitch, so it's identifiable by sound alone
+          if (remaining <= 0 && !urgentFiredForSeg) {
+            urgentFiredForSeg = true;
+            beep(880, 220);
+            setTimeout(() => beep(880, 220), 300);
+          }
+        }
       } else {
         countEl.textContent = '';
       }
