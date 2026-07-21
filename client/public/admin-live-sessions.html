@@ -250,6 +250,10 @@
           <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
         </div>
 
+        <!-- Alarm lead time (host-only instructor dashboard) -->
+        <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Alarm lead time (seconds)</label>
+        <input type="number" id="f-alarmLeadSec" name="alarmLeadSec" min="0" max="600" placeholder="60" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"></div>
+
         <!-- Published -->
         <div>
           <label class="flex items-center gap-2 cursor-pointer">
@@ -335,6 +339,8 @@
         <div id="rosClipsSection"></div>
         <div class="border-t border-gray-100"></div>
         <div id="rosAgendaSection"></div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosChecklistSection" class="mt-4"></div>
       </div>
     </div>
   </div>
@@ -601,6 +607,7 @@
         price: parseFloat(fd.get('price') || '0'),
         attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
         recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
+        alarmLeadSec: parseInt(document.getElementById('f-alarmLeadSec').value, 10) || 60,
         isPublished: !!fd.get('isPublished'),
         visibility: fd.get('visibility') || 'public',
         accessCode: (fd.get('accessCode') || '').trim()
@@ -697,6 +704,64 @@
       document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
       renderRosClips();
       renderRosAgenda();
+      renderRosChecklist();
+    }
+
+    function renderRosChecklist() {
+      const items = rosSession.hostChecklist || [];
+      const ro = rosReadOnly();
+      const list = items.length
+        ? items.map((c, i) => `
+          <div class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg">
+            <span class="text-sm text-forest-700">${escHtml(c.text)}</span>
+            ${ro ? '' : `<button onclick="removeChecklistItem('${rosSession._id}', ${i})" title="Remove"
+              class="text-forest-400 hover:text-red-600 transition-colors"><i class="fas fa-times"></i></button>`}
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No checklist items yet.</p>';
+
+      const addRow = ro ? '' : `
+        <div class="grid grid-cols-12 gap-2 mt-3">
+          <input id="rosChecklistText" type="text" placeholder="e.g. Confirm recording started"
+            class="col-span-10 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <button onclick="addChecklistItem('${rosSession._id}')"
+            class="col-span-2 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold transition-colors">Add</button>
+        </div>`;
+
+      document.getElementById('rosChecklistSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Host Checklist (private)</h3>
+        <div class="space-y-2">${list}</div>
+        ${addRow}`;
+    }
+
+    async function addChecklistItem(id) {
+      if (rosReadOnly()) return;
+      const text = document.getElementById('rosChecklistText').value.trim();
+      if (!text) return;
+      const items = (rosSession.hostChecklist || []).concat([{ text, done: false }]);
+      await saveChecklist(id, items);
+    }
+
+    async function removeChecklistItem(id, idx) {
+      if (rosReadOnly()) return;
+      const items = (rosSession.hostChecklist || []).filter((_, i) => i !== idx);
+      await saveChecklist(id, items);
+    }
+
+    async function saveChecklist(id, items) {
+      try {
+        const r = await fetch(`${API}/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hostChecklist: items })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to save checklist');
+        rosSession.hostChecklist = d.session?.hostChecklist || items;
+        renderRosChecklist();
+        showToast('Checklist saved.', '#284157');
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
     }
 
     function renderRosClips() {

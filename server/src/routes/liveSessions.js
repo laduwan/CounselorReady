@@ -397,7 +397,7 @@ router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) =
 router.get('/:id/live-state', protect, async (req, res) => {
   try {
     const session = await LiveSession.findById(req.params.id)
-      .select('liveState agenda status scheduledStart scheduledEnd registrants')
+      .select('liveState agenda status scheduledStart scheduledEnd registrants attendance breaks alarmLeadSec hostScratchpad hostChecklist')
       .lean();
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
@@ -412,13 +412,29 @@ router.get('/:id/live-state', protect, async (req, res) => {
     const seg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
     // speakerNotes is host-only — strip it before sending to non-admin viewers
     const segOut = seg && !isAdmin ? { ...seg, speakerNotes: undefined } : seg;
-    res.json({
+
+    const payload = {
       liveState: session.liveState,
       currentSegment: segOut,
       agendaLength: session.agenda?.length || 0,
       isHost: isAdmin,
-      status: session.status
-    });
+      status: session.status,
+      scheduledStart: session.scheduledStart,
+      scheduledEnd: session.scheduledEnd
+    };
+
+    if (isAdmin) {
+      payload.agenda = session.agenda || [];
+      payload.breaks = session.breaks || [];
+      payload.alarmLeadSec = session.alarmLeadSec ?? 60;
+      payload.hostScratchpad = session.hostScratchpad || '';
+      payload.hostChecklist = session.hostChecklist || [];
+      payload.currentlyPresent = (session.attendance || [])
+        .filter(a => !a.leftAt)
+        .map(a => a.displayName || 'Unnamed attendee');
+    }
+
+    res.json(payload);
   } catch (err) {
     console.error('[live] live-state:', err.message);
     res.status(500).json({ error: 'Failed to load live state' });

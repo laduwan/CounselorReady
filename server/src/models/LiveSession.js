@@ -124,6 +124,14 @@ const liveSessionSchema = new mongoose.Schema({
   recordingEnabled: { type: Boolean, default: false },
   recordings: [recordingSchema],
 
+  // Host-only instructor dashboard settings
+  alarmLeadSec: { type: Number, default: 60, min: 0, max: 600 }, // host-only: seconds before segment end to play the warning tone
+  hostScratchpad: { type: String, default: '' }, // host-only private notes, never shown to attendees
+  hostChecklist: [{
+    text: { type: String, required: true, trim: true },
+    done: { type: Boolean, default: false }
+  }],
+
   // Handouts — live-course only; hard-locked empty for supervision
   handouts: [handoutSchema],
 
