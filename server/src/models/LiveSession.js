@@ -79,6 +79,18 @@ const liveSessionSchema = new mongoose.Schema({
   presenter: {
     name: { type: String, default: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH' },
     credentials: String,
+    degree: { type: String, default: 'MA' },
+    licenseNumber: { type: String, default: 'LPC009587' },
+    licenseState: { type: String, default: 'GA' },
+    category: {
+      type: String,
+      enum: ['category1', 'category2', 'category3'],
+      default: 'category1' // masters + license, per ACEP presenter categories
+    },
+    qualificationStatement: {
+      type: String,
+      default: 'Kejuiana Johnson is a Licensed Professional Counselor (GA LPC009587) with clinical and supervisory experience relevant to this content area.'
+    },
     // Camera-off avatar (passed to Whereby as avatarUrl). Set via env so the URL
     // is changeable without a code deploy. Whereby requires an https, square
     // png/jpg (<=64x64) Cloudinary URL with NO query params.
@@ -97,6 +109,9 @@ const liveSessionSchema = new mongoose.Schema({
   ceuHours: { type: Number, min: 0, default: 0 },
   nbccContentAreas: [String],
   category: { type: String, default: 'Other' },
+  objectives: [{ type: String, trim: true }],
+  targetAudience: [{ type: String, trim: true }],
+  references: [{ type: String, trim: true }],
 
   // Supervision metadata (ignored for live-course)
   supervisionFormat: {
