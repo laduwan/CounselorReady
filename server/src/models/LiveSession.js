@@ -184,15 +184,81 @@ const liveSessionSchema = new mongoose.Schema({
     durationSec: { type: Number, required: true, min: 1, max: 600 }
   }],
 
+  // ─── Facilitator prep (session-level) ────────────────────────────────
+  // Pre-flight checklist shown to the host in the Run of Show modal.
+  // Filled in ahead of time as part of session prep.
+  preFlightChecklist: [{
+    _id: false,
+    text: { type: String, required: true, trim: true },
+    critical: { type: Boolean, default: false } // e.g. "DO NOT show poll results between rungs"
+  }],
+
+  // Session-level cautions that apply throughout, not tied to a segment.
+  // Shown persistently in the host panel during the live session.
+  globalFacilitatorCautions: [{
+    _id: false,
+    text: { type: String, required: true, trim: true }
+  }],
+
   // Run-of-show agenda (live-course only; hard-locked empty for supervision)
   agenda: [{
     order: { type: Number, required: true },
     type: { type: String, enum: ['lecture', 'clip', 'discussion', 'breakout', 'break'], required: true },
     title: String,
     durationMin: { type: Number, min: 1 },
-    prompt: String,
-    speakerNotes: String, // host-only — never sent to non-admin viewers, see GET /:id/live-state
-    clipIndex: Number
+    prompt: String,             // public — shown to all attendees
+    speakerNotes: String,       // host-only — private cues
+    clipIndex: Number,
+
+    // ─── New in Stage 1 ──────────────────────────────────────────────
+    // Freeform "how to run this segment" — printed teacher-facing text,
+    // separate from short speaker cues. Host-only.
+    activityInstructions: String,
+
+    // Structured warnings for THIS segment specifically (as opposed to
+    // globalFacilitatorCautions which span the whole session).
+    facilitatorCautions: [{
+      _id: false,
+      text: { type: String, required: true, trim: true },
+      critical: { type: Boolean, default: false }
+    }],
+
+    // Polls belonging to this segment. Each has options and reveal timing.
+    polls: [{
+      question: { type: String, required: true, trim: true },
+      options: [{ _id: false, text: { type: String, required: true, trim: true } }],
+      revealAfter: {
+        // when to reveal results to attendees:
+        //  'immediately' = as soon as vote closes
+        //  'after-segment' = wait until segment ends (Ke's "escalation ladder" pattern)
+        //  'manual' = host clicks to reveal
+        type: String,
+        enum: ['immediately', 'after-segment', 'manual'],
+        default: 'immediately'
+      },
+      correctOptionIndex: Number // optional; null = no "correct" answer
+    }],
+
+    // Prompts for breakout rooms if this segment is type='breakout'.
+    // Ignored on other segment types (validation not enforced here to keep
+    // this schema-only task truly schema-only; Stage 2 or 3 can add checks).
+    breakoutPrompts: [{
+      _id: false,
+      text: { type: String, required: true, trim: true },
+      timeboxMin: Number // optional per-prompt timebox
+    }],
+
+    // Structured exercise details (writing exercises, worksheets, etc.).
+    exercise: {
+      type: {
+        _id: false,
+        instructions: String,        // what participants do
+        timeboxMin: Number,          // how long they work
+        deliverable: String,         // what they produce (e.g. "3 bullet points on chart paper")
+        debriefFormat: String        // how findings are shared (e.g. "1 person reads aloud")
+      },
+      default: undefined // omit entirely when segment has no exercise
+    }
   }],
 
   // Live sync state — host writes, attendees poll via GET /:id/live-state
