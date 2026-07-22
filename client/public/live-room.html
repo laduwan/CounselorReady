@@ -105,6 +105,17 @@
           </div>
         </aside>
       </div>
+      <div id="evalCard" class="hidden bg-white rounded-xl border p-6 mt-4" style="border-color:#EDE9E3;">
+        <h3 class="font-display text-xl font-semibold mb-1" style="color:#6B1D34;">Course Evaluation</h3>
+        <p class="text-sm mb-4" style="color:#78716c;">Required before your certificate can be issued.</p>
+        <div id="evalQuestions"></div>
+        <div id="evalError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
+        <button onclick="submitEvaluation()" id="evalSubmitBtn"
+          style="background:#6B1D34;color:#fff;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:700;">
+          Submit Evaluation
+        </button>
+        <p id="evalDone" class="hidden text-sm font-semibold" style="color:#2D6A4F;margin-top:10px;">Evaluation submitted — thank you!</p>
+      </div>
     </div>
   </main>
 
@@ -378,6 +389,83 @@
       } catch { /* audio unavailable — visual alarm still shows */ }
     }
 
+    let evalQuestions = [];
+
+    async function loadEvaluation() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/evaluation`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        document.getElementById('evalCard').classList.remove('hidden');
+        if (data.completed) {
+          document.getElementById('evalQuestions').classList.add('hidden');
+          document.getElementById('evalSubmitBtn').classList.add('hidden');
+          document.getElementById('evalDone').classList.remove('hidden');
+          return;
+        }
+        evalQuestions = data.questions || [];
+        renderEvalQuestions();
+      } catch { /* evaluation is non-critical to page load — fail silently */ }
+    }
+
+    function renderEvalQuestions() {
+      const container = document.getElementById('evalQuestions');
+      container.innerHTML = evalQuestions.map((q, i) => {
+        let inputHtml = '';
+        if (q.type === 'rating') {
+          inputHtml = `<div style="display:flex;gap:6px;">${[1,2,3,4,5].map(n =>
+            `<label style="display:flex;flex-direction:column;align-items:center;font-size:11px;color:#78716c;">
+              <input type="radio" name="eval_${i}" value="${n}"> ${n}
+            </label>`).join('')}</div>`;
+        } else if (q.type === 'yes_no') {
+          inputHtml = `<div style="display:flex;gap:16px;">
+            <label style="font-size:13px;"><input type="radio" name="eval_${i}" value="yes"> Yes</label>
+            <label style="font-size:13px;"><input type="radio" name="eval_${i}" value="no"> No</label>
+          </div>`;
+        } else {
+          inputHtml = `<textarea name="eval_${i}" rows="2" style="width:100%;border:1px solid #EDE9E3;border-radius:8px;padding:6px;font-size:13px;"></textarea>`;
+        }
+        return `<div style="margin-bottom:14px;">
+          <label style="font-size:13px;font-weight:600;color:#284157;display:block;margin-bottom:6px;">${q.question}${q.required ? ' *' : ''}</label>
+          ${inputHtml}
+        </div>`;
+      }).join('');
+    }
+
+    async function submitEvaluation() {
+      const errEl = document.getElementById('evalError');
+      errEl.classList.add('hidden');
+      const responses = evalQuestions.map((q, i) => {
+        const els = document.getElementsByName(`eval_${i}`);
+        let response = null;
+        if (q.type === 'text') {
+          response = els[0]?.value || '';
+        } else {
+          const checked = Array.from(els).find(el => el.checked);
+          response = checked ? checked.value : null;
+        }
+        return { questionIndex: i, response };
+      });
+
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/evaluation`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ responses })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.error || 'Submission failed.'; errEl.classList.remove('hidden'); return; }
+        document.getElementById('evalQuestions').classList.add('hidden');
+        document.getElementById('evalSubmitBtn').classList.add('hidden');
+        document.getElementById('evalDone').classList.remove('hidden');
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+      }
+    }
+
     async function pollLiveState(sessionId) {
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(sessionId)}/live-state`, {
@@ -392,6 +480,7 @@
         if (data.status === 'completed' && syncInterval) {
           clearInterval(syncInterval);
           syncInterval = null;
+          loadEvaluation();
         }
       } catch { /* network hiccup — try again next tick */ }
     }

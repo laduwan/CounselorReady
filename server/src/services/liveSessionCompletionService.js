@@ -62,6 +62,14 @@ export async function issueLiveSessionCertificates(liveSessionId) {
         continue;
       }
 
+      const attRecord = session.attendance.find(
+        a => a.user && a.user.toString() === userId.toString()
+      );
+      if (!attRecord?.evaluationCompleted) {
+        skipped.push({ userId, reason: 'evaluation-not-completed' });
+        continue;
+      }
+
       // Idempotency: title + user + platform source (no courseId for live sessions;
       // liveSessionId field added to CertificateSchema — see WIRING.md)
       const existing = await Certificate.findOne({
