@@ -68,7 +68,13 @@ router.post('/', async (req, res) => {
     ? req.body
     : Buffer.from(typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {}));
 
-  if (secret && !verifyWherebySignature(raw, req.headers, secret)) {
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[whereby-webhook] WHEREBY_WEBHOOK_SECRET is not set — rejecting webhook in production.');
+      return res.status(401).json({ error: 'Webhook not configured' });
+    }
+    console.warn('[whereby-webhook] WHEREBY_WEBHOOK_SECRET not set — skipping signature check (non-production only).');
+  } else if (!verifyWherebySignature(raw, req.headers, secret)) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
