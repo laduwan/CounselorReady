@@ -17,6 +17,9 @@
  */
 import express from 'express';
 import Stripe from 'stripe';
+import multer from 'multer';
+import cloudinary from 'cloudinary';
+import { Readable } from 'stream';
 import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
@@ -25,6 +28,34 @@ import { triggerNewLiveSessionAnnouncement } from '../services/notificationTrigg
 
 const router = express.Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
+
+// Cloudinary raw-upload config for live-session handouts. Mirrors the stream
+// pattern in routes/fileUpload.js but is kept independent (module boundary).
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Handout mimetype → LiveSession handoutSchema.fileType enum. Any mimetype not
+// in this map is rejected by the multer fileFilter before it reaches Cloudinary.
+const HANDOUT_MIME_TO_TYPE = {
+  'application/pdf': 'pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+};
+
+const handoutUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter: (req, file, cb) => {
+    if (HANDOUT_MIME_TO_TYPE[file.mimetype]) cb(null, true);
+    else cb(new Error(`File type not allowed: ${file.mimetype}. Accepted: PDF, DOCX, PPTX, XLSX, PNG, JPG`), false);
+  },
+});
 
 const JOIN_WINDOW_BEFORE_MIN = 15; // doors open 15 min early
 const JOIN_WINDOW_AFTER_MIN = 30;  // grace after scheduled end (overruns)
@@ -378,6 +409,98 @@ router.get('/:id/handouts/:handoutId', protect, async (req, res) => {
   } catch (err) {
     console.error('[live] handout:', err.message);
     res.status(500).json({ error: 'Failed to load handout' });
+  }
+});
+
+// POST /api/live-sessions/:id/handouts — admin uploads a handout to Cloudinary
+// and appends it to session.handouts[]. Supervision sessions are rejected BEFORE
+// any Cloudinary call — Cloudinary has no BAA (HIPAA hard-lock), never relying on
+// the save-time pre-validate hook to catch it.
+router.post('/:id/handouts', protect, requireAdmin, (req, res, next) => {
+  // Wrap multer so filter/size errors return clean JSON instead of an HTML 500.
+  handoutUpload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    // HIPAA hard-lock: supervision sessions may never carry handouts. Reject
+    // before uploading anything to Cloudinary.
+    if (session.sessionType === 'supervision') {
+      return res.status(403).json({
+        error: 'Handouts are not permitted on supervision sessions — Cloudinary has no BAA (HIPAA hard-lock).'
+      });
+    }
+
+    const fileType = HANDOUT_MIME_TO_TYPE[req.file.mimetype];
+    const folder = `counselorready/live-sessions/${session._id}`;
+    const publicId = `handout_${Date.now()}`;
+
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.v2.uploader.upload_stream(
+        { folder, resource_type: 'raw', public_id: publicId, use_filename: false },
+        (err, r) => (err ? reject(err) : resolve(r))
+      );
+      const readable = new Readable();
+      readable.push(req.file.buffer);
+      readable.push(null);
+      readable.pipe(stream);
+    });
+
+    // Force-download URL variant (inject fl_attachment after /upload/)
+    const fileUrl = result.secure_url.replace('/upload/', '/upload/fl_attachment/');
+    const title = (req.body.title || '').trim() || req.file.originalname.replace(/\.[^.]+$/, '');
+    const availability = ['before', 'during', 'after'].includes(req.body.availability)
+      ? req.body.availability
+      : 'during';
+
+    session.handouts.push({
+      title,
+      cloudinaryPublicId: result.public_id,
+      fileUrl,
+      fileType,
+      sizeKB: Math.round(result.bytes / 1024),
+      availability,
+    });
+    await session.save(); // pre-validate re-runs the hard-locks (defense in depth)
+
+    const handout = session.handouts[session.handouts.length - 1];
+    res.status(201).json({ handout });
+  } catch (err) {
+    console.error('[live] handout upload:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/live-sessions/:id/handouts/:handoutId — remove a handout and its
+// Cloudinary asset. Cloudinary destroy is best-effort and never fails the request.
+router.delete('/:id/handouts/:handoutId', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const handout = session.handouts.id(req.params.handoutId);
+    if (!handout) return res.status(404).json({ error: 'Handout not found' });
+
+    const publicId = handout.cloudinaryPublicId;
+    session.handouts.pull(req.params.handoutId);
+
+    try {
+      await cloudinary.v2.uploader.destroy(publicId, { resource_type: 'raw' });
+    } catch (e) {
+      console.error('[live] handout destroy (non-fatal):', e.message);
+    }
+
+    await session.save();
+    res.json({ deleted: true });
+  } catch (err) {
+    console.error('[live] handout delete:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
