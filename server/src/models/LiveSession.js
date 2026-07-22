@@ -45,6 +45,12 @@ const attendanceSchema = new mongoose.Schema({
     deadline: { type: Date, required: true }, // promptedAt + 3 min
     respondedAt: Date,
     missed: { type: Boolean, default: false }
+  }],
+  evaluationCompleted: { type: Boolean, default: false },
+  evaluationCompletedAt: Date,
+  evaluationResponses: [{
+    questionIndex: Number,
+    response: mongoose.Schema.Types.Mixed
   }]
 }, { _id: true });
 
@@ -130,6 +136,14 @@ const liveSessionSchema = new mongoose.Schema({
   // Certificate eligibility: % of scheduled duration attended
   attendanceThresholdPct: { type: Number, default: 90, min: 50, max: 100 },
   certificatesIssuedAt: Date,
+
+  // Optional custom evaluation questions; falls back to DEFAULT_EVALUATION_QUESTIONS
+  // (server/src/routes/liveSessions.js) when empty, same pattern as course.evaluationQuestions
+  evaluationQuestions: [{
+    question: String,
+    type: { type: String, enum: ['rating', 'yes_no', 'text'] },
+    required: { type: Boolean, default: true }
+  }],
 
   // Recording — live-course only; hard-locked off for supervision
   recordingEnabled: { type: Boolean, default: false },

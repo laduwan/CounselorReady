@@ -29,6 +29,24 @@ const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SEC
 const JOIN_WINDOW_BEFORE_MIN = 15; // doors open 15 min early
 const JOIN_WINDOW_AFTER_MIN = 30;  // grace after scheduled end (overruns)
 
+const DEFAULT_EVALUATION_QUESTIONS = [
+  { question: 'Quality of course content', type: 'rating', required: true },
+  { question: 'Clarity of instruction', type: 'rating', required: true },
+  { question: 'Overall course satisfaction', type: 'rating', required: true },
+  { question: 'Usefulness of course materials', type: 'rating', required: true },
+  { question: 'Ease of access to course materials', type: 'rating', required: true },
+  { question: 'Overall Course Rating', type: 'rating', required: true },
+  { question: 'Level of interactivity in the course', type: 'rating', required: true },
+  { question: 'Relevance to professional practice', type: 'rating', required: true },
+  { question: 'The Presenter was timely in addressing questions or issues', type: 'rating', required: true },
+  { question: 'Satisfaction with the online platform', type: 'rating', required: true },
+  { question: 'Timeliness of the information provided', type: 'rating', required: true },
+  { question: 'The cost of the course was affordable compared to others providing similar credit hours', type: 'rating', required: true },
+  { question: 'Was the course engaging?', type: 'yes_no', required: true },
+  { question: 'Would you recommend this course to others?', type: 'yes_no', required: true },
+  { question: 'Additional comments or suggestions (optional)', type: 'text', required: false }
+];
+
 /* ════════════════════════ PUBLIC / LEARNER ════════════════════════ */
 
 // GET /api/live-sessions/upcoming — published upcoming live courses (catalog)
@@ -261,6 +279,73 @@ router.get('/:id/replay', protect, async (req, res) => {
   } catch (err) {
     console.error('[live] replay:', err.message);
     res.status(500).json({ error: 'Failed to load replay' });
+  }
+});
+
+// GET /api/live-sessions/:id/evaluation
+router.get('/:id/evaluation', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const att = session.attendance.find(
+      a => a.user && a.user.toString() === req.user._id.toString()
+    );
+    const questions = session.evaluationQuestions?.length > 0
+      ? session.evaluationQuestions
+      : DEFAULT_EVALUATION_QUESTIONS;
+
+    res.json({
+      required: true,
+      completed: att?.evaluationCompleted || false,
+      sessionInfo: {
+        title: session.title,
+        dateCompleted: session.scheduledEnd,
+        instructorName: session.presenter?.name || 'CounselorReady'
+      },
+      questions
+    });
+  } catch (err) {
+    console.error('[live] get evaluation:', err.message);
+    res.status(500).json({ error: 'Failed to load evaluation' });
+  }
+});
+
+// POST /api/live-sessions/:id/evaluation
+router.post('/:id/evaluation', protect, async (req, res) => {
+  try {
+    const { responses } = req.body; // Array of { questionIndex, response }
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const att = session.attendance.find(
+      a => a.user && a.user.toString() === req.user._id.toString()
+    );
+    if (!att) return res.status(404).json({ error: 'No attendance record found for this session.' });
+
+    const questions = session.evaluationQuestions?.length > 0
+      ? session.evaluationQuestions
+      : DEFAULT_EVALUATION_QUESTIONS;
+
+    for (let i = 0; i < questions.length; i++) {
+      if (questions[i].required) {
+        const r = (responses || []).find(x => x.questionIndex === i);
+        if (!r || r.response === null || r.response === '') {
+          return res.status(400).json({ error: `Question ${i + 1} is required` });
+        }
+      }
+    }
+
+    att.evaluationResponses = responses;
+    att.evaluationCompleted = true;
+    att.evaluationCompletedAt = new Date();
+    session.markModified('attendance');
+    await session.save();
+
+    res.json({ success: true, message: 'Evaluation submitted' });
+  } catch (err) {
+    console.error('[live] submit evaluation:', err.message);
+    res.status(500).json({ error: 'Failed to submit evaluation' });
   }
 });
 
