@@ -429,6 +429,55 @@ export async function triggerNewCourseAnnouncement({ courseTitle, courseSlug, ce
   }
 }
 
+export async function triggerNewLiveSessionAnnouncement({
+  sessionTitle, sessionSlug, accessCode, scheduledStart, ceuHours, category, description, price
+}) {
+  try {
+    const users = await User.find({
+      'notifications.unsubscribeAll': { $ne: true },
+      'notifications.email.newCourseAnnouncements': { $ne: false }
+    }).select('email profile notifications');
+
+    const dateStr = scheduledStart ? new Date(scheduledStart).toLocaleString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short'
+    }) : '';
+
+    // Prefer the accessCode deep link if one exists (works for public sessions
+    // too, and is a stable specific link) — otherwise fall back to the general catalog.
+    const registerUrl = accessCode
+      ? `${BASE_URL}/live-sessions.html?code=${encodeURIComponent(accessCode)}`
+      : `${BASE_URL}/live-sessions.html`;
+
+    let sentCount = 0;
+    for (const user of users) {
+      try {
+        const name = getUserName(user);
+        await sendNotificationEmail(user.email, `New Live Session: ${sessionTitle}`, `
+          <h2 style="color:#2D4A3E;margin-top:0;">New Live Session Available!</h2>
+          <p>Hi ${name}, a new live CE session just opened for registration on CounselorReady:</p>
+          <div style="background:#f8f9fa;border-left:4px solid #2D4A3E;padding:16px;margin:16px 0;border-radius:0 6px 6px 0;">
+            <p style="margin:0 0 6px;font-size:18px;font-weight:bold;color:#6b1d34;">${sessionTitle}</p>
+            ${dateStr ? `<p style="margin:0 0 4px;color:#666;">${dateStr}</p>` : ''}
+            ${category ? `<p style="margin:0 0 4px;color:#666;">${category}</p>` : ''}
+            ${ceuHours ? `<p style="margin:0 0 4px;font-weight:bold;">${ceuHours} CE Hours</p>` : ''}
+            ${!price ? '<p style="margin:0 0 4px;color:#2D6A4F;font-weight:bold;">Included with VIP subscription</p>' : `<p style="margin:0 0 4px;color:#666;">$${price}</p>`}
+            ${description ? `<p style="margin:6px 0 0;color:#444;">${description}</p>` : ''}
+          </div>
+          <div style="text-align:center;margin:24px 0;">
+            <a href="${registerUrl}" style="background:#6b1d34;color:#fff;padding:12px 24px;text-decoration:none;border-radius:6px;font-weight:bold;">Register Now</a>
+          </div>
+        `);
+        sentCount++;
+      } catch (emailErr) {
+        // Continue on individual failures
+      }
+    }
+    console.log(`[NotifTrigger] New live session announcement sent to ${sentCount} users`);
+  } catch (err) {
+    console.error('[NotifTrigger] triggerNewLiveSessionAnnouncement error:', err.message);
+  }
+}
+
 export async function triggerWeeklyDigest(userId, { credentials, recentCompletions, upcomingRenewals }) {
   try {
     const user = await User.findById(userId);
@@ -663,6 +712,7 @@ export default {
   triggerCredentialExpiring,
   triggerInsuranceExpiring,
   triggerNewCourseAnnouncement,
+  triggerNewLiveSessionAnnouncement,
   triggerWeeklyDigest,
   triggerTrialEndingSoon,
   triggerTrialEndingTomorrow,

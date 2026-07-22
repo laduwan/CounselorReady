@@ -21,6 +21,7 @@ import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
+import { triggerNewLiveSessionAnnouncement } from '../services/notificationTriggerService.js';
 
 const router = express.Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -320,10 +321,27 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
     const session = await LiveSession.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
+    const wasPublished = session.isPublished;
+
     // Never allow client payloads to overwrite room URLs or attendance
     const { whereby, attendance, registrants, recordings, ...safe } = req.body;
     Object.assign(session, safe);
     await session.save(); // pre-validate re-runs hard-locks
+
+    // Fire the announcement email only on the false→true transition, and only
+    // for public sessions — private/test sessions never trigger a mass email.
+    if (!wasPublished && session.isPublished && session.visibility !== 'private') {
+      triggerNewLiveSessionAnnouncement({
+        sessionTitle: session.title,
+        sessionSlug: session.slug,
+        accessCode: session.accessCode,
+        scheduledStart: session.scheduledStart,
+        ceuHours: session.ceuHours,
+        category: session.category,
+        description: session.description,
+        price: session.price
+      }).catch(err => console.error('triggerNewLiveSessionAnnouncement failed:', err));
+    }
 
     res.json({ session });
   } catch (err) {
