@@ -25,6 +25,7 @@ import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
 import { triggerNewLiveSessionAnnouncement } from '../services/notificationTriggerService.js';
+import { parseRunOfShowMarkdown, parseRunOfShowDocx } from '../services/runOfShowParser.js';
 
 const router = express.Router();
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -54,6 +55,23 @@ const handoutUpload = multer({
   fileFilter: (req, file, cb) => {
     if (HANDOUT_MIME_TO_TYPE[file.mimetype]) cb(null, true);
     else cb(new Error(`File type not allowed: ${file.mimetype}. Accepted: PDF, DOCX, PPTX, XLSX, PNG, JPG`), false);
+  },
+});
+
+// Run-of-Show docx upload — memory-buffered, .docx only. Mirrors courseBuilder.js's
+// docxUpload so the /run-of-show/preview route can hand the buffer to mammoth.
+const rosDocxUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.originalname?.endsWith('.docx')
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only .docx files are accepted'));
+    }
   },
 });
 
@@ -553,6 +571,81 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
 
     res.json({ session });
   } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/live-sessions/:id/run-of-show/preview
+// Accepts either JSON { markdown } OR a multipart 'file' upload (docx).
+// Returns the parsed payload WITHOUT saving — Ke reviews and confirms
+// via the commit route below.
+router.post('/:id/run-of-show/preview', protect, requireAdmin, rosDocxUpload.single('file'), async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id).select('_id title');
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    let parsed;
+    if (req.file) {
+      parsed = await parseRunOfShowDocx(req.file.buffer);
+    } else {
+      const markdown = (req.body?.markdown || '').trim();
+      if (!markdown) return res.status(400).json({ error: 'Provide markdown text or a .docx file.' });
+      parsed = parseRunOfShowMarkdown(markdown);
+    }
+
+    // Compute hour totals for UI display (helps Ke see if any hour drifts
+    // from the 60-min target).
+    const totalMin = parsed.agenda.reduce((sum, s) => sum + (s.durationMin || 0), 0);
+
+    res.json({
+      sessionTitle: session.title,
+      summary: {
+        segmentCount: parsed.agenda.length,
+        totalMin,
+        preFlightCount: parsed.preFlightChecklist.length,
+        globalCautionsCount: parsed.globalFacilitatorCautions.length,
+        segmentsMissingDuration: parsed.agenda.filter(s => !s.durationMin).length
+      },
+      parsed,
+      warnings: parsed.warnings
+    });
+  } catch (err) {
+    console.error('[live] ros preview:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/live-sessions/:id/run-of-show/commit
+// Body: { agenda, preFlightChecklist, globalFacilitatorCautions }.
+// This is the payload Ke got back from /preview, possibly hand-edited.
+// Fully REPLACES the session's ROS content — this is a deliberate choice,
+// since half-merged imports are worse than a clean overwrite. The Edit modal
+// remains available for per-segment tweaks after commit.
+router.post('/:id/run-of-show/commit', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const { agenda, preFlightChecklist, globalFacilitatorCautions } = req.body;
+    if (!Array.isArray(agenda)) {
+      return res.status(400).json({ error: 'agenda must be an array' });
+    }
+
+    session.agenda = agenda;
+    session.preFlightChecklist = Array.isArray(preFlightChecklist) ? preFlightChecklist : [];
+    session.globalFacilitatorCautions = Array.isArray(globalFacilitatorCautions) ? globalFacilitatorCautions : [];
+    session.markModified('agenda');
+    session.markModified('preFlightChecklist');
+    session.markModified('globalFacilitatorCautions');
+    await session.save();
+
+    res.json({
+      ok: true,
+      segmentCount: session.agenda.length,
+      totalMin: session.agenda.reduce((sum, s) => sum + (s.durationMin || 0), 0)
+    });
+  } catch (err) {
+    console.error('[live] ros commit:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
