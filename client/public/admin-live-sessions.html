@@ -232,6 +232,61 @@
           </div>
         </div>
 
+        <!-- Learning Objectives -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Learning Objectives</label>
+          <textarea id="f-objectives" rows="3" placeholder="One objective per line, e.g.&#10;Identify three evidence-based interventions for treating anxiety"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line.</p>
+        </div>
+
+        <!-- Target Audience -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Target Audience</label>
+          <textarea id="f-targetAudience" rows="2" placeholder="One line per audience, e.g.&#10;Licensed Professional Counselors&#10;Licensed Associate Professional Counselors"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line.</p>
+        </div>
+
+        <!-- References -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">References</label>
+          <textarea id="f-references" rows="3" placeholder="One citation per line"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line. Optional but recommended for NBCC compliance.</p>
+        </div>
+
+        <!-- Presenter Details (ACEP compliance) -->
+        <div class="border border-gray-200 rounded-lg p-3">
+          <p class="text-xs font-bold text-burgundy-800 uppercase tracking-wide mb-2">Presenter Details</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Degree</label>
+              <input type="text" id="f-presenterDegree" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">License Number</label>
+              <input type="text" id="f-presenterLicenseNumber" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">License State</label>
+              <input type="text" id="f-presenterLicenseState" maxlength="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">ACEP Category</label>
+              <select id="f-presenterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+                <option value="category1">Category 1 (Master's + License)</option>
+                <option value="category2">Category 2 (Doctoral)</option>
+                <option value="category3">Category 3 (Other Qualified)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-burgundy-800 mb-1">Qualification Statement</label>
+            <textarea id="f-presenterQualification" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          </div>
+        </div>
+
         <!-- Attendance Threshold -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
@@ -580,6 +635,14 @@
       document.getElementById('submitBtn').disabled = false;
       document.getElementById('f-slug').disabled = false;
       document.getElementById('slugHelp').textContent = 'Lowercase letters, numbers, and hyphens only.';
+      document.getElementById('f-objectives').value = '';
+      document.getElementById('f-targetAudience').value = '';
+      document.getElementById('f-references').value = '';
+      document.getElementById('f-presenterDegree').value = 'MA';
+      document.getElementById('f-presenterLicenseNumber').value = 'LPC009587';
+      document.getElementById('f-presenterLicenseState').value = 'GA';
+      document.getElementById('f-presenterCategory').value = 'category1';
+      document.getElementById('f-presenterQualification').value = 'Kejuiana Johnson is a Licensed Professional Counselor (GA LPC009587) with clinical and supervisory experience relevant to this content area.';
       handleSessionTypeChange('live-course');
       document.getElementById('createModal').classList.add('open');
     }
@@ -610,6 +673,14 @@
       document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
       document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
       document.getElementById('isPublished').checked = !!s.isPublished;
+      document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
+      document.getElementById('f-targetAudience').value = (s.targetAudience || []).join('\n');
+      document.getElementById('f-references').value = (s.references || []).join('\n');
+      document.getElementById('f-presenterDegree').value = s.presenter?.degree || '';
+      document.getElementById('f-presenterLicenseNumber').value = s.presenter?.licenseNumber || '';
+      document.getElementById('f-presenterLicenseState').value = s.presenter?.licenseState || '';
+      document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
+      document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
 
       handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
@@ -644,6 +715,14 @@
       document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
       document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
       document.getElementById('isPublished').checked = false; // never auto-publish a duplicate
+      document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
+      document.getElementById('f-targetAudience').value = (s.targetAudience || []).join('\n');
+      document.getElementById('f-references').value = (s.references || []).join('\n');
+      document.getElementById('f-presenterDegree').value = s.presenter?.degree || '';
+      document.getElementById('f-presenterLicenseNumber').value = s.presenter?.licenseNumber || '';
+      document.getElementById('f-presenterLicenseState').value = s.presenter?.licenseState || '';
+      document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
+      document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
 
       handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
@@ -696,7 +775,18 @@
         alarmLeadSec: parseInt(document.getElementById('f-alarmLeadSec').value, 10) || 60,
         isPublished: !!fd.get('isPublished'),
         visibility: fd.get('visibility') || 'public',
-        accessCode: (fd.get('accessCode') || '').trim()
+        accessCode: (fd.get('accessCode') || '').trim(),
+        objectives: document.getElementById('f-objectives').value.split('\n').map(s => s.trim()).filter(Boolean),
+        targetAudience: document.getElementById('f-targetAudience').value.split('\n').map(s => s.trim()).filter(Boolean),
+        references: document.getElementById('f-references').value.split('\n').map(s => s.trim()).filter(Boolean),
+        presenter: {
+          name: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH',
+          degree: document.getElementById('f-presenterDegree').value.trim(),
+          licenseNumber: document.getElementById('f-presenterLicenseNumber').value.trim(),
+          licenseState: document.getElementById('f-presenterLicenseState').value.trim(),
+          category: document.getElementById('f-presenterCategory').value,
+          qualificationStatement: document.getElementById('f-presenterQualification').value.trim()
+        }
       };
 
       try {
