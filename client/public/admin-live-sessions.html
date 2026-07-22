@@ -144,7 +144,7 @@
   <div id="createModal" class="fixed inset-0 z-[200] bg-black/50 items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
-        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
+        <h2 id="modalTitle" class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
         <button onclick="closeCreateModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
           <i class="fas fa-times text-lg"></i>
         </button>
@@ -155,7 +155,7 @@
         <!-- Title -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Title <span class="text-red-500">*</span></label>
-          <input type="text" name="title" required
+          <input type="text" name="title" id="f-title" required
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
             placeholder="e.g. Trauma-Informed Care: Live Workshop">
         </div>
@@ -163,10 +163,10 @@
         <!-- Slug -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug <span class="text-red-500">*</span></label>
-          <input type="text" name="slug" required pattern="[a-z0-9\-]+"
+          <input type="text" name="slug" id="f-slug" required pattern="[a-z0-9\-]+"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
             placeholder="trauma-informed-care-live">
-          <p class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+          <p id="slugHelp" class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
         </div>
 
         <!-- Session Type -->
@@ -184,12 +184,12 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled Start <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledStart" required
+            <input type="datetime-local" name="scheduledStart" id="f-scheduledStart" required
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled End <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledEnd" required
+            <input type="datetime-local" name="scheduledEnd" id="f-scheduledEnd" required
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
         </div>
@@ -197,7 +197,7 @@
         <!-- CEU Hours (live-course only) -->
         <div id="ceuHoursRow">
           <label class="block text-sm font-medium text-burgundy-800 mb-1">CEU Hours</label>
-          <input type="number" name="ceuHours" min="0" max="20" step="0.5" value="1"
+          <input type="number" name="ceuHours" id="f-ceuHours" min="0" max="20" step="0.5" value="1"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
         </div>
 
@@ -205,12 +205,12 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Capacity</label>
-            <input type="number" name="capacity" min="1" max="200" value="50"
+            <input type="number" name="capacity" id="f-capacity" min="1" max="200" value="50"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
-            <input type="number" name="price" min="0" step="0.01" value="0"
+            <input type="number" name="price" id="f-price" min="0" step="0.01" value="0"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
             <p class="text-xs text-forest-500 mt-1">0 = free / subscription-included</p>
           </div>
@@ -220,14 +220,14 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Visibility</label>
-            <select name="visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+            <select name="visibility" id="f-visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
               <option value="public">Public (in catalog)</option>
               <option value="private">Private (code only)</option>
             </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
-            <input type="text" name="accessCode" placeholder="e.g. ETHICS2026"
+            <input type="text" name="accessCode" id="f-accessCode" placeholder="e.g. ETHICS2026"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
         </div>
@@ -235,7 +235,7 @@
         <!-- Attendance Threshold -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
-          <input type="number" name="attendanceThresholdPct" min="50" max="100" value="90"
+          <input type="number" name="attendanceThresholdPct" id="f-attendanceThresholdPct" min="50" max="100" value="90"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           <p class="text-xs text-forest-500 mt-1">Minimum % of session duration to qualify for certificate (50–100).</p>
         </div>
@@ -350,6 +350,7 @@
     const API = API_URL + '/api/live-sessions';
     const token = localStorage.getItem('token');
     let sessions = [];
+    let editingSessionId = null; // null = creating new; set = editing this session
 
     /* Run-of-show working state */
     let rosSession = null;
@@ -457,6 +458,14 @@
                 class="px-2.5 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-certificate text-xs"></i> Issue Certs
               </button>` : ''}
+              <button onclick="openEditModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-pencil text-xs"></i> Edit
+              </button>
+              <button onclick="openDuplicateModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-copy text-xs"></i> Duplicate
+              </button>
               <button onclick="togglePublish('${s._id}', ${s.isPublished})"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs hover:bg-stone-50 transition-colors ${s.isPublished ? 'text-red-600' : 'text-green-700'}">
                 ${s.isPublished ? 'Unpublish' : 'Publish'}
@@ -555,17 +564,94 @@
     }
 
     /* ── Create modal ── */
+    function toLocalDatetimeInputValue(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     function openCreateModal() {
+      editingSessionId = null;
       document.getElementById('createForm').reset();
       document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Create Live Session';
       document.getElementById('submitLabel').textContent = 'Create Session';
       document.getElementById('submitBtn').disabled = false;
+      document.getElementById('f-slug').disabled = false;
+      document.getElementById('slugHelp').textContent = 'Lowercase letters, numbers, and hyphens only.';
       handleSessionTypeChange('live-course');
+      document.getElementById('createModal').classList.add('open');
+    }
+
+    function openEditModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      editingSessionId = id;
+      document.getElementById('createForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Edit Live Session';
+      document.getElementById('submitLabel').textContent = 'Save Changes';
+      document.getElementById('submitBtn').disabled = false;
+
+      document.getElementById('f-title').value = s.title || '';
+      document.getElementById('f-slug').value = s.slug || '';
+      document.getElementById('f-slug').disabled = true; // slug is already live in URLs/registrations — don't let it change
+      document.getElementById('slugHelp').textContent = 'Slug can\'t be changed after creation (it may already be shared or registered against).';
+      document.getElementById('sessionTypeSelect').value = s.sessionType || 'live-course';
+      document.getElementById('f-scheduledStart').value = toLocalDatetimeInputValue(s.scheduledStart);
+      document.getElementById('f-scheduledEnd').value = toLocalDatetimeInputValue(s.scheduledEnd);
+      document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
+      document.getElementById('f-capacity').value = s.capacity ?? 50;
+      document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-visibility').value = s.visibility || 'public';
+      document.getElementById('f-accessCode').value = s.accessCode || '';
+      document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
+      document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
+      document.getElementById('isPublished').checked = !!s.isPublished;
+
+      handleSessionTypeChange(s.sessionType || 'live-course');
+      document.getElementById('createModal').classList.add('open');
+    }
+
+    function openDuplicateModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      editingSessionId = null; // duplicating always creates a new session
+      document.getElementById('createForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Duplicate Live Session';
+      document.getElementById('submitLabel').textContent = 'Create Session';
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('f-slug').disabled = false;
+      document.getElementById('slugHelp').textContent = 'Give this occurrence its own unique slug.';
+
+      const shiftedStart = s.scheduledStart ? new Date(new Date(s.scheduledStart).getTime() + 7 * 86400000) : null;
+      const shiftedEnd = s.scheduledEnd ? new Date(new Date(s.scheduledEnd).getTime() + 7 * 86400000) : null;
+
+      document.getElementById('f-title').value = s.title || '';
+      document.getElementById('f-slug').value = ''; // force a fresh, unique slug
+      document.getElementById('sessionTypeSelect').value = s.sessionType || 'live-course';
+      document.getElementById('f-scheduledStart').value = toLocalDatetimeInputValue(shiftedStart);
+      document.getElementById('f-scheduledEnd').value = toLocalDatetimeInputValue(shiftedEnd);
+      document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
+      document.getElementById('f-capacity').value = s.capacity ?? 50;
+      document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-visibility').value = s.visibility || 'public';
+      document.getElementById('f-accessCode').value = ''; // force a new code — avoid colliding with the original
+      document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
+      document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
+      document.getElementById('isPublished').checked = false; // never auto-publish a duplicate
+
+      handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
     }
 
     function closeCreateModal() {
       document.getElementById('createModal').classList.remove('open');
+      editingSessionId = null;
     }
 
     function handleSessionTypeChange(type) {
@@ -614,19 +700,22 @@
       };
 
       try {
+        const isEditing = !!editingSessionId;
+        if (isEditing) delete payload.slug; // slug is never editable once created
+
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(API, {
-          method: 'POST',
+        const r = await fetch(isEditing ? `${API}/${editingSessionId}` : API, {
+          method: isEditing ? 'PATCH' : 'POST',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           signal: controller.signal
         });
         clearTimeout(tid);
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Creation failed');
+        if (!r.ok) throw new Error(d.error || (isEditing ? 'Save failed' : 'Creation failed'));
         closeCreateModal();
-        showToast('Session created and Whereby room provisioned!', '#284157');
+        showToast(isEditing ? 'Session updated.' : 'Session created and Whereby room provisioned!', '#284157');
         loadSessions();
       } catch (e) {
         errEl.textContent = e.message;

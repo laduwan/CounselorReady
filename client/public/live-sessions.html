@@ -55,6 +55,11 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get('registered')) showAlert('You are registered! A confirmation is on its way to your inbox.', true);
     if (params.get('canceled')) showAlert('Checkout was canceled. Your seat was not reserved.', false);
+    if (params.get('code')) {
+      const codeInput = document.getElementById('sessionCodeInput');
+      if (codeInput) codeInput.value = params.get('code');
+      lookupSessionByCode(params.get('code'));
+    }
 
     function showAlert(msg, ok) {
       const el = document.getElementById('alert');
