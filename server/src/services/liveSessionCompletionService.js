@@ -102,12 +102,14 @@ export async function issueLiveSessionCertificates(liveSessionId) {
         ceCategory:
           session.nbccContentAreas?.[0] ||
           'Counseling Theory/Practice and the Counseling Relationship',
-        objectives: [],
-        // NBCC fallback row, stamped as a live webinar so the certificate
-        // shows the synchronous delivery format (LPCA-GA taxonomy)
+        objectives: session.objectives || [],
+        instructorName: session.presenter?.name || undefined,
+        // NBCC fallback row, stamped 'synchronous' per GA Board Rule
+        // 135-9-.01(4)(c) — the certificate must say "Synchronous," not
+        // "Live Webinar" (LPCA-GA taxonomy)
         approvals: buildApprovalBlock(null, 'NBCC', session.ceuHours).map(a => ({
           ...a,
-          deliveryFormat: 'live-webinar'
+          deliveryFormat: 'synchronous'
         }))
       });
 

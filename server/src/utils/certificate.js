@@ -42,7 +42,8 @@ const DEFAULT_INSTRUCTOR = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
 // ── Delivery format label map (LPCA-GA taxonomy → human-readable) ──
 const DELIVERY_FORMAT_LABELS = {
   'asynchronous':         'Asynchronous',
-  'live-webinar':         'Live Webinar',
+  'synchronous':          'Synchronous',
+  'live-webinar':         'Live Webinar', // kept for any already-issued/legacy certs; new issuance should use 'synchronous'
   'multi-live-workshop':  'Multi-Session Live Workshop',
   'in-person-single':     'In-Person',
   'in-person-conference': 'In-Person Conference',
