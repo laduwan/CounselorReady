@@ -29,6 +29,25 @@
     .btn-pause{background:#8B2542;color:#fff;}
     .btn-pause:hover{background:#7a1d38;}
     #seekBar{width:100%;accent-color:#284157;}
+    /* ── Host controls panel ── */
+    .host-tab{padding:7px 14px;border:none;background:transparent;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;cursor:pointer;color:#57534e;}
+    .host-tab.active{background:#fff;color:#6B1D34;box-shadow:inset 0 -2px 0 #6B1D34;}
+    .host-tabpane{padding-top:14px;}
+    .crit-caution{background:#6B1D34;color:#fff;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;font-weight:600;}
+    .caution{background:#FDF5F6;color:#6B1D34;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;border:1px solid #F5D0D6;}
+    .roster-live{display:inline-block;color:#4A7C59;font-weight:700;}
+    .saved-ind{font-size:12px;color:#4A7C59;font-weight:700;opacity:0;transition:opacity .2s;}
+    .saved-ind.show{opacity:1;}
+    .seg-timer{font-size:13px;font-family:ui-monospace,monospace;font-weight:700;color:#284157;padding:2px 8px;border-radius:6px;}
+    .seg-timer.flash{background:#6B1D34;color:#fff;animation:segflash .5s steps(2) infinite;}
+    @keyframes segflash{50%{opacity:.45;}}
+    .cert-btn{padding:8px 16px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;background:#D4A855;color:#4A1524;}
+    .cert-btn:disabled{background:#EDE9E3;color:#8a8580;cursor:default;}
+    .host-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#284157;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+    .host-toast.show{opacity:1;}
+    .rtable{width:100%;border-collapse:collapse;}
+    .rtable th{text-align:left;font-weight:700;color:#284157;padding:6px 8px;border-bottom:1px solid #EDE9E3;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+    .rtable td{padding:6px 8px;border-bottom:1px solid #F4F1EC;color:#44403c;font-size:14px;}
   </style>
 </head>
 <body>
@@ -45,6 +64,7 @@
         </div>
         <div class="flex gap-3 items-center">
           <span id="attendeeCount" class="text-sm font-semibold" style="color:#284157;">– attendees</span>
+          <span id="segTimer" class="seg-timer hidden"></span>
           <span id="elapsed" class="text-sm font-mono" style="color:#7a5c1e;"></span>
         </div>
       </div>
@@ -101,6 +121,50 @@
 
         <div class="lg:col-span-2"></div>
 
+      </div>
+
+      <!-- ═══ HOST CONTROLS (host-only; nothing here is broadcast to attendees) ═══ -->
+      <div id="hostPanel" class="mt-6 bg-white rounded-xl border" style="border-color:#EDE9E3;">
+        <div class="flex items-center justify-between flex-wrap gap-3 px-4 pt-4">
+          <div class="flex gap-1" id="hostTabs">
+            <button class="host-tab active" data-tab="roster">Roster</button>
+            <button class="host-tab" data-tab="notes">Segment Notes</button>
+            <button class="host-tab" data-tab="checklists">Checklists</button>
+            <button class="host-tab" data-tab="scratchpad">Scratchpad</button>
+          </div>
+          <div id="certWrap"></div>
+        </div>
+        <div class="p-4">
+          <!-- ROSTER -->
+          <div class="host-tabpane" data-pane="roster">
+            <div id="rosterTotals" class="text-sm font-semibold mb-2" style="color:#284157;">– live · – attended</div>
+            <div style="overflow-x:auto;">
+              <table class="rtable">
+                <thead><tr><th>Attendee</th><th>Joined</th><th>Left</th><th>Duration</th></tr></thead>
+                <tbody id="rosterBody"><tr><td colspan="4" style="color:#57534e;">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- SEGMENT NOTES -->
+          <div class="host-tabpane hidden" data-pane="notes">
+            <div id="segNotes" class="text-sm" style="color:#57534e;">No segment selected.</div>
+            <div id="globalCautions" class="mt-4"></div>
+          </div>
+          <!-- CHECKLISTS -->
+          <div class="host-tabpane hidden" data-pane="checklists">
+            <div id="preFlightList"></div>
+            <div id="hostChecklistList"></div>
+            <span id="checklistSaved" class="saved-ind">✓ saved</span>
+          </div>
+          <!-- SCRATCHPAD -->
+          <div class="host-tabpane hidden" data-pane="scratchpad">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-xs font-bold" style="color:#284157;">HOST SCRATCHPAD (private)</div>
+              <span id="scratchpadSaved" class="saved-ind">✓ saved</span>
+            </div>
+            <textarea id="scratchpad" rows="8" class="w-full rounded-lg p-3 text-sm" style="border:1px solid #EDE9E3;color:#44403c;resize:vertical;" placeholder="Private notes — never shown to attendees…"></textarea>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -180,6 +244,8 @@
         startElapsedTimer();
 
         renderAgenda();
+        wireHostTabs();
+        await loadHostState();
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('console').classList.remove('hidden');
 
@@ -231,6 +297,7 @@
           currentSegIdx = idx;
           selectSegment(idx);
           showSegmentInClipPanel(idx);
+          startSegmentTimer(idx);
         }
       } catch {}
     }
@@ -243,6 +310,7 @@
       const nowSummary = document.getElementById('nowSummary');
       if (!seg) { nowSummary.textContent = 'No segment.'; return; }
       nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
+      renderSegmentNotes(idx);
     }
 
     async function showSegmentInClipPanel(idx) {
@@ -322,6 +390,7 @@
           const d = await res.json();
           const live = d.rawAttendance?.filter(a => !a.leftAt).length ?? '–';
           document.getElementById('attendeeCount').textContent = `${live} live`;
+          renderRoster(d.rawAttendance || []);
         }
       } catch {}
     }
@@ -333,6 +402,267 @@
         const m = Math.floor(elapsed / 60), s = elapsed % 60;
         document.getElementById('elapsed').textContent = `${m}:${s.toString().padStart(2,'0')} elapsed`;
       }, 1000);
+    }
+
+    /* ═══════════════ HOST CONTROLS ═══════════════ */
+    let hostState = null;
+    let segTimerInterval = null;
+    let segTimerEndsAt = null;
+    let checklistDebounce = null;
+    let scratchpadDebounce = null;
+    let audioCtx = null;
+
+    async function loadHostState() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/host-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        hostState = await res.json();
+        renderGlobalCautions();
+        renderChecklists();
+        seedScratchpad();
+        renderSegmentNotes(currentSegIdx);
+        renderCertButton();
+      } catch {}
+    }
+
+    function wireHostTabs() {
+      document.querySelectorAll('.host-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          document.querySelectorAll('.host-tab').forEach(b => b.classList.toggle('active', b === btn));
+          document.querySelectorAll('.host-tabpane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== tab));
+        });
+      });
+    }
+
+    // ── ROSTER ──
+    function renderRoster(rows) {
+      const body = document.getElementById('rosterBody');
+      const totals = document.getElementById('rosterTotals');
+      if (!body || !totals) return;
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4" style="color:#57534e;">No attendees yet.</td></tr>`;
+        totals.textContent = '0 live · 0 attended';
+        return;
+      }
+      body.innerHTML = rows.map(a => {
+        const joined = a.joinedAt ? new Date(a.joinedAt).toLocaleTimeString() : '—';
+        const left = a.leftAt ? new Date(a.leftAt).toLocaleTimeString() : `<span class="roster-live">● live</span>`;
+        const dur = (a.durationMin != null) ? `${a.durationMin}m` : '—';
+        return `<tr><td>${esc(a.displayName || 'Unnamed')}</td><td>${joined}</td><td>${left}</td><td>${dur}</td></tr>`;
+      }).join('');
+      const live = rows.filter(a => !a.leftAt).length;
+      const attended = new Set(rows.map(a => a.displayName || 'Unnamed')).size;
+      totals.textContent = `${live} live · ${attended} attended`;
+    }
+
+    // ── SEGMENT NOTES ──
+    function renderSegmentNotes(idx) {
+      const el = document.getElementById('segNotes');
+      if (!el || !hostState) return;
+      const seg = hostState.agenda?.[idx];
+      if (!seg) { el.innerHTML = `<p style="color:#57534e;">No segment selected.</p>`; return; }
+      let html = `<h3 class="font-display text-base font-bold mb-2" style="color:#6B1D34;">${esc(seg.title || seg.type)}</h3>`;
+      if (seg.speakerNotes) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SPEAKER NOTES</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.speakerNotes)}</div></div>`;
+      if (seg.activityInstructions) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">ACTIVITY INSTRUCTIONS</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.activityInstructions)}</div></div>`;
+      const cautions = seg.facilitatorCautions || [];
+      if (cautions.length) {
+        html += `<div class="mb-1"><div class="text-xs font-bold mb-1" style="color:#284157;">SEGMENT CAUTIONS</div>`;
+        html += cautions.map(c => c.critical
+          ? `<div class="crit-caution">⚠ ${esc(c.text)}</div>`
+          : `<div class="caution">${esc(c.text)}</div>`).join('');
+        html += `</div>`;
+      }
+      if (!seg.speakerNotes && !seg.activityInstructions && !cautions.length) {
+        html += `<p class="text-sm" style="color:#57534e;">No facilitator notes for this segment.</p>`;
+      }
+      el.innerHTML = html;
+    }
+
+    function renderGlobalCautions() {
+      const el = document.getElementById('globalCautions');
+      if (!el || !hostState) return;
+      const gc = hostState.globalFacilitatorCautions || [];
+      if (!gc.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="text-xs font-bold mb-1" style="color:#6B1D34;">SESSION-WIDE CAUTIONS</div>` +
+        gc.map(c => `<div class="caution">${esc(c.text)}</div>`).join('');
+    }
+
+    // ── CHECKLISTS ──
+    function renderChecklists() {
+      if (!hostState) return;
+      const pre = document.getElementById('preFlightList');
+      const preItems = hostState.preFlightChecklist || [];
+      if (pre) {
+        pre.innerHTML = `<div class="text-xs font-bold mb-2" style="color:#284157;">PRE-FLIGHT (read-only)</div>` +
+          (preItems.length
+            ? preItems.map(i => `<div class="text-sm mb-1" style="color:#44403c;">${i.critical ? '<span style="color:#6B1D34;font-weight:700;">[CRITICAL]</span> ' : ''}${esc(i.text)}</div>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+      }
+      const host = document.getElementById('hostChecklistList');
+      const items = hostState.hostChecklist || [];
+      if (host) {
+        host.innerHTML = `<div class="text-xs font-bold mb-2 mt-4" style="color:#284157;">HOST CHECKLIST</div>` +
+          (items.length
+            ? items.map((i, k) => `<label class="flex items-center gap-2 text-sm mb-1" style="color:#44403c;cursor:pointer;"><input type="checkbox" data-ck="${k}" ${i.done ? 'checked' : ''} style="accent-color:#4A7C59;"> ${esc(i.text)}</label>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+        host.querySelectorAll('input[data-ck]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const k = parseInt(cb.dataset.ck, 10);
+            if (hostState.hostChecklist[k]) hostState.hostChecklist[k].done = cb.checked;
+            scheduleChecklistSave();
+          });
+        });
+      }
+    }
+
+    function scheduleChecklistSave() {
+      clearTimeout(checklistDebounce);
+      checklistDebounce = setTimeout(() => {
+        patchSession({ hostChecklist: hostState.hostChecklist }, 'checklistSaved');
+      }, 800);
+    }
+
+    // ── SCRATCHPAD ──
+    function seedScratchpad() {
+      const ta = document.getElementById('scratchpad');
+      if (!ta || !hostState) return;
+      ta.value = hostState.hostScratchpad || '';
+      ta.addEventListener('input', () => {
+        clearTimeout(scratchpadDebounce);
+        scratchpadDebounce = setTimeout(() => {
+          patchSession({ hostScratchpad: ta.value }, 'scratchpadSaved');
+        }, 1200);
+      });
+    }
+
+    async function patchSession(body, savedIndicatorId) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok && savedIndicatorId) flashSaved(savedIndicatorId);
+      } catch {}
+    }
+
+    function flashSaved(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 1500);
+    }
+
+    // ── SEGMENT TIMER + WebAudio beep (host-only, no broadcast) ──
+    function startSegmentTimer(idx) {
+      const seg = hostState?.agenda?.[idx] || session.agenda?.[idx];
+      const timerEl = document.getElementById('segTimer');
+      if (!timerEl) return;
+      if (!seg || !seg.durationMin) { stopSegmentTimer(); return; }
+      clearInterval(segTimerInterval);
+      segTimerEndsAt = Date.now() + seg.durationMin * 60000;
+      timerEl.classList.remove('hidden', 'flash');
+      const lead = (hostState?.alarmLeadSec ?? 60);
+      let beeped = false;
+      const tick = () => {
+        const remaining = Math.round((segTimerEndsAt - Date.now()) / 1000);
+        if (remaining <= 0) {
+          timerEl.textContent = '0:00 ⏱';
+          timerEl.classList.add('flash');
+          clearInterval(segTimerInterval);
+          if (!beeped) { beeped = true; playBeep(); }
+          return;
+        }
+        const m = Math.floor(remaining / 60), s = remaining % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2, '0')} left`;
+        if (remaining <= lead) {
+          timerEl.classList.add('flash');
+          if (!beeped) { beeped = true; playBeep(); }
+        }
+      };
+      tick();
+      segTimerInterval = setInterval(tick, 1000);
+    }
+
+    function stopSegmentTimer() {
+      clearInterval(segTimerInterval);
+      const timerEl = document.getElementById('segTimer');
+      if (timerEl) { timerEl.classList.add('hidden'); timerEl.classList.remove('flash'); }
+    }
+
+    function playBeep() {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        [[880, 0], [660, 0.22]].forEach(([freq, offset]) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.0001, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.25, now + offset + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + offset); osc.stop(now + offset + 0.2);
+        });
+      } catch {}
+    }
+
+    // ── ISSUE CERTIFICATES ──
+    function renderCertButton() {
+      const wrap = document.getElementById('certWrap');
+      if (!wrap || !hostState) return;
+      const now = Date.now();
+      const ended = hostState.status === 'completed' ||
+        (session.scheduledEnd && now > new Date(session.scheduledEnd).getTime());
+      if (!ended) { wrap.innerHTML = ''; return; }
+      if (hostState.certificatesIssuedAt) {
+        const d = new Date(hostState.certificatesIssuedAt).toLocaleDateString();
+        wrap.innerHTML = `<button class="cert-btn" disabled>Issued ${d}</button>`;
+        return;
+      }
+      wrap.innerHTML = `<button class="cert-btn" id="issueCertBtn">Issue Certificates</button>`;
+      document.getElementById('issueCertBtn').addEventListener('click', issueCertificates);
+    }
+
+    async function issueCertificates() {
+      const btn = document.getElementById('issueCertBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Issuing…'; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/issue-certificates`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        if (!res.ok) {
+          toast(d.error || 'Failed to issue certificates.');
+          if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+          return;
+        }
+        const count = d.issued ?? d.count ?? d.certificatesIssued ?? (Array.isArray(d.certificates) ? d.certificates.length : 0);
+        toast(`Issued ${count} certificate${count === 1 ? '' : 's'}.`);
+        hostState.certificatesIssuedAt = new Date().toISOString();
+        renderCertButton();
+      } catch {
+        toast('Could not issue certificates.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+      }
+    }
+
+    function toast(msg) {
+      let t = document.getElementById('hostToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'hostToast';
+        t.className = 'host-toast';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
     }
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
