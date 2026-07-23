@@ -92,9 +92,14 @@
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
-        <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
-          <i class="fas fa-plus text-xs"></i> Create Live Session
-        </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button onclick="openSeriesListModal()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-layer-group text-xs"></i> Manage Series
+          </button>
+          <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-plus text-xs"></i> Create Live Session
+          </button>
+        </div>
       </div>
 
       <!-- Toast -->
@@ -229,6 +234,29 @@
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
             <input type="text" name="accessCode" id="f-accessCode" placeholder="e.g. ETHICS2026"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+
+        <!-- Series membership (optional) -->
+        <div class="border border-gray-200 rounded-lg p-3">
+          <p class="text-xs font-bold text-burgundy-800 uppercase tracking-wide mb-2">Series Membership (optional)</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-1">
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Series</label>
+              <select id="f-seriesId" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+                <option value="">— Standalone —</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Order in Series</label>
+              <input type="number" id="f-seriesOrder" min="1" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div class="flex items-end pb-2">
+              <label class="inline-flex items-center gap-2">
+                <input type="checkbox" id="f-seriesRequired" checked>
+                <span class="text-sm text-burgundy-800">Required for cert</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -787,6 +815,10 @@
       document.getElementById('f-presenterLicenseState').value = 'GA';
       document.getElementById('f-presenterCategory').value = 'category1';
       document.getElementById('f-presenterQualification').value = 'Kejuiana Johnson is a Licensed Professional Counselor (GA LPC009587) with clinical and supervisory experience relevant to this content area.';
+      // Series membership — reset to standalone defaults and populate the dropdown.
+      document.getElementById('f-seriesOrder').value = 1;
+      document.getElementById('f-seriesRequired').checked = true;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = ''; });
       handleSessionTypeChange('live-course');
       document.getElementById('createModal').classList.add('open');
     }
@@ -826,6 +858,10 @@
       document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
       document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
 
+      // Series membership — populate dropdown, then select this session's series.
+      document.getElementById('f-seriesOrder').value = s.seriesMembership?.order || 1;
+      document.getElementById('f-seriesRequired').checked = s.seriesMembership?.required !== false;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = s.seriesId || ''; });
       handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
     }
@@ -868,6 +904,11 @@
       document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
       document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
 
+      // Series membership — a duplicate is a fresh occurrence; default to
+      // standalone and let the admin assign it to a series explicitly.
+      document.getElementById('f-seriesOrder').value = 1;
+      document.getElementById('f-seriesRequired').checked = true;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = ''; });
       handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
     }
@@ -930,6 +971,11 @@
           licenseState: document.getElementById('f-presenterLicenseState').value.trim(),
           category: document.getElementById('f-presenterCategory').value,
           qualificationStatement: document.getElementById('f-presenterQualification').value.trim()
+        },
+        seriesId: document.getElementById('f-seriesId').value || null,
+        seriesMembership: {
+          order: parseInt(document.getElementById('f-seriesOrder').value, 10) || 1,
+          required: document.getElementById('f-seriesRequired').checked
         }
       };
 
@@ -1815,7 +1861,242 @@
       if (e.target === document.getElementById('hndModal')) hndCloseModal();
     });
 
+    /* ═════════════════ Session Series management ═════════════════ */
+    const SERIES_API = API.replace('/live-sessions', '/session-series');
+    let editingSeriesId = null;
+    let cachedSeries = [];
+
+    async function loadCachedSeries() {
+      try {
+        const r = await fetch(SERIES_API, { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        cachedSeries = d.series || [];
+        populateSeriesDropdown();
+      } catch { cachedSeries = []; }
+    }
+
+    function populateSeriesDropdown() {
+      const sel = document.getElementById('f-seriesId');
+      if (!sel) return;
+      // Preserve current selection through refresh
+      const current = sel.value;
+      sel.innerHTML = '<option value="">— Standalone —</option>' +
+        cachedSeries.map(s => `<option value="${s._id}">${escHtml(s.title)}</option>`).join('');
+      sel.value = current;
+    }
+
+    function openSeriesListModal() {
+      document.getElementById('seriesListModal').style.display = 'flex';
+      renderSeriesList();
+    }
+    function closeSeriesListModal() {
+      document.getElementById('seriesListModal').style.display = 'none';
+    }
+
+    async function renderSeriesList() {
+      const content = document.getElementById('seriesListContent');
+      content.innerHTML = '<p class="text-sm text-forest-500">Loading…</p>';
+      await loadCachedSeries();
+      if (!cachedSeries.length) {
+        content.innerHTML = '<p class="text-sm text-forest-500">No series yet. Create one to get started.</p>';
+        return;
+      }
+      content.innerHTML = cachedSeries.map(s => `
+        <div class="border border-gray-200 rounded-lg p-3 mb-2 flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-burgundy-900">${escHtml(s.title)} <span class="text-xs text-forest-500 font-normal ml-1">${s.totalCeuHours} CE · ${escHtml(s.autoEnroll || 'all-required')}</span></div>
+            <div class="text-xs text-forest-500">${s.isPublished ? '<span class="text-green-700">Published</span>' : '<span>Draft</span>'} · ${escHtml(s.visibility || 'public')}${s.accessCode ? ' · code ' + escHtml(s.accessCode) : ''}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openSeriesEditor('${s._id}')" class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors">Edit</button>
+            <button onclick="deleteSeries('${s._id}', '${escHtml(s.title).replace(/'/g, '\\\'')}')" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function openSeriesEditor(id) {
+      editingSeriesId = id || null;
+      document.getElementById('seriesEditorTitle').textContent = id ? 'Edit Series' : 'New Series';
+      document.getElementById('seriesEditorError').classList.add('hidden');
+      document.getElementById('se-title').value = '';
+      document.getElementById('se-slug').value = '';
+      document.getElementById('se-totalCeuHours').value = '';
+      document.getElementById('se-category').value = '';
+      document.getElementById('se-description').value = '';
+      document.getElementById('se-autoEnroll').value = 'all-required';
+      document.getElementById('se-visibility').value = 'public';
+      document.getElementById('se-accessCode').value = '';
+      document.getElementById('se-isPublished').checked = false;
+
+      if (id) {
+        try {
+          const r = await fetch(`${SERIES_API}/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
+          const d = await r.json();
+          const s = d.series;
+          document.getElementById('se-title').value = s.title || '';
+          document.getElementById('se-slug').value = s.slug || '';
+          document.getElementById('se-totalCeuHours').value = s.totalCeuHours ?? 0;
+          document.getElementById('se-category').value = s.category || '';
+          document.getElementById('se-description').value = s.description || '';
+          document.getElementById('se-autoEnroll').value = s.autoEnroll || 'all-required';
+          document.getElementById('se-visibility').value = s.visibility || 'public';
+          document.getElementById('se-accessCode').value = s.accessCode || '';
+          document.getElementById('se-isPublished').checked = !!s.isPublished;
+        } catch (e) {
+          document.getElementById('seriesEditorError').textContent = 'Failed to load series.';
+          document.getElementById('seriesEditorError').classList.remove('hidden');
+        }
+      }
+      document.getElementById('seriesEditorModal').style.display = 'flex';
+    }
+    function closeSeriesEditor() {
+      document.getElementById('seriesEditorModal').style.display = 'none';
+      editingSeriesId = null;
+    }
+
+    async function saveSeries() {
+      const btn = document.getElementById('seriesSaveBtn');
+      const errEl = document.getElementById('seriesEditorError');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+
+      const payload = {
+        title: document.getElementById('se-title').value.trim(),
+        slug: document.getElementById('se-slug').value.trim().toLowerCase(),
+        totalCeuHours: parseFloat(document.getElementById('se-totalCeuHours').value) || 0,
+        category: document.getElementById('se-category').value.trim(),
+        description: document.getElementById('se-description').value.trim(),
+        autoEnroll: document.getElementById('se-autoEnroll').value,
+        visibility: document.getElementById('se-visibility').value,
+        accessCode: document.getElementById('se-accessCode').value.trim(),
+        isPublished: document.getElementById('se-isPublished').checked
+      };
+
+      try {
+        const isEdit = !!editingSeriesId;
+        if (isEdit) delete payload.slug; // slug locked once created, mirror live-session pattern
+        const r = await fetch(isEdit ? `${SERIES_API}/${editingSeriesId}` : SERIES_API, {
+          method: isEdit ? 'PATCH' : 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Save failed');
+        closeSeriesEditor();
+        await renderSeriesList();
+        await loadCachedSeries();
+        showToast(isEdit ? 'Series updated.' : 'Series created.', '#284157');
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deleteSeries(id, title) {
+      if (!confirm(`Delete series "${title}"?\n\nMember sessions will be unlinked (not deleted). This can't be undone.`)) return;
+      try {
+        const r = await fetch(`${SERIES_API}/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Delete failed');
+        showToast('Series deleted.', '#284157');
+        renderSeriesList();
+        loadCachedSeries();
+      } catch (e) {
+        showToast(e.message, '#c0392b');
+      }
+    }
+
     checkAuth();
   </script>
+
+<!-- Series list + editor modal -->
+<div id="seriesListModal" class="fixed inset-0 z-[240] bg-black/50 items-center justify-center p-4" style="display:none;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 class="font-display text-2xl font-semibold text-burgundy-900">Session Series</h2>
+      <div class="flex items-center gap-2">
+        <button onclick="openSeriesEditor(null)" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-3 py-2 text-sm font-semibold transition-colors">
+          <i class="fas fa-plus text-xs mr-1"></i> New Series
+        </button>
+        <button onclick="closeSeriesListModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div id="seriesListContent" class="px-6 py-5"></div>
+  </div>
+</div>
+
+<!-- Series editor modal (create/edit one series) -->
+<div id="seriesEditorModal" class="fixed inset-0 z-[250] bg-black/60 items-center justify-center p-4" style="display:none;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto border border-burgundy-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 id="seriesEditorTitle" class="font-display text-2xl font-semibold text-burgundy-900">New Series</h2>
+      <button onclick="closeSeriesEditor()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Title *</label>
+        <input type="text" id="se-title" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug * <span class="text-xs text-forest-500 font-normal">(lowercase, hyphens)</span></label>
+        <input type="text" id="se-slug" pattern="[a-z0-9\-]+" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Total CE Hours *</label>
+        <input type="number" id="se-totalCeuHours" min="0" step="0.5" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Category</label>
+        <input type="text" id="se-category" placeholder="Ethics, Telehealth, etc." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Description</label>
+        <textarea id="se-description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Auto-Enroll Mode</label>
+        <select id="se-autoEnroll" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+          <option value="all-required">All required sessions (default)</option>
+          <option value="all">All sessions (required + optional)</option>
+          <option value="manual">Manual — attendee picks individually</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Visibility</label>
+          <select id="se-visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
+          <input type="text" id="se-accessCode" placeholder="e.g. TMHSERIES" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+      </div>
+      <div>
+        <label class="inline-flex items-center gap-2">
+          <input type="checkbox" id="se-isPublished">
+          <span class="text-sm text-burgundy-800">Published</span>
+        </label>
+      </div>
+      <div id="seriesEditorError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+        <button onclick="closeSeriesEditor()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+        <button onclick="saveSeries()" id="seriesSaveBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
