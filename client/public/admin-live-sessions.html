@@ -391,11 +391,78 @@
         </button>
       </div>
       <div class="px-6 py-5 space-y-6">
+        <div id="rosImportBar" class="flex items-center justify-between bg-honey-50 border border-honey-200 rounded-lg px-4 py-3">
+          <div>
+            <p class="text-sm font-semibold text-burgundy-900">Import from Facilitator Guide</p>
+            <p class="text-xs text-forest-500">Paste markdown or upload a .docx — preview before it saves.</p>
+          </div>
+          <button onclick="openRosImportModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-3 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+            <i class="fas fa-file-import text-xs"></i> Import Guide
+          </button>
+        </div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosPreFlightSection"></div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosGlobalCautionsSection"></div>
+        <div class="border-t border-gray-100"></div>
         <div id="rosClipsSection"></div>
         <div class="border-t border-gray-100"></div>
         <div id="rosAgendaSection"></div>
         <div class="border-t border-gray-100"></div>
         <div id="rosChecklistSection" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Run of Show: Import Guide sub-modal ── -->
+  <div id="rosImportModal" class="fixed inset-0 z-[300] bg-black/60 items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto border border-burgundy-100">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Import Facilitator Guide</h2>
+        <button onclick="closeRosImportModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Step 1: input -->
+      <div id="rosImportStep1" class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Paste guide markdown</label>
+          <textarea id="rosImportMarkdown" rows="10" placeholder="# Hour 1&#10;## Opening (10 min)&#10;Welcome and objectives..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-forest-500">
+          <span>— OR —</span>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Upload .docx</label>
+          <input type="file" id="rosImportDocx" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            class="block w-full text-sm">
+          <p class="text-xs text-forest-500 mt-1">Whichever you provide (paste OR file) will be used. Uploading a file wins if both are set.</p>
+        </div>
+        <div id="rosImportError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+          <button onclick="closeRosImportModal()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+          <button onclick="rosImportPreview()" id="rosImportPreviewBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+            <i class="fas fa-eye text-xs"></i> Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: preview -->
+      <div id="rosImportStep2" class="px-6 py-5 space-y-4 hidden">
+        <div id="rosImportSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+        <div id="rosImportWarnings"></div>
+        <div id="rosImportPreviewContent" class="border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+        <div class="flex justify-between gap-2 pt-2 border-t border-gray-100">
+          <button onclick="rosImportBackToStep1()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">← Back</button>
+          <div class="flex gap-2">
+            <button onclick="closeRosImportModal()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+            <button onclick="rosImportCommit()" id="rosImportCommitBtn" class="bg-forest-600 hover:bg-forest-700 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+              <i class="fas fa-check text-xs"></i> Save to Session (replaces current agenda)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -938,14 +1005,7 @@
         return;
       }
       rosSession = s;
-      rosAgenda = (s.agenda || []).map(a => ({
-        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
-        title: a.title || '',
-        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
-        prompt: a.prompt || '',
-        speakerNotes: a.speakerNotes || '',
-        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
-      }));
+      rosAgenda = (s.agenda || []).map(rosAgendaRowFromSource);
       renderRunOfShow();
       document.getElementById('runOfShowModal').style.display = 'flex';
     }
@@ -956,11 +1016,62 @@
       rosAgenda = [];
     }
 
+    // Build the agenda editor's working-copy row. Editable fields become form
+    // inputs; the rich facilitator-guide fields (pre-flight/cautions/polls/
+    // breakouts/exercise from the import flow) are carried through untouched so
+    // renderRosAgenda can show badges and a manual "Save agenda" preserves them.
+    function rosAgendaRowFromSource(a) {
+      const row = {
+        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
+        title: a.title || '',
+        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
+        prompt: a.prompt || '',
+        speakerNotes: a.speakerNotes || '',
+        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
+      };
+      if (a.activityInstructions) row.activityInstructions = a.activityInstructions;
+      if ((a.facilitatorCautions || []).length) row.facilitatorCautions = a.facilitatorCautions;
+      if ((a.polls || []).length) row.polls = a.polls;
+      if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
+      if (a.exercise) row.exercise = a.exercise;
+      return row;
+    }
+
     function renderRunOfShow() {
       document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
+      renderRosPreFlight();
+      renderRosGlobalCautions();
       renderRosClips();
       renderRosAgenda();
       renderRosChecklist();
+    }
+
+    function renderRosPreFlight() {
+      const items = rosSession.preFlightChecklist || [];
+      const rows = items.length
+        ? items.map(c => `
+          <div class="flex items-start gap-2 px-3 py-2 border border-gray-200 rounded-lg">
+            <i class="fas ${c.critical ? 'fa-exclamation-triangle text-red-600' : 'fa-check text-forest-500'} text-sm mt-0.5"></i>
+            <span class="text-sm text-forest-700">${escHtml(c.text)}${c.critical ? ' <span class="text-xs text-red-600 font-semibold">(critical)</span>' : ''}</span>
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No pre-flight checklist items — import a guide or add manually via the Edit modal.</p>';
+      document.getElementById('rosPreFlightSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Pre-Flight Checklist</h3>
+        <div class="space-y-2">${rows}</div>`;
+    }
+
+    function renderRosGlobalCautions() {
+      const items = rosSession.globalFacilitatorCautions || [];
+      const rows = items.length
+        ? items.map(c => `
+          <div class="flex items-start gap-2 px-3 py-2 border border-honey-200 bg-honey-50 rounded-lg">
+            <i class="fas fa-exclamation-triangle text-honey-600 text-sm mt-0.5"></i>
+            <span class="text-sm text-forest-700">${escHtml(c.text)}</span>
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No session-wide cautions.</p>';
+      document.getElementById('rosGlobalCautionsSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Session-Wide Cautions</h3>
+        <div class="space-y-2">${rows}</div>`;
     }
 
     function renderRosChecklist() {
@@ -1134,6 +1245,12 @@
             </div>`;
           }
         }
+        const cautionsBadge = (a.facilitatorCautions || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-red-50 text-red-700 rounded px-2 py-0.5"><i class="fas fa-exclamation-triangle"></i> ${a.facilitatorCautions.length}</span>` : '';
+        const pollsBadge = (a.polls || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-forest-50 text-forest-700 rounded px-2 py-0.5">🗳 ${a.polls.length}</span>` : '';
+        const breakoutBadge = (a.breakoutPrompts || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 rounded px-2 py-0.5">👥 ${a.breakoutPrompts.length}</span>` : '';
+        const exerciseBadge = a.exercise ? `<span class="inline-flex items-center gap-1 text-xs bg-honey-50 text-honey-700 rounded px-2 py-0.5">✏ Exercise</span>` : '';
+        const badges = [cautionsBadge, pollsBadge, breakoutBadge, exerciseBadge].filter(Boolean).join(' ');
+        const activityBlock = a.activityInstructions ? `<p class="text-xs text-forest-600 mt-1 whitespace-pre-wrap">${escHtml((a.activityInstructions || '').slice(0, 200))}${a.activityInstructions.length > 200 ? '…' : ''}</p>` : '';
         return `<div class="border border-burgundy-100 rounded-lg p-3 space-y-2 bg-stone-50">
           <div class="grid grid-cols-12 gap-2 items-center">
             <select id="ros_type_${i}" onchange="onAgendaTypeChange(${i}, this.value)" ${ro ? 'disabled' : ''}
@@ -1149,6 +1266,8 @@
               <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
             </div>
           </div>
+          ${badges ? `<div class="flex flex-wrap items-center gap-1">${badges}</div>` : ''}
+          ${activityBlock}
           <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional, shown to attendees)" ${ro ? 'disabled' : ''}
             class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
           <textarea id="ros_notes_${i}" placeholder="Speaker notes (private — only you see this in the room)" ${ro ? 'disabled' : ''}
@@ -1235,6 +1354,13 @@
           const ci = parseInt(a.clipIndex, 10);
           if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
         }
+        // Preserve imported facilitator-guide fields the editor doesn't expose,
+        // so a manual "Save agenda" never wipes pre-flight/poll/breakout/etc. data.
+        if (a.activityInstructions) row.activityInstructions = a.activityInstructions;
+        if ((a.facilitatorCautions || []).length) row.facilitatorCautions = a.facilitatorCautions;
+        if ((a.polls || []).length) row.polls = a.polls;
+        if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
+        if (a.exercise) row.exercise = a.exercise;
         return row;
       });
       try {
@@ -1255,6 +1381,166 @@
         showToast('Agenda saved.', '#284157');
       } catch (e) {
         showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    let rosImportParsed = null; // holds the /preview response between step 1 and step 2
+
+    function openRosImportModal() {
+      if (!rosSession) return;
+      rosImportParsed = null;
+      document.getElementById('rosImportMarkdown').value = '';
+      document.getElementById('rosImportDocx').value = '';
+      document.getElementById('rosImportError').classList.add('hidden');
+      document.getElementById('rosImportStep1').classList.remove('hidden');
+      document.getElementById('rosImportStep2').classList.add('hidden');
+      document.getElementById('rosImportModal').style.display = 'flex';
+    }
+
+    function closeRosImportModal() {
+      document.getElementById('rosImportModal').style.display = 'none';
+      rosImportParsed = null;
+    }
+
+    function rosImportBackToStep1() {
+      document.getElementById('rosImportStep1').classList.remove('hidden');
+      document.getElementById('rosImportStep2').classList.add('hidden');
+    }
+
+    function rosImportError(msg) {
+      const el = document.getElementById('rosImportError');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    async function rosImportPreview() {
+      const btn = document.getElementById('rosImportPreviewBtn');
+      btn.disabled = true;
+      document.getElementById('rosImportError').classList.add('hidden');
+
+      const fileInput = document.getElementById('rosImportDocx');
+      const markdown = document.getElementById('rosImportMarkdown').value.trim();
+      const file = fileInput.files?.[0];
+
+      if (!file && !markdown) {
+        rosImportError('Provide markdown text or upload a .docx file.');
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        let res;
+        if (file) {
+          const fd = new FormData();
+          fd.append('file', file);
+          res = await fetch(`${API}/${rosSession._id}/run-of-show/preview`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: fd
+          });
+        } else {
+          res = await fetch(`${API}/${rosSession._id}/run-of-show/preview`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ markdown })
+          });
+        }
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Preview failed');
+        rosImportParsed = d.parsed;
+        renderRosImportPreview(d);
+        document.getElementById('rosImportStep1').classList.add('hidden');
+        document.getElementById('rosImportStep2').classList.remove('hidden');
+      } catch (e) {
+        rosImportError(e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderRosImportPreview(d) {
+      const s = d.summary;
+      const missingHighlight = s.segmentsMissingDuration > 0 ? 'text-red-700' : 'text-forest-700';
+      document.getElementById('rosImportSummary').innerHTML = `
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.segmentCount}</div>
+          <div class="text-xs text-forest-500">Segments</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.totalMin}m</div>
+          <div class="text-xs text-forest-500">Total duration</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.preFlightCount}</div>
+          <div class="text-xs text-forest-500">Pre-flight items</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold ${missingHighlight}">${s.segmentsMissingDuration}</div>
+          <div class="text-xs text-forest-500">Missing duration</div>
+        </div>`;
+
+      const warnings = d.warnings || [];
+      document.getElementById('rosImportWarnings').innerHTML = warnings.length
+        ? `<div class="border border-honey-200 bg-honey-50 rounded-lg px-3 py-2">
+             <p class="text-xs font-semibold text-honey-800 mb-1">${warnings.length} warning${warnings.length === 1 ? '' : 's'}:</p>
+             <ul class="text-xs text-honey-800 list-disc list-inside space-y-0.5">
+               ${warnings.map(w => `<li>${escHtml(w)}</li>`).join('')}
+             </ul>
+           </div>`
+        : '';
+
+      const agenda = d.parsed.agenda || [];
+      const rows = agenda.length
+        ? agenda.map((a, i) => {
+            const badges = [
+              (a.facilitatorCautions || []).length ? `<span class="text-xs text-red-700">⚠ ${a.facilitatorCautions.length}</span>` : '',
+              (a.polls || []).length ? `<span class="text-xs text-forest-700">🗳 ${a.polls.length}</span>` : '',
+              (a.breakoutPrompts || []).length ? `<span class="text-xs text-blue-700">👥 ${a.breakoutPrompts.length}</span>` : '',
+              a.exercise ? `<span class="text-xs text-honey-700">✏</span>` : ''
+            ].filter(Boolean).join(' · ');
+            return `<div class="px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-semibold text-burgundy-900">${i + 1}. ${escHtml(a.title || '(no title)')}</span>
+                <span class="text-xs text-forest-500">${a.durationMin ? a.durationMin + ' min' : '<span class="text-red-600">no duration</span>'} · ${escHtml(a.type)}</span>
+              </div>
+              ${badges ? `<div class="mt-1">${badges}</div>` : ''}
+            </div>`;
+          }).join('')
+        : '<div class="px-3 py-4 text-sm text-forest-500">Parser produced no segments. Check that the guide uses <code>## Segment</code> H2 headings.</div>';
+
+      document.getElementById('rosImportPreviewContent').innerHTML = rows;
+    }
+
+    async function rosImportCommit() {
+      if (!rosImportParsed || !rosSession) return;
+      const btn = document.getElementById('rosImportCommitBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/${rosSession._id}/run-of-show/commit`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agenda: rosImportParsed.agenda,
+            preFlightChecklist: rosImportParsed.preFlightChecklist,
+            globalFacilitatorCautions: rosImportParsed.globalFacilitatorCautions
+          })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Save failed');
+        // Merge the just-committed content back into rosSession so the outer
+        // Run of Show display updates without a full reload, and rebuild the
+        // agenda editor's working copy from the imported agenda.
+        rosSession.agenda = rosImportParsed.agenda;
+        rosSession.preFlightChecklist = rosImportParsed.preFlightChecklist;
+        rosSession.globalFacilitatorCautions = rosImportParsed.globalFacilitatorCautions;
+        rosAgenda = (rosSession.agenda || []).map(rosAgendaRowFromSource);
+        closeRosImportModal();
+        renderRunOfShow();
+        showToast(`Imported ${d.segmentCount} segments (${d.totalMin} min total).`, '#284157');
+      } catch (e) {
+        rosImportError(e.message);
+      } finally {
+        btn.disabled = false;
       }
     }
 
