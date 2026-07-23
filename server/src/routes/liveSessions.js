@@ -702,6 +702,45 @@ router.get('/:id/attendance', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// GET /api/live-sessions/:id/host-state — host-only counterpart to toPublicJSON.
+// Returns the full facilitator payload (speaker notes, activity instructions,
+// per-segment + global cautions, polls, checklists, scratchpad) for the Host
+// Console. NEVER exposed to non-admin viewers, and does NOT modify toPublicJSON
+// or the public GET /:id. Writes to hostScratchpad/hostChecklist go through the
+// existing PATCH /:id — no new write route here.
+router.get('/:id/host-state', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    res.json({
+      status: session.status,
+      alarmLeadSec: session.alarmLeadSec ?? 60,
+      attendanceThresholdPct: session.attendanceThresholdPct,
+      certificatesIssuedAt: session.certificatesIssuedAt || null,
+      agenda: (session.agenda || []).map(seg => ({
+        order: seg.order,
+        type: seg.type,
+        title: seg.title,
+        durationMin: seg.durationMin,
+        prompt: seg.prompt,
+        clipIndex: seg.clipIndex,
+        speakerNotes: seg.speakerNotes,
+        activityInstructions: seg.activityInstructions,
+        facilitatorCautions: seg.facilitatorCautions || [],
+        polls: seg.polls || []
+      })),
+      hostScratchpad: session.hostScratchpad || '',
+      hostChecklist: session.hostChecklist || [],
+      preFlightChecklist: session.preFlightChecklist || [],
+      globalFacilitatorCautions: session.globalFacilitatorCautions || []
+    });
+  } catch (err) {
+    console.error('[live] host-state:', err.message);
+    res.status(500).json({ error: 'Failed to load host state' });
+  }
+});
+
 // POST /api/live-sessions/:id/issue-certificates — cert qualifying attendees
 router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) => {
   try {
