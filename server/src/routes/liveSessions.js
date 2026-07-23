@@ -23,7 +23,7 @@ import { Readable } from 'stream';
 import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
-import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
+import { issueLiveSessionCertificates, issueSeriesCertificates } from '../services/liveSessionCompletionService.js';
 import { triggerNewLiveSessionAnnouncement } from '../services/notificationTriggerService.js';
 import { parseRunOfShowMarkdown, parseRunOfShowDocx } from '../services/runOfShowParser.js';
 
@@ -709,6 +709,19 @@ router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) =
     res.json(result);
   } catch (err) {
     console.error('[live] issue-certificates:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/live-sessions/series/:seriesId/issue-certificates
+// Series-level batch issuance. Returns { notReady: true, pendingSessions: [...] }
+// if any required session hasn't completed yet, rather than issuing partial certs.
+router.post('/series/:seriesId/issue-certificates', protect, requireAdmin, async (req, res) => {
+  try {
+    const result = await issueSeriesCertificates(req.params.seriesId);
+    res.json(result);
+  } catch (err) {
+    console.error('[live] series issue-certificates:', err.message);
     res.status(400).json({ error: err.message });
   }
 });
