@@ -145,6 +145,27 @@ const liveSessionSchema = new mongoose.Schema({
   },
   accessCode: { type: String, trim: true, uppercase: true },
 
+  // ─── Series linkage (optional) ───────────────────────────────────────
+  // If set, this session is part of a SessionSeries. Standalone sessions
+  // leave this null and behave exactly as before — no breaking change.
+  seriesId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SessionSeries',
+    default: null,
+    index: true
+  },
+
+  // Position and requirement within the series. Ignored when seriesId is null.
+  // - order:    display + issuance order (1, 2, 3...). Not a strict foreign
+  //             key, just a sort hint; Stage 2 uses it to determine "which
+  //             session in the series is last" for cert-issuance timing.
+  // - required: when true, this session must be attended for the series
+  //             certificate to issue. Default true (matches most series).
+  seriesMembership: {
+    order: { type: Number, default: 1, min: 1 },
+    required: { type: Boolean, default: true }
+  },
+
   registrants: [registrantSchema],
   attendance: [attendanceSchema],
 
