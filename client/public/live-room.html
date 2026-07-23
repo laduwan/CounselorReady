@@ -64,9 +64,21 @@
           <div id="hostPanel" class="hidden mt-3 rounded-xl p-4" style="background:#FBF6EC;border:1px solid #EFE0C2;">
             <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c1e;margin-bottom:6px;">Host Dashboard (only you see this)</h3>
 
+            <div id="hostGlobalCautions" class="hidden" style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:8px 10px;margin-bottom:10px;"></div>
+
+            <div id="hostPreFlight" class="hidden" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;margin-bottom:10px;"></div>
+
             <div id="hostClock" style="font-size:12px;color:#284157;margin-bottom:8px;"></div>
 
             <div id="hostNotes" style="font-size:13px;color:#44403c;line-height:1.5;white-space:pre-wrap;margin-bottom:8px;"></div>
+
+            <div id="hostSegCautions" class="hidden" style="margin-bottom:10px;"></div>
+
+            <div id="hostSegBreakouts" class="hidden" style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
+
+            <div id="hostSegExercise" class="hidden" style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
+
+            <div id="hostSegPolls" class="hidden" style="background:#e0e7ff;border:1px solid #a5b4fc;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
 
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
               <button id="hostPrevBtn" onclick="advanceSegment(-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #EFE0C2;background:#fff;font-size:12px;font-weight:600;color:#7a5c1e;">◀ Prev</button>
@@ -490,6 +502,10 @@
       if (!data.isHost) { panel.classList.add('hidden'); return; }
       panel.classList.remove('hidden');
 
+      renderHostGlobalCautions(data.globalFacilitatorCautions || []);
+      renderHostPreFlight(data.preFlightChecklist || [], data.status);
+      renderHostSegmentExtras(data.currentSegment);
+
       isHostGlobal = true;
       agendaLength = data.agendaLength || 0;
       currentSegIndex = data.liveState?.currentSegment ?? 0;
@@ -582,6 +598,107 @@
       if (!scratchpadLoaded) {
         document.getElementById('hostScratchpad').value = data.hostScratchpad || '';
         scratchpadLoaded = true;
+      }
+    }
+
+    function escHtmlSafe(s) {
+      const d = document.createElement('div');
+      d.textContent = s || '';
+      return d.innerHTML;
+    }
+
+    function renderHostGlobalCautions(cautions) {
+      const box = document.getElementById('hostGlobalCautions');
+      if (!cautions.length) { box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      box.innerHTML =
+        '<div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Session-wide cautions</div>' +
+        cautions.map(c => `<div style="font-size:12px;color:#78350f;line-height:1.4;">• ${escHtmlSafe(c.text)}</div>`).join('');
+    }
+
+    function renderHostPreFlight(items, status) {
+      const box = document.getElementById('hostPreFlight');
+      // Only show pre-flight BEFORE the session goes live — once it's live/completed,
+      // it collapses to save panel space (Ke can still see it in the admin ROS modal).
+      if (!items.length || (status !== 'scheduled')) { box.classList.add('hidden'); return; }
+      box.classList.remove('hidden');
+      box.innerHTML =
+        '<div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Pre-Flight Checklist</div>' +
+        items.map(it => `<div style="font-size:12px;color:#1e3a8a;line-height:1.4;">${it.critical ? '🔴' : '☐'} ${escHtmlSafe(it.text)}</div>`).join('');
+    }
+
+    function renderHostSegmentExtras(seg) {
+      const cautionsBox = document.getElementById('hostSegCautions');
+      const breakoutsBox = document.getElementById('hostSegBreakouts');
+      const exerciseBox = document.getElementById('hostSegExercise');
+      const pollsBox = document.getElementById('hostSegPolls');
+
+      if (!seg) {
+        cautionsBox.classList.add('hidden');
+        breakoutsBox.classList.add('hidden');
+        exerciseBox.classList.add('hidden');
+        pollsBox.classList.add('hidden');
+        return;
+      }
+
+      // Cautions — inline red/amber chips under the segment
+      const cautions = seg.facilitatorCautions || [];
+      if (cautions.length) {
+        cautionsBox.classList.remove('hidden');
+        cautionsBox.innerHTML = cautions.map(c => {
+          const bg = c.critical ? '#fee2e2' : '#fef3c7';
+          const border = c.critical ? '#fca5a5' : '#fcd34d';
+          const color = c.critical ? '#991b1b' : '#78350f';
+          return `<div style="background:${bg};border:1px solid ${border};color:${color};border-radius:6px;padding:6px 10px;font-size:12px;line-height:1.4;margin-bottom:4px;">${c.critical ? '🔴 ' : '⚠ '}${escHtmlSafe(c.text)}</div>`;
+        }).join('');
+      } else {
+        cautionsBox.classList.add('hidden');
+      }
+
+      // Breakout prompts — shown when segment type is 'breakout' AND prompts exist
+      const breakouts = seg.breakoutPrompts || [];
+      if (breakouts.length && seg.type === 'breakout') {
+        breakoutsBox.classList.remove('hidden');
+        breakoutsBox.innerHTML =
+          '<div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Breakout Prompts</div>' +
+          breakouts.map((b, i) => {
+            const timebox = b.timeboxMin ? ` <span style="color:#3730a3;font-weight:600;">(${b.timeboxMin} min)</span>` : '';
+            return `<div style="font-size:12px;color:#1e3a8a;line-height:1.5;margin-bottom:4px;">${i + 1}. ${escHtmlSafe(b.text)}${timebox}</div>`;
+          }).join('');
+      } else {
+        breakoutsBox.classList.add('hidden');
+      }
+
+      // Exercise — shown when segment has an exercise sub-doc
+      const ex = seg.exercise;
+      if (ex && (ex.instructions || ex.deliverable || ex.debriefFormat)) {
+        exerciseBox.classList.remove('hidden');
+        const parts = [];
+        parts.push('<div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">✏ Exercise' + (ex.timeboxMin ? ` (${ex.timeboxMin} min)` : '') + '</div>');
+        if (ex.instructions) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;margin-bottom:6px;"><strong>Instructions:</strong> ${escHtmlSafe(ex.instructions)}</div>`);
+        if (ex.deliverable) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;margin-bottom:6px;"><strong>Deliverable:</strong> ${escHtmlSafe(ex.deliverable)}</div>`);
+        if (ex.debriefFormat) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;"><strong>Debrief:</strong> ${escHtmlSafe(ex.debriefFormat)}</div>`);
+        exerciseBox.innerHTML = parts.join('');
+      } else {
+        exerciseBox.classList.add('hidden');
+      }
+
+      // Polls — reference-only, no voting UI (that's a future build).
+      // Shown so Ke can run the question verbally and reference the options.
+      const polls = seg.polls || [];
+      if (polls.length) {
+        pollsBox.classList.remove('hidden');
+        pollsBox.innerHTML =
+          '<div style="font-size:11px;font-weight:700;color:#3730a3;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🗳 Poll reference (verbal only — no voting UI)</div>' +
+          polls.map((p, i) => {
+            const opts = (p.options || []).map((o, oi) => `<div style="font-size:12px;color:#312e81;margin-left:12px;line-height:1.4;">${String.fromCharCode(65 + oi)}. ${escHtmlSafe(o.text)}</div>`).join('');
+            return `<div style="margin-bottom:8px;">
+              <div style="font-size:12px;font-weight:600;color:#312e81;line-height:1.4;">${i + 1}. ${escHtmlSafe(p.question)}</div>
+              ${opts}
+            </div>`;
+          }).join('');
+      } else {
+        pollsBox.classList.add('hidden');
       }
     }
 
