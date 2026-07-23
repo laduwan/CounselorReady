@@ -244,7 +244,7 @@ const authLimiter = rateLimit({
 });
 
 app.use('/api/', globalLimiter);
-app.use('/api/auth', authLimiter);
+app.use('/api/auth', (req, res, next) => (req.path === '/me' ? next() : authLimiter(req, res, next)));
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
