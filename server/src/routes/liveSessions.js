@@ -604,6 +604,7 @@ router.post('/:id/run-of-show/preview', protect, requireAdmin, rosDocxUpload.sin
         totalMin,
         preFlightCount: parsed.preFlightChecklist.length,
         globalCautionsCount: parsed.globalFacilitatorCautions.length,
+        objectivesCount: parsed.objectives?.length || 0,
         segmentsMissingDuration: parsed.agenda.filter(s => !s.durationMin).length
       },
       parsed,
@@ -626,7 +627,7 @@ router.post('/:id/run-of-show/commit', protect, requireAdmin, async (req, res) =
     const session = await LiveSession.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
-    const { agenda, preFlightChecklist, globalFacilitatorCautions } = req.body;
+    const { agenda, preFlightChecklist, globalFacilitatorCautions, objectives } = req.body;
     if (!Array.isArray(agenda)) {
       return res.status(400).json({ error: 'agenda must be an array' });
     }
@@ -634,9 +635,11 @@ router.post('/:id/run-of-show/commit', protect, requireAdmin, async (req, res) =
     session.agenda = agenda;
     session.preFlightChecklist = Array.isArray(preFlightChecklist) ? preFlightChecklist : [];
     session.globalFacilitatorCautions = Array.isArray(globalFacilitatorCautions) ? globalFacilitatorCautions : [];
+    if (Array.isArray(objectives)) session.objectives = objectives;
     session.markModified('agenda');
     session.markModified('preFlightChecklist');
     session.markModified('globalFacilitatorCautions');
+    if (Array.isArray(objectives)) session.markModified('objectives');
     await session.save();
 
     res.json({

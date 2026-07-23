@@ -451,7 +451,7 @@
 
       <!-- Step 2: preview -->
       <div id="rosImportStep2" class="px-6 py-5 space-y-4 hidden">
-        <div id="rosImportSummary" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
+        <div id="rosImportSummary" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
         <div id="rosImportWarnings"></div>
         <div id="rosImportPreviewContent" class="border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
         <div class="flex justify-between gap-2 pt-2 border-t border-gray-100">
@@ -1475,6 +1475,10 @@
           <div class="text-xs text-forest-500">Pre-flight items</div>
         </div>
         <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.objectivesCount || 0}</div>
+          <div class="text-xs text-forest-500">Objectives</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
           <div class="text-2xl font-bold ${missingHighlight}">${s.segmentsMissingDuration}</div>
           <div class="text-xs text-forest-500">Missing duration</div>
         </div>`;
@@ -1522,7 +1526,8 @@
           body: JSON.stringify({
             agenda: rosImportParsed.agenda,
             preFlightChecklist: rosImportParsed.preFlightChecklist,
-            globalFacilitatorCautions: rosImportParsed.globalFacilitatorCautions
+            globalFacilitatorCautions: rosImportParsed.globalFacilitatorCautions,
+            objectives: rosImportParsed.objectives || []
           })
         });
         const d = await res.json();
@@ -1533,6 +1538,7 @@
         rosSession.agenda = rosImportParsed.agenda;
         rosSession.preFlightChecklist = rosImportParsed.preFlightChecklist;
         rosSession.globalFacilitatorCautions = rosImportParsed.globalFacilitatorCautions;
+        if (Array.isArray(rosImportParsed.objectives)) rosSession.objectives = rosImportParsed.objectives;
         rosAgenda = (rosSession.agenda || []).map(rosAgendaRowFromSource);
         closeRosImportModal();
         renderRunOfShow();
