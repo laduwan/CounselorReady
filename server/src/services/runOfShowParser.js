@@ -43,6 +43,8 @@ const EXERCISE_MARKER_RE = /^(?:###|####)\s*(?:Exercise|Writing exercise|Individ
 const PREFLIGHT_HEADING_RE = /^#{1,2}\s+(?:Pre[- ]?flight|Prep|Facilitator prep|Before you start)/i;
 const GLOBAL_CAUTIONS_HEADING_RE = /^#{1,2}\s+(?:Facilitator cautions|Reveal discipline|Discipline|Global cautions|Guardrails)/i;
 const RUN_OF_SHOW_TABLE_RE = /^#{1,2}\s+(?:Run of Show|Agenda|Schedule)/i;
+const OBJECTIVES_HEADING_RE = /^#{1,3}\s+(?:Learning\s+objectives?|Objectives?|Learning\s+outcomes?)\s*$/i;
+const DOC_TITLE_RE = /^#\s+(?!Hour\s+\d)/i; // any H1 that isn't "Hour N" — treat as doc-level, not a segment
 
 /**
  * Guess a segment type from its heading text.
@@ -120,6 +122,7 @@ export function parseRunOfShowMarkdown(markdown) {
 
   const preFlightChecklist = [];
   const globalFacilitatorCautions = [];
+  const objectives = [];
   const agenda = [];
 
   const rosTable = extractRunOfShowTable(markdown);
@@ -183,9 +186,28 @@ export function parseRunOfShowMarkdown(markdown) {
       continue;
     }
 
+    // Learning objectives section (per-hour or session-level).
+    // Collected into a flat, deduplicated `objectives` array on the session,
+    // NOT as agenda segments.
+    if (OBJECTIVES_HEADING_RE.test(trimmed)) {
+      bucket = { kind: 'objectives', ref: objectives };
+      currentSegment = null;
+      currentSubHeading = null;
+      continue;
+    }
+
+    // Doc-title H1 (anything not "# Hour N") — ignore rather than misclassify
+    // as an agenda segment. This handles a facilitator guide's top title line.
+    if (DOC_TITLE_RE.test(trimmed)) {
+      bucket = null;
+      currentSegment = null;
+      currentSubHeading = null;
+      continue;
+    }
+
     // Segment heading (H2)
     const segMatch = trimmed.match(SEGMENT_HEADING_RE);
-    if (segMatch && !RUN_OF_SHOW_TABLE_RE.test(trimmed) && !PREFLIGHT_HEADING_RE.test(trimmed) && !GLOBAL_CAUTIONS_HEADING_RE.test(trimmed)) {
+    if (segMatch && !RUN_OF_SHOW_TABLE_RE.test(trimmed) && !PREFLIGHT_HEADING_RE.test(trimmed) && !GLOBAL_CAUTIONS_HEADING_RE.test(trimmed) && !OBJECTIVES_HEADING_RE.test(trimmed)) {
       const [, title, minStr] = segMatch;
       startSegment(title, minStr ? parseInt(minStr, 10) : null);
       continue;
@@ -245,6 +267,11 @@ export function parseRunOfShowMarkdown(markdown) {
       case 'global-cautions': {
         const cleaned = cleanLine(trimmed);
         if (cleaned) globalFacilitatorCautions.push({ text: cleaned });
+        break;
+      }
+      case 'objectives': {
+        const cleaned = cleanLine(trimmed);
+        if (cleaned && !objectives.includes(cleaned)) objectives.push(cleaned);
         break;
       }
       case 'poll': {
@@ -307,7 +334,7 @@ export function parseRunOfShowMarkdown(markdown) {
     }
   }
 
-  return { agenda, preFlightChecklist, globalFacilitatorCautions, warnings };
+  return { agenda, preFlightChecklist, globalFacilitatorCautions, objectives, warnings };
 }
 
 /**
