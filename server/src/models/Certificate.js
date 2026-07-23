@@ -22,6 +22,11 @@ const certificateSchema = new mongoose.Schema({
     ref: 'LiveSession',
     index: true
   },
+  sessionSeriesId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SessionSeries',
+    index: true
+  },
   title: {
     type: String,
     required: true,
