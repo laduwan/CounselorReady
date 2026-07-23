@@ -732,7 +732,7 @@ router.post('/series/:seriesId/issue-certificates', protect, requireAdmin, async
 router.get('/:id/live-state', protect, async (req, res) => {
   try {
     const session = await LiveSession.findById(req.params.id)
-      .select('liveState agenda status scheduledStart scheduledEnd registrants attendance breaks alarmLeadSec hostScratchpad hostChecklist')
+      .select('liveState agenda status scheduledStart scheduledEnd registrants attendance breaks alarmLeadSec hostScratchpad hostChecklist globalFacilitatorCautions preFlightChecklist')
       .lean();
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
@@ -745,8 +745,20 @@ router.get('/:id/live-state', protect, async (req, res) => {
     }
 
     const seg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
-    // speakerNotes is host-only — strip it before sending to non-admin viewers
-    const segOut = seg && !isAdmin ? { ...seg, speakerNotes: undefined } : seg;
+    // Host-only fields — strip before sending to non-admin viewers.
+    // Attendees only see: title, type, durationMin, prompt (public discussion prompt).
+    // Everything else is facilitator-internal.
+    const segOut = seg && !isAdmin
+      ? {
+          ...seg,
+          speakerNotes: undefined,
+          activityInstructions: undefined,
+          facilitatorCautions: undefined,
+          polls: undefined,
+          breakoutPrompts: undefined,
+          exercise: undefined
+        }
+      : seg;
 
     const payload = {
       liveState: session.liveState,
@@ -780,6 +792,8 @@ router.get('/:id/live-state', protect, async (req, res) => {
       payload.alarmLeadSec = session.alarmLeadSec ?? 60;
       payload.hostScratchpad = session.hostScratchpad || '';
       payload.hostChecklist = session.hostChecklist || [];
+      payload.globalFacilitatorCautions = session.globalFacilitatorCautions || [];
+      payload.preFlightChecklist = session.preFlightChecklist || [];
       payload.currentlyPresent = (session.attendance || [])
         .filter(a => !a.leftAt)
         .map(a => a.displayName || 'Unnamed attendee');
