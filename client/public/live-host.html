@@ -159,8 +159,9 @@
       try {
         // Verify admin
         const meRes = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const me = await meRes.json();
-        if (!meRes.ok || me.role !== 'admin') return gateMsg('Admin access required.');
+        const meRaw = await meRes.json();
+        const me = meRaw.user || meRaw; // /api/auth/me returns { user: {...} }
+        if (!meRes.ok || me?.role !== 'admin') return gateMsg('Admin access required.');
 
         // Load session
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`, {
