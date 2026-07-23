@@ -75,6 +75,7 @@ router.post('/', async (req, res) => {
     }
     console.warn('[whereby-webhook] WHEREBY_WEBHOOK_SECRET not set — skipping signature check (non-production only).');
   } else if (!verifyWherebySignature(raw, req.headers, secret)) {
+    console.error('[whereby-webhook] REJECTED invalid signature — header present:', !!req.headers['whereby-signature'], '— check WHEREBY_WEBHOOK_SECRET matches the webhook in the Whereby dashboard');
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
@@ -84,6 +85,8 @@ router.post('/', async (req, res) => {
   } catch {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
+
+  console.log(`[whereby-webhook] ACCEPTED ${event.type || 'unknown'} meetingId=${event.data?.meetingId || 'n/a'}`);
 
   // Ack fast; process inline (events are small) but never let errors 500 a retry storm
   try {
