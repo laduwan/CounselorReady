@@ -2413,6 +2413,9 @@
       document.getElementById('se-slug').value = '';
       document.getElementById('se-totalCeuHours').value = '';
       document.getElementById('se-category').value = '';
+      document.getElementById('se-price').value = '0';
+      document.getElementById('se-earlyBirdPrice').value = '';
+      document.getElementById('se-earlyBirdDeadline').value = '';
       document.getElementById('se-description').value = '';
       document.getElementById('se-autoEnroll').value = 'all-required';
       document.getElementById('se-visibility').value = 'public';
@@ -2428,6 +2431,9 @@
           document.getElementById('se-slug').value = s.slug || '';
           document.getElementById('se-totalCeuHours').value = s.totalCeuHours ?? 0;
           document.getElementById('se-category').value = s.category || '';
+          document.getElementById('se-price').value = s.price ?? 0;
+          document.getElementById('se-earlyBirdPrice').value = (s.earlyBirdPrice != null) ? s.earlyBirdPrice : '';
+          document.getElementById('se-earlyBirdDeadline').value = s.earlyBirdDeadline ? s.earlyBirdDeadline.slice(0, 10) : '';
           document.getElementById('se-description').value = s.description || '';
           document.getElementById('se-autoEnroll').value = s.autoEnroll || 'all-required';
           document.getElementById('se-visibility').value = s.visibility || 'public';
@@ -2456,6 +2462,11 @@
         slug: document.getElementById('se-slug').value.trim().toLowerCase(),
         totalCeuHours: parseFloat(document.getElementById('se-totalCeuHours').value) || 0,
         category: document.getElementById('se-category').value.trim(),
+        price: parseFloat(document.getElementById('se-price').value) || 0,
+        earlyBirdPrice: document.getElementById('se-earlyBirdPrice').value !== ''
+          ? parseFloat(document.getElementById('se-earlyBirdPrice').value)
+          : null,
+        earlyBirdDeadline: document.getElementById('se-earlyBirdDeadline').value || null,
         description: document.getElementById('se-description').value.trim(),
         autoEnroll: document.getElementById('se-autoEnroll').value,
         visibility: document.getElementById('se-visibility').value,
@@ -3256,6 +3267,20 @@
       <div>
         <label class="block text-sm font-medium text-burgundy-800 mb-1">Category</label>
         <input type="text" id="se-category" placeholder="Ethics, Telehealth, etc." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
+          <input type="number" id="se-price" min="0" step="0.01" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Early-Bird Price</label>
+          <input type="number" id="se-earlyBirdPrice" min="0" step="0.01" placeholder="optional" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Early-Bird Deadline</label>
+          <input type="date" id="se-earlyBirdDeadline" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
       </div>
       <div>
         <label class="block text-sm font-medium text-burgundy-800 mb-1">Description</label>

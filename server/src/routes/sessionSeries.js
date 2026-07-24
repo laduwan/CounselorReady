@@ -4,11 +4,17 @@
  */
 
 import express from 'express';
+import Stripe from 'stripe';
 import SessionSeries from '../models/SessionSeries.js';
 import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Same init pattern as liveSessions.js — null when Stripe isn't configured.
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
 
 /* ═════════════════ ADMIN CRUD ═════════════════ */
 
@@ -137,6 +143,51 @@ router.post('/:id/register', protect, async (req, res) => {
         error: 'This series requires per-session registration.',
         autoEnroll: 'manual'
       });
+    }
+
+    // ── Series pricing gate ──
+    // Mirrors the per-session Stripe Checkout in liveSessions.js. Paid series
+    // require checkout for non-member, non-admin users; VIP/Annual members and
+    // admins enroll free. Early-bird price applies on/before the deadline.
+    // Fulfillment (enrolling in member sessions) is handled by the Stripe
+    // webhook on payment success — see PR notes: a `type: 'session-series'`
+    // handler in payments.js completes enrollment, exactly as `live-session` does.
+    const isAdmin = req.user.role === 'admin';
+    const isActiveVip = req.user.isVip &&
+      req.user.isVip() &&
+      ['active', 'lifetime'].includes(req.user.subscription?.status);
+    const isAnnualMember = req.user.subscription?.plan === 'annual' &&
+      req.user.subscription?.status === 'active';
+    const isMember = isActiveVip || isAnnualMember;
+
+    const now = new Date();
+    const useEarlyBird = series.earlyBirdPrice != null &&
+      series.earlyBirdDeadline &&
+      now <= new Date(series.earlyBirdDeadline);
+    const effectivePrice = useEarlyBird ? series.earlyBirdPrice : (series.price || 0);
+
+    if (!isAdmin && !isMember && effectivePrice > 0) {
+      if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
+      const checkout = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            unit_amount: Math.round(effectivePrice * 100),
+            product_data: { name: `Session Series: ${series.title}` }
+          },
+          quantity: 1
+        }],
+        success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?registered=${series.slug}`,
+        cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?canceled=true`,
+        metadata: {
+          type: 'session-series',
+          seriesId: series._id.toString(),
+          userId: req.user._id.toString()
+        }
+      });
+      return res.json({ checkoutUrl: checkout.url });
     }
 
     const enrolled = [];

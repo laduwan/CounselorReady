@@ -51,6 +51,12 @@ const SessionSeriesSchema = new mongoose.Schema({
     photoUrl: { type: String, default: '' }
   },
 
+  // Series-level pricing (USD). price = standard price; earlyBirdPrice applies
+  // until earlyBirdDeadline. 0 / unset = free (VIP & Annual members always free).
+  price: { type: Number, default: 0, min: 0 },
+  earlyBirdPrice: { type: Number, min: 0 },
+  earlyBirdDeadline: { type: Date },
+
   isPublished: { type: Boolean, default: false, index: true },
   visibility: {
     type: String,
