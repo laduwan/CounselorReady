@@ -160,6 +160,25 @@ router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// PATCH /api/live-sessions/admin/publish-all — bulk publish/unpublish every session.
+// Deliberately does NOT fire the new-session announcement email (unlike the
+// per-session PATCH /:id), so flipping many drafts at once never blasts users
+// with one email per session. Body: { publish: true | false }.
+router.patch('/admin/publish-all', protect, requireAdmin, async (req, res) => {
+  try {
+    const publish = req.body?.publish === true;
+    const result = await LiveSession.updateMany(
+      { isPublished: { $ne: publish } },
+      { $set: { isPublished: publish } }
+    );
+    const modified = result.modifiedCount ?? result.nModified ?? 0;
+    res.json({ ok: true, publish, modified });
+  } catch (err) {
+    console.error('[live] admin/publish-all:', err.message);
+    res.status(500).json({ error: 'Failed to update sessions' });
+  }
+});
+
 // GET /api/live-sessions/code/:accessCode — direct lookup, public AND private sessions
 router.get('/code/:accessCode', async (req, res) => {
   try {
