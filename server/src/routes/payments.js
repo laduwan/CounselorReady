@@ -858,6 +858,53 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           break;
         }
 
+        // Session series seat purchase — mirrors the live-session branch, but
+        // fulfills across every member session per the series' autoEnroll policy
+        // (set when the checkout was created in routes/sessionSeries.js). The
+        // already-registered guard makes this idempotent on Stripe retries.
+        if (session.metadata?.type === 'session-series') {
+          const { seriesId, userId: seriesUserId } = session.metadata;
+          const SessionSeries = (await import('../models/SessionSeries.js')).default;
+          const LiveSession = (await import('../models/LiveSession.js')).default;
+          const series = await SessionSeries.findById(seriesId);
+          if (series) {
+            // Same member resolution as sessionSeries.js register:
+            //  'all'          → every member session
+            //  'all-required' → members where seriesMembership.required !== false
+            //  'manual'       → never reaches Stripe (register returns 400)
+            const memberSessions = series.autoEnroll === 'all'
+              ? await LiveSession.find({ seriesId: series._id })
+              : await LiveSession.find({
+                  seriesId: series._id,
+                  'seriesMembership.required': { $ne: false }
+                });
+
+            let enrolledCount = 0;
+            for (const sess of memberSessions) {
+              const already = sess.registrants.some(
+                r => r.user && r.user.toString() === seriesUserId.toString()
+              );
+              if (already) continue;
+              sess.registrants.push({ user: seriesUserId, registeredAt: new Date(), paid: true });
+              await sess.save();
+              enrolledCount++;
+            }
+            logger.info({ seriesId, userId: seriesUserId, enrolledCount, requestId: req.requestId }, 'Session series purchased — member sessions enrolled');
+
+            const seriesBuyer = await User.findById(seriesUserId).select('email profile.firstName');
+            logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+              seriesId,
+              amount: session.amount_total,
+              type: 'session-series'
+            }, {
+              userId: seriesUserId,
+              userName: seriesBuyer?.profile?.firstName || '',
+              userEmail: seriesBuyer?.email || ''
+            }).catch(() => {});
+          }
+          break;
+        }
+
         // Handle subscription purchase
         // Resolve plan from metadata; fall back to price ID lookup so sessions
         // created before subscription_data.metadata was wired still activate correctly.
