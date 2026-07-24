@@ -584,7 +584,80 @@ async function populateCatchupSummaries(session, userId, gaps) {
   await session.save();
 }
 
+// ─── Shared attendance close-out (webhook + failsafe) ─────────────────────────
+
+/**
+ * Close any still-open attendance segments at `endedAt`, computing durationMin
+ * exactly the way the room.session.ended webhook handler does. Mutates the
+ * session in place and returns true if any segment was closed; the CALLER is
+ * responsible for saving. Extracted so the runaway-session failsafe in the cron
+ * tick can reuse it rather than duplicating the loop.
+ */
+export function closeDanglingSegments(session, endedAt) {
+  let dirty = false;
+  for (const a of session.attendance) {
+    if (!a.leftAt) {
+      a.leftAt = endedAt;
+      a.durationMin = Math.max(0, Math.round((endedAt - a.joinedAt) / 60000));
+      dirty = true;
+    }
+  }
+  return dirty;
+}
+
 // ─── Cron tick actions (called from sessionProducerTick.js) ───────────────────
+
+/**
+ * Break-segment transitions for the autopilot clock.
+ *
+ * Break segments in the agenda participate in the autopilot clock like any
+ * other segment. Their windows are computed off scheduledStart + the cumulative
+ * durations of every preceding segment (breaks included). When the clock has
+ * advanced INTO a break window, we append that window to session.breaks[] so the
+ * NBCC attendance denominator (attendedMinutesAdjusted / instructionalMinutes)
+ * stays correct. Advancing OUT of a break needs no action.
+ *
+ * Idempotent across ticks: a break is only appended if no overlapping entry
+ * already exists, so re-running the tick never double-records the same break.
+ */
+export async function processBreakTransitions(session) {
+  const agenda = session.agenda || [];
+  if (agenda.length === 0 || !session.scheduledStart) return false;
+
+  const now = Date.now();
+  const sorted = [...agenda].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  let cursor = session.scheduledStart.getTime();
+  let dirty = false;
+
+  for (const seg of sorted) {
+    const durMin = seg.durationMin || 0;
+    const segStart = cursor;
+    const segEnd = cursor + durMin * 60000;
+    cursor = segEnd;
+
+    if (seg.type !== 'break' || durMin <= 0) continue;
+    if (now < segStart) continue; // autopilot clock hasn't reached this break yet
+
+    // Idempotent: skip if an existing break entry overlaps this window
+    const overlaps = (session.breaks || []).some(b => {
+      const bStart = b.startsAt.getTime();
+      const bEnd = bStart + b.durationMin * 60000;
+      return bStart < segEnd && bEnd > segStart;
+    });
+    if (overlaps) continue;
+
+    session.breaks.push({
+      label: seg.title || 'Break',
+      startsAt: new Date(segStart),
+      durationMin: durMin
+    });
+    dirty = true;
+  }
+
+  if (dirty) await session.save();
+  return dirty;
+}
 
 /**
  * Drop detection for a single live session.
@@ -794,6 +867,8 @@ export default {
   processDropDetection,
   processBreakReminders,
   processBreakageDetection,
+  processBreakTransitions,
   processCheckins,
+  closeDanglingSegments,
   computeGaps
 };

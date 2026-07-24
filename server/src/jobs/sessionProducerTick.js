@@ -15,7 +15,9 @@
  *   1. Drop detection — rejoin nudge emails for disconnected users
  *   2. Break reminders — resume emails/SMS 3 min before break ends
  *   3. Breakage detection — mass-drop incident broadcast
- *   4. Wrap-up dispatch — post-session email pipeline (≥5 min after end)
+ *   4. Break transitions — record autopilot break windows into session.breaks[]
+ *   5. Wrap-up dispatch — post-session email pipeline (≥5 min after end)
+ *   6. Runaway failsafe — live sessions past scheduledEnd + 30 min are force-completed
  *
  * Live Session Autopilot (additive — all gated on session.autopilot.enabled):
  *   A. Auto-start   — scheduled sessions whose scheduledStart has passed
@@ -32,8 +34,10 @@ import {
   processDropDetection,
   processBreakReminders,
   processBreakageDetection,
+  processBreakTransitions,
   processCheckins,
   runWrapUp,
+  closeDanglingSegments,
   sendLiveSessionReminders,
   sendAutopilotCertAdminSummary,
   sendAutopilotEmptyAttendanceWarning
@@ -64,11 +68,30 @@ export async function runSessionProducerTick() {
 
   for (const session of sessions) {
     try {
+      // Runaway failsafe: a 'live' session whose room never fired
+      // room.session.ended (Whereby webhook dropped, host closed the tab, etc.)
+      // is force-completed 30 min past its scheduledEnd. Dangling attendance
+      // segments are closed at scheduledEnd via the same logic the webhook uses,
+      // so the NBCC attendance denominator isn't inflated by the overrun.
+      if (
+        session.status === 'live' &&
+        session.scheduledEnd &&
+        now.getTime() > session.scheduledEnd.getTime() + 30 * 60000
+      ) {
+        closeDanglingSegments(session, session.scheduledEnd);
+        session.status = 'completed';
+        await session.save();
+        continue; // no longer live — wrap-up runs on a later tick
+      }
+
       if (session.status === 'live') {
         await processDropDetection(session);
         await processBreakReminders(session);
         await processBreakageDetection(session);
         await processCheckins(session);
+        // Autopilot break transitions — keep session.breaks[] the source of
+        // truth so attendedMinutesAdjusted excludes every break window.
+        await processBreakTransitions(session);
         // Autopilot B: timed segment advance (own try/catch so a bad agenda
         // never blocks the other live-session processing above).
         try {

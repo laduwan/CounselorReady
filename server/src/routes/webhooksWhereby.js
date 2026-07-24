@@ -30,7 +30,8 @@ import {
   onClientLeft,
   onSessionEnded,
   onRecordingFinished,
-  onTranscriptionFinished
+  onTranscriptionFinished,
+  closeDanglingSegments
 } from '../services/sessionProducer.js';
 
 const router = express.Router();
@@ -142,14 +143,7 @@ async function handleEvent(event) {
 
     case 'room.session.ended': {
       const endedAt = new Date(event.createdAt || Date.now());
-      let dirty = false;
-      for (const a of session.attendance) {
-        if (!a.leftAt) {
-          a.leftAt = endedAt;
-          a.durationMin = Math.max(0, Math.round((endedAt - a.joinedAt) / 60000));
-          dirty = true;
-        }
-      }
+      let dirty = closeDanglingSegments(session, endedAt);
       if (session.status === 'live') { session.status = 'completed'; dirty = true; }
       if (dirty) await session.save();
       onSessionEnded(session); // wrap-up deferred to cron tick
