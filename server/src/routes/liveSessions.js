@@ -25,6 +25,7 @@ import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates, issueSeriesCertificates } from '../services/liveSessionCompletionService.js';
 import { triggerNewLiveSessionAnnouncement } from '../services/notificationTriggerService.js';
+import { sendLiveSessionRegistrationConfirmation } from '../services/emailService.js';
 import { parseRunOfShowMarkdown, parseRunOfShowDocx } from '../services/runOfShowParser.js';
 
 const router = express.Router();
@@ -272,6 +273,11 @@ router.post('/:id/register', protect, async (req, res) => {
 
     session.registrants.push({ user: req.user._id, paid: false });
     await session.save();
+    // Fire-and-forget: registration confirmation + .ics calendar invite (learner)
+    // and instructor copy. Email failures must never block/deny a registration.
+    sendLiveSessionRegistrationConfirmation(req.user, session, {
+      seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
+    }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
     res.json({ registered: true });
   } catch (err) {
     console.error('[live] register:', err.message);
