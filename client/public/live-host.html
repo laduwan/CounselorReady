@@ -198,6 +198,11 @@
 
     let session = null;
     let currentSegIdx = 0;
+    // Agenda lives in host-state (public session fetch strips it). Fall back to
+    // session.agenda for any legacy payloads.
+    function agendaData() {
+      return (hostState && Array.isArray(hostState.agenda) && hostState.agenda.length) ? hostState.agenda : (session.agenda || []);
+    }
     let sessionStartedAt = null;
     let attendanceTimer = null;
     let elapsedTimer = null;
@@ -271,9 +276,10 @@
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('console').classList.remove('hidden');
 
-        // Poll attendance count every 10s
+        // Poll attendance count + follow server segment every 10s
         pollAttendance();
-        attendanceTimer = setInterval(pollAttendance, 10000);
+        syncLiveSegment();
+        attendanceTimer = setInterval(() => { pollAttendance(); syncLiveSegment(); }, 10000);
 
         // Wire transport
         document.getElementById('playBtn').addEventListener('click', broadcastPlay);
@@ -288,12 +294,14 @@
     function renderAgenda() {
       const list = document.getElementById('agendaList');
       const noAgenda = document.getElementById('noAgenda');
-      if (!session.agenda || session.agenda.length === 0) {
+      const agn = agendaData();
+      if (!agn || agn.length === 0) {
         noAgenda.style.display = '';
         return;
       }
+      noAgenda.style.display = 'none';
       list.innerHTML = '';
-      session.agenda.forEach((seg, idx) => {
+      agn.forEach((seg, idx) => {
         const row = document.createElement('div');
         row.className = 'seg-row' + (idx === 0 ? ' active' : '');
         row.dataset.idx = idx;
@@ -336,7 +344,7 @@
       document.querySelectorAll('.seg-row').forEach((r, i) => {
         r.classList.toggle('active', i === idx);
       });
-      const seg = session.agenda?.[idx];
+      const seg = agendaData()[idx];
       const nowSummary = document.getElementById('nowSummary');
       if (!seg) { nowSummary.textContent = 'No segment.'; return; }
       nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
@@ -344,7 +352,7 @@
     }
 
     async function showSegmentInClipPanel(idx) {
-      const seg = session.agenda?.[idx];
+      const seg = agendaData()[idx];
       const panel = document.getElementById('clipPanel');
       const player = document.getElementById('hostClipPlayer');
       const seekBar = document.getElementById('seekBar');
@@ -380,10 +388,42 @@
       }, { passive: true });
     }
 
+
+    // Follow the server's current segment (autopilot or another host tab).
+    let lastSyncedSegIdx = null;
+    async function syncLiveSegment() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        const idx = d.liveState?.currentSegment;
+        if (typeof idx === 'number' && idx !== lastSyncedSegIdx) {
+          lastSyncedSegIdx = idx;
+          if (idx !== currentSegIdx) {
+            currentSegIdx = idx;
+            selectSegment(idx);
+            const seg = agendaData()[idx];
+            if (seg?.durationMin) {
+              startSegmentTimer(idx);
+              // Re-anchor the countdown to the server's segment start, not "now"
+              if (d.liveState?.segmentStartedAt) {
+                const startedMs = new Date(d.liveState.segmentStartedAt).getTime();
+                if (Number.isFinite(startedMs)) segTimerEndsAt = startedMs + seg.durationMin * 60000;
+              }
+            } else {
+              stopSegmentTimer();
+            }
+          }
+        }
+      } catch {}
+    }
+
     async function broadcastPlay() {
       const player = document.getElementById('hostClipPlayer');
       await player.play().catch(() => {});
-      const seg = session.agenda?.[currentSegIdx];
+      const seg = agendaData()[currentSegIdx];
       if (seg?.clipIndex == null) return;
       await broadcastPlayback(seg.clipIndex, true, player.currentTime);
     }
@@ -391,7 +431,7 @@
     async function broadcastPause() {
       const player = document.getElementById('hostClipPlayer');
       player.pause();
-      const seg = session.agenda?.[currentSegIdx];
+      const seg = agendaData()[currentSegIdx];
       if (seg?.clipIndex == null) return;
       await broadcastPlayback(seg.clipIndex, false, player.currentTime);
     }
@@ -455,7 +495,8 @@
         renderGlobalCautions();
         renderChecklists();
         seedScratchpad();
-        renderSegmentNotes(currentSegIdx);
+        renderAgenda();
+        selectSegment(currentSegIdx);
         renderCertButton();
         renderAutopilotControl();
       } catch {}
