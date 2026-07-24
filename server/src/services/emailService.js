@@ -15,10 +15,21 @@
 // at the bottom of this file.
 
 import { Resend } from 'resend';
+import { generateICS } from '../utils/generateICS.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = 'CounselorReady <noreply@counselorready.com>';
+
+// Compact, filename-safe date (YYYY-MM-DD) used in the .ics filename and the
+// instructor subject line.
+function fmtDate(value) {
+  try {
+    return new Date(value).toISOString().slice(0, 10);
+  } catch {
+    return 'date';
+  }
+}
 
 /**
  * Format a vendor enum value into a display name
@@ -245,6 +256,140 @@ export async function sendGiftCardCode(user, redemption) {
   }
 }
 
+/**
+ * Send the live-session registration confirmation to the learner — with an
+ * .ics calendar invite attached (RFC 5545, METHOD:REQUEST, 1-hour reminder).
+ *
+ * Then, for live-course sessions only (never supervision), send a separate
+ * "[New Registration]" copy to the instructor (ADMIN_EMAIL) with the same
+ * .ics — the instructor is the ORGANIZER, so they get the calendar block too.
+ *
+ * Fire-and-forget from the register route: email failures must never block or
+ * roll back a registration, so this always resolves (returns success:false on
+ * error) rather than throwing.
+ *
+ * @param {object} user     the registering user (email, profile)
+ * @param {object} session  the LiveSession (title, slug, scheduledStart/End, presenter, sessionType, capacity, registrants)
+ * @param {object} [opts]   { seatsRemaining?: number, roomUrl?: string }
+ */
+export async function sendLiveSessionRegistrationConfirmation(user, session, opts = {}) {
+  try {
+    const firstName = user.profile?.firstName || 'there';
+    const attendeeName =
+      `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
+
+    const baseUrl = process.env.CLIENT_URL || 'https://counselorready.com';
+    const roomUrl = opts.roomUrl || `${baseUrl}/live-room.html?session=${session.slug}`;
+    const organizerName = session.presenter?.name || 'Kejuiana Johnson';
+    // Ke is the organizer; ADMIN_EMAIL is already configured on Render.
+    const organizerEmail = process.env.ADMIN_EMAIL || 'hello@counselorready.com';
+
+    const whenLabel = new Date(session.scheduledStart).toLocaleString('en-US', {
+      dateStyle: 'full',
+      timeStyle: 'short',
+      timeZone: 'America/New_York',
+    }) + ' ET';
+
+    // ── Build the .ics once; both learner and instructor attach the same one. ──
+    const icsString = generateICS({
+      title: session.title,
+      description: `Your CounselorReady live session. Join in your browser at ${roomUrl}`,
+      location: roomUrl,
+      startUTC: session.scheduledStart,
+      endUTC: session.scheduledEnd,
+      uid: `${session._id}-${user._id}@counselorready.com`,
+      organizerEmail,
+      organizerName,
+      attendeeEmail: user.email,
+      attendeeName,
+    });
+    const icsBase64 = Buffer.from(icsString).toString('base64');
+    const icsFilename = `${session.slug}-${fmtDate(session.scheduledStart)}.ics`;
+    const icsAttachment = {
+      filename: icsFilename,
+      content: icsBase64, // Resend requires a base64 STRING, not a Buffer
+      type: 'text/calendar; method=REQUEST',
+      disposition: 'attachment',
+    };
+
+    // ── Learner confirmation ──
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Lato', Arial, sans-serif; line-height: 1.6; color: #2A2620; max-width: 600px; margin: 0 auto; padding: 24px; background: #F8F7F4; }
+          .container { background: #FFFFFF; border-radius: 14px; padding: 32px; }
+          .header { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; color: #6B1D34; margin: 0 0 16px; }
+          .summary { background: rgba(40, 65, 87, 0.06); border-left: 3px solid #284157; padding: 16px 20px; border-radius: 4px; margin: 16px 0; }
+          .cta { display: inline-block; padding: 12px 24px; background: #6B1D34; color: #FFFFFF; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 8px; }
+          .footer { color: #284157; font-size: 13px; margin-top: 24px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1 class="header">You're registered</h1>
+          <p>Hi ${firstName},</p>
+          <p>Your seat is confirmed for this live, NBCC-approved session. A calendar invite (.ics) is attached — open it to add the session to your calendar with a 1-hour reminder.</p>
+          <div class="summary">
+            <p style="margin: 0 0 4px; font-size: 13px; color: #284157;">Session details</p>
+            <p style="margin: 4px 0 0;"><strong>${session.title}</strong></p>
+            <p style="margin: 4px 0 0;"><strong>When:</strong> ${whenLabel}</p>
+            <p style="margin: 4px 0 0;"><strong>Presenter:</strong> ${organizerName}</p>
+          </div>
+          <p>Join live in your browser — no downloads required:</p>
+          <p><a href="${roomUrl}" class="cta">Join the session room</a></p>
+          <div class="footer">
+            <p>— The CounselorReady Team</p>
+            <p style="font-size: 11px; color: #888;">NBCC ACEP Provider #7760. If the button doesn't work, paste this link into your browser: ${roomUrl}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: user.email,
+      subject: `You're registered: ${session.title}`,
+      html,
+      attachments: [icsAttachment],
+    });
+    if (error) {
+      console.error('[EMAIL] live session registration confirmation failed:', error);
+    }
+
+    // ── Instructor copy: live-course sessions only (never supervision) ──
+    if (session.sessionType !== 'supervision') {
+      const adminEmail = process.env.ADMIN_EMAIL;
+      if (adminEmail) {
+        const seatsRemaining = typeof opts.seatsRemaining === 'number'
+          ? opts.seatsRemaining
+          : Math.max(0, (session.capacity || 0) - (session.registrants?.length || 0));
+        const text =
+          `New live session registration.\n\n` +
+          `Attendee: ${attendeeName}\n` +
+          `Email: ${user.email}\n` +
+          `Session: ${session.title}\n` +
+          `When: ${whenLabel}\n` +
+          `Seats remaining after this registration: ${seatsRemaining}\n`;
+        await resend.emails.send({
+          from: FROM_EMAIL,
+          to: adminEmail,
+          subject: `[New Registration] ${attendeeName} — ${session.title} ${fmtDate(session.scheduledStart)}`,
+          text,
+          attachments: [icsAttachment],
+        }).catch(err => console.error('[EMAIL] instructor registration copy failed:', err.message));
+      }
+    }
+
+    return { success: !error, data };
+  } catch (err) {
+    console.error('[EMAIL] sendLiveSessionRegistrationConfirmation error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // Default export for the `import emailService from '...'; const { x } = emailService;`
 // pattern used by routes/rewards.js and routes/adminRewards.js.
 export default {
@@ -252,4 +397,5 @@ export default {
   sendRedemptionConfirmation,
   sendRedemptionAdminAlert,
   sendGiftCardCode,
+  sendLiveSessionRegistrationConfirmation,
 };
