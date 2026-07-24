@@ -193,6 +193,33 @@ const liveSessionSchema = new mongoose.Schema({
     required: { type: Boolean, default: true }
   }],
 
+  // ─── Optional post-session graded assessment ─────────────────────────
+  // When enabled, a passing attempt becomes an ADDITIONAL certificate gate
+  // (on top of attendance + evaluation). Disabled by default → attendance-only
+  // behavior is byte-for-byte unchanged. Options use the platform's canonical
+  // [{text, isCorrect}] shape (never flat [String]) plus a correctAnswer index.
+  assessment: {
+    enabled: { type: Boolean, default: false },
+    passThresholdPct: { type: Number, default: 80, min: 1, max: 100 },
+    maxAttempts: { type: Number, default: 3, min: 1 },
+    questions: [{
+      _id: false,
+      text: { type: String, trim: true },
+      options: [{ _id: false, text: { type: String, trim: true }, isCorrect: { type: Boolean, default: false } }],
+      correctAnswer: { type: Number } // index into options
+    }]
+  },
+
+  // Graded assessment attempts — written server-side only, immutable once stored.
+  assessmentAttempts: [{
+    _id: false,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    answers: [Number],
+    scorePct: Number,
+    passed: Boolean,
+    at: { type: Date, default: Date.now }
+  }],
+
   // Recording — live-course only; hard-locked off for supervision
   recordingEnabled: { type: Boolean, default: false },
   recordings: [recordingSchema],

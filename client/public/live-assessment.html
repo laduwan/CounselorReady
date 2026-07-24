@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Session Assessment - CounselorReady</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <style>
+    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif;}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
+    .card{background:#fff;border:1px solid #EDE9E3;border-radius:12px;}
+    .q-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #EDE9E3;border-radius:8px;margin-bottom:8px;cursor:pointer;transition:background .1s;color:#284157;font-size:14px;}
+    .q-option:hover{background:#F2F7F4;}
+    .q-option input{accent-color:#6B1D34;}
+    .primary-btn{background:#6B1D34;color:#fff;border:none;border-radius:8px;padding:11px 26px;font-size:14px;font-weight:700;cursor:pointer;}
+    .primary-btn:hover{background:#5a1729;}
+    .primary-btn:disabled{background:#EDE9E3;color:#8a8580;cursor:default;}
+    .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;}
+    .pill-pass{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
+    .pill-fail{background:#FEF2F2;color:#991B1B;border:1px solid #FECACA;}
+  </style>
+</head>
+<body>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-3xl mx-auto px-4 py-8">
+    <div id="gate" class="text-center py-20" style="color:#284157;">Loading your assessment…</div>
+
+    <div id="app" class="hidden">
+      <a href="/live-sessions.html" class="text-sm underline" style="color:#4A7C59;">&larr; Back to Live Sessions</a>
+      <h1 id="title" class="font-display text-3xl font-bold mt-1" style="color:#6B1D34;"></h1>
+      <p id="sub" class="text-sm mt-1 mb-5" style="color:#284157;"></p>
+
+      <div id="resultCard" class="card p-5 mb-5 hidden"></div>
+
+      <form id="quizForm" class="card p-5">
+        <div id="questions"></div>
+        <div id="formError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
+        <button type="submit" id="submitBtn" class="primary-btn">Submit Assessment</button>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    const slug = new URLSearchParams(window.location.search).get('session');
+
+    let data = null; // GET /assessment response
+
+    function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+    async function init() {
+      if (!slug) return gateMsg('Missing session. <a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Browse live sessions</a>.');
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/assessment`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        data = await res.json();
+        if (!res.ok) return gateMsg(`${data.error || 'Assessment unavailable.'}<br><a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Back to live sessions</a>`);
+        render();
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+      } catch {
+        gateMsg('Could not load the assessment. Please refresh.');
+      }
+    }
+
+    function render() {
+      document.getElementById('title').textContent = data.title || 'Session Assessment';
+      document.getElementById('sub').textContent =
+        `Passing score: ${data.passThresholdPct}% · Attempts used: ${data.attemptsUsed}/${data.maxAttempts}`;
+
+      const questions = data.questions || [];
+      document.getElementById('questions').innerHTML = questions.map((q, i) => `
+        <div style="margin-bottom:18px;">
+          <p style="font-size:15px;font-weight:600;color:#284157;margin-bottom:8px;">${i + 1}. ${esc(q.text)}</p>
+          ${(q.options || []).map((o, oi) => `
+            <label class="q-option">
+              <input type="radio" name="q_${i}" value="${oi}"> ${esc(o.text)}
+            </label>`).join('')}
+        </div>`).join('');
+
+      // Already passed, or no attempts left → lock the form and show status.
+      if (data.passed) {
+        showResult(data.lastScorePct, true, data.attemptsRemaining, 'You have already passed this assessment.');
+        lockForm();
+      } else if (data.attemptsRemaining <= 0) {
+        showResult(data.lastScorePct, false, 0, 'You have used all of your attempts.');
+        lockForm();
+      }
+    }
+
+    function lockForm() {
+      document.getElementById('quizForm').style.display = 'none';
+    }
+
+    function showResult(scorePct, passed, attemptsRemaining, note) {
+      const card = document.getElementById('resultCard');
+      card.classList.remove('hidden');
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div>
+            <div class="font-display" style="font-size:22px;font-weight:700;color:#6B1D34;">Score: ${scorePct == null ? '—' : scorePct + '%'}</div>
+            <div style="font-size:13px;color:#57534e;margin-top:2px;">${esc(note || '')}</div>
+          </div>
+          <span class="pill ${passed ? 'pill-pass' : 'pill-fail'}">${passed ? 'PASSED' : 'NOT PASSED'}</span>
+        </div>
+        <p style="font-size:13px;color:#284157;margin-top:10px;">Attempts remaining: <strong>${attemptsRemaining}</strong>${passed ? ' · Your certificate will be issued once all requirements are met.' : ''}</p>`;
+    }
+
+    document.getElementById('quizForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById('formError');
+      errEl.classList.add('hidden');
+      const questions = data.questions || [];
+      const answers = questions.map((q, i) => {
+        const checked = document.querySelector(`input[name="q_${i}"]:checked`);
+        return checked ? parseInt(checked.value, 10) : -1;
+      });
+      if (answers.some(a => a < 0)) {
+        errEl.textContent = 'Please answer every question before submitting.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true; btn.textContent = 'Submitting…';
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/assessment`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ answers })
+        });
+        const r = await res.json();
+        if (!res.ok) {
+          errEl.textContent = r.error || 'Submission failed.';
+          errEl.classList.remove('hidden');
+          btn.disabled = false; btn.textContent = 'Submit Assessment';
+          if (r.attemptsRemaining === 0) lockForm();
+          return;
+        }
+        const note = r.passed
+          ? 'Nicely done — you met the passing score.'
+          : (r.attemptsRemaining > 0 ? 'You can try again.' : 'You have used all of your attempts.');
+        showResult(r.scorePct, r.passed, r.attemptsRemaining, note);
+        if (r.passed || r.attemptsRemaining <= 0) {
+          lockForm();
+        } else {
+          btn.disabled = false; btn.textContent = 'Try Again';
+          document.getElementById('sub').textContent =
+            `Passing score: ${data.passThresholdPct}% · Attempts used: ${r.attemptsUsed}/${data.maxAttempts}`;
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+        btn.disabled = false; btn.textContent = 'Submit Assessment';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

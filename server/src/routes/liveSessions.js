@@ -410,6 +410,104 @@ router.post('/:id/evaluation', protect, async (req, res) => {
   }
 });
 
+// GET /api/live-sessions/:id/assessment — registrant view of the graded quiz.
+// Only when enabled AND the session is completed. Questions are returned WITHOUT
+// isCorrect/correctAnswer (grading is server-side only).
+router.get('/:id/assessment', protect, async (req, res) => {
+  try {
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!session.assessment?.enabled) return res.status(404).json({ error: 'No assessment for this session.' });
+
+    const isAdmin = req.user.role === 'admin';
+    if (!isAdmin && !session.isRegistered(req.user._id)) {
+      return res.status(403).json({ error: 'You are not registered for this session.' });
+    }
+    if (session.status !== 'completed') {
+      return res.status(400).json({ error: 'The assessment opens after the session ends.' });
+    }
+
+    const attemptsUsed = (session.assessmentAttempts || []).filter(
+      a => a.userId && a.userId.toString() === req.user._id.toString()
+    );
+    const best = attemptsUsed.reduce((b, a) => (a.scorePct > (b?.scorePct ?? -1) ? a : b), null);
+
+    res.json({
+      title: session.title,
+      passThresholdPct: session.assessment.passThresholdPct ?? 80,
+      maxAttempts: session.assessment.maxAttempts ?? 3,
+      attemptsUsed: attemptsUsed.length,
+      attemptsRemaining: Math.max(0, (session.assessment.maxAttempts ?? 3) - attemptsUsed.length),
+      passed: !!best?.passed,
+      lastScorePct: best ? best.scorePct : null,
+      // Never leak isCorrect/correctAnswer to a non-admin exam-taker.
+      questions: (session.assessment.questions || []).map(q => ({
+        text: q.text,
+        options: (q.options || []).map(o => ({ text: o.text }))
+      }))
+    });
+  } catch (err) {
+    console.error('[live] get assessment:', err.message);
+    res.status(500).json({ error: 'Failed to load assessment' });
+  }
+});
+
+// POST /api/live-sessions/:id/assessment — grade server-side, store an immutable
+// attempt, reject after maxAttempts. Body: { answers: [optionIndex per question] }.
+router.post('/:id/assessment', protect, async (req, res) => {
+  try {
+    const { answers } = req.body;
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!session.assessment?.enabled) return res.status(404).json({ error: 'No assessment for this session.' });
+    if (!session.isRegistered(req.user._id)) {
+      return res.status(403).json({ error: 'You are not registered for this session.' });
+    }
+    if (session.status !== 'completed') {
+      return res.status(400).json({ error: 'The assessment opens after the session ends.' });
+    }
+    if (!Array.isArray(answers)) {
+      return res.status(400).json({ error: 'answers must be an array of option indexes.' });
+    }
+
+    const maxAttempts = session.assessment.maxAttempts ?? 3;
+    const priorAttempts = (session.assessmentAttempts || []).filter(
+      a => a.userId && a.userId.toString() === req.user._id.toString()
+    );
+    if (priorAttempts.length >= maxAttempts) {
+      return res.status(400).json({ error: 'You have used all of your attempts.', attemptsRemaining: 0 });
+    }
+
+    // Grade server-side against correctAnswer (falls back to the isCorrect flag).
+    const questions = session.assessment.questions || [];
+    let correct = 0;
+    questions.forEach((q, i) => {
+      let correctIdx = (typeof q.correctAnswer === 'number') ? q.correctAnswer : -1;
+      if (correctIdx < 0) correctIdx = (q.options || []).findIndex(o => o.isCorrect);
+      if (answers[i] === correctIdx) correct++;
+    });
+    const scorePct = questions.length ? Math.round((correct / questions.length) * 100) : 0;
+    const passed = scorePct >= (session.assessment.passThresholdPct ?? 80);
+
+    // Atomic immutable append — the attempt can never be edited once stored.
+    await LiveSession.updateOne(
+      { _id: session._id },
+      { $push: { assessmentAttempts: { userId: req.user._id, answers, scorePct, passed, at: new Date() } } }
+    );
+
+    res.json({
+      scorePct,
+      passed,
+      passThresholdPct: session.assessment.passThresholdPct ?? 80,
+      attemptsUsed: priorAttempts.length + 1,
+      attemptsRemaining: Math.max(0, maxAttempts - (priorAttempts.length + 1))
+    });
+  } catch (err) {
+    console.error('[live] submit assessment:', err.message);
+    res.status(500).json({ error: 'Failed to submit assessment' });
+  }
+});
+
 // GET /api/live-sessions/:id/handouts/:handoutId — gated handout URL
 router.get('/:id/handouts/:handoutId', protect, async (req, res) => {
   try {
@@ -564,8 +662,11 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
     // Never allow client payloads to overwrite room URLs or attendance.
     // `autopilot` is pulled out and MERGED (not Object.assign-replaced) so a
     // toggle payload like { autopilot: { enabled: true } } doesn't wipe
-    // startedAt/pausedAt written by the tick.
-    const { whereby, attendance, registrants, recordings, autopilot, ...safe } = req.body;
+    // startedAt/pausedAt written by the tick. `assessmentAttempts` is graded
+    // server-side and immutable — never writable from a client PATCH. The
+    // `assessment` CONFIG (enable/threshold/maxAttempts/questions) DOES flow
+    // through here so the admin question builder can save via PATCH.
+    const { whereby, attendance, registrants, recordings, autopilot, assessmentAttempts, ...safe } = req.body;
     Object.assign(session, safe);
 
     if (autopilot && typeof autopilot === 'object') {

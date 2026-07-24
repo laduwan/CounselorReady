@@ -453,6 +453,48 @@
     </div>
   </div>
 
+  <!-- ── Assessment Modal ── -->
+  <div id="assessmentModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Post-Session Assessment</h2>
+        <button onclick="closeAssessmentModal()" class="text-forest-400 hover:text-burgundy-700"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="asmt-enabled" class="w-4 h-4 accent-burgundy-700">
+          <span class="text-sm font-medium text-burgundy-800">Enable assessment (a passing score is required for the certificate)</span>
+        </label>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Passing score %</label>
+            <input type="number" id="asmt-threshold" min="1" max="100" value="80"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Max attempts</label>
+            <input type="number" id="asmt-maxAttempts" min="1" value="3"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display text-lg font-semibold text-burgundy-900">Questions</h3>
+            <button type="button" onclick="asmtAddQuestion()" class="px-3 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 flex items-center gap-1">
+              <i class="fas fa-plus text-xs"></i> Add question
+            </button>
+          </div>
+          <div id="asmtQuestions"></div>
+        </div>
+        <div id="asmtError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+        <button onclick="closeAssessmentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50">Cancel</button>
+        <button onclick="saveAssessment()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save assessment</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Run of Show Modal (clips + agenda) ── -->
   <div id="runOfShowModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
@@ -723,6 +765,10 @@
               <button onclick="hndOpenModal('${s._id}')"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-file-arrow-up text-xs"></i> Handouts${(s.handouts && s.handouts.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.handouts.length}</span>` : ''}
+              </button>
+              <button onclick="openAssessmentModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-clipboard-check text-xs"></i> Assessment${(s.assessment && s.assessment.enabled) ? ` <span class="px-1.5 rounded-full" style="background:#DDE3FF;color:#3730A3;">on</span>` : ''}
               </button>` : ''}
               ${s.status === 'completed' ? `
               <button onclick="issueCerts('${s._id}', this)"
@@ -745,6 +791,107 @@
           </td>
         </tr>`;
       }).join('');
+    }
+
+    /* ── Assessment builder modal ── */
+    let asmtSessionId = null;
+    let asmtQuestions = []; // [{ text, options: ['','','',''], correctAnswer: 0 }]
+
+    function openAssessmentModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      asmtSessionId = id;
+      const a = s.assessment || {};
+      document.getElementById('asmt-enabled').checked = !!a.enabled;
+      document.getElementById('asmt-threshold').value = a.passThresholdPct ?? 80;
+      document.getElementById('asmt-maxAttempts').value = a.maxAttempts ?? 3;
+      document.getElementById('asmtError').classList.add('hidden');
+      asmtQuestions = (a.questions || []).map(q => {
+        const opts = (q.options || []);
+        let correct = (typeof q.correctAnswer === 'number') ? q.correctAnswer : opts.findIndex(o => o.isCorrect);
+        if (correct < 0) correct = 0;
+        return { text: q.text || '', options: [0,1,2,3].map(i => opts[i] ? opts[i].text : ''), correctAnswer: correct };
+      });
+      renderAsmtQuestions();
+      document.getElementById('assessmentModal').style.display = 'flex';
+    }
+
+    function closeAssessmentModal() { document.getElementById('assessmentModal').style.display = 'none'; }
+
+    function renderAsmtQuestions() {
+      const box = document.getElementById('asmtQuestions');
+      box.innerHTML = asmtQuestions.map((q, qi) => `
+        <div class="border border-gray-200 rounded-lg p-3 mb-3 bg-stone-50">
+          <div class="flex items-start gap-2 mb-2">
+            <span class="text-xs font-bold text-forest-600 mt-2">Q${qi + 1}</span>
+            <input type="text" value="${escHtml(q.text)}" oninput="asmtSetText(${qi}, this.value)" placeholder="Question text"
+              class="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm">
+            <button type="button" onclick="asmtRemoveQuestion(${qi})" title="Delete question" class="text-forest-400 hover:text-red-600 px-1 mt-1"><i class="fas fa-times"></i></button>
+          </div>
+          ${[0,1,2,3].map(oi => `
+            <label class="flex items-center gap-2 mb-1">
+              <input type="radio" name="asmt_correct_${qi}" ${q.correctAnswer === oi ? 'checked' : ''} onchange="asmtSetCorrect(${qi}, ${oi})" style="accent-color:#6B1D34;">
+              <input type="text" value="${escHtml(q.options[oi] || '')}" oninput="asmtSetOption(${qi}, ${oi}, this.value)" placeholder="Option ${String.fromCharCode(65 + oi)}"
+                class="flex-1 border border-gray-300 rounded-lg px-2 py-1 text-sm">
+            </label>`).join('')}
+          <p class="text-forest-500" style="font-size:11px;margin-top:4px;">Select the radio next to the correct option.</p>
+        </div>`).join('') || '<p class="text-sm text-forest-500 mb-3">No questions yet — add one above.</p>';
+    }
+
+    function asmtSetText(qi, v) { if (asmtQuestions[qi]) asmtQuestions[qi].text = v; }
+    function asmtSetOption(qi, oi, v) { if (asmtQuestions[qi]) asmtQuestions[qi].options[oi] = v; }
+    function asmtSetCorrect(qi, oi) { if (asmtQuestions[qi]) asmtQuestions[qi].correctAnswer = oi; }
+    function asmtRemoveQuestion(qi) { asmtQuestions.splice(qi, 1); renderAsmtQuestions(); }
+    function asmtAddQuestion() { asmtQuestions.push({ text: '', options: ['', '', '', ''], correctAnswer: 0 }); renderAsmtQuestions(); }
+
+    async function saveAssessment() {
+      const errEl = document.getElementById('asmtError');
+      errEl.classList.add('hidden');
+      const enabled = document.getElementById('asmt-enabled').checked;
+
+      // Canonical shape: options [{text, isCorrect}] + correctAnswer index.
+      const questions = asmtQuestions
+        .filter(q => (q.text || '').trim())
+        .map(q => {
+          const opts = q.options
+            .map((t, i) => ({ text: (t || '').trim(), isCorrect: i === q.correctAnswer }))
+            .filter(o => o.text);
+          let correctAnswer = opts.findIndex(o => o.isCorrect);
+          if (correctAnswer < 0) correctAnswer = 0;
+          return { text: q.text.trim(), options: opts, correctAnswer };
+        })
+        .filter(q => q.options.length >= 2);
+
+      if (enabled && questions.length === 0) {
+        errEl.textContent = 'Add at least one question (with 2+ options) before enabling the assessment.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const payload = { assessment: {
+        enabled,
+        passThresholdPct: parseInt(document.getElementById('asmt-threshold').value, 10) || 80,
+        maxAttempts: parseInt(document.getElementById('asmt-maxAttempts').value, 10) || 3,
+        questions
+      }};
+
+      try {
+        const r = await fetch(`${API}/${asmtSessionId}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (!r.ok) { errEl.textContent = d.error || 'Save failed.'; errEl.classList.remove('hidden'); return; }
+        const s = sessions.find(x => x._id === asmtSessionId);
+        if (s) s.assessment = payload.assessment;
+        showToast('Assessment saved.', '#284157');
+        closeAssessmentModal();
+        renderTable();
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     /* ── Attendance view (inline panel) ── */
