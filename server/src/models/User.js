@@ -99,7 +99,9 @@ const userSchema = new mongoose.Schema({
     },
     plan: {
       type: String,
-      enum: ['free', 'starter', 'professional', 'vip', 'annual_vip', 'lifetime'],
+      // 'monthly'/'annual' are the new membership plans; legacy values retained
+      // (removing enum values invalidates existing subscriber documents).
+      enum: ['free', 'starter', 'professional', 'vip', 'annual_vip', 'lifetime', 'monthly', 'annual'],
       default: 'free'
     },
     stripeCustomerId: { type: String },
@@ -295,6 +297,14 @@ const userSchema = new mongoose.Schema({
   // Track membership tenure for loyalty benefits
   memberSince: { type: Date },
   voluntaryCancelDate: { type: Date }, // Track if they voluntarily canceled
+
+  // ── New membership live-CE allowances ──
+  // Monthly plan: 1 live session per calendar month (≤2 CE hrs).
+  liveSessionUsedThisMonth: { type: Boolean, default: false },
+  liveSessionMonthResetAt: { type: Date },   // first day of next calendar month
+  // Annual / VIP plan: 15 live CE hours per membership year.
+  liveHoursUsedThisYear: { type: Number, default: 0 },
+  liveHoursYearResetAt: { type: Date },      // memberSince + 1 year, renews annually
   
   // Admin notification preferences (only used for admin users)
   adminNotifPrefs: {
@@ -749,6 +759,75 @@ userSchema.methods.bookConsultation = function(topic) {
 // Check if user is VIP tier
 userSchema.methods.isVip = function() {
   return ['vip', 'annual_vip', 'lifetime'].includes(this.subscription.plan);
+};
+
+// ── New membership plan helpers ──
+userSchema.methods.isMonthly = function() {
+  return this.subscription?.plan === 'monthly' && this.subscription?.status === 'active';
+};
+userSchema.methods.isAnnual = function() {
+  return this.subscription?.plan === 'annual' && this.subscription?.status === 'active';
+};
+
+// True when this user is the single grandfathered legacy Starter subscriber
+// (env-driven; never hardcode an email address).
+userSchema.methods.isGrandfatheredStarter = function() {
+  const target = process.env.GRANDFATHERED_STARTER_EMAIL;
+  return !!target
+    && this.subscription?.plan === 'starter'
+    && (this.email || '').toLowerCase() === target.toLowerCase();
+};
+
+// Live-session access decision under the new membership model.
+// Returns { allowed, plan, reason, windowElapsed }. `plan` is null for
+// non-members, who fall through to the existing per-session/paid flow.
+// Annual/VIP: 15 live CE hrs/yr. Monthly: 1 session/month, ≤2 CE hrs.
+// Counters lazy-reset when their window has elapsed (no cron required).
+userSchema.methods.canAccessLiveSession = function(session) {
+  const hours = (session && session.ceuHours) || 0;
+  const now = Date.now();
+  const status = this.subscription?.status;
+  const activeVip = this.isVip() && ['active', 'lifetime'].includes(status);
+
+  if (activeVip || this.isAnnual()) {
+    const windowElapsed = !!this.liveHoursYearResetAt && now >= new Date(this.liveHoursYearResetAt).getTime();
+    const usedHours = windowElapsed ? 0 : (this.liveHoursUsedThisYear || 0);
+    const plan = activeVip ? 'vip' : 'annual';
+    if (usedHours + hours > 15) {
+      return { allowed: false, plan,
+        reason: `You've used ${usedHours} of your 15 annual live CE hours. Register per-session or upgrade to VIP.` };
+    }
+    return { allowed: true, plan, windowElapsed };
+  }
+
+  if (this.isMonthly()) {
+    const windowElapsed = !!this.liveSessionMonthResetAt && now >= new Date(this.liveSessionMonthResetAt).getTime();
+    const usedThisMonth = windowElapsed ? false : !!this.liveSessionUsedThisMonth;
+    if (hours > 2) {
+      return { allowed: false, plan: 'monthly',
+        reason: `This session is ${hours} hours. Monthly members can attend sessions up to 2 CE hours. Upgrade to Annual for $249/year to access this session.` };
+    }
+    if (usedThisMonth) {
+      const when = this.liveSessionMonthResetAt ? new Date(this.liveSessionMonthResetAt).toLocaleDateString() : 'next month';
+      return { allowed: false, plan: 'monthly',
+        reason: `You've used your live session for this month. Your next session unlocks on ${when}.` };
+    }
+    return { allowed: true, plan: 'monthly', windowElapsed };
+  }
+
+  return { allowed: false, plan: null,
+    reason: 'Live sessions require an active membership or per-session purchase.' };
+};
+
+// Async (self-paced) course access under the new membership model.
+// VIP/Annual: full catalog. Monthly & grandfathered Starter: courses ≤4 CE hrs.
+// Everyone else: false (they route through the existing free/paid/purchase gate).
+userSchema.methods.canAccessAsyncCourse = function(course) {
+  const hrs = (course && (course.ceHours ?? course.ceuHours)) || 0;
+  if (this.isVip() || this.isAnnual()) return true;
+  if (this.isMonthly()) return hrs <= 4;
+  if (this.isGrandfatheredStarter()) return hrs <= 4;
+  return false;
 };
 
 // Check if trial expired

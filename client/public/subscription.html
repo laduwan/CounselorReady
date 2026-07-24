@@ -205,6 +205,55 @@
           </button>
         </div>
 
+        <!-- Monthly Plan (new membership) -->
+        <div class="bg-white rounded-xl border border-hunter-300 shadow-sm p-6">
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Monthly</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$35</span>
+            <span class="text-hunter-600">/month</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Full async catalog</strong> (4 hr courses and under)
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> 1 live session per month (up to 2 CE hours)
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Cancel anytime
+            </li>
+          </ul>
+          <button onclick="selectPlan('monthly')" class="w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold" id="monthlyBtn">
+            Choose Monthly
+          </button>
+        </div>
+
+        <!-- Annual Plan (new membership) -->
+        <div class="bg-gradient-to-b from-honey-50 to-white rounded-xl border-2 border-honey-400 shadow-lg p-6 relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-honey-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+            BEST VALUE
+          </div>
+          <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Annual</h3>
+          <div class="mb-4">
+            <span class="text-3xl font-bold text-hunter-900">$249</span>
+            <span class="text-hunter-600">/year</span>
+          </div>
+          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Full async catalog</strong>
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> Up to 15 synchronous CE hours/year
+            </li>
+            <li class="flex items-center gap-2">
+              <span class="text-green-500">✓</span> <strong>Best value — save $171 vs monthly</strong>
+            </li>
+          </ul>
+          <button onclick="selectPlan('annual')" class="w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold" id="annualBtn">
+            Choose Annual
+          </button>
+        </div>
+
       </div>
       <div class="mt-4 flex justify-center">
         <button onclick="selectPlan('test1')" class="w-full py-2 mt-3 bg-gray-700 hover:bg-gray-800 text-white rounded-lg transition-colors font-semibold" id="test1Btn">Test $1 Checkout</button>
@@ -336,6 +385,10 @@
       starter: { name: 'Starter', price: 19.99, interval: 'month', priceId: 'price_1TiMorBV8IIVTFOIosEIoMCn', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       professional: { name: 'Professional', price: 29.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIoxYzFOcd', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIxdJ5FQ0q', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 },
+      // New membership plans — price IDs live server-side (STRIPE_MONTHLY/ANNUAL_PRICE_ID),
+      // so these route through hosted Checkout by plan name (see selectPlan).
+      monthly: { name: 'Monthly', price: 35, interval: 'month', priceId: null, checkout: true },
+      annual: { name: 'Annual', price: 249, interval: 'year', priceId: null, checkout: true },
       test1: { name: 'Test $1', price: 1, interval: 'month', priceId: 'price_1TiMotBV8IIVTFOIaDFi6ca6', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 }
     };
 
@@ -574,9 +627,31 @@
         cancelSubscription();
         return;
       }
-      
+
+      // New membership plans use hosted Checkout (their price IDs are server-side).
+      if (PLANS[plan] && PLANS[plan].checkout) {
+        startHostedCheckout(plan);
+        return;
+      }
+
       selectedPlan = plan;
       openStripeModal();
+    }
+
+    async function startHostedCheckout(plan) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_URL}/api/payments/create-checkout-session`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.url) { window.location.href = data.url; return; }
+        alert(data.error || 'Could not start checkout. Please try again.');
+      } catch (e) {
+        alert('Could not start checkout. Please try again.');
+      }
     }
 
     function openStripeModal() {

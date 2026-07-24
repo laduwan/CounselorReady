@@ -36,7 +36,12 @@ const stripe = process.env.STRIPE_SECRET_KEY
 const PRICE_IDS = {
   starter: process.env.STRIPE_PRICE_STARTER || 'price_starter_monthly',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_monthly',
-  vip: process.env.STRIPE_PRICE_VIP || 'price_vip_monthly'
+  vip: process.env.STRIPE_PRICE_VIP || 'price_vip_monthly',
+  // New membership plans (additive — legacy plans above are unchanged). Ke must
+  // create these two recurring prices in the Stripe Dashboard and set the env
+  // vars on Render: STRIPE_MONTHLY_PRICE_ID ($35/mo), STRIPE_ANNUAL_PRICE_ID ($249/yr).
+  monthly: process.env.STRIPE_MONTHLY_PRICE_ID,
+  annual: process.env.STRIPE_ANNUAL_PRICE_ID
 };
 
 const PLAN_DETAILS = {
@@ -45,6 +50,39 @@ const PLAN_DETAILS = {
   professional: { name: 'Professional', price: 2999, maxCEHours: 999, maxStates: 1 },
   vip: { name: 'VIP', price: 4999, maxCEHours: 999, maxStates: 999 }
 };
+
+// New membership plan metadata (additive). Monthly: full async catalog up to
+// asyncMaxHours CE, plus 1 live session/month up to liveHoursPerSession CE.
+// Annual: full catalog (asyncMaxHours: null = no cap) + liveHoursPerYear live CE.
+const NEW_PLAN_DETAILS = {
+  monthly: { name: 'Monthly', price: 3500, interval: 'month',
+    liveHoursPerSession: 2, liveSessionsPerMonth: 1, asyncMaxHours: 4 },
+  annual:  { name: 'Annual',  price: 24900, interval: 'year',
+    liveHoursPerYear: 15, asyncMaxHours: null }
+};
+
+// The single legacy Starter subscriber we grandfather into the new async cap.
+// Env-driven — never hardcode an email address. Read here so it is documented
+// with the other billing config; the access rule itself lives in User.js.
+const GRANDFATHERED_STARTER_EMAIL = process.env.GRANDFATHERED_STARTER_EMAIL || null;
+
+// First day of next calendar month — when a Monthly member's live-session
+// allowance rolls over.
+function firstDayOfNextMonth(from = new Date()) {
+  return new Date(from.getFullYear(), from.getMonth() + 1, 1);
+}
+
+// Membership counters to (re)initialise when a monthly/annual subscription
+// activates. Returns {} for legacy plans so their updates are untouched.
+function memberInitFields(plan) {
+  if (plan === 'monthly') {
+    return { liveSessionUsedThisMonth: false, liveSessionMonthResetAt: firstDayOfNextMonth() };
+  }
+  if (plan === 'annual') {
+    return { liveHoursUsedThisYear: 0, liveHoursYearResetAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) };
+  }
+  return {};
+}
 
 // ============================================
 // SUBSCRIPTION ROUTES
@@ -312,7 +350,9 @@ router.post('/create-subscription', protect, async (req, res) => {
         'subscription.status': 'active',
         'subscription.priceId': priceId,
         'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
-        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
+        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000),
+        // Initialise membership live-allowance counters for monthly/annual (no-op otherwise).
+        ...memberInitFields(plan)
       });
       
       return res.json({
@@ -883,7 +923,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': 'active',
             'subscription.currentPeriodStart': new Date(),
             'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            'subscription.monthlyAmountCents': session.amount_total || 0
+            'subscription.monthlyAmountCents': session.amount_total || 0,
+            // Monthly → open this month's live-session slot; Annual → open a fresh
+            // 12-month live-CE-hour window. {} for legacy plans (no-op).
+            ...memberInitFields(resolvedPlan)
           });
           const subscriber = await User.findById(userId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
