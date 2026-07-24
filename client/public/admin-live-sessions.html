@@ -654,6 +654,105 @@
     </div>
   </div>
 
+  <!-- ── Bulk Content Loader Modal (one modal loads everything for a session) ── -->
+  <div id="loadContentModal" class="hidden fixed inset-0 z-[260] bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto" style="border:1px solid #284157;">
+      <div class="flex items-center justify-between px-6 py-4" style="border-bottom:1px solid #284157;">
+        <div>
+          <h2 class="font-display text-2xl font-semibold" style="color:#284157;">Load Content</h2>
+          <p id="lcSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeLoadContentModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <div class="px-6 py-5 space-y-6" style="background:#F8F7F4;">
+
+        <!-- SECTION 1: GUIDE -->
+        <section>
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">1 · Facilitator Guide</h3>
+          <textarea id="lcGuide" rows="6" oninput="lcGuideCount()"
+            placeholder="# Hour 1&#10;## Opening (10 min)&#10;Welcome and objectives..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1"><span id="lcGuideChars">0</span> characters · commits automatically on Load All (replaces the current agenda). Leave blank to keep the existing agenda.</p>
+        </section>
+
+        <!-- SECTION 2 & 3: SLIDES + HANDOUTS -->
+        <section>
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">2 · Slides &amp; Handouts</h3>
+          <div id="lcDropZone" class="border-2 border-dashed rounded-xl px-4 py-8 text-center cursor-pointer transition-colors"
+            style="border-color:#284157;background:#fff;"
+            onclick="document.getElementById('lcFileInput').click()">
+            <i class="fas fa-cloud-arrow-up text-2xl mb-2" style="color:#284157;"></i>
+            <p class="text-sm text-forest-700">Drop files here or click to browse</p>
+            <p class="text-xs text-forest-500 mt-1">PNG/JPG sort to <strong>Slides</strong> · PDF/DOCX/PPTX/XLSX sort to <strong>Handouts</strong></p>
+            <input id="lcFileInput" type="file" multiple accept=".png,.jpg,.jpeg,.pdf,.docx,.pptx,.xlsx" style="display:none;" onchange="lcHandleFiles(this.files); this.value='';">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <p class="text-xs font-semibold mb-1" style="color:#284157;"><i class="fas fa-image"></i> Slides (<span id="lcSlideCount">0</span>)</p>
+              <div id="lcSlideList" data-kind="slide"
+                ondragover="lcListDragOver(event)" ondragleave="lcListDragLeave(event)" ondrop="lcListDrop(event,'slide')"
+                class="min-h-[64px] border border-gray-200 rounded-lg p-2 space-y-1 bg-white"></div>
+            </div>
+            <div>
+              <p class="text-xs font-semibold mb-1" style="color:#284157;"><i class="fas fa-file"></i> Handouts (<span id="lcHandoutCount">0</span>)</p>
+              <div id="lcHandoutList" data-kind="handout"
+                ondragover="lcListDragOver(event)" ondragleave="lcListDragLeave(event)" ondrop="lcListDrop(event,'handout')"
+                class="min-h-[64px] border border-gray-200 rounded-lg p-2 space-y-1 bg-white"></div>
+            </div>
+          </div>
+          <p class="text-xs text-forest-500 mt-2">Drag a file between the two lists to correct its sort.</p>
+
+          <!-- URL INPUT -->
+          <div class="mt-4">
+            <label class="block text-xs font-semibold mb-1" style="color:#284157;">Or paste URLs (one per line)</label>
+            <textarea id="lcUrls" rows="3" placeholder="https://res.cloudinary.com/.../slide1.png&#10;https://drive.google.com/.../handout.pdf"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+            <p class="text-xs text-forest-500 mt-1">Fetched server-side (Cloudinary/Drive/output links), classified and routed the same way — no downloading or re-uploading.</p>
+          </div>
+        </section>
+
+        <!-- AI ROUTING (slides only) -->
+        <section id="lcRoutingSection" class="hidden">
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">AI Slide Routing</h3>
+          <p class="text-xs text-forest-500 mb-2">High-confidence matches route automatically. Confirm the amber ones and pick a segment for any unmatched file, then Load All.</p>
+          <div id="lcRoutingList" class="space-y-2"></div>
+        </section>
+
+        <!-- PROGRESS -->
+        <section id="lcProgressSection" class="hidden space-y-3">
+          <div>
+            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Guide</span><span id="lcGuidePct">—</span></div>
+            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcGuideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Slides</span><span id="lcSlidePct">—</span></div>
+            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcSlideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Handouts</span><span id="lcHandoutPct">—</span></div>
+            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcHandoutBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+          </div>
+        </section>
+
+        <!-- SUMMARY + ERRORS -->
+        <div id="lcSummary" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
+        <div id="lcErrors" class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 whitespace-pre-wrap"></div>
+
+        <!-- BUTTONS -->
+        <div class="flex items-center justify-end gap-3 pt-2" style="border-top:1px solid #e5e7eb;">
+          <button type="button" onclick="closeLoadContentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-white transition-colors">Close</button>
+          <button id="lcLoadAllBtn" type="button" onclick="lcLoadAll()" class="px-5 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 transition-colors" style="background:#284157;">
+            <i class="fas fa-bolt text-xs"></i> <span id="lcLoadAllLabel">Load All</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const API = API_URL + '/api/live-sessions';
@@ -758,6 +857,10 @@
                 <i class="fas fa-mug-hot text-xs"></i> Breaks${(s.breaks && s.breaks.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.breaks.length}</span>` : ''}
               </button>
               ${s.sessionType === 'live-course' ? `
+              <button onclick="openLoadContentModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1" style="background:#284157;color:#fff;">
+                <i class="fas fa-cloud-arrow-up text-xs"></i> Load Content
+              </button>
               <button onclick="openRunOfShowModal('${s._id}')"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-list-ol text-xs"></i> Run of Show
@@ -2299,6 +2402,401 @@
         showToast(e.message, '#c0392b');
       }
     }
+
+    /* ═════════════════ Bulk Content Loader ═════════════════ */
+    let lcSessionId = null;
+    let lcSession = null;
+    let lcFiles = [];       // [{ id, file, name, size, kind: 'slide'|'handout' }]
+    let lcFileSeq = 0;
+    let lcRouting = {};     // filename -> { segmentIndex, confidence, reason, chosen }
+    let lcPrepared = false; // AI routing prepared and awaiting confirm
+    let lcGuideAgenda = null; // parsed agenda from the pasted guide (segment titles for routing)
+
+    // Extension → which list a dropped file self-sorts into.
+    const LC_SLIDE_EXT = { png: true, jpg: true, jpeg: true };
+    const LC_HANDOUT_EXT = { pdf: true, docx: true, pptx: true, xlsx: true };
+
+    function lcClassify(name) {
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      if (LC_SLIDE_EXT[ext]) return 'slide';
+      if (LC_HANDOUT_EXT[ext]) return 'handout';
+      return null;
+    }
+
+    function lcHumanSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function openLoadContentModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) { showToast('Session not found.', '#c0392b'); return; }
+      if (s.sessionType === 'supervision') {
+        showToast('Bulk content load is not available on supervision sessions.', '#c0392b');
+        return;
+      }
+      lcSessionId = id;
+      lcSession = s;
+      lcFiles = [];
+      lcRouting = {};
+      lcPrepared = false;
+      lcGuideAgenda = null;
+      document.getElementById('lcSubtitle').textContent =
+        s.title + ' — one modal loads the guide, slides (AI-routed to segments) and handouts.';
+      document.getElementById('lcGuide').value = '';
+      document.getElementById('lcUrls').value = '';
+      document.getElementById('lcGuideChars').textContent = '0';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      document.getElementById('lcProgressSection').classList.add('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcErrors').classList.add('hidden');
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcLoadAllBtn').disabled = false;
+      lcResetBars();
+      lcRenderLists();
+      document.getElementById('loadContentModal').classList.remove('hidden');
+    }
+
+    function closeLoadContentModal() {
+      document.getElementById('loadContentModal').classList.add('hidden');
+      lcSessionId = null;
+      lcSession = null;
+      lcFiles = [];
+    }
+
+    function lcGuideCount() {
+      document.getElementById('lcGuideChars').textContent =
+        String(document.getElementById('lcGuide').value.length);
+    }
+
+    function lcHandleFiles(fileList) {
+      const rejected = [];
+      Array.from(fileList || []).forEach(file => {
+        const kind = lcClassify(file.name);
+        if (!kind) { rejected.push(file.name); return; }
+        lcFiles.push({ id: ++lcFileSeq, file, name: file.name, size: file.size, kind });
+      });
+      // Any change to the file set invalidates a prepared routing pass.
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+      if (rejected.length) showToast('Skipped unsupported file(s): ' + rejected.join(', '), '#c0392b');
+    }
+
+    function lcRenderLists() {
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      const handouts = lcFiles.filter(f => f.kind === 'handout');
+      document.getElementById('lcSlideCount').textContent = String(slides.length);
+      document.getElementById('lcHandoutCount').textContent = String(handouts.length);
+      document.getElementById('lcSlideList').innerHTML = lcRenderItems(slides, 'slide');
+      document.getElementById('lcHandoutList').innerHTML = lcRenderItems(handouts, 'handout');
+    }
+
+    function lcRenderItems(items, kind) {
+      if (!items.length) {
+        return `<p class="text-xs text-forest-400 px-1 py-2">Drop ${kind === 'slide' ? 'PNG/JPG' : 'PDF/DOCX/PPTX/XLSX'} here…</p>`;
+      }
+      const otherKind = kind === 'slide' ? 'handout' : 'slide';
+      const moveIcon = kind === 'slide' ? 'fa-arrow-right' : 'fa-arrow-left';
+      return items.map(f => `
+        <div draggable="true" ondragstart="lcItemDragStart(event, ${f.id})"
+          class="flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-stone-50 cursor-grab">
+          <span class="text-xs text-forest-700 truncate" title="${escHtml(f.name)}"><i class="fas fa-grip-vertical text-forest-300 mr-1"></i>${escHtml(f.name)}</span>
+          <span class="flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-forest-400">${lcHumanSize(f.size)}</span>
+            <button type="button" title="Move to ${otherKind}s" onclick="lcMoveFile(${f.id}, '${otherKind}')" class="text-forest-400 hover:text-burgundy-700"><i class="fas ${moveIcon} text-xs"></i></button>
+            <button type="button" title="Remove" onclick="lcRemoveFile(${f.id})" class="text-forest-400 hover:text-red-600"><i class="fas fa-times text-xs"></i></button>
+          </span>
+        </div>`).join('');
+    }
+
+    function lcMoveFile(id, targetKind) {
+      const f = lcFiles.find(x => x.id === id);
+      if (!f || f.kind === targetKind) return;
+      f.kind = targetKind;
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+    }
+
+    function lcRemoveFile(id) {
+      lcFiles = lcFiles.filter(x => x.id !== id);
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+    }
+
+    /* drag a file between the Slides and Handouts lists */
+    function lcItemDragStart(e, id) { e.dataTransfer.setData('text/plain', String(id)); }
+    function lcListDragOver(e) { e.preventDefault(); e.currentTarget.style.background = '#eef2f5'; }
+    function lcListDragLeave(e) { e.currentTarget.style.background = '#fff'; }
+    function lcListDrop(e, targetKind) {
+      e.preventDefault();
+      e.currentTarget.style.background = '#fff';
+      const id = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      if (Number.isFinite(id)) lcMoveFile(id, targetKind);
+    }
+
+    /* drop files onto the drop zone */
+    (function wireLcDropZone() {
+      const dz = document.getElementById('lcDropZone');
+      if (!dz) return;
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.background = '#eef2f5'; });
+      dz.addEventListener('dragleave', () => { dz.style.background = '#fff'; });
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.style.background = '#fff';
+        if (e.dataTransfer?.files?.length) lcHandleFiles(e.dataTransfer.files);
+      });
+    })();
+
+    function lcResetBars() {
+      ['Guide', 'Slide', 'Handout'].forEach(k => {
+        document.getElementById('lc' + k + 'Bar').style.width = '0%';
+        document.getElementById('lc' + k + 'Pct').textContent = '—';
+      });
+    }
+    function lcSetBar(kind, done, total) {
+      const pct = total ? Math.round((done / total) * 100) : 100;
+      document.getElementById('lc' + kind + 'Bar').style.width = pct + '%';
+      document.getElementById('lc' + kind + 'Pct').textContent = total ? `${done}/${total}` : 'n/a';
+    }
+
+    // Segment titles for AI routing: prefer the just-pasted guide's agenda,
+    // else the session's existing agenda (in memory from the session fetch).
+    function lcSegmentsForRouting() {
+      const agenda = lcGuideAgenda || lcSession?.agenda || [];
+      return agenda.map((s, i) => ({ segmentIndex: i, title: s.title || '' }));
+    }
+
+    // Set the chosen segment for a routing dropdown (filename carried on the
+    // element's data-fname, so filenames with quotes can't break a handler).
+    function lcSetRoute(sel) {
+      const name = sel.getAttribute('data-fname');
+      if (!lcRouting[name]) lcRouting[name] = {};
+      lcRouting[name].chosen = sel.value === '' ? null : parseInt(sel.value, 10);
+    }
+
+    function lcRenderRouting() {
+      const segments = lcSegmentsForRouting();
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      document.getElementById('lcRoutingList').innerHTML = slides.map(f => {
+        const r = lcRouting[f.name] || {};
+        const conf = Number(r.confidence);
+        const matched = Number.isInteger(Number(r.segmentIndex)) && conf >= 0;
+        let badge;
+        if (!matched) {
+          badge = '<span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700"><i class="fas fa-triangle-exclamation"></i> unmatched</span>';
+        } else if (conf >= 0.8) {
+          badge = `<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">auto · ${(conf * 100).toFixed(0)}%</span>`;
+        } else {
+          badge = `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">confirm · ${(conf * 100).toFixed(0)}%</span>`;
+        }
+        const chosen = r.chosen != null ? r.chosen : (matched ? Number(r.segmentIndex) : '');
+        const options = ['<option value=""' + (chosen === '' ? ' selected' : '') + '>— unassigned —</option>']
+          .concat(segments.map(s =>
+            `<option value="${s.segmentIndex}"${String(chosen) === String(s.segmentIndex) ? ' selected' : ''}>${s.segmentIndex}. ${escHtml(s.title || '(untitled)')}</option>`))
+          .join('');
+        return `<div class="border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs font-medium text-forest-800 truncate" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
+            ${badge}
+          </div>
+          <select data-fname="${escHtml(f.name)}" onchange="lcSetRoute(this)"
+            class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:border-burgundy-500">${options}</select>
+          ${r.reason ? `<p class="text-xs text-forest-400 mt-1">${escHtml(r.reason)}</p>` : ''}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No slides to route.</p>';
+      document.getElementById('lcRoutingSection').classList.remove('hidden');
+    }
+
+    async function lcLoadAll() {
+      if (!lcSessionId) return;
+      const btn = document.getElementById('lcLoadAllBtn');
+      const label = document.getElementById('lcLoadAllLabel');
+      const errEl = document.getElementById('lcErrors');
+      const guideText = document.getElementById('lcGuide').value.trim();
+      const urls = document.getElementById('lcUrls').value.split('\n').map(u => u.trim()).filter(Boolean);
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      const handouts = lcFiles.filter(f => f.kind === 'handout');
+
+      if (!guideText && !slides.length && !handouts.length && !urls.length) {
+        showToast('Add a guide, files, or URLs first.', '#c0392b');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      const errors = [];
+
+      // ── Phase A: prepare AI routing for uploaded slides (one call), then pause
+      //    for host confirmation before uploading. Skipped when there are no
+      //    file-slides. URL slides are routed server-side in /fetch-and-load.
+      if (slides.length && !lcPrepared) {
+        btn.disabled = true;
+        label.textContent = 'Routing slides…';
+        try {
+          // Commit the guide first so routing (and later slide indexes) line up
+          // with the new agenda. Preview → commit, exactly like Import Guide.
+          if (guideText) { await lcCommitGuide(guideText); }
+          const r = await fetch(`${API}/ai-route`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ segments: lcSegmentsForRouting(), filenames: slides.map(s => s.name) })
+          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'AI routing failed');
+          lcRouting = {};
+          (d.routing || []).forEach(x => { lcRouting[x.filename] = x; });
+        } catch (e) {
+          showToast('AI routing failed: ' + e.message + ' — assign segments manually.', '#c0392b');
+          lcRouting = {};
+        }
+        lcPrepared = true;
+        lcRenderRouting();
+        label.textContent = 'Confirm & Load All';
+        btn.disabled = false;
+        return; // wait for the host to confirm/adjust the segment assignments
+      }
+
+      // ── Phase B: everything runs. ──
+      btn.disabled = true;
+      label.textContent = 'Loading…';
+      document.getElementById('lcProgressSection').classList.remove('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      lcResetBars();
+
+      let segCount = 0, slidesLoaded = 0, segmentsTouched = new Set(), handoutsLoaded = 0;
+
+      // 1) Guide (only if not already committed during Phase A).
+      if (guideText && !lcGuideAgenda) {
+        try {
+          const res = await lcCommitGuide(guideText);
+          segCount = res.segmentCount || 0;
+          lcSetBar('Guide', 1, 1);
+        } catch (e) { errors.push('Guide: ' + e.message); lcSetBar('Guide', 0, 1); }
+      } else if (guideText && lcGuideAgenda) {
+        segCount = lcGuideAgenda.length;
+        lcSetBar('Guide', 1, 1);
+      } else {
+        document.getElementById('lcGuidePct').textContent = 'skipped';
+      }
+
+      // 2) Slides — upload each to its chosen segment, in parallel.
+      if (slides.length) {
+        let done = 0;
+        lcSetBar('Slide', 0, slides.length);
+        await Promise.all(slides.map(async f => {
+          const r = lcRouting[f.name] || {};
+          const segIdx = r.chosen != null ? r.chosen : (Number.isInteger(r.segmentIndex) && Number(r.confidence) >= 0.8 ? r.segmentIndex : null);
+          if (segIdx == null) { errors.push(`${f.name}: no segment assigned — skipped.`); done++; lcSetBar('Slide', done, slides.length); return; }
+          try {
+            const fd = new FormData();
+            fd.append('file', f.file);
+            const resp = await fetch(`${API}/${lcSessionId}/agenda/${segIdx}/media`, {
+              method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+            });
+            const d = await resp.json();
+            if (!resp.ok) throw new Error(d.error || 'upload failed');
+            slidesLoaded++; segmentsTouched.add(segIdx);
+          } catch (e) { errors.push(`${f.name}: ${e.message}`); }
+          done++; lcSetBar('Slide', done, slides.length);
+        }));
+      } else {
+        document.getElementById('lcSlidePct').textContent = 'skipped';
+      }
+
+      // 3) Handouts — upload each in parallel.
+      if (handouts.length) {
+        let done = 0;
+        lcSetBar('Handout', 0, handouts.length);
+        await Promise.all(handouts.map(async f => {
+          try {
+            const fd = new FormData();
+            fd.append('file', f.file);
+            fd.append('availability', 'during');
+            const resp = await fetch(`${API}/${lcSessionId}/handouts`, {
+              method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+            });
+            const d = await resp.json();
+            if (!resp.ok) throw new Error(d.error || 'upload failed');
+            handoutsLoaded++;
+          } catch (e) { errors.push(`${f.name}: ${e.message}`); }
+          done++; lcSetBar('Handout', done, handouts.length);
+        }));
+      } else {
+        document.getElementById('lcHandoutPct').textContent = 'skipped';
+      }
+
+      // 4) URLs — server fetches, classifies, AI-routes slides and uploads.
+      if (urls.length) {
+        try {
+          const resp = await fetch(`${API}/${lcSessionId}/fetch-and-load`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls })
+          });
+          const d = await resp.json();
+          if (!resp.ok) throw new Error(d.error || 'URL load failed');
+          slidesLoaded += d.summary?.slidesLoaded || 0;
+          handoutsLoaded += d.summary?.handoutsLoaded || 0;
+          (d.summary?.segmentsTouched ? Array.from({ length: d.summary.segmentsTouched }, (_, i) => 'url' + i) : []).forEach(x => segmentsTouched.add(x));
+          (d.errors || []).forEach(e => errors.push('URL: ' + e));
+        } catch (e) { errors.push('URLs: ' + e.message); }
+      }
+
+      // Summary.
+      const summary = document.getElementById('lcSummary');
+      summary.innerHTML = `<strong>Done.</strong> ${segCount ? segCount + ' segments · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s) · ${handoutsLoaded} handout(s).`;
+      summary.classList.remove('hidden');
+      if (errors.length) {
+        errEl.textContent = errors.join('\n');
+        errEl.classList.remove('hidden');
+      }
+
+      // Refresh the in-memory session so the table badges update.
+      showToast('Content loaded.', '#284157');
+      loadSessions();
+      btn.disabled = false;
+      label.textContent = 'Load All';
+      lcPrepared = false;
+    }
+
+    // Preview → commit the pasted guide (mirrors the Import Guide flow), caching
+    // the parsed agenda so slide routing/indexes match the new segments.
+    async function lcCommitGuide(markdown) {
+      const pr = await fetch(`${API}/${lcSessionId}/run-of-show/preview`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown })
+      });
+      const pd = await pr.json();
+      if (!pr.ok) throw new Error(pd.error || 'Guide preview failed');
+      const parsed = pd.parsed || {};
+      const cr = await fetch(`${API}/${lcSessionId}/run-of-show/commit`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agenda: parsed.agenda,
+          preFlightChecklist: parsed.preFlightChecklist,
+          globalFacilitatorCautions: parsed.globalFacilitatorCautions,
+          objectives: parsed.objectives || []
+        })
+      });
+      const cd = await cr.json();
+      if (!cr.ok) throw new Error(cd.error || 'Guide commit failed');
+      lcGuideAgenda = parsed.agenda || [];
+      if (lcSession) lcSession.agenda = lcGuideAgenda;
+      return cd;
+    }
+
+    /* Close bulk-content modal on backdrop click */
+    document.getElementById('loadContentModal').addEventListener('click', function(e) {
+      if (e.target === document.getElementById('loadContentModal')) closeLoadContentModal();
+    });
 
     checkAuth();
   </script>
