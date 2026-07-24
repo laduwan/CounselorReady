@@ -117,8 +117,8 @@
           const sDisplayPrice = sHasEarlyBird ? ser.earlyBirdPrice : ser.price;
           const sPriceHtml = ser.price > 0
             ? sHasEarlyBird
-              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${(sDisplayPrice/100).toFixed(0)}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(ser.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${(ser.price/100).toFixed(0)}</span> after</span>`
-              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${(ser.price/100).toFixed(2)}</span>`
+              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${sDisplayPrice}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(ser.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${ser.price}</span> after</span>`
+              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${ser.price}</span>`
             : '<span style="font-size:16px;font-weight:700;color:#4A7C59;">Free</span>';
           card.innerHTML = `
             <div style="height:160px;background:linear-gradient(135deg,#fdf1f4,#f0f4f0);display:flex;align-items:center;justify-content:center;">
