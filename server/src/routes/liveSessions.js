@@ -20,9 +20,6 @@ import Stripe from 'stripe';
 import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { Readable } from 'stream';
-import { readFile, writeFile } from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
@@ -651,46 +648,6 @@ router.post('/', protect, requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[live] create:', err.message);
     res.status(400).json({ error: err.message });
-  }
-});
-
-// Absolute path to the repo's content-manifest.json (client/public). Resolved
-// from this module's location so it works regardless of process cwd.
-const CONTENT_MANIFEST_PATH = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  '../../../client/public/content-manifest.json'
-);
-
-// PATCH /api/live-sessions/content-manifest — admin-only writeback to
-// content-manifest.json. Body: { slug, entry }. Reads the manifest, shallow-
-// merges the provided entry into sessions[slug] (so a partial { slides } save
-// preserves an existing guide), and writes the file back. Registered BEFORE the
-// PATCH /:id wildcard so "content-manifest" isn't captured as an :id, and kept
-// on this router to avoid editing the protected index.js.
-router.patch('/content-manifest', protect, requireAdmin, async (req, res) => {
-  try {
-    const { slug, entry } = req.body || {};
-    if (!slug || typeof slug !== 'string') return res.status(400).json({ error: 'slug is required.' });
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      return res.status(400).json({ error: 'entry object is required.' });
-    }
-
-    let manifest;
-    try {
-      manifest = JSON.parse(await readFile(CONTENT_MANIFEST_PATH, 'utf8'));
-    } catch {
-      manifest = { sessions: {} };
-    }
-    if (!manifest.sessions || typeof manifest.sessions !== 'object') manifest.sessions = {};
-
-    // Shallow-merge so a partial save (e.g. just slides) never wipes guide/handouts.
-    manifest.sessions[slug] = { ...(manifest.sessions[slug] || {}), ...entry };
-
-    await writeFile(CONTENT_MANIFEST_PATH, JSON.stringify(manifest, null, 2) + '\n', 'utf8');
-    res.json({ ok: true, slug, entry: manifest.sessions[slug] });
-  } catch (err) {
-    console.error('[live] content-manifest write:', err.message);
-    res.status(500).json({ error: err.message });
   }
 });
 
