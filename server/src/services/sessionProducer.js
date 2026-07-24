@@ -28,6 +28,9 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const FROM = 'CounselorReady <noreply@counselorready.com>';
 const SITE = process.env.SITE_URL || 'https://counselorready.com';
+// Admin alert recipient — mirrors adminNotificationService's ADMIN_ALERT_EMAIL
+// default so autopilot summaries land in the same inbox as other admin alerts.
+const ADMIN_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'ke@counselorready.com';
 
 // Only send SMS if the env flag is explicitly enabled; default false (Phase 2 decision pending)
 const SMS_ENABLED = process.env.SMS_SESSION_LOGISTICS_ENABLED === 'true';
@@ -257,6 +260,89 @@ function replayReadyHtml(session, user) {
 
 function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ─── Autopilot: registrant reminders (T-24h / T-1h) ─────────────────────────────
+
+function reminderHtml(session, firstName, kind) {
+  const startStr = session.scheduledStart.toLocaleString('en-US', {
+    dateStyle: 'full', timeStyle: 'short', timeZone: session.timezone || 'America/New_York'
+  });
+  const lead = kind === '1h'
+    ? 'starts in about an hour'
+    : 'is coming up in 24 hours';
+  return emailShell(`
+    <p>Hi ${esc(firstName)},</p>
+    <p>This is a friendly reminder that <strong>${esc(session.title)}</strong> ${lead}.</p>
+    <p style="margin:12px 0;">
+      <strong>When:</strong> ${esc(startStr)} (${esc(session.timezone || 'America/New_York')})<br>
+      <strong>CE hours:</strong> ${session.ceuHours || 0}
+    </p>
+    <a class="btn" href="${gatedRoomUrl(session)}">Go to the Session Room</a>
+    <p style="font-size:13px;color:#57534e;">The room opens 15 minutes before the scheduled start. CE credit is based on verified live attendance minutes.</p>
+  `);
+}
+
+/**
+ * Email every registrant a T-24h or T-1h reminder for a live-course session.
+ * @param {object} session  LiveSession document
+ * @param {'24h'|'1h'} kind
+ */
+export async function sendLiveSessionReminders(session, kind) {
+  const registrantIds = session.registrants.map(r => r.user);
+  if (!registrantIds.length) return;
+  const users = await User.find({ _id: { $in: registrantIds } }).select('email profile');
+  const subject = kind === '1h'
+    ? `Starting soon: ${session.title}`
+    : `Tomorrow: ${session.title}`;
+  for (const user of users) {
+    await sendEmail({
+      to: user.email,
+      subject,
+      html: reminderHtml(session, user.profile?.firstName || 'there', kind)
+    });
+  }
+}
+
+// ─── Autopilot: admin summaries ─────────────────────────────────────────────────
+
+/**
+ * Admin summary email after autopilot auto-issues certificates for a session.
+ * Uses the platform email look via emailShell, sent to the admin inbox.
+ */
+export async function sendAutopilotCertAdminSummary(session, result) {
+  const issued = result?.issued?.length || 0;
+  const skipped = result?.skipped?.length || 0;
+  const failed = result?.failed?.length || 0;
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `Autopilot issued ${issued} certificate${issued === 1 ? '' : 's'} — ${session.title}`,
+    html: emailShell(`
+      <p><strong>Autopilot auto-issued certificates</strong> for the completed live session <strong>${esc(session.title)}</strong>.</p>
+      <ul style="padding-left:18px;color:#284157;">
+        <li>Issued: <strong>${issued}</strong></li>
+        <li>Skipped: ${skipped}</li>
+        <li>Failed: ${failed}</li>
+      </ul>
+      <p style="font-size:13px;color:#57534e;">Skips are typically registrants below the ${session.attendanceThresholdPct}% attendance threshold or with an incomplete evaluation. Review the roster in the Host Console if a count looks off.</p>
+    `)
+  });
+}
+
+/**
+ * Admin warning email when a completed autopilot session has an EMPTY
+ * attendance array. Autopilot never auto-issues in this case — it warns
+ * the admin so a human can investigate the attendance sync.
+ */
+export async function sendAutopilotEmptyAttendanceWarning(session) {
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `⚠️ Autopilot did NOT issue certificates (no attendance) — ${session.title}`,
+    html: emailShell(`
+      <p><strong>Autopilot skipped certificate issuance</strong> for <strong>${esc(session.title)}</strong> because its attendance record is empty.</p>
+      <p>No certificates were auto-issued. If this session did have live attendees, check the Whereby attendance webhook/sync, then issue certificates manually from the Host Console once the roster is correct.</p>
+    `)
+  });
 }
 
 // ─── Event handlers (called from webhooksWhereby.js) ──────────────────────────

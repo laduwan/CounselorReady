@@ -367,6 +367,16 @@
           <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
         </div>
 
+        <!-- Autopilot (live-course only; hidden for supervision — needs an agenda) -->
+        <div id="autopilotRow">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="autopilotEnabled" id="f-autopilotEnabled"
+              class="w-4 h-4 accent-burgundy-700">
+            <span class="text-sm font-medium text-burgundy-800">Autopilot (auto-start + timed segment advance)</span>
+          </label>
+          <p class="text-xs text-forest-500 mt-1 ml-6">Auto-starts the session at its scheduled time and advances agenda segments on the clock. Certificates auto-issue to eligible attendees after the session ends.</p>
+        </div>
+
         <!-- Alarm lead time (host-only instructor dashboard) -->
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Alarm lead time (seconds)</label>
         <input type="number" id="f-alarmLeadSec" name="alarmLeadSec" min="0" max="600" placeholder="60" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"></div>
@@ -884,6 +894,7 @@
       document.getElementById('f-accessCode').value = s.accessCode || '';
       document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
       document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-autopilotEnabled').checked = !!(s.autopilot && s.autopilot.enabled);
       document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
       document.getElementById('isPublished').checked = !!s.isPublished;
       document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
@@ -933,6 +944,7 @@
       document.getElementById('f-accessCode').value = ''; // force a new code — avoid colliding with the original
       document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
       document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-autopilotEnabled').checked = !!(s.autopilot && s.autopilot.enabled);
       document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
       document.getElementById('isPublished').checked = false; // never auto-publish a duplicate
       document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
@@ -964,11 +976,16 @@
       const recChk = document.getElementById('recordingEnabled');
       const ceuRow = document.getElementById('ceuHoursRow');
       const ceMetaRow = document.getElementById('ceMetaRow');
+      const apRow = document.getElementById('autopilotRow');
+      const apChk = document.getElementById('f-autopilotEnabled');
       // supervision: hide recording row, force checkbox off, hide CEU hours + CE metadata
       recRow.classList.toggle('hidden', isSupervision);
+      // Autopilot's timed advance needs an agenda, which supervision can't have.
+      if (apRow) apRow.classList.toggle('hidden', isSupervision);
       if (isSupervision) {
         recChk.checked = false;
         recChk.disabled = true;
+        if (apChk) apChk.checked = false;
         ceuRow.classList.add('hidden');
         ceMetaRow.classList.add('hidden');
       } else {
@@ -1003,6 +1020,7 @@
         price: parseFloat(fd.get('price') || '0'),
         attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
         recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
+        autopilot: { enabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('autopilotEnabled') },
         alarmLeadSec: parseInt(document.getElementById('f-alarmLeadSec').value, 10) || 60,
         isPublished: !!fd.get('isPublished'),
         visibility: fd.get('visibility') || 'public',
