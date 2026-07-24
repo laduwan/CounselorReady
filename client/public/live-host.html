@@ -227,7 +227,7 @@
         const frame = document.getElementById('roomFrame');
         // Append Whereby embed params to minimise Whereby chrome
         const sep = data.roomUrl.includes('?') ? '&' : '?';
-        let embedUrl = data.roomUrl + sep + 'minimal=on&lang=en&skipMediaPermissionPrompt=on';
+        let embedUrl = data.roomUrl + sep + 'lang=en&skipMediaPermissionPrompt=on&screenshare=on&chat=on&people=on&leaveButton=on&pipButton=on&breakout=on';
         // Presenter avatar shown when the host camera is off. Whereby requires an
         // https, square png/jpg (<=64x64) URL with NO query params; only append
         // when the stored value satisfies that, otherwise skip silently.
