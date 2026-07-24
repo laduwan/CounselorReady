@@ -31,6 +31,40 @@
     #breakoutBadge{display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;}
     /* .hidden (Tailwind display:none) can't override an inline display; drive the overlay's flex layout from a rule so classList toggling actually hides it */
     #checkinModal:not(.hidden){display:flex;align-items:center;justify-content:center;}
+    /* ── Live game overlay (attendee) — stacks ABOVE the NOW card, position:relative ── */
+    #gameOverlay{position:relative;}
+    .go-card{border-radius:12px;padding:14px;margin-bottom:12px;color:#fff;background:#284157;box-shadow:0 4px 16px rgba(40,65,87,.18);}
+    .go-card.timer-bg{background:#FBF6EC;}
+    .go-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#D4A855;margin-bottom:8px;}
+    /* randomizer */
+    .go-rand-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:30px;font-weight:700;text-align:center;padding:14px;}
+    .go-rand-name.spin{animation:goPulse .16s steps(1) infinite;}
+    .go-rand-name.pick{color:#D4A855;animation:goPop .5s ease;}
+    @keyframes goPulse{50%{opacity:.35;}}
+    @keyframes goPop{0%{transform:scale(.82);}60%{transform:scale(1.14);}100%{transform:scale(1);}}
+    /* timer */
+    .go-timer{font-family:ui-monospace,monospace;font-size:52px;font-weight:800;text-align:center;color:#6B1D34;}
+    .go-timer.danger{color:#b91c1c;animation:goTimerPulse .5s steps(2) infinite;}
+    @keyframes goTimerPulse{50%{opacity:.4;}}
+    /* jeopardy */
+    .go-jeo-grid{display:grid;gap:4px;}
+    .go-jeo-head{font-size:10px;font-weight:800;text-transform:uppercase;color:#D4A855;text-align:center;padding:4px 2px;}
+    .go-jeo-cell{background:#1f3444;color:#D4A855;font-weight:800;font-size:14px;text-align:center;padding:10px 2px;border-radius:5px;}
+    .go-jeo-cell.revealed{background:#6B1D34;color:#fff;font-size:9px;line-height:1.2;}
+    .go-jeo-clue{background:#6B1D34;border-radius:10px;padding:14px;margin-bottom:10px;animation:jeoFlip .4s ease;}
+    @keyframes jeoFlip{0%{transform:rotateX(88deg);opacity:0;}100%{transform:rotateX(0);opacity:1;}}
+    /* clue */
+    .go-clue-table{width:100%;border-collapse:collapse;color:#284157;background:#fff;border-radius:8px;overflow:hidden;}
+    .go-clue-table th{background:#1f3444;color:#D4A855;font-size:10px;text-transform:uppercase;padding:5px;}
+    .go-clue-cell{border:1px solid #EDE9E3;padding:6px;font-size:12px;vertical-align:top;}
+    .go-clue-cell.locked{text-align:center;color:#b9b3a8;font-size:16px;}
+    /* feud */
+    .go-feud-answer{display:flex;justify-content:space-between;background:#1f3444;color:#fff;border-radius:7px;padding:8px 12px;margin-bottom:5px;font-weight:700;font-size:13px;}
+    .go-feud-answer.revealed{background:#6B1D34;animation:feudFlip .4s ease;}
+    @keyframes feudFlip{0%{transform:scale(.9);opacity:.4;}100%{transform:scale(1);opacity:1;}}
+    .go-feud-team{flex:1;text-align:center;border:2px solid #D4A855;border-radius:8px;padding:6px;}
+    .go-feud-team.active{border-color:#fff;background:#6B1D34;}
+    .go-feud-strike{color:#ff6b6b;font-weight:900;font-size:18px;}
   </style>
 </head>
 <body>
@@ -61,6 +95,8 @@
             <div id="pollOptions" style="display:flex;flex-direction:column;gap:6px;"></div>
             <div id="pollStatus" style="font-size:12px;color:#4A7C59;font-weight:600;margin-top:8px;"></div>
           </div>
+          <!-- Live game overlay — stacks ABOVE the NOW card (position:relative, never covers the video) -->
+          <div id="gameOverlay" class="hidden"></div>
           <div id="nowCard" class="hidden">
             <h3>Now</h3>
             <div id="breakoutBadge">Breakout</div>
@@ -498,6 +534,7 @@
         const data = await res.json();
         updateNowCard(data.currentSegment, data.liveState);
         updateActivePoll(data.activePoll);
+        updateGameOverlay(data.game);
         updateWatchParty(data.liveState);
         updateHostPanel(data);
         updateMyCheckin(data.myCheckin);
@@ -971,6 +1008,249 @@
         }
       }
     }
+
+    /* ═══════════════ LIVE GAME OVERLAY (attendee) ═══════════════ */
+    // Renders ABOVE the NOW card; never replaces it. Redacted state comes from
+    // the server (unrevealed jeopardy clues / clue columns / feud answers are
+    // already stripped), so this only presents what attendees are allowed to see.
+    let goTimerTicker = null;
+    let goRandVisual = null, goRandSpinning = false;
+    let goTimerWarnFired = false, goTimerEndFired = false, goTimerKey = null;
+    let goFeudRevealed = -1, goFeudStrikes = -1, goFeudTeam = -1;
+    let goLastSig = null;
+
+    function updateGameOverlay(game) {
+      const el = document.getElementById('gameOverlay');
+      if (!el) return;
+      window.__lastGame = (game && game.type && game.type !== 'none') ? game : null;
+      const type = game && game.type;
+
+      // Randomizer only shows to the room when the host flips "Show to room".
+      const hidden = !type || type === 'none' ||
+        (type === 'randomizer' && !(game.state && game.state.showToAttendees));
+      if (hidden) {
+        el.classList.add('hidden');
+        el.innerHTML = '';
+        stopGoTimer(); stopGoRandVisual();
+        goRandSpinning = false;
+        goLastSig = null;
+        return;
+      }
+      el.classList.remove('hidden');
+
+      // Rebuild only on real state change — so reveal animations don't replay
+      // every 3s poll, and the feud sound-transition detection fires once.
+      const sig = type + '|' + JSON.stringify(game.state);
+      if (sig !== goLastSig) {
+        goLastSig = sig;
+        if (type === 'randomizer') el.innerHTML = goRandomizer(game.state);
+        else if (type === 'timer') el.innerHTML = goTimer(game.state);
+        else if (type === 'jeopardy') el.innerHTML = goJeopardy(game.state);
+        else if (type === 'clue') el.innerHTML = goClue(game.state);
+        else if (type === 'feud') el.innerHTML = goFeud(game.state);
+      }
+
+      if (type === 'timer') startGoTimer(game.state); else stopGoTimer();
+      if (type === 'randomizer') manageGoRandVisual(game.state); else { stopGoRandVisual(); goRandSpinning = false; }
+      if (type !== 'feud') { goFeudRevealed = -1; goFeudStrikes = -1; goFeudTeam = -1; }
+    }
+
+    /* ── Randomizer ── */
+    function goRandomizer(st) {
+      st = st || {};
+      const names = st.names || [];
+      let display;
+      if (st.spinning) display = '…';
+      else if (st.pickedIndex != null && names[st.pickedIndex]) display = names[st.pickedIndex];
+      else display = 'Picking…';
+      return `<div class="go-card"><div class="go-title">🎲 Randomizer</div>
+        <div id="goRandName" class="go-rand-name ${st.spinning ? 'spin' : ''} ${(!st.spinning && st.pickedIndex != null) ? 'pick' : ''}">${esc(display)}</div></div>`;
+    }
+    function manageGoRandVisual(st) {
+      if (st.spinning) {
+        goRandSpinning = true;
+        if (!goRandVisual) {
+          const names = st.names || [];
+          let i = 0;
+          goRandVisual = setInterval(() => {
+            const w = document.getElementById('goRandName');
+            if (w && names.length) { w.textContent = names[i % names.length]; i++; }
+          }, 90);
+        }
+      } else {
+        stopGoRandVisual();
+        goRandSpinning = false;
+      }
+    }
+    function stopGoRandVisual() { if (goRandVisual) { clearInterval(goRandVisual); goRandVisual = null; } }
+
+    /* ── Timer ── */
+    function goTimer(st) {
+      st = st || {};
+      return `<div class="go-card timer-bg"><div class="go-title" style="color:#8B5E2E;">⏱ ${esc(st.label || 'Timer')}</div>
+        <div id="goTimerDisplay" class="go-timer">${goFmt(goRemaining(st))}</div></div>`;
+    }
+    function goRemaining(st) {
+      if (st.running && st.startedAt) {
+        const elapsed = (Date.now() - new Date(st.startedAt).getTime()) / 1000;
+        return Math.max(0, (st.durationSec || 0) - elapsed);
+      }
+      return st.durationSec || 0;
+    }
+    function goFmt(sec) {
+      sec = Math.max(0, Math.ceil(sec));
+      const m = Math.floor(sec / 60), s = sec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+    function startGoTimer(initial) {
+      if (goTimerTicker) return; // already ticking — reads latest state each tick
+      goTimerTicker = setInterval(() => {
+        // Re-read the latest state from the last poll via the DOM-owned closure
+        const g = window.__lastGame;
+        const st = (g && g.type === 'timer') ? g.state : initial;
+        if (!st) { stopGoTimer(); return; }
+        const rem = goRemaining(st);
+        const disp = document.getElementById('goTimerDisplay');
+        if (disp) { disp.textContent = goFmt(rem); disp.classList.toggle('danger', st.running && rem <= 10); }
+        const key = (st.startedAt || '') + ':' + (st.durationSec || 0);
+        if (key !== goTimerKey) { goTimerKey = key; goTimerWarnFired = false; goTimerEndFired = false; }
+        if (st.running && rem <= 10 && rem > 0 && !goTimerWarnFired) { goTimerWarnFired = true; SoundEngine.timerWarning(); }
+        if (st.running && rem <= 0 && !goTimerEndFired) { goTimerEndFired = true; SoundEngine.timerEnd(); }
+      }, 250);
+    }
+    function stopGoTimer() { if (goTimerTicker) { clearInterval(goTimerTicker); goTimerTicker = null; } }
+
+    /* ── Jeopardy ── */
+    function goJeopardy(st) {
+      st = st || {};
+      const cats = st.categories || [];
+      const nCat = cats.length;
+      const nRows = cats[0]?.cells?.length || 0;
+      let html = `<div class="go-card"><div class="go-title">🎯 Jeopardy</div>`;
+      if (st.activeCell) {
+        const c = cats[st.activeCell.catIdx]?.cells?.[st.activeCell.cellIdx];
+        if (c && c.isRevealed) {
+          html += `<div class="go-jeo-clue">
+            <div style="font-size:10px;text-transform:uppercase;color:#D4A855;">${esc(cats[st.activeCell.catIdx].name)} · $${c.value}</div>
+            <div style="font-size:15px;margin-top:6px;">${esc(c.clue) || '&nbsp;'}</div></div>`;
+        }
+      }
+      html += `<div class="go-jeo-grid" style="grid-template-columns:repeat(${nCat},1fr);">`;
+      cats.forEach(c => { html += `<div class="go-jeo-head">${esc(c.name)}</div>`; });
+      for (let vi = 0; vi < nRows; vi++) {
+        cats.forEach(c => {
+          const cell = c.cells[vi];
+          const label = cell.isRevealed ? (esc(cell.clue).slice(0, 40) || '✓') : ('$' + cell.value);
+          html += `<div class="go-jeo-cell ${cell.isRevealed ? 'revealed' : ''}">${label}</div>`;
+        });
+      }
+      html += `</div>`;
+      html += `<div style="display:flex;gap:8px;margin-top:10px;">` + (st.scores || []).map(s => `
+        <div style="flex:1;text-align:center;border:1px solid #D4A855;border-radius:8px;padding:6px;">
+          <div style="font-size:12px;color:#D4A855;">${esc(s.teamName)}</div>
+          <div style="font-size:18px;font-weight:800;">${s.points}</div></div>`).join('') + `</div>`;
+      html += `</div>`;
+      return html;
+    }
+
+    /* ── Clue ── */
+    function goClue(st) {
+      st = st || {};
+      const rows = st.rows || [];
+      let html = `<div class="go-card"><div class="go-title">🔍 Clue</div>
+        <table class="go-clue-table"><thead><tr><th>#</th><th>Conduct</th><th>Rule</th><th>Outcome</th></tr></thead><tbody>`;
+      rows.forEach((r, ri) => {
+        const cols = [r.conduct, r.rule, r.outcome];
+        const rc = r.revealedCols || [false, false, false];
+        html += `<tr><td class="go-clue-cell">${ri + 1}</td>`;
+        cols.forEach((val, ci) => {
+          html += rc[ci]
+            ? `<td class="go-clue-cell">${esc(val) || '—'}</td>`
+            : `<td class="go-clue-cell locked">🔒</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      return html;
+    }
+
+    /* ── Feud ── */
+    function goFeud(st) {
+      st = st || {};
+      const answers = st.answers || [];
+      const teams = st.teams || [];
+      const strikes = st.strikes || 0;
+
+      // Shared-experience sounds: ding on a newly revealed answer, buzz on a new
+      // strike or a buzz-in (team change). Guard against the first render.
+      const revealedCount = answers.filter(a => a.isRevealed).length;
+      if (goFeudRevealed >= 0 && revealedCount > goFeudRevealed) SoundEngine.feudDing();
+      if (goFeudStrikes >= 0 && strikes > goFeudStrikes) SoundEngine.feudBuzz();
+      if (goFeudTeam >= 0 && st.activeTeam !== goFeudTeam) SoundEngine.feudBuzz();
+      goFeudRevealed = revealedCount; goFeudStrikes = strikes; goFeudTeam = st.activeTeam;
+
+      let html = `<div class="go-card"><div class="go-title">📣 Family Feud</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:8px;">${esc(st.question) || ''}</div>
+        <div style="margin-bottom:8px;">Strikes: <span class="go-feud-strike">${'✗'.repeat(strikes)}${'·'.repeat(Math.max(0, 3 - strikes))}</span></div>`;
+      html += answers.map((a, i) => {
+        const rev = a.isRevealed;
+        return `<div class="go-feud-answer ${rev ? 'revealed' : ''}">
+          <span>${rev ? (esc(a.text) || ('Answer ' + (i + 1))) : ('#' + (i + 1))}</span>
+          <span>${rev && a.points != null ? a.points : '&nbsp;'}</span></div>`;
+      }).join('');
+      html += `<div style="display:flex;gap:8px;margin-top:10px;">` + teams.map((t, i) => `
+        <div class="go-feud-team ${st.activeTeam === i ? 'active' : ''}">
+          <div style="font-size:12px;color:#D4A855;">${esc(t.name)}</div>
+          <div style="font-size:18px;font-weight:800;color:#fff;">${t.score}</div></div>`).join('') + `</div>`;
+      html += `</div>`;
+      return html;
+    }
+
+    /* ═══════════════ SoundEngine (attendee subset) ═══════════════ */
+    // Shared-experience sounds only — timerWarning, timerEnd, feudBuzz, feudDing.
+    // The jeopardy loop is host-only (kept out of a 30-attendee room on purpose).
+    // Same lazy-init-on-gesture design as the host SoundEngine.
+    const SoundEngine = {
+      ctx: null,
+      NOTE: { C5: 523.25, E5: 659.25, G5: 783.99 },
+      init() {
+        if (!this.ctx) {
+          try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { this.ctx = null; }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        return this.ctx;
+      },
+      _tone(freq, offset, durMs, type, peak) {
+        const ctx = this.init(); if (!ctx) return;
+        const t0 = ctx.currentTime + offset;
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(peak || 0.22, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durMs / 1000);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0); osc.stop(t0 + durMs / 1000 + 0.03);
+      },
+      _sweep(f1, f2, offset, durMs, type, peak) {
+        const ctx = this.init(); if (!ctx) return;
+        const t0 = ctx.currentTime + offset, t1 = t0 + durMs / 1000;
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = type || 'sawtooth';
+        osc.frequency.setValueAtTime(f1, t0);
+        osc.frequency.linearRampToValueAtTime(f2, t1);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(peak || 0.28, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t1);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0); osc.stop(t1 + 0.03);
+      },
+      timerWarning() { this._tone(880, 0, 150, 'square', 0.22); this._tone(880, 0.25, 150, 'square', 0.22); },
+      timerEnd() { this._sweep(440, 220, 0, 800, 'sawtooth', 0.3); },
+      feudBuzz() { this._sweep(180, 100, 0, 600, 'sawtooth', 0.3); },
+      feudDing() { ['C5', 'E5', 'G5'].forEach((n, i) => this._tone(this.NOTE[n], i * 0.12, 120, 'sine', 0.24)); }
+    };
+    window.addEventListener('pointerdown', () => SoundEngine.init(), { once: true });
 
     init();
   </script>

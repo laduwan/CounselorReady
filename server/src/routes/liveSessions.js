@@ -982,6 +982,13 @@ router.get('/:id/live-state', protect, async (req, res) => {
       }
     }
 
+    // Live game — host gets the full state; attendees get a redacted copy so
+    // unrevealed jeopardy clues / clue columns / feud answers never leak.
+    const game = session.liveState?.game;
+    if (game && game.type && game.type !== 'none') {
+      payload.game = isAdmin ? game : redactGameForAttendee(game);
+    }
+
     // Per-user check-in status — every attendee gets their own, not host-only
     const myAtt = (session.attendance || []).find(
       a => a.user && a.user.toString() === req.user._id.toString() && !a.leftAt
@@ -1363,6 +1370,100 @@ router.get('/:id/poll/results', protect, async (req, res) => {
   } catch (err) {
     console.error('[live] poll results:', err.message);
     res.status(500).json({ error: 'Failed to load poll results' });
+  }
+});
+
+/* ════════════════════════ LIVE SESSION GAMES ════════════════════════════ */
+// Host-launched interactive games. State lives in liveState.game (Mixed), built
+// by buildInitialGameState() and mutated by applyGameAction() — both pure
+// helpers defined in the helpers section below. Attendees receive a redacted
+// copy of the state via redactGameForAttendee() on the live-state route so
+// unrevealed jeopardy clues / clue columns / feud answers never leak.
+
+// POST /:id/game/launch — host starts a game (replaces any running game)
+router.post('/:id/game/launch', protect, requireAdmin, async (req, res) => {
+  try {
+    const { type, config } = req.body || {};
+    if (!['randomizer', 'timer', 'jeopardy', 'clue', 'feud'].includes(type)) {
+      return res.status(400).json({ error: 'Unknown game type.' });
+    }
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const state = buildInitialGameState(type, config || {}, session);
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      game: { type, state }
+    };
+    session.markModified('liveState');
+    await session.save();
+    res.json({ game: session.liveState.game });
+  } catch (err) {
+    console.error('[live] game launch:', err.message);
+    res.status(400).json({ error: err.message || 'Failed to launch game' });
+  }
+});
+
+// POST /:id/game/action — host mutates the running game's state
+router.post('/:id/game/action', protect, requireAdmin, async (req, res) => {
+  try {
+    const { action, payload } = req.body || {};
+    if (typeof action !== 'string' || !action) {
+      return res.status(400).json({ error: 'action is required.' });
+    }
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const game = session.liveState?.game;
+    if (!game || game.type === 'none') {
+      return res.status(400).json({ error: 'No game is running.' });
+    }
+
+    applyGameAction(game, action, payload || {});
+    session.markModified('liveState');
+    await session.save();
+
+    // Randomizer 'spin' resolves server-side after 2s (deceleration illusion),
+    // so the pick is authoritative and identical for host + every attendee.
+    if (game.type === 'randomizer' && action === 'spin') {
+      const chosen = (game.state.names && game.state.names.length)
+        ? Math.floor(Math.random() * game.state.names.length) : null;
+      const sessionId = session._id;
+      setTimeout(async () => {
+        try {
+          const s2 = await LiveSession.findById(sessionId);
+          const g2 = s2?.liveState?.game;
+          if (g2 && g2.type === 'randomizer' && g2.state.spinning) {
+            g2.state.spinning = false;
+            g2.state.pickedIndex = chosen;
+            s2.markModified('liveState');
+            await s2.save();
+          }
+        } catch { /* game may have been closed mid-spin — ignore */ }
+      }, 2000);
+    }
+
+    res.json({ game: session.liveState.game });
+  } catch (err) {
+    console.error('[live] game action:', err.message);
+    res.status(400).json({ error: err.message || 'Failed to apply game action' });
+  }
+});
+
+// POST /:id/game/close — host ends the running game
+router.post('/:id/game/close', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      game: { type: 'none', state: {} }
+    };
+    session.markModified('liveState');
+    await session.save();
+    res.json({ game: session.liveState.game });
+  } catch (err) {
+    console.error('[live] game close:', err.message);
+    res.status(500).json({ error: 'Failed to close game' });
   }
 });
 
@@ -1836,6 +1937,302 @@ async function findByIdOrSlug(idOrSlug) {
     if (byId) return byId;
   }
   return LiveSession.findOne({ slug: idOrSlug.toLowerCase() });
+}
+
+/* ── Live game helpers ─────────────────────────────────────────────────── */
+
+// Current live attendee display names (used to seed the randomizer wheel).
+function liveAttendeeNames(session) {
+  return (session.attendance || [])
+    .filter(a => !a.leftAt)
+    .map(a => a.displayName || 'Unnamed attendee');
+}
+
+const JEOPARDY_DEFAULT_CATEGORIES = ['Statute', 'Confidentiality', 'Competence', 'Supervision', 'Advertising'];
+const JEOPARDY_VALUES = [100, 200, 300, 400, 500];
+
+const FEUD_DEFAULT_QUESTIONS = [
+  'Name something a licensee tells themselves before skipping documentation.',
+  'Name a reason a licensee gives for not updating their board address.',
+  'Name a way 43-10A-17(a)(6) surprises experienced clinicians.',
+  'Name a common misunderstanding about the competence rule.',
+  'Name something supervisors assume protects them from liability.'
+];
+const FEUD_DEFAULT_POINTS = [40, 30, 15, 8, 5, 2];
+
+// Build the initial state bag for a freshly launched game. `config` is the
+// host-supplied override object; anything omitted falls back to defaults.
+function buildInitialGameState(type, config, session) {
+  if (type === 'randomizer') {
+    const names = Array.isArray(config.names) && config.names.length
+      ? config.names.map(n => String(n)).filter(Boolean)
+      : liveAttendeeNames(session);
+    return { names, spinning: false, pickedIndex: null, showToAttendees: false };
+  }
+
+  if (type === 'timer') {
+    const durationSec = Number.isFinite(config.durationSec) ? Math.max(1, Math.round(config.durationSec)) : 60;
+    return { durationSec, configuredSec: durationSec, startedAt: null, running: false, label: String(config.label || '') };
+  }
+
+  if (type === 'jeopardy') {
+    const catConfig = Array.isArray(config.categories) && config.categories.length ? config.categories : null;
+    const categories = (catConfig || JEOPARDY_DEFAULT_CATEGORIES.map(name => ({ name }))).map((c, ci) => {
+      const name = typeof c === 'string' ? c : (c.name || JEOPARDY_DEFAULT_CATEGORIES[ci] || `Category ${ci + 1}`);
+      const cellsIn = (c && Array.isArray(c.cells)) ? c.cells : [];
+      const cells = JEOPARDY_VALUES.map((value, vi) => {
+        const cell = cellsIn[vi] || {};
+        return {
+          value: Number.isFinite(cell.value) ? cell.value : value,
+          clue: String(cell.clue || ''),
+          answer: String(cell.answer || ''),
+          isRevealed: false,
+          markedCorrect: false,
+          markedIncorrect: false
+        };
+      });
+      return { name, cells };
+    });
+    const scores = (Array.isArray(config.scores) && config.scores.length
+      ? config.scores
+      : [{ teamName: 'Team 1' }, { teamName: 'Team 2' }]
+    ).map(s => ({ teamName: String(s.teamName || 'Team'), points: Number.isFinite(s.points) ? s.points : 0 }));
+    return { categories, scores, activeCell: null };
+  }
+
+  if (type === 'clue') {
+    let rowsIn = Array.isArray(config.rows) && config.rows.length ? config.rows : null;
+    if (!rowsIn) {
+      // Default: the five disciplinary-panel cases parsed from the agenda
+      // segment titled "The disciplinary panel" (best-effort line split).
+      const seg = (session.agenda || []).find(s => /disciplinary panel/i.test(s.title || ''));
+      const src = seg ? (seg.activityInstructions || seg.speakerNotes || seg.prompt || '') : '';
+      const lines = src.split('\n').map(l => l.trim()).filter(Boolean).slice(0, 5);
+      rowsIn = lines.length ? lines.map(l => ({ conduct: l })) : new Array(5).fill(null);
+    }
+    const rows = rowsIn.map(r => ({
+      conduct: String((r && r.conduct) || ''),
+      rule: String((r && r.rule) || ''),
+      outcome: String((r && r.outcome) || ''),
+      revealedCols: [false, false, false]
+    }));
+    return { rows, activeRow: null };
+  }
+
+  if (type === 'feud') {
+    const bankIn = Array.isArray(config.questions) && config.questions.length ? config.questions : null;
+    const bank = (bankIn || FEUD_DEFAULT_QUESTIONS.map(q => ({ question: q }))).map((q, qi) => {
+      const question = typeof q === 'string' ? q : (q.question || FEUD_DEFAULT_QUESTIONS[qi] || `Question ${qi + 1}`);
+      const answersIn = (q && Array.isArray(q.answers)) ? q.answers : [];
+      const answers = answersIn.slice(0, 6).map((a, ai) => ({
+        text: String((typeof a === 'string' ? a : a.text) || ''),
+        points: Number.isFinite(a && a.points) ? a.points : (FEUD_DEFAULT_POINTS[ai] || 0),
+        isRevealed: false,
+        rank: ai + 1
+      }));
+      return { question, answers };
+    });
+    const teams = (Array.isArray(config.teams) && config.teams.length
+      ? config.teams
+      : [{ name: 'Team 1' }, { name: 'Team 2' }]
+    ).map(t => ({ name: String(t.name || 'Team'), score: Number.isFinite(t.score) ? t.score : 0 }));
+    const first = bank[0] || { question: '', answers: [] };
+    return {
+      question: first.question,
+      answers: first.answers,
+      teams,
+      strikes: 0,
+      activeTeam: 0,
+      bank,
+      current: 0
+    };
+  }
+
+  throw new Error('Unknown game type.');
+}
+
+// Mutate `game.state` in place per host action. Throws on an action that does
+// not apply to the running game type.
+function applyGameAction(game, action, payload) {
+  const st = game.state || (game.state = {});
+  const type = game.type;
+
+  if (type === 'randomizer') {
+    if (action === 'spin') { st.spinning = true; st.pickedIndex = null; return; }
+    if (action === 'stop') {
+      st.spinning = false;
+      if (st.pickedIndex == null && st.names && st.names.length) {
+        st.pickedIndex = Math.floor(Math.random() * st.names.length);
+      }
+      return;
+    }
+    if (action === 'toggle-visibility') { st.showToAttendees = !st.showToAttendees; return; }
+    if (action === 'set-names' && Array.isArray(payload.names)) {
+      st.names = payload.names.map(n => String(n)).filter(Boolean);
+      st.pickedIndex = null;
+      return;
+    }
+    throw new Error(`Unsupported randomizer action: ${action}`);
+  }
+
+  if (type === 'timer') {
+    const nowMs = Date.now();
+    if (action === 'start') {
+      if (!st.running) { st.startedAt = new Date(nowMs).toISOString(); st.running = true; }
+      return;
+    }
+    if (action === 'pause') {
+      if (st.running && st.startedAt) {
+        const elapsed = (nowMs - new Date(st.startedAt).getTime()) / 1000;
+        st.durationSec = Math.max(0, Math.round(st.durationSec - elapsed));
+      }
+      st.running = false; st.startedAt = null;
+      return;
+    }
+    if (action === 'reset') {
+      st.running = false; st.startedAt = null;
+      st.durationSec = Number.isFinite(payload.durationSec) ? Math.max(1, Math.round(payload.durationSec)) : (st.configuredSec || st.durationSec);
+      return;
+    }
+    if (action === 'set-duration') {
+      const d = Math.max(1, Math.round(payload.durationSec));
+      if (!Number.isFinite(d)) throw new Error('durationSec must be a number.');
+      st.durationSec = d; st.configuredSec = d; st.running = false; st.startedAt = null;
+      if (typeof payload.label === 'string') st.label = payload.label;
+      return;
+    }
+    throw new Error(`Unsupported timer action: ${action}`);
+  }
+
+  if (type === 'jeopardy') {
+    const cell = (ci, vi) => st.categories?.[ci]?.cells?.[vi];
+    if (action === 'reveal-cell') {
+      const c = cell(payload.catIdx, payload.cellIdx);
+      if (!c) throw new Error('No such cell.');
+      c.isRevealed = true;
+      st.activeCell = { catIdx: payload.catIdx, cellIdx: payload.cellIdx };
+      return;
+    }
+    if (action === 'close-cell') { st.activeCell = null; return; }
+    if (action === 'mark-correct') {
+      const c = cell(payload.catIdx, payload.cellIdx);
+      if (!c) throw new Error('No such cell.');
+      c.markedCorrect = true; c.markedIncorrect = false;
+      return;
+    }
+    if (action === 'mark-incorrect') {
+      const c = cell(payload.catIdx, payload.cellIdx);
+      if (!c) throw new Error('No such cell.');
+      c.markedIncorrect = true; c.markedCorrect = false;
+      return;
+    }
+    if (action === 'update-score') {
+      const team = st.scores?.[payload.teamIdx];
+      if (!team) throw new Error('No such team.');
+      if (Number.isFinite(payload.delta)) team.points = (team.points || 0) + payload.delta;
+      else if (Number.isFinite(payload.points)) team.points = payload.points;
+      return;
+    }
+    throw new Error(`Unsupported jeopardy action: ${action}`);
+  }
+
+  if (type === 'clue') {
+    if (action === 'next-row') {
+      const total = (st.rows || []).length;
+      st.activeRow = st.activeRow == null ? 0 : Math.min(total - 1, st.activeRow + 1);
+      return;
+    }
+    if (action === 'reveal-col') {
+      const row = st.rows?.[payload.rowIdx];
+      if (!row) throw new Error('No such row.');
+      const col = payload.colIdx;
+      if (col < 0 || col > 2) throw new Error('colIdx must be 0, 1 or 2.');
+      row.revealedCols[col] = true;
+      st.activeRow = payload.rowIdx;
+      return;
+    }
+    if (action === 'reset') {
+      (st.rows || []).forEach(r => { r.revealedCols = [false, false, false]; });
+      st.activeRow = null;
+      return;
+    }
+    throw new Error(`Unsupported clue action: ${action}`);
+  }
+
+  if (type === 'feud') {
+    if (action === 'buzz') {
+      if (Number.isFinite(payload.teamIdx)) st.activeTeam = payload.teamIdx;
+      return;
+    }
+    if (action === 'reveal-answer') {
+      const a = st.answers?.[payload.idx];
+      if (!a) throw new Error('No such answer.');
+      a.isRevealed = true;
+      return;
+    }
+    if (action === 'add-strike') {
+      st.strikes = Math.min(3, (st.strikes || 0) + 1);
+      if (st.strikes >= 3) {
+        st.strikes = 0;
+        st.activeTeam = st.activeTeam === 0 ? 1 : 0; // pass to the other team
+      }
+      return;
+    }
+    if (action === 'update-score') {
+      const team = st.teams?.[payload.teamIdx];
+      if (!team) throw new Error('No such team.');
+      if (Number.isFinite(payload.delta)) team.score = (team.score || 0) + payload.delta;
+      else if (Number.isFinite(payload.points)) team.score = payload.points;
+      return;
+    }
+    if (action === 'next-question') {
+      const bank = st.bank || [];
+      if (st.current < bank.length - 1) {
+        st.current += 1;
+        const q = bank[st.current];
+        st.question = q.question;
+        st.answers = q.answers;
+        st.strikes = 0;
+      }
+      return;
+    }
+    throw new Error(`Unsupported feud action: ${action}`);
+  }
+
+  throw new Error(`Unknown game type: ${type}`);
+}
+
+// Produce the attendee-safe copy of a game's state. Host-only secrets — unrevealed
+// jeopardy clues/answers, hidden clue columns, unrevealed feud answers, the feud
+// question bank — are stripped so they cannot be read from the wire.
+function redactGameForAttendee(game) {
+  const g = game.toObject ? game.toObject() : JSON.parse(JSON.stringify(game));
+  const st = g.state || {};
+
+  if (g.type === 'jeopardy') {
+    (st.categories || []).forEach(cat => {
+      (cat.cells || []).forEach(cell => {
+        cell.answer = undefined;              // attendees never see answers
+        if (!cell.isRevealed) cell.clue = ''; // clue only after the cell opens
+      });
+    });
+  } else if (g.type === 'clue') {
+    (st.rows || []).forEach(row => {
+      const rc = row.revealedCols || [false, false, false];
+      if (!rc[0]) row.conduct = '';
+      if (!rc[1]) row.rule = '';
+      if (!rc[2]) row.outcome = '';
+    });
+  } else if (g.type === 'feud') {
+    st.bank = undefined;   // never leak upcoming questions
+    st.current = undefined;
+    (st.answers || []).forEach(a => {
+      if (!a.isRevealed) { a.text = ''; a.points = null; }
+    });
+  }
+  // randomizer + timer states are safe to send verbatim (the attendee UI hides
+  // the randomizer overlay itself unless showToAttendees is true).
+  return g;
 }
 
 export default router;
