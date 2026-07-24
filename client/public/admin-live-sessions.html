@@ -18,6 +18,31 @@
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     #createModal { display:none; }
     #createModal.open { display:flex; }
+    /* Print layout: strip the app chrome and per-row actions, leave a clean sessions table. */
+    @media print {
+      header, aside, #toast, .no-print { display: none !important; }
+      main { padding: 0 !important; }
+      body { background: #fff !important; }
+      #mainContent .shadow-sm, #mainContent .border { box-shadow: none !important; }
+      /* Hide the Actions column (last cell of each row + its header). */
+      #sessionsBody tr td:last-child, thead th:last-child { display: none !important; }
+
+      /* Run of Show run sheet: printRunOfShow() sets body.printing-ros so only
+         the open modal prints, flattened to a full-page document. */
+      body.printing-ros > *:not(#runOfShowModal) { display: none !important; }
+      body.printing-ros #runOfShowModal {
+        position: static !important; inset: auto !important; display: block !important;
+        background: none !important; padding: 0 !important;
+      }
+      body.printing-ros #runOfShowModal > div {
+        max-width: none !important; max-height: none !important; overflow: visible !important;
+        box-shadow: none !important; border: none !important; border-radius: 0 !important;
+      }
+      /* Drop interactive controls from the run sheet; keep the value-bearing
+         inputs/selects/textareas so the agenda content still prints. */
+      body.printing-ros #runOfShowModal button,
+      body.printing-ros #rosImportBar { display: none !important; }
+    }
   </style>
 <script src="/js/cr-gtag.js"></script>
 </head>
@@ -92,7 +117,10 @@
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap no-print">
+          <button onclick="window.print()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-print text-xs"></i> Print
+          </button>
           <button onclick="openSeriesListModal()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-layer-group text-xs"></i> Manage Series
           </button>
@@ -500,9 +528,15 @@
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
       <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
         <h2 id="rosTitle" class="font-display text-2xl font-semibold text-burgundy-900">Run of Show</h2>
-        <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
-          <i class="fas fa-times text-lg"></i>
-        </button>
+        <div class="flex items-center gap-3 no-print">
+          <button onclick="printRunOfShow()" title="Print run sheet"
+            class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-print text-xs"></i> Print
+          </button>
+          <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
       </div>
       <div class="px-6 py-5 space-y-6">
         <div id="rosImportBar" class="flex items-center justify-between bg-honey-50 border border-honey-200 rounded-lg px-4 py-3">
@@ -1443,6 +1477,22 @@
       document.getElementById('runOfShowModal').style.display = 'none';
       rosSession = null;
       rosAgenda = [];
+    }
+
+    // Print the open Run of Show as a facilitator run sheet. Sync the agenda
+    // editor's DOM into memory first (so any unsaved edits print), flag the body
+    // so the print CSS shows only this modal, then clean up after the dialog.
+    function printRunOfShow() {
+      if (!rosSession) return;
+      try { syncAgendaFromDom(); } catch {}
+      document.body.classList.add('printing-ros');
+      const cleanup = () => {
+        document.body.classList.remove('printing-ros');
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+      window.print();
+      setTimeout(cleanup, 1000); // fallback if afterprint doesn't fire
     }
 
     // Build the agenda editor's working-copy row. Editable fields become form
