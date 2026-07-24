@@ -354,6 +354,23 @@ const liveSessionSchema = new mongoose.Schema({
         revealed: { type: Boolean, default: false }
       },
       default: null
+    },
+
+    // ─── Live session game props ─────────────────────────────────────────
+    // Host-launched interactive games (randomizer, shared timer, jeopardy,
+    // clue reveal, family-feud). type='none' means no game is running. state
+    // is a free-form (Mixed) bag whose shape depends on type — built and
+    // mutated by the /:id/game/* routes in liveSessions.js. Additive: the
+    // default of type:'none' means legacy sessions behave byte-for-byte the
+    // same. markModified('liveState') is required on every state mutation
+    // (Mixed subtree is not change-tracked automatically).
+    game: {
+      type: {
+        type: String,
+        enum: ['none', 'randomizer', 'timer', 'jeopardy', 'clue', 'feud'],
+        default: 'none'
+      },
+      state: { type: mongoose.Schema.Types.Mixed, default: {} }
     }
   },
 
