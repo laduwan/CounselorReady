@@ -379,6 +379,74 @@
     window.gtag('config', 'AW-16681104079');
   }
 
+
+  // ── PARTNER PORTAL CORNER POPUP ──────────────────────────────
+  (function injectPartnerPopup() {
+    const DISMISS_KEY = 'cr_partner_popup_dismissed';
+    const path = window.location.pathname;
+    if (!path.includes('live-room') && !path.includes('live-evaluation')) return;
+    const dismissed = localStorage.getItem(DISMISS_KEY);
+    if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+
+    const el = document.createElement('div');
+    el.id = 'cr-partner-popup';
+    el.innerHTML = `
+      <button id="cr-pp-close" aria-label="Dismiss">✕</button>
+      <div class="cr-pp-eyebrow">Are you an educator?</div>
+      <div class="cr-pp-body">Did you enjoy the flow of today's webinar? Join the CounselorReady Partner Portal and let us host your CE content.</div>
+      <a href="/partner-onboarding.html" class="cr-pp-cta">Learn about partnering →</a>
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #cr-partner-popup {
+        position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+        width: 300px; background: linear-gradient(135deg, #3D1120 0%, #6B1D34 55%, #284157 100%);
+        border-radius: 14px; padding: 22px 22px 18px;
+        box-shadow: 0 8px 32px rgba(0,0,0,.28), 0 0 0 1px rgba(212,168,85,.25);
+        font-family: 'Lato', system-ui, sans-serif;
+        animation: cr-pp-slide 0.35s cubic-bezier(.16,1,.3,1);
+      }
+      @keyframes cr-pp-slide {
+        from { opacity:0; transform: translateY(20px) scale(.96); }
+        to   { opacity:1; transform: translateY(0) scale(1); }
+      }
+      #cr-pp-close {
+        position: absolute; top: 10px; right: 12px;
+        background: none; border: none; color: rgba(255,255,255,.45);
+        font-size: 14px; cursor: pointer; line-height: 1; padding: 2px 4px;
+      }
+      #cr-pp-close:hover { color: #fff; }
+      .cr-pp-eyebrow {
+        font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+        color: #D4A855; font-weight: 700; margin-bottom: 7px;
+      }
+      .cr-pp-body {
+        font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.88);
+        margin-bottom: 14px;
+      }
+      .cr-pp-cta {
+        display: inline-block; background: #D4A855; color: #3D1120;
+        font-size: 12.5px; font-weight: 700; padding: 8px 16px;
+        border-radius: 7px; text-decoration: none; letter-spacing: .04em;
+        transition: background .15s;
+      }
+      .cr-pp-cta:hover { background: #c49840; }
+    `;
+    document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.appendChild(el);
+      document.getElementById('cr-pp-close').addEventListener('click', function() {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+        el.style.transition = 'opacity .2s, transform .2s';
+        setTimeout(() => el.remove(), 220);
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      });
+    });
+  })();
+
   window.gtag_report_conversion = function (transactionId, value) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-16681104079/301FCOXuxp8cEM_llZI-',
