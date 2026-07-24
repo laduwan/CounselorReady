@@ -174,7 +174,8 @@
 
         showSession(data.session);
         const frame = document.getElementById('roomFrame');
-        frame.src = data.roomUrl;
+        const rsep = data.roomUrl.includes('?') ? '&' : '?';
+        frame.src = data.roomUrl + rsep + 'breakout=on&lang=en';
         frame.classList.remove('hidden');
         if (data.session.sessionType === 'live-course') document.getElementById('ceNote').classList.remove('hidden');
         document.getElementById('gate').classList.add('hidden');

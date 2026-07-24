@@ -5,138 +5,188 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta property="og:image" content="https://counselorready.com/images/og-social.png">
-  <title>Live Room - CounselorReady</title>
+  <title>Host Console - CounselorReady</title>
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/js/tailwind-config.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <style>
-    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
-    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
-    #roomFrame, #replayVideo{width:100%;aspect-ratio:16/10;border:0;border-radius:12px;background:#1a1a1a;}
-    #clipPlayer{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;display:none;}
-    .clip-active #roomFrame{aspect-ratio:auto;height:140px;margin-top:12px;}
-    .clip-active #clipPlayer{display:block;}
-    .handout-link{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;color:#284157;font-size:14px;text-decoration:none;transition:background .1s;}
-    .handout-link:hover{background:#F2F7F4;}
-    .handout-link.locked{opacity:.5;cursor:not-allowed;}
-    #nowCard{background:#F2F7F4;border:1px solid #C7DDD0;border-radius:12px;padding:14px;margin-bottom:12px;}
-    #nowCard h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4A7C59;margin-bottom:4px;}
-    #nowSegTitle{font-size:15px;font-weight:600;color:#284157;margin-bottom:6px;}
-    #nowPrompt{font-size:13px;color:#44403c;line-height:1.5;margin-bottom:6px;}
-    #nowCountdown{font-size:12px;color:#7a5c1e;font-weight:600;}
-    #breakoutBadge{display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;}
-    /* .hidden (Tailwind display:none) can't override an inline display; drive the overlay's flex layout from a rule so classList toggling actually hides it */
-    #checkinModal:not(.hidden){display:flex;align-items:center;justify-content:center;}
+    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif;}
+    .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
+    .seg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;margin-bottom:6px;cursor:pointer;transition:background .1s;}
+    .seg-row.active{background:#F2F7F4;border-color:#4A7C59;}
+    .seg-row:hover:not(.active){background:#fafaf9;}
+    .seg-badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+    .badge-lecture{background:#EDE9E3;color:#57534e;}
+    .badge-clip{background:#EDF2FF;color:#3B5FCC;}
+    .badge-discussion{background:#F0FDF4;color:#166534;}
+    .badge-breakout{background:#FFF7ED;color:#c2410c;}
+    .badge-break{background:#F9F5FF;color:#7e22ce;}
+    .transport-btn{padding:8px 18px;border-radius:8px;border:none;font-weight:700;cursor:pointer;font-size:14px;}
+    .btn-play{background:#4A7C59;color:#fff;}
+    .btn-play:hover{background:#3d6b4b;}
+    .btn-pause{background:#8B2542;color:#fff;}
+    .btn-pause:hover{background:#7a1d38;}
+    #seekBar{width:100%;accent-color:#284157;}
+    /* ── Host controls panel ── */
+    .host-tab{padding:7px 14px;border:none;background:transparent;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;cursor:pointer;color:#57534e;}
+    .host-tab.active{background:#fff;color:#6B1D34;box-shadow:inset 0 -2px 0 #6B1D34;}
+    .host-tabpane{padding-top:14px;}
+    .crit-caution{background:#6B1D34;color:#fff;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;font-weight:600;}
+    .caution{background:#FDF5F6;color:#6B1D34;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;border:1px solid #F5D0D6;}
+    .roster-live{display:inline-block;color:#4A7C59;font-weight:700;}
+    .saved-ind{font-size:12px;color:#4A7C59;font-weight:700;opacity:0;transition:opacity .2s;}
+    .saved-ind.show{opacity:1;}
+    .seg-timer{font-size:13px;font-family:ui-monospace,monospace;font-weight:700;color:#284157;padding:2px 8px;border-radius:6px;}
+    .seg-timer.flash{background:#6B1D34;color:#fff;animation:segflash .5s steps(2) infinite;}
+    @keyframes segflash{50%{opacity:.45;}}
+    .cert-btn{padding:8px 16px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;background:#D4A855;color:#4A1524;}
+    .cert-btn:disabled{background:#EDE9E3;color:#8a8580;cursor:default;}
+    .host-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#284157;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+    .host-toast.show{opacity:1;}
+    .rtable{width:100%;border-collapse:collapse;}
+    .rtable th{text-align:left;font-weight:700;color:#284157;padding:6px 8px;border-bottom:1px solid #EDE9E3;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+    .rtable td{padding:6px 8px;border-bottom:1px solid #F4F1EC;color:#44403c;font-size:14px;}
+    /* ── Autopilot control ── */
+    .ap-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em;}
+    .ap-on{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
+    .ap-paused{background:#FFF7ED;color:#c2410c;border:1px solid #FED7AA;}
+    .ap-off{background:#EDE9E3;color:#57534e;border:1px solid #E0DBD3;}
+    .ap-dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+    .ap-on .ap-dot{animation:apPulse 1.4s ease-in-out infinite;}
+    @keyframes apPulse{50%{opacity:.35;}}
+    .ap-btn{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;border:none;cursor:pointer;background:#284157;color:#fff;}
+    .ap-btn:hover{background:#1f3444;}
+    .ap-btn.ap-btn-off{background:#8B2542;}
+    .ap-btn.ap-btn-off:hover{background:#7a1d38;}
+    /* ── Poll controls ── */
+    .pbtn{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;border:none;cursor:pointer;background:#284157;color:#fff;}
+    .pbtn:hover{background:#1f3444;}
+    .pbtn.rev{background:#4A7C59;}
+    .pbtn.rev:hover{background:#3d6b4b;}
+    .pbtn.warn{background:#8B2542;}
+    .pbtn.warn:hover{background:#7a1d38;}
+    .poll-box{border:1px solid #C7D2FE;background:#EEF2FF;border-radius:8px;padding:10px;margin-bottom:8px;}
+    .slide-thumb{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #EDE9E3;}
   </style>
 </head>
 <body>
   <script src="/shared/nav-footer.js"></script>
 
-  <main class="max-w-6xl mx-auto px-4 py-8">
-    <div id="gate" class="text-center py-20" style="color:#284157;">Checking your registration…</div>
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    <div id="gate" class="text-center py-20" style="color:#284157;">Checking admin access…</div>
 
-    <div id="room" class="hidden">
-      <div class="mb-4">
-        <a href="/live-sessions.html" class="text-sm underline" style="color:#4A7C59;">&larr; Back to Live Sessions</a>
-        <h1 id="title" class="font-display text-3xl font-bold mt-1" style="color:#6B1D34;"></h1>
-        <p id="meta" class="text-sm mt-1" style="color:#284157;"></p>
-      </div>
-      <div class="grid lg:grid-cols-4 gap-6">
-        <div id="mainCol" class="lg:col-span-3">
-          <video id="clipPlayer" playsinline></video>
-          <iframe id="roomFrame" class="hidden"
-                  allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
-          <video id="replayVideo" class="hidden" controls playsinline></video>
-          <p id="muteReminder" class="hidden text-xs mt-2 text-center" style="color:#7a5c1e;">🔇 Mute your mic in the video call while watching the clip.</p>
+    <div id="console" class="hidden">
+      <div class="mb-4 flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <h1 id="sessionTitle" class="font-display text-3xl font-bold" style="color:#6B1D34;"></h1>
+          <p id="sessionMeta" class="text-sm mt-1" style="color:#284157;"></p>
         </div>
-        <aside class="lg:col-span-1">
-          <!-- Live poll — appears above the NOW card only while a poll is launched -->
-          <div id="pollCard" class="hidden" style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;padding:14px;margin-bottom:12px;">
-            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#3730A3;margin-bottom:6px;">Live Poll</h3>
-            <div id="pollQuestion" style="font-size:14px;font-weight:600;color:#284157;margin-bottom:10px;"></div>
-            <div id="pollOptions" style="display:flex;flex-direction:column;gap:6px;"></div>
-            <div id="pollStatus" style="font-size:12px;color:#4A7C59;font-weight:600;margin-top:8px;"></div>
-          </div>
-          <div id="nowCard" class="hidden">
-            <h3>Now</h3>
-            <div id="breakoutBadge">Breakout</div>
-            <div id="nowBreakBadge" style="display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;">☕ On Break</div>
-            <div id="nowSegTitle"></div>
-            <div id="nowPrompt"></div>
-            <div id="nowMedia" style="display:none;margin-bottom:8px;"></div>
-            <div id="nowBreakout" style="display:none;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:10px;margin-bottom:8px;"></div>
-            <div id="nowCountdown"></div>
-          </div>
-          <div id="hostPanel" class="hidden mt-3 rounded-xl p-4" style="background:#FBF6EC;border:1px solid #EFE0C2;">
-            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#7a5c1e;margin-bottom:6px;">Host Dashboard (only you see this)</h3>
-
-            <div id="hostGlobalCautions" class="hidden" style="background:#fef3c7;border:1px solid #fbbf24;border-radius:8px;padding:8px 10px;margin-bottom:10px;"></div>
-
-            <div id="hostPreFlight" class="hidden" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;margin-bottom:10px;"></div>
-
-            <div id="hostClock" style="font-size:12px;color:#284157;margin-bottom:8px;"></div>
-
-            <div id="hostNotes" style="font-size:13px;color:#44403c;line-height:1.5;white-space:pre-wrap;margin-bottom:8px;"></div>
-
-            <div id="hostSegCautions" class="hidden" style="margin-bottom:10px;"></div>
-
-            <div id="hostSegBreakouts" class="hidden" style="background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
-
-            <div id="hostSegExercise" class="hidden" style="background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
-
-            <div id="hostSegPolls" class="hidden" style="background:#e0e7ff;border:1px solid #a5b4fc;border-radius:8px;padding:10px;margin-bottom:10px;"></div>
-
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-              <button id="hostPrevBtn" onclick="advanceSegment(-1)" style="padding:6px 12px;border-radius:8px;border:1px solid #EFE0C2;background:#fff;font-size:12px;font-weight:600;color:#7a5c1e;">◀ Prev</button>
-              <button id="hostNextBtn" onclick="advanceSegment(1)" style="padding:6px 12px;border-radius:8px;background:#6B1D34;color:#fff;font-size:12px;font-weight:600;">Next ▶</button>
-              <select id="hostJumpSelect" onchange="jumpToSegment(this.value)" style="padding:6px 8px;border-radius:8px;border:1px solid #EFE0C2;font-size:12px;max-width:180px;"></select>
-            </div>
-
-            <div id="hostBreakStatus" class="hidden" style="font-size:13px;font-weight:700;color:#3B5FCC;margin-bottom:10px;"></div>
-
-            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Who's here</div>
-            <div id="hostHeadcount" style="font-size:12px;color:#44403c;margin-bottom:10px;"></div>
-
-            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Checklist</div>
-            <div id="hostChecklistBox" style="margin-bottom:10px;"></div>
-
-            <div style="font-size:12px;font-weight:700;color:#7a5c1e;margin-bottom:4px;">Scratchpad</div>
-            <textarea id="hostScratchpad" rows="4" placeholder="Notes to yourself during the session..."
-              style="width:100%;border:1px solid #EFE0C2;border-radius:8px;padding:8px;font-size:13px;"
-              oninput="onScratchpadInput()"></textarea>
-          </div>
-          <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
-            <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Handouts</h2>
-            <div id="handouts" class="flex flex-col gap-2">
-              <p class="text-sm" style="color:#57534e;">No handouts for this session.</p>
-            </div>
-          </div>
-          <div class="bg-white rounded-xl border p-4 mt-4" style="border-color:#EDE9E3;">
-            <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:#284157;cursor:pointer;">
-              <input type="checkbox" id="cameraOptOutToggle" onchange="onCameraToggle(this.checked)">
-              I will not have my camera on
-            </label>
-            <p style="font-size:11px;color:#78716c;margin-top:4px;">You'll get a quick pop-up every 15&ndash;20 minutes to confirm you're still here &mdash; answer within 3 minutes.</p>
-          </div>
-          <div id="ceNote" class="hidden mt-4 rounded-xl p-4 text-xs leading-relaxed" style="background:#FBF6EC;color:#7a5c1e;border:1px solid #EFE0C2;">
-            <strong>CE credit requires live attendance.</strong> Your join and leave times are verified automatically. Stay for at least the required portion of the session and your certificate will be issued after the webinar ends — no quiz required for live credit.
-          </div>
-        </aside>
+        <div class="flex gap-3 items-center">
+          <span id="autopilotCtl" class="flex items-center gap-2"></span>
+          <span id="attendeeCount" class="text-sm font-semibold" style="color:#284157;">– attendees</span>
+          <span id="segTimer" class="seg-timer hidden"></span>
+          <span id="elapsed" class="text-sm font-mono" style="color:#7a5c1e;"></span>
+        </div>
       </div>
-      <div id="evalCard" class="hidden bg-white rounded-xl border p-6 mt-4" style="border-color:#EDE9E3;">
-        <h3 class="font-display text-xl font-semibold mb-1" style="color:#6B1D34;">Course Evaluation</h3>
-        <p class="text-sm mb-4" style="color:#78716c;">Required before your certificate can be issued.</p>
-        <div id="evalQuestions"></div>
-        <div id="evalError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
-        <button onclick="submitEvaluation()" id="evalSubmitBtn"
-          style="background:#6B1D34;color:#fff;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:700;">
-          Submit Evaluation
-        </button>
-        <p id="evalDone" class="hidden text-sm font-semibold" style="color:#2D6A4F;margin-top:10px;">Evaluation submitted — thank you!</p>
+
+      <!-- Video room + agenda side by side -->
+      <div class="grid lg:grid-cols-2 gap-6 mb-6">
+
+        <!-- Whereby host room embed -->
+        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:400px;">
+          <div id="roomGate" class="flex items-center justify-center" style="min-height:400px;">
+            <div class="text-center px-6">
+              <div class="text-4xl mb-4">📹</div>
+              <button onclick="joinRoom()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:#6B1D34;color:#fff;">
+                Enter Video Room
+              </button>
+              <p class="mt-3 text-xs" style="color:#8a7a7b;">Host room opens here — no Whereby site visit needed.</p>
+            </div>
+          </div>
+          <iframe id="roomFrame" class="hidden w-full" style="height:400px;border:0;"
+                  allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
+        </div>
+
+        <!-- Agenda -->
+        <div>
+          <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Agenda</h2>
+          <div id="agendaList"></div>
+          <p id="noAgenda" class="text-sm" style="color:#57534e;display:none;">No agenda configured for this session.</p>
+        </div>
+
+      </div>
+
+      <!-- Clip Transport + Now summary -->
+      <div class="grid lg:grid-cols-5 gap-6">
+
+        <div class="lg:col-span-3">
+          <div id="clipPanel" class="hidden mb-4 bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Clip Transport</h2>
+            <p id="clipTitle" class="text-sm font-semibold mb-3" style="color:#284157;"></p>
+            <video id="hostClipPlayer" class="w-full rounded-lg mb-3" style="background:#000;max-height:240px;" controls playsinline></video>
+            <input type="range" id="seekBar" min="0" step="0.5" value="0">
+            <div class="flex gap-3 mt-3">
+              <button id="playBtn" class="transport-btn btn-play flex-1">▶ Play for everyone</button>
+              <button id="pauseBtn" class="transport-btn btn-pause flex-1">⏸ Pause for everyone</button>
+            </div>
+            <p class="text-xs mt-2" style="color:#57534e;">Your seek position is broadcast to attendees. Use the timeline to jump to a specific moment, then click Play.</p>
+          </div>
+
+          <!-- Now summary -->
+          <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Current segment</h2>
+            <div id="nowSummary" class="text-sm" style="color:#57534e;">No segment selected.</div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-2"></div>
+
+      </div>
+
+      <!-- ═══ HOST CONTROLS (host-only; nothing here is broadcast to attendees) ═══ -->
+      <div id="hostPanel" class="mt-6 bg-white rounded-xl border" style="border-color:#EDE9E3;">
+        <div class="flex items-center justify-between flex-wrap gap-3 px-4 pt-4">
+          <div class="flex gap-1" id="hostTabs">
+            <button class="host-tab active" data-tab="roster">Roster</button>
+            <button class="host-tab" data-tab="notes">Segment Notes</button>
+            <button class="host-tab" data-tab="checklists">Checklists</button>
+            <button class="host-tab" data-tab="scratchpad">Scratchpad</button>
+          </div>
+          <div id="certWrap"></div>
+        </div>
+        <div class="p-4">
+          <!-- ROSTER -->
+          <div class="host-tabpane" data-pane="roster">
+            <div id="rosterTotals" class="text-sm font-semibold mb-2" style="color:#284157;">– live · – attended</div>
+            <div style="overflow-x:auto;">
+              <table class="rtable">
+                <thead><tr><th>Attendee</th><th>Joined</th><th>Left</th><th>Duration</th></tr></thead>
+                <tbody id="rosterBody"><tr><td colspan="4" style="color:#57534e;">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- SEGMENT NOTES -->
+          <div class="host-tabpane hidden" data-pane="notes">
+            <div id="segNotes" class="text-sm" style="color:#57534e;">No segment selected.</div>
+            <div id="globalCautions" class="mt-4"></div>
+          </div>
+          <!-- CHECKLISTS -->
+          <div class="host-tabpane hidden" data-pane="checklists">
+            <div id="preFlightList"></div>
+            <div id="hostChecklistList"></div>
+            <span id="checklistSaved" class="saved-ind">✓ saved</span>
+          </div>
+          <!-- SCRATCHPAD -->
+          <div class="host-tabpane hidden" data-pane="scratchpad">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-xs font-bold" style="color:#284157;">HOST SCRATCHPAD (private)</div>
+              <span id="scratchpadSaved" class="saved-ind">✓ saved</span>
+            </div>
+            <textarea id="scratchpad" rows="8" class="w-full rounded-lg p-3 text-sm" style="border:1px solid #EDE9E3;color:#44403c;resize:vertical;" placeholder="Private notes — never shown to attendees…"></textarea>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -144,844 +194,747 @@
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
     const token = localStorage.getItem('token');
-    const params = new URLSearchParams(window.location.search);
-    const slug = params.get('session');
-    const wantReplay = params.get('replay') === '1';
-    const seekTo = params.get('t') ? parseFloat(params.get('t')) : null;
+    const slug = new URLSearchParams(window.location.search).get('session');
+
+    let session = null;
+    let currentSegIdx = 0;
+    // Agenda lives in host-state (public session fetch strips it). Fall back to
+    // session.agenda for any legacy payloads.
+    function agendaData() {
+      return (hostState && Array.isArray(hostState.agenda) && hostState.agenda.length) ? hostState.agenda : (session.agenda || []);
+    }
+    let sessionStartedAt = null;
+    let attendanceTimer = null;
+    let elapsedTimer = null;
+    let hostClipLoaded = null;
 
     function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
 
-    async function init() {
-      if (!slug) return gateMsg('Missing session. <a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Browse live sessions</a>.');
-      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
-
-      if (wantReplay) return loadReplay();
-
+    async function joinRoom() {
       try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/join`, {
+        const btn = document.querySelector('#roomGate button');
+        if (btn) { btn.disabled = true; btn.textContent = 'Joining…'; }
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/join`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-
         if (!res.ok) {
-          if (data.opensAt) {
-            const opens = new Date(data.opensAt);
-            return gateMsg(`The room opens at <strong>${opens.toLocaleString()}</strong>.<br><span class="text-sm">This page will let you in 15 minutes before the scheduled start.</span>`);
-          }
-          return gateMsg(`${data.error || 'Unable to join this session.'}<br><a class="underline" style="color:#4A7C59;" href="/live-sessions.html">Back to live sessions</a>`);
-        }
-
-        showSession(data.session);
-        const frame = document.getElementById('roomFrame');
-        const rsep = data.roomUrl.includes('?') ? '&' : '?';
-        frame.src = data.roomUrl + rsep + 'breakout=on&lang=en';
-        frame.classList.remove('hidden');
-        if (data.session.sessionType === 'live-course') document.getElementById('ceNote').classList.remove('hidden');
-        document.getElementById('gate').classList.add('hidden');
-        document.getElementById('room').classList.remove('hidden');
-        loadHandouts(data.session);
-        if (data.session.sessionType === 'live-course') {
-          startSyncLoop(data.session._id);
-          loadCatchupBanner(data.session);
-        }
-      } catch {
-        gateMsg('Connection problem. Please refresh.');
-      }
-    }
-
-    async function loadReplay() {
-      try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/replay`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (!res.ok) return gateMsg(data.error || 'No replay available.');
-
-        const detail = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`).then(r => r.json());
-        if (detail.session) { showSession(detail.session); loadHandouts(detail.session); }
-        document.getElementById('title').textContent = data.title + ' — Replay';
-
-        const video = document.getElementById('replayVideo');
-        video.src = data.replayUrl;
-        if (seekTo != null) {
-          video.addEventListener('loadedmetadata', () => { video.currentTime = seekTo; }, { once: true });
-        }
-        video.classList.remove('hidden');
-        document.getElementById('gate').classList.add('hidden');
-        document.getElementById('room').classList.remove('hidden');
-        // Show rejoin banner if user has prior gaps this session (live-course only)
-        if (detail.session?.sessionType === 'live-course') loadCatchupBanner(detail.session);
-      } catch {
-        gateMsg('Could not load the replay. Please refresh.');
-      }
-    }
-
-    async function loadCatchupBanner(session) {
-      if (!token) return;
-      try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/catchup`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.queued || !data.gaps || data.gaps.length === 0) return;
-
-        // Check if any gap ≥ 3 min
-        const meaningful = data.gaps.filter(g => g.gapMin >= 3);
-        if (meaningful.length === 0) return;
-
-        const totalMin = meaningful.reduce((s, g) => s + g.gapMin, 0);
-        const banner = document.createElement('div');
-        banner.id = 'catchupBanner';
-        banner.style.cssText = 'background:#FBF6EC;border:1px solid #EFE0C2;border-radius:10px;padding:14px 16px;margin-top:12px;';
-        banner.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <span style="font-size:14px;color:#7a5c1e;">You were away ~${totalMin} min during this session.</span>
-          <button id="catchupBtn" style="background:#6B1D34;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:13px;cursor:pointer;">View Recap</button>
-        </div>
-        <div id="catchupContent" style="display:none;margin-top:12px;"></div>`;
-        document.getElementById('mainCol').after(banner);
-
-        document.getElementById('catchupBtn').addEventListener('click', () => {
-          const content = document.getElementById('catchupContent');
-          const btn = document.getElementById('catchupBtn');
-          if (content.style.display === 'none') {
-            content.style.display = 'block';
-            btn.textContent = 'Hide Recap';
-            renderCatchup(content, meaningful);
-          } else {
-            content.style.display = 'none';
-            btn.textContent = 'View Recap';
-          }
-        });
-      } catch { /* non-fatal */ }
-    }
-
-    function renderCatchup(container, gaps) {
-      let html = '';
-      for (const gap of gaps) {
-        html += `<div style="margin-bottom:10px;padding:10px;background:#fff;border-radius:8px;border:1px solid #EDE9E3;">
-          <p style="font-size:13px;color:#57534e;margin:0 0 6px;">~${gap.gapMin} min gap</p>`;
-        if (gap.summary && gap.summary.length > 0) {
-          html += `<ul style="margin:0 0 6px;padding-left:18px;font-size:14px;color:#284157;">`;
-          for (const b of gap.summary) html += `<li>${esc(b)}</li>`;
-          html += `</ul>`;
-        }
-        html += `<a href="${gap.replayUrl}" style="font-size:13px;color:#4A7C59;">▶ Jump to this segment</a></div>`;
-      }
-      container.innerHTML = html;
-    }
-
-    function showSession(s) {
-      document.getElementById('title').textContent = s.title;
-      document.getElementById('meta').textContent =
-        (s.sessionType === 'supervision' ? 'Clinical Supervision Session' : `${s.ceuHours} CE Hours · Live Webinar`) +
-        ' · ' + new Date(s.scheduledStart).toLocaleString();
-    }
-
-    function loadHandouts(s) {
-      const wrap = document.getElementById('handouts');
-      if (!s.handouts || s.handouts.length === 0) return;
-      wrap.innerHTML = '';
-      for (const h of s.handouts) {
-        const a = document.createElement('a');
-        a.className = 'handout-link';
-        a.href = '#';
-        a.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A7C59" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>${esc(h.title)}</span>`;
-        a.onclick = async (e) => {
-          e.preventDefault();
-          const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/handouts/${h._id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          const data = await res.json();
-          if (res.ok && data.fileUrl) window.open(data.fileUrl, '_blank');
-          else alert(data.error || 'This handout is not available yet.');
-        };
-        wrap.appendChild(a);
-      }
-    }
-
-    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-
-    /* ── Watch-party sync loop ─────────────────────────────────────────── */
-    let syncInterval = null;
-    let lastClipIndex = null;
-    let currentSessionId = null;
-
-    function startSyncLoop(sessionId) {
-      currentSessionId = sessionId;
-      syncInterval = setInterval(() => pollLiveState(sessionId), 3000);
-    }
-
-    let agendaLength = 0;
-    let currentSegIndex = 0;
-
-    // Host instructor-dashboard state
-    let alarmLeadSec = 60;
-    let isHostGlobal = false;
-    let fullAgenda = [];
-    let lastSegAlarmKey = null;
-    let warnedForSeg = false;
-    let urgentFiredForSeg = false;
-    let scheduledStartMs = null;
-    let scheduledEndMs = null;
-    let scratchpadLoaded = false;
-    let scratchpadSaveTimer = null;
-    let breakAlarmFiredFor = null;
-    let lastKnownChecklist = [];
-
-    // Camera-off presence check-in state
-    let checkinDeadlineMs = null;
-    let checkinTickTimer = null;
-    let lastWarnedCheckinKey = null;
-
-    async function onCameraToggle(checked) {
-      try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/camera-status`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cameraOptOut: checked })
-        });
-      } catch { /* will resync on next poll */ }
-    }
-
-    function updateMyCheckin(myCheckin) {
-      if (!myCheckin) return;
-
-      if (myCheckin.removed) {
-        window.location.href = '/live-sessions.html?removed=checkin';
-        return;
-      }
-
-      if (myCheckin.justMissedWarning && lastWarnedCheckinKey !== myCheckin.pending?.deadline) {
-        lastWarnedCheckinKey = myCheckin.pending?.deadline || 'warned';
-        alert("You missed a check-in. If you miss another one, you'll be removed from this session.");
-      }
-
-      const modal = document.getElementById('checkinModal');
-      if (myCheckin.pending) {
-        modal.classList.remove('hidden');
-        checkinDeadlineMs = new Date(myCheckin.pending.deadline).getTime();
-        if (!checkinTickTimer) checkinTickTimer = setInterval(tickCheckinTimer, 500);
-      } else {
-        modal.classList.add('hidden');
-        checkinDeadlineMs = null;
-        if (checkinTickTimer) { clearInterval(checkinTickTimer); checkinTickTimer = null; }
-      }
-    }
-
-    function tickCheckinTimer() {
-      if (!checkinDeadlineMs) return;
-      const remaining = Math.max(0, Math.round((checkinDeadlineMs - Date.now()) / 1000));
-      const m = Math.floor(remaining / 60), s = remaining % 60;
-      document.getElementById('checkinTimer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
-      if (remaining <= 0) {
-        // Client-side enforcement — don't wait for the next server poll
-        clearInterval(checkinTickTimer);
-        checkinTickTimer = null;
-        window.location.href = '/live-sessions.html?removed=checkin';
-      }
-    }
-
-    async function respondToCheckin() {
-      try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/checkin/respond`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
-        });
-      } catch { /* will resync on next poll regardless */ }
-      document.getElementById('checkinModal').classList.add('hidden');
-      if (checkinTickTimer) { clearInterval(checkinTickTimer); checkinTickTimer = null; }
-      checkinDeadlineMs = null;
-    }
-
-    function beep(freq, durMs) {
-      try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        const ctx = new Ctx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.frequency.value = freq;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + durMs / 1000);
-      } catch { /* audio unavailable — visual alarm still shows */ }
-    }
-
-    let evalQuestions = [];
-
-    async function loadEvaluation() {
-      try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/evaluation`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        document.getElementById('evalCard').classList.remove('hidden');
-        if (data.completed) {
-          document.getElementById('evalQuestions').classList.add('hidden');
-          document.getElementById('evalSubmitBtn').classList.add('hidden');
-          document.getElementById('evalDone').classList.remove('hidden');
+          if (btn) { btn.disabled = false; btn.textContent = 'Enter Video Room'; }
+          alert(data.error || 'Could not join room.');
           return;
         }
-        evalQuestions = data.questions || [];
-        renderEvalQuestions();
-      } catch { /* evaluation is non-critical to page load — fail silently */ }
-    }
-
-    function renderEvalQuestions() {
-      const container = document.getElementById('evalQuestions');
-      container.innerHTML = evalQuestions.map((q, i) => {
-        let inputHtml = '';
-        if (q.type === 'rating') {
-          inputHtml = `<div style="display:flex;gap:6px;">${[1,2,3,4,5].map(n =>
-            `<label style="display:flex;flex-direction:column;align-items:center;font-size:11px;color:#78716c;">
-              <input type="radio" name="eval_${i}" value="${n}"> ${n}
-            </label>`).join('')}</div>`;
-        } else if (q.type === 'yes_no') {
-          inputHtml = `<div style="display:flex;gap:16px;">
-            <label style="font-size:13px;"><input type="radio" name="eval_${i}" value="yes"> Yes</label>
-            <label style="font-size:13px;"><input type="radio" name="eval_${i}" value="no"> No</label>
-          </div>`;
-        } else {
-          inputHtml = `<textarea name="eval_${i}" rows="2" style="width:100%;border:1px solid #EDE9E3;border-radius:8px;padding:6px;font-size:13px;"></textarea>`;
+        const frame = document.getElementById('roomFrame');
+        // Append Whereby embed params to minimise Whereby chrome
+        const sep = data.roomUrl.includes('?') ? '&' : '?';
+        let embedUrl = data.roomUrl + sep + 'lang=en&skipMediaPermissionPrompt=on&screenshare=on&chat=on&people=on&leaveButton=on&pipButton=on&breakout=on';
+        // Presenter avatar shown when the host camera is off. Whereby requires an
+        // https, square png/jpg (<=64x64) URL with NO query params; only append
+        // when the stored value satisfies that, otherwise skip silently.
+        const avatar = data.session && data.session.presenter && data.session.presenter.photoUrl;
+        if (avatar && avatar.startsWith('https://') && !avatar.includes('?')) {
+          embedUrl += '&avatarUrl=' + encodeURIComponent(avatar);
         }
-        return `<div style="margin-bottom:14px;">
-          <label style="font-size:13px;font-weight:600;color:#284157;display:block;margin-bottom:6px;">${q.question}${q.required ? ' *' : ''}</label>
-          ${inputHtml}
-        </div>`;
-      }).join('');
-    }
-
-    async function submitEvaluation() {
-      const errEl = document.getElementById('evalError');
-      errEl.classList.add('hidden');
-      const responses = evalQuestions.map((q, i) => {
-        const els = document.getElementsByName(`eval_${i}`);
-        let response = null;
-        if (q.type === 'text') {
-          response = els[0]?.value || '';
-        } else {
-          const checked = Array.from(els).find(el => el.checked);
-          response = checked ? checked.value : null;
-        }
-        return { questionIndex: i, response };
-      });
-
-      try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/evaluation`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ responses })
-        });
-        const data = await res.json();
-        if (!res.ok) { errEl.textContent = data.error || 'Submission failed.'; errEl.classList.remove('hidden'); return; }
-        document.getElementById('evalQuestions').classList.add('hidden');
-        document.getElementById('evalSubmitBtn').classList.add('hidden');
-        document.getElementById('evalDone').classList.remove('hidden');
-      } catch {
-        errEl.textContent = 'Network error. Please try again.';
-        errEl.classList.remove('hidden');
+        frame.src = embedUrl;
+        frame.classList.remove('hidden');
+        document.getElementById('roomGate').classList.add('hidden');
+      } catch (e) {
+        alert('Could not connect to room. Please refresh and try again.');
       }
     }
 
-    async function pollLiveState(sessionId) {
+    async function init() {
+      if (!slug) return gateMsg('Missing session parameter. <a href="/live-sessions.html" class="underline" style="color:#4A7C59;">Browse sessions</a>.');
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search); return; }
+
       try {
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(sessionId)}/live-state`, {
+        // Verify admin
+        const meRes = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const meRaw = await meRes.json();
+        const me = meRaw.user || meRaw; // /api/auth/me returns { user: {...} }
+        if (!meRes.ok || me?.role !== 'admin') return gateMsg('Admin access required.');
+
+        // Load session
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (!res.ok) return;
         const data = await res.json();
-        updateNowCard(data.currentSegment, data.liveState);
-        updateActivePoll(data.activePoll);
-        updateWatchParty(data.liveState);
-        updateHostPanel(data);
-        updateMyCheckin(data.myCheckin);
-        if (data.status === 'completed' && syncInterval) {
-          clearInterval(syncInterval);
-          syncInterval = null;
-          loadEvaluation();
-        }
-      } catch { /* network hiccup — try again next tick */ }
-    }
+        if (!res.ok) return gateMsg(data.error || 'Session not found.');
+        session = data.session;
 
-    function updateHostPanel(data) {
-      const panel = document.getElementById('hostPanel');
-      if (!data.isHost) { panel.classList.add('hidden'); return; }
-      panel.classList.remove('hidden');
+        document.getElementById('sessionTitle').textContent = session.title;
+        document.getElementById('sessionMeta').textContent =
+          new Date(session.scheduledStart).toLocaleString() + ' · ' +
+          (session.ceuHours || 0) + ' CE hrs · ' + session.status;
 
-      renderHostGlobalCautions(data.globalFacilitatorCautions || []);
-      renderHostPreFlight(data.preFlightChecklist || [], data.status);
-      renderHostSegmentExtras(data.currentSegment);
+        sessionStartedAt = new Date(session.scheduledStart);
+        startElapsedTimer();
 
-      isHostGlobal = true;
-      agendaLength = data.agendaLength || 0;
-      currentSegIndex = data.liveState?.currentSegment ?? 0;
-      if (typeof data.alarmLeadSec === 'number') alarmLeadSec = data.alarmLeadSec;
+        renderAgenda();
+        wireHostTabs();
+        await loadHostState();
+        document.getElementById('gate').classList.add('hidden');
+        document.getElementById('console').classList.remove('hidden');
 
-      document.getElementById('hostNotes').textContent =
-        (data.currentSegment && data.currentSegment.speakerNotes) || '(no notes for this segment)';
-      document.getElementById('hostPrevBtn').disabled = currentSegIndex <= 0;
-      document.getElementById('hostNextBtn').disabled = currentSegIndex >= agendaLength - 1;
+        // Poll attendance count + follow server segment every 10s
+        pollAttendance();
+        syncLiveSegment();
+        attendanceTimer = setInterval(() => { pollAttendance(); syncLiveSegment(); }, 10000);
 
-      // Overall session clock
-      if (data.scheduledStart && data.scheduledEnd) {
-        scheduledStartMs = new Date(data.scheduledStart).getTime();
-        scheduledEndMs = new Date(data.scheduledEnd).getTime();
-        const now = Date.now();
-        const totalMin = Math.round((scheduledEndMs - scheduledStartMs) / 60000);
-        const elapsedMin = Math.max(0, Math.round((now - scheduledStartMs) / 60000));
-        const remainingMin = Math.max(0, Math.round((scheduledEndMs - now) / 60000));
-        document.getElementById('hostClock').textContent =
-          `Session: ${elapsedMin}m elapsed / ${remainingMin}m remaining (of ${totalMin}m total)`;
-      }
+        // Wire transport
+        document.getElementById('playBtn').addEventListener('click', broadcastPlay);
+        document.getElementById('pauseBtn').addEventListener('click', broadcastPause);
+        document.getElementById('seekBar').addEventListener('input', onSeekInput);
 
-      // Jump-to-segment dropdown
-      if (Array.isArray(data.agenda) && data.agenda.length) {
-        fullAgenda = data.agenda;
-        const sel = document.getElementById('hostJumpSelect');
-        sel.innerHTML = data.agenda.map((a, i) =>
-          `<option value="${i}" ${i === currentSegIndex ? 'selected' : ''}>${i + 1}. ${escHtmlHost(a.title || a.type)}</option>`
-        ).join('');
-      }
-
-      // Live headcount
-      const hc = data.currentlyPresent || [];
-      document.getElementById('hostHeadcount').textContent =
-        hc.length ? `${hc.length} present: ${hc.join(', ')}` : 'No one currently in the room.';
-
-      const alerts = data.checkinAlerts || [];
-      const alertsHtml = alerts.length
-        ? alerts.map(a => `<div style="font-size:12px;color:${a.removed ? '#b91c1c' : '#c0392b'};">${a.removed ? '⚠ Removed (2 missed check-ins): ' : '⚠ Missed a check-in: '}${escHtmlHost(a.displayName)}</div>`).join('')
-        : '';
-      let alertsBox = document.getElementById('hostCheckinAlerts');
-      if (!alertsBox) {
-        alertsBox = document.createElement('div');
-        alertsBox.id = 'hostCheckinAlerts';
-        alertsBox.style.marginBottom = '10px';
-        document.getElementById('hostHeadcount').insertAdjacentElement('afterend', alertsBox);
-      }
-      alertsBox.innerHTML = alertsHtml;
-
-      // Break status + end-of-break alarm
-      const breakEl = document.getElementById('hostBreakStatus');
-      const now = Date.now();
-      const activeBreak = (data.breaks || []).find(b => {
-        const start = new Date(b.startsAt).getTime();
-        const end = start + (b.durationMin || 0) * 60000;
-        return now >= start && now <= end + 60000; // 1-min grace for the alarm to still show
-      });
-      if (activeBreak) {
-        const start = new Date(activeBreak.startsAt).getTime();
-        const end = start + (activeBreak.durationMin || 0) * 60000;
-        const remainingSec = Math.max(0, Math.round((end - now) / 1000));
-        const m = Math.floor(remainingSec / 60), s = remainingSec % 60;
-        breakEl.classList.remove('hidden');
-        breakEl.textContent = remainingSec > 0
-          ? `On break ("${activeBreak.label || 'Break'}") — ${m}:${s.toString().padStart(2, '0')} remaining`
-          : `Break ("${activeBreak.label || 'Break'}") is over — resume now`;
-        const breakKey = activeBreak.startsAt;
-        if (remainingSec <= 0 && breakAlarmFiredFor !== breakKey) {
-          breakAlarmFiredFor = breakKey;
-          beep(880, 220);
-          setTimeout(() => beep(880, 220), 300);
-        }
-      } else {
-        breakEl.classList.add('hidden');
-      }
-
-      // Checklist
-      const checklistBox = document.getElementById('hostChecklistBox');
-      const items = data.hostChecklist || [];
-      lastKnownChecklist = items;
-      checklistBox.innerHTML = items.length
-        ? items.map((c, i) => `
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#44403c;margin-bottom:4px;">
-              <input type="checkbox" ${c.done ? 'checked' : ''} onchange="toggleChecklistItem(${i}, this.checked)">
-              <span style="${c.done ? 'text-decoration:line-through;opacity:.6;' : ''}">${escHtmlHost(c.text)}</span>
-            </label>`).join('')
-        : '<p style="font-size:12px;color:#78716c;">No checklist items — add them ahead of time in Run of Show.</p>';
-
-      // Scratchpad — only set the value once, so we don't overwrite while she's typing
-      if (!scratchpadLoaded) {
-        document.getElementById('hostScratchpad').value = data.hostScratchpad || '';
-        scratchpadLoaded = true;
+      } catch (e) {
+        gateMsg('Could not load session. Please refresh.');
       }
     }
 
-    function escHtmlSafe(s) {
-      const d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
-
-    function renderHostGlobalCautions(cautions) {
-      const box = document.getElementById('hostGlobalCautions');
-      if (!cautions.length) { box.classList.add('hidden'); return; }
-      box.classList.remove('hidden');
-      box.innerHTML =
-        '<div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Session-wide cautions</div>' +
-        cautions.map(c => `<div style="font-size:12px;color:#78350f;line-height:1.4;">• ${escHtmlSafe(c.text)}</div>`).join('');
-    }
-
-    function renderHostPreFlight(items, status) {
-      const box = document.getElementById('hostPreFlight');
-      // Only show pre-flight BEFORE the session goes live — once it's live/completed,
-      // it collapses to save panel space (Ke can still see it in the admin ROS modal).
-      if (!items.length || (status !== 'scheduled')) { box.classList.add('hidden'); return; }
-      box.classList.remove('hidden');
-      box.innerHTML =
-        '<div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Pre-Flight Checklist</div>' +
-        items.map(it => `<div style="font-size:12px;color:#1e3a8a;line-height:1.4;">${it.critical ? '🔴' : '☐'} ${escHtmlSafe(it.text)}</div>`).join('');
-    }
-
-    function renderHostSegmentExtras(seg) {
-      const cautionsBox = document.getElementById('hostSegCautions');
-      const breakoutsBox = document.getElementById('hostSegBreakouts');
-      const exerciseBox = document.getElementById('hostSegExercise');
-      const pollsBox = document.getElementById('hostSegPolls');
-
-      if (!seg) {
-        cautionsBox.classList.add('hidden');
-        breakoutsBox.classList.add('hidden');
-        exerciseBox.classList.add('hidden');
-        pollsBox.classList.add('hidden');
+    function renderAgenda() {
+      const list = document.getElementById('agendaList');
+      const noAgenda = document.getElementById('noAgenda');
+      const agn = agendaData();
+      if (!agn || agn.length === 0) {
+        noAgenda.style.display = '';
         return;
       }
-
-      // Cautions — inline red/amber chips under the segment
-      const cautions = seg.facilitatorCautions || [];
-      if (cautions.length) {
-        cautionsBox.classList.remove('hidden');
-        cautionsBox.innerHTML = cautions.map(c => {
-          const bg = c.critical ? '#fee2e2' : '#fef3c7';
-          const border = c.critical ? '#fca5a5' : '#fcd34d';
-          const color = c.critical ? '#991b1b' : '#78350f';
-          return `<div style="background:${bg};border:1px solid ${border};color:${color};border-radius:6px;padding:6px 10px;font-size:12px;line-height:1.4;margin-bottom:4px;">${c.critical ? '🔴 ' : '⚠ '}${escHtmlSafe(c.text)}</div>`;
-        }).join('');
-      } else {
-        cautionsBox.classList.add('hidden');
-      }
-
-      // Breakout prompts — shown when segment type is 'breakout' AND prompts exist
-      const breakouts = seg.breakoutPrompts || [];
-      if (breakouts.length && seg.type === 'breakout') {
-        breakoutsBox.classList.remove('hidden');
-        breakoutsBox.innerHTML =
-          '<div style="font-size:11px;font-weight:700;color:#1e40af;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Breakout Prompts</div>' +
-          breakouts.map((b, i) => {
-            const timebox = b.timeboxMin ? ` <span style="color:#3730a3;font-weight:600;">(${b.timeboxMin} min)</span>` : '';
-            return `<div style="font-size:12px;color:#1e3a8a;line-height:1.5;margin-bottom:4px;">${i + 1}. ${escHtmlSafe(b.text)}${timebox}</div>`;
-          }).join('');
-      } else {
-        breakoutsBox.classList.add('hidden');
-      }
-
-      // Exercise — shown when segment has an exercise sub-doc
-      const ex = seg.exercise;
-      if (ex && (ex.instructions || ex.deliverable || ex.debriefFormat)) {
-        exerciseBox.classList.remove('hidden');
-        const parts = [];
-        parts.push('<div style="font-size:11px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">✏ Exercise' + (ex.timeboxMin ? ` (${ex.timeboxMin} min)` : '') + '</div>');
-        if (ex.instructions) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;margin-bottom:6px;"><strong>Instructions:</strong> ${escHtmlSafe(ex.instructions)}</div>`);
-        if (ex.deliverable) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;margin-bottom:6px;"><strong>Deliverable:</strong> ${escHtmlSafe(ex.deliverable)}</div>`);
-        if (ex.debriefFormat) parts.push(`<div style="font-size:12px;color:#78350f;line-height:1.5;"><strong>Debrief:</strong> ${escHtmlSafe(ex.debriefFormat)}</div>`);
-        exerciseBox.innerHTML = parts.join('');
-      } else {
-        exerciseBox.classList.add('hidden');
-      }
-
-      // Polls — reference-only, no voting UI (that's a future build).
-      // Shown so Ke can run the question verbally and reference the options.
-      const polls = seg.polls || [];
-      if (polls.length) {
-        pollsBox.classList.remove('hidden');
-        pollsBox.innerHTML =
-          '<div style="font-size:11px;font-weight:700;color:#3730a3;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">🗳 Poll reference (verbal only — no voting UI)</div>' +
-          polls.map((p, i) => {
-            const opts = (p.options || []).map((o, oi) => `<div style="font-size:12px;color:#312e81;margin-left:12px;line-height:1.4;">${String.fromCharCode(65 + oi)}. ${escHtmlSafe(o.text)}</div>`).join('');
-            return `<div style="margin-bottom:8px;">
-              <div style="font-size:12px;font-weight:600;color:#312e81;line-height:1.4;">${i + 1}. ${escHtmlSafe(p.question)}</div>
-              ${opts}
-            </div>`;
-          }).join('');
-      } else {
-        pollsBox.classList.add('hidden');
-      }
+      noAgenda.style.display = 'none';
+      list.innerHTML = '';
+      agn.forEach((seg, idx) => {
+        const row = document.createElement('div');
+        row.className = 'seg-row' + (idx === 0 ? ' active' : '');
+        row.dataset.idx = idx;
+        row.innerHTML = `
+          <span class="seg-badge badge-${seg.type}">${seg.type}</span>
+          <span class="flex-1 text-sm font-medium" style="color:#284157;">${esc(seg.title || seg.type)}</span>
+          ${seg.durationMin ? `<span class="text-xs" style="color:#7a5c1e;">${seg.durationMin}m</span>` : ''}
+          <button class="text-xs font-semibold px-3 py-1 rounded" style="background:#284157;color:#fff;" onclick="advanceSegment(${idx},event)">▶ Go</button>`;
+        list.appendChild(row);
+      });
+      selectSegment(0);
     }
 
-    function escHtmlHost(s) {
-      const d = document.createElement('div');
-      d.textContent = s || '';
-      return d.innerHTML;
-    }
-
-    async function jumpToSegment(index) {
-      const idx = parseInt(index, 10);
-      if (!Number.isFinite(idx) || idx < 0 || idx >= agendaLength) return;
+    async function advanceSegment(idx, e) {
+      e.stopPropagation();
       try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/segment`, {
+        // Manual ▶ Go while autopilot is actively syncing means the host is
+        // taking the wheel — pause autopilot so the clock stops overriding.
+        if (hostState?.autopilot?.enabled && !hostState.autopilot.pausedAt) {
+          const pausedAt = new Date().toISOString();
+          hostState.autopilot.pausedAt = pausedAt;
+          renderAutopilotControl();
+          patchSession({ autopilot: { pausedAt } });
+        }
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/segment`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ segment: idx })
         });
-      } catch { /* poll will retry next tick */ }
-    }
-
-    async function toggleChecklistItem(idx, done) {
-      lastKnownChecklist[idx] = { ...lastKnownChecklist[idx], done };
-      try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}`, {
-          method: 'PATCH',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hostChecklist: lastKnownChecklist })
-        });
-      } catch { /* will retry visually on next poll */ }
-    }
-
-    function onScratchpadInput() {
-      clearTimeout(scratchpadSaveTimer);
-      scratchpadSaveTimer = setTimeout(async () => {
-        const val = document.getElementById('hostScratchpad').value;
-        try {
-          await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}`, {
-            method: 'PATCH',
-            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hostScratchpad: val })
-          });
-        } catch { /* will retry on next input pause */ }
-      }, 1500);
-    }
-
-    async function advanceSegment(dir) {
-      const next = currentSegIndex + dir;
-      if (next < 0 || (agendaLength && next >= agendaLength)) return;
-      try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/segment`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ segment: next })
-        });
-      } catch { /* poll will retry on next 3s cycle */ }
-    }
-
-    /* ── Native poll (attendee) ────────────────────────────────────────── */
-    let lastPollKey = null;
-    let myPollVote = null; // optionIdx I've voted for the current poll (optimistic + confirmed)
-
-    function updateActivePoll(activePoll) {
-      const card = document.getElementById('pollCard');
-      if (!activePoll) { card.classList.add('hidden'); lastPollKey = null; myPollVote = null; return; }
-      card.classList.remove('hidden');
-
-      const key = activePoll.segIdx + ':' + activePoll.pollIdx;
-      if (key !== lastPollKey) { lastPollKey = key; myPollVote = (activePoll.myOptionIdx != null ? activePoll.myOptionIdx : null); }
-      else if (activePoll.myOptionIdx != null) { myPollVote = activePoll.myOptionIdx; } // server confirmed a vote
-
-      document.getElementById('pollQuestion').textContent = activePoll.question || '';
-      const optsEl = document.getElementById('pollOptions');
-      const statusEl = document.getElementById('pollStatus');
-
-      const voted = myPollVote != null;
-      const closed = !!activePoll.closedAt && Date.now() >= new Date(activePoll.closedAt).getTime();
-      const revealed = !!activePoll.revealed && !!activePoll.results;
-
-      optsEl.innerHTML = (activePoll.options || []).map((o, i) => {
-        let bar = '';
-        if (revealed) {
-          const total = activePoll.results.total || 0;
-          const c = (activePoll.results.counts && activePoll.results.counts[i]) || 0;
-          const pct = total ? Math.round((c / total) * 100) : 0;
-          bar = `<div style="height:6px;background:#E0E7FF;border-radius:4px;margin-top:5px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:#3B5FCC;"></div></div>`
-              + `<div style="font-size:11px;color:#3730A3;margin-top:2px;">${pct}% · ${c} vote${c === 1 ? '' : 's'}</div>`;
+        if (res.ok) {
+          currentSegIdx = idx;
+          selectSegment(idx);
+          showSegmentInClipPanel(idx);
+          startSegmentTimer(idx);
         }
-        const mine = (myPollVote === i);
-        const disabled = voted || closed || revealed;
-        return `<button ${disabled ? 'disabled' : ''} onclick="castVote(${activePoll.segIdx},${activePoll.pollIdx},${i})"
-          style="text-align:left;padding:8px 10px;border-radius:8px;border:1px solid ${mine ? '#3B5FCC' : '#C7D2FE'};background:${mine ? '#DDE3FF' : '#fff'};color:#284157;font-size:13px;cursor:${disabled ? 'default' : 'pointer'};">
-          ${String.fromCharCode(65 + i)}. ${esc(o.text)}${mine ? ' ✓' : ''}${bar}
-        </button>`;
-      }).join('');
-
-      if (revealed) statusEl.textContent = 'Results are in.';
-      else if (closed) statusEl.textContent = voted ? 'Vote recorded — voting closed.' : 'Voting is closed.';
-      else if (voted) statusEl.textContent = 'Vote recorded ✓';
-      else statusEl.textContent = 'Tap an option to vote.';
+      } catch {}
     }
 
-    async function castVote(segIdx, pollIdx, optionIdx) {
-      myPollVote = optionIdx; // optimistic — next poll reconciles from the server
-      document.getElementById('pollStatus').textContent = 'Vote recorded ✓';
-      document.querySelectorAll('#pollOptions button').forEach(b => { b.disabled = true; });
-      try {
-        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/poll/vote`, {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ segIdx, pollIdx, optionIdx })
-        });
-      } catch { /* next 3s poll will reconcile */ }
+    function selectSegment(idx) {
+      document.querySelectorAll('.seg-row').forEach((r, i) => {
+        r.classList.toggle('active', i === idx);
+      });
+      const seg = agendaData()[idx];
+      const nowSummary = document.getElementById('nowSummary');
+      if (!seg) { nowSummary.textContent = 'No segment.'; return; }
+      nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
+      renderSegmentNotes(idx);
     }
 
-    function updateNowCard(seg, liveState) {
-      const card = document.getElementById('nowCard');
-      if (!seg) { card.classList.add('hidden'); return; }
-      card.classList.remove('hidden');
+    async function showSegmentInClipPanel(idx) {
+      const seg = agendaData()[idx];
+      const panel = document.getElementById('clipPanel');
+      const player = document.getElementById('hostClipPlayer');
+      const seekBar = document.getElementById('seekBar');
 
-      document.getElementById('nowSegTitle').textContent = seg.title || seg.type;
-      const prompt = seg.prompt || '';
-      const promptEl = document.getElementById('nowPrompt');
-      promptEl.textContent = prompt;
-      promptEl.style.display = prompt ? '' : 'none';
-
-      // Slide media — auto-renders whenever this segment is active (autopilot or
-      // manual advance; same liveState path). Advancing the segment IS loading the slide.
-      const mediaEl = document.getElementById('nowMedia');
-      const media = seg.media || [];
-      if (media.length) {
-        mediaEl.style.display = '';
-        mediaEl.innerHTML = media.map(m => `
-          <figure style="margin:0 0 8px;">
-            <img src="${esc(m.url)}" alt="${esc(m.caption || 'slide')}" loading="lazy" style="width:100%;border-radius:8px;border:1px solid #C7DDD0;">
-            ${m.caption ? `<figcaption style="font-size:11px;color:#57534e;margin-top:2px;">${esc(m.caption)}</figcaption>` : ''}
-          </figure>`).join('');
-      } else {
-        mediaEl.style.display = 'none';
-        mediaEl.innerHTML = '';
-      }
-
-      // Breakout — prominent prompts + banner while a breakout segment is active.
-      const breakoutEl = document.getElementById('nowBreakout');
-      if (seg.type === 'breakout') {
-        const prompts = seg.breakoutPrompts || [];
-        breakoutEl.style.display = '';
-        breakoutEl.innerHTML =
-          `<div style="font-size:13px;font-weight:700;color:#3B5FCC;margin-bottom:6px;">Breakout in progress — join your group in the video panel</div>` +
-          (prompts.length
-            ? prompts.map((p, i) => {
-                const tb = p.timeboxMin ? ` <span style="color:#3730A3;font-weight:600;">(${p.timeboxMin} min)</span>` : '';
-                return `<div style="font-size:13px;color:#284157;line-height:1.5;margin-bottom:4px;">${i + 1}. ${esc(p.text)}${tb}</div>`;
-              }).join('')
-            : `<div style="font-size:12px;color:#57534e;">Follow your facilitator's instructions for your group.</div>`);
-      } else {
-        breakoutEl.style.display = 'none';
-        breakoutEl.innerHTML = '';
-      }
-
-      const badge = document.getElementById('breakoutBadge');
-      badge.style.display = seg.type === 'breakout' ? '' : 'none';
-
-      const isBreak = seg.type === 'break';
-      document.getElementById('nowBreakBadge').style.display = isBreak ? '' : 'none';
-
-      const segKey = (seg.title || '') + '|' + (seg.durationMin || '') + '|' + (liveState?.currentSegment ?? '');
-      if (segKey !== lastSegAlarmKey) {
-        lastSegAlarmKey = segKey;
-        warnedForSeg = false;
-        urgentFiredForSeg = false;
-      }
-
-      const countEl = document.getElementById('nowCountdown');
-      if (isBreak && seg.durationMin && liveState?.segmentStartedAt) {
-        // Breaks render distinctly: no ticking countdown, just the return time.
-        const backAt = new Date(new Date(liveState.segmentStartedAt).getTime() + seg.durationMin * 60000);
-        const hhmm = backAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        countEl.textContent = `We'll be back at ${hhmm}`;
-        countEl.style.color = '#3B5FCC';
-        countEl.style.fontWeight = '700';
-      } else if (seg.durationMin && liveState?.segmentStartedAt) {
-        const elapsed = (Date.now() - new Date(liveState.segmentStartedAt).getTime()) / 1000;
-        const remaining = Math.max(0, seg.durationMin * 60 - elapsed);
-        const m = Math.floor(remaining / 60), s = Math.floor(remaining % 60);
-        countEl.textContent = `${m}:${s.toString().padStart(2, '0')} remaining`;
-        countEl.style.color = remaining <= 0 ? '#b91c1c' : (remaining <= alarmLeadSec ? '#c0392b' : '#7a5c1e');
-        countEl.style.fontWeight = remaining <= alarmLeadSec ? '800' : '600';
-
-        if (isHostGlobal) {
-          // Warning tone: fires once, alarmLeadSec before the segment ends
-          if (remaining <= alarmLeadSec && remaining > 0 && !warnedForSeg) {
-            warnedForSeg = true;
-            beep(660, 180);
-          }
-          // Urgent tone: fires once, exactly when the segment time is up — distinct
-          // double-tone, higher pitch, so it's identifiable by sound alone
-          if (remaining <= 0 && !urgentFiredForSeg) {
-            urgentFiredForSeg = true;
-            beep(880, 220);
-            setTimeout(() => beep(880, 220), 300);
-          }
-        }
-      } else {
-        countEl.textContent = '';
-      }
-    }
-
-    async function updateWatchParty(liveState) {
-      if (!liveState?.playback) return;
-      const { clipIndex, playing, positionSec, stateUpdatedAt } = liveState.playback;
-      const player = document.getElementById('clipPlayer');
-      const mainCol = document.getElementById('mainCol');
-      const muteReminder = document.getElementById('muteReminder');
-
-      if (clipIndex == null) {
-        // No clip — hide player
-        mainCol.classList.remove('clip-active');
-        muteReminder.classList.add('hidden');
+      if (!seg || seg.type !== 'clip' || seg.clipIndex == null) {
+        panel.classList.add('hidden');
+        hostClipLoaded = null;
         return;
       }
 
-      // Load clip URL if clipIndex changed
-      if (clipIndex !== lastClipIndex) {
-        lastClipIndex = clipIndex;
+      panel.classList.remove('hidden');
+      document.getElementById('clipTitle').textContent = session.clips?.[seg.clipIndex]?.title || `Clip ${seg.clipIndex}`;
+
+      if (hostClipLoaded !== seg.clipIndex) {
+        hostClipLoaded = seg.clipIndex;
         try {
           const res = await fetch(
-            `${API_URL}/api/live-sessions/${encodeURIComponent(slug)}/clips/${clipIndex}/url`,
+            `${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/clips/${seg.clipIndex}/url`,
             { headers: { 'Authorization': `Bearer ${token}` } }
           );
           if (res.ok) {
-            const data = await res.json();
-            player.src = data.clipUrl;
-            mainCol.classList.add('clip-active');
-            muteReminder.classList.remove('hidden');
+            const d = await res.json();
+            player.src = d.clipUrl;
+            seekBar.max = d.durationSec || 600;
+            seekBar.value = 0;
           }
-        } catch { /* retry next poll */ }
+        } catch {}
       }
 
-      // Sync play/pause
-      if (playing && player.paused) {
-        player.play().catch(() => {});
-      } else if (!playing && !player.paused) {
-        player.pause();
+      // Sync seek bar with host player time
+      player.addEventListener('timeupdate', () => {
+        seekBar.value = player.currentTime;
+      }, { passive: true });
+    }
+
+
+    // Follow the server's current segment (autopilot or another host tab).
+    let lastSyncedSegIdx = null;
+    async function syncLiveSegment() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        const idx = d.liveState?.currentSegment;
+        if (typeof idx === 'number' && idx !== lastSyncedSegIdx) {
+          lastSyncedSegIdx = idx;
+          if (idx !== currentSegIdx) {
+            currentSegIdx = idx;
+            selectSegment(idx);
+            const seg = agendaData()[idx];
+            if (seg?.durationMin) {
+              startSegmentTimer(idx);
+              // Re-anchor the countdown to the server's segment start, not "now"
+              if (d.liveState?.segmentStartedAt) {
+                const startedMs = new Date(d.liveState.segmentStartedAt).getTime();
+                if (Number.isFinite(startedMs)) segTimerEndsAt = startedMs + seg.durationMin * 60000;
+              }
+            } else {
+              stopSegmentTimer();
+            }
+          }
+        }
+      } catch {}
+    }
+
+    async function broadcastPlay() {
+      const player = document.getElementById('hostClipPlayer');
+      await player.play().catch(() => {});
+      const seg = agendaData()[currentSegIdx];
+      if (seg?.clipIndex == null) return;
+      await broadcastPlayback(seg.clipIndex, true, player.currentTime);
+    }
+
+    async function broadcastPause() {
+      const player = document.getElementById('hostClipPlayer');
+      player.pause();
+      const seg = agendaData()[currentSegIdx];
+      if (seg?.clipIndex == null) return;
+      await broadcastPlayback(seg.clipIndex, false, player.currentTime);
+    }
+
+    function onSeekInput() {
+      const player = document.getElementById('hostClipPlayer');
+      player.currentTime = parseFloat(document.getElementById('seekBar').value);
+    }
+
+    async function broadcastPlayback(clipIndex, playing, positionSec) {
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/playback`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clipIndex, playing, positionSec })
+        });
+      } catch {}
+    }
+
+    async function pollAttendance() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/attendance`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          const live = d.rawAttendance?.filter(a => !a.leftAt).length ?? '–';
+          document.getElementById('attendeeCount').textContent = `${live} live`;
+          renderRoster(d.rawAttendance || []);
+        }
+      } catch {}
+      // Piggyback the poll tally refresh on this same 10s cycle — no new interval.
+      refreshPollResults();
+    }
+
+    function startElapsedTimer() {
+      elapsedTimer = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - sessionStartedAt.getTime()) / 1000);
+        if (elapsed < 0) { document.getElementById('elapsed').textContent = 'Not started'; return; }
+        const m = Math.floor(elapsed / 60), s = elapsed % 60;
+        document.getElementById('elapsed').textContent = `${m}:${s.toString().padStart(2,'0')} elapsed`;
+      }, 1000);
+    }
+
+    /* ═══════════════ HOST CONTROLS ═══════════════ */
+    let hostState = null;
+    let activePollState = null; // { activePoll, results, ... } from GET /poll/results
+    let segTimerInterval = null;
+    let segTimerEndsAt = null;
+    let checklistDebounce = null;
+    let scratchpadDebounce = null;
+    let audioCtx = null;
+
+    async function loadHostState() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/host-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        hostState = await res.json();
+        renderGlobalCautions();
+        renderChecklists();
+        seedScratchpad();
+        renderAgenda();
+        selectSegment(currentSegIdx);
+        renderCertButton();
+        renderAutopilotControl();
+      } catch {}
+    }
+
+    function wireHostTabs() {
+      document.querySelectorAll('.host-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          document.querySelectorAll('.host-tab').forEach(b => b.classList.toggle('active', b === btn));
+          document.querySelectorAll('.host-tabpane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== tab));
+        });
+      });
+    }
+
+    // ── ROSTER ──
+    function renderRoster(rows) {
+      const body = document.getElementById('rosterBody');
+      const totals = document.getElementById('rosterTotals');
+      if (!body || !totals) return;
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4" style="color:#57534e;">No attendees yet.</td></tr>`;
+        totals.textContent = '0 live · 0 attended';
+        return;
+      }
+      body.innerHTML = rows.map(a => {
+        const joined = a.joinedAt ? new Date(a.joinedAt).toLocaleTimeString() : '—';
+        const left = a.leftAt ? new Date(a.leftAt).toLocaleTimeString() : `<span class="roster-live">● live</span>`;
+        const dur = (a.durationMin != null) ? `${a.durationMin}m` : '—';
+        return `<tr><td>${esc(a.displayName || 'Unnamed')}</td><td>${joined}</td><td>${left}</td><td>${dur}</td></tr>`;
+      }).join('');
+      const live = rows.filter(a => !a.leftAt).length;
+      const attended = new Set(rows.map(a => a.displayName || 'Unnamed')).size;
+      totals.textContent = `${live} live · ${attended} attended`;
+    }
+
+    // ── SEGMENT NOTES ──
+    function renderSegmentNotes(idx) {
+      const el = document.getElementById('segNotes');
+      if (!el || !hostState) return;
+      const seg = hostState.agenda?.[idx];
+      if (!seg) { el.innerHTML = `<p style="color:#57534e;">No segment selected.</p>`; return; }
+      let html = `<h3 class="font-display text-base font-bold mb-2" style="color:#6B1D34;">${esc(seg.title || seg.type)}</h3>`;
+      if (seg.speakerNotes) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SPEAKER NOTES</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.speakerNotes)}</div></div>`;
+      if (seg.activityInstructions) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">ACTIVITY INSTRUCTIONS</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.activityInstructions)}</div></div>`;
+      const cautions = seg.facilitatorCautions || [];
+      if (cautions.length) {
+        html += `<div class="mb-1"><div class="text-xs font-bold mb-1" style="color:#284157;">SEGMENT CAUTIONS</div>`;
+        html += cautions.map(c => c.critical
+          ? `<div class="crit-caution">⚠ ${esc(c.text)}</div>`
+          : `<div class="caution">${esc(c.text)}</div>`).join('');
+        html += `</div>`;
+      }
+      if (!seg.speakerNotes && !seg.activityInstructions && !cautions.length) {
+        html += `<p class="text-sm" style="color:#57534e;">No facilitator notes for this segment.</p>`;
       }
 
-      // Drift correction — only seek if drift > 1.5s to avoid constant stuttering
-      if (stateUpdatedAt && playing) {
-        const elapsed = (Date.now() - new Date(stateUpdatedAt).getTime()) / 1000;
-        const target = (positionSec || 0) + elapsed;
-        if (Math.abs(player.currentTime - target) > 1.5) {
-          player.currentTime = target;
+      // Slides (what the room sees) — thumbnails of this segment's media
+      const media = seg.media || [];
+      if (media.length) {
+        html += `<div class="mt-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SLIDES (what the room sees)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">` +
+          media.map(m => `<img src="${esc(m.url)}" alt="${esc(m.caption || 'slide')}" title="${esc(m.caption || '')}" class="slide-thumb">`).join('') +
+          `</div></div>`;
+      }
+
+      // Native poll controls — Launch / Close / Reveal + live tally + Trend
+      html += renderSegmentPolls(idx, seg);
+
+      el.innerHTML = html;
+    }
+
+    // Build the poll-control block for a segment's notes pane.
+    function renderSegmentPolls(idx, seg) {
+      const polls = seg.polls || [];
+      if (!polls.length) return '';
+      const ap = activePollState && activePollState.activePoll;
+      const results = activePollState && activePollState.results;
+      let html = `<div class="mt-4"><div class="text-xs font-bold mb-2" style="color:#284157;">POLLS</div>`;
+      polls.forEach((p, pi) => {
+        const isActive = ap && ap.segIdx === idx && ap.pollIdx === pi;
+        const closed = isActive && !!ap.closedAt;
+        const revealed = isActive && !!ap.revealed;
+        html += `<div class="poll-box"><div style="font-size:13px;font-weight:600;color:#312e81;margin-bottom:6px;">${esc(p.question)}</div>`;
+        html += (p.options || []).map((o, oi) => {
+          let tally = '';
+          if (isActive && results) {
+            const total = results.total || 0;
+            const c = (results.counts && results.counts[oi]) || 0;
+            const pct = total ? Math.round((c / total) * 100) : 0;
+            tally = `<span style="float:right;font-size:11px;color:#3730A3;">${pct}% (${c})</span>`;
+          }
+          return `<div style="font-size:12px;color:#312e81;line-height:1.7;">${String.fromCharCode(65 + oi)}. ${esc(o.text)}${tally}</div>`;
+        }).join('');
+        html += `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">`;
+        if (!isActive) {
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Launch</button>`;
+        } else {
+          if (!closed) html += `<button class="pbtn warn" onclick="pollAction('close',${idx},${pi})">Close</button>`;
+          if (!revealed) html += `<button class="pbtn rev" onclick="pollAction('reveal',${idx},${pi})">Reveal</button>`;
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Relaunch</button>`;
+          html += `<span style="font-size:11px;color:#3730A3;">${revealed ? 'revealed' : (closed ? 'closed' : 'live')}${results ? ' · ' + (results.total || 0) + ' votes' : ''}</span>`;
         }
-      } else if (!playing && stateUpdatedAt) {
-        const target = positionSec || 0;
-        if (Math.abs(player.currentTime - target) > 1.5) {
-          player.currentTime = target;
+        if (questionRepeats(p.question)) {
+          html += `<button class="pbtn rev" onclick="showPollTrendFor(${idx},${pi})">Trend</button>`;
         }
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+      return html;
+    }
+
+    // True when this exact question text appears on more than one segment (the
+    // Hour 2 escalation ladder), so a Trend button is worth showing.
+    function questionRepeats(q) {
+      const target = (q || '').trim();
+      let count = 0;
+      for (const s of (hostState?.agenda || [])) {
+        for (const p of (s.polls || [])) {
+          if ((p.question || '').trim() === target) count++;
+        }
+      }
+      return count > 1;
+    }
+
+    async function pollAction(action, segIdx, pollIdx) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/${action}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segIdx, pollIdx })
+        });
+        if (res.ok) { await refreshPollResults(); }
+        else { const d = await res.json().catch(() => ({})); toast(d.error || 'Poll action failed.'); }
+      } catch { toast('Poll action failed.'); }
+    }
+
+    // Refreshed on the existing 10s attendance cycle — no new interval.
+    async function refreshPollResults() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        activePollState = await res.json();
+        renderSegmentNotes(currentSegIdx); // repaint tally in the open notes pane
+      } catch { /* try again next cycle */ }
+    }
+
+    function showPollTrendFor(segIdx, pollIdx) {
+      const q = hostState?.agenda?.[segIdx]?.polls?.[pollIdx]?.question || '';
+      showPollTrend(q);
+    }
+
+    // Renders yes-% per segment for a repeated question — the Hour 2 trend-line
+    // reveal, computed from real votes across every segment carrying that question.
+    async function showPollTrend(question) {
+      const q = (question || '').trim();
+      const matches = [];
+      (hostState?.agenda || []).forEach((seg, si) => {
+        (seg.polls || []).forEach((p, pi) => {
+          if ((p.question || '').trim() === q) matches.push({ si, pi, seg, poll: p });
+        });
+      });
+      const panel = ensureTrendPanel();
+      const body = panel.querySelector('#trendBody');
+      body.innerHTML = 'Loading…';
+      panel.style.display = 'flex';
+      try {
+        const rows = await Promise.all(matches.map(async m => {
+          const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results?segIdx=${m.si}&pollIdx=${m.pi}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const d = res.ok ? await res.json() : null;
+          const opts = m.poll.options || [];
+          let primary = opts.findIndex(o => /^\s*yes\s*$/i.test(o.text || ''));
+          if (primary < 0) primary = 0;
+          const total = d?.results?.total || 0;
+          const c = (d?.results?.counts && d.results.counts[primary]) || 0;
+          const pct = total ? Math.round((c / total) * 100) : 0;
+          return { label: m.seg.title || ('Segment ' + (m.si + 1)), pct, c, total, primaryText: opts[primary]?.text || 'Option A' };
+        }));
+        const primaryLabel = rows[0]?.primaryText || 'Yes';
+        body.innerHTML =
+          `<div style="font-size:12px;color:#57534e;margin-bottom:10px;">"${esc(q)}" — % choosing "${esc(primaryLabel)}" across segments (live votes)</div>` +
+          rows.map(r => `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#284157;"><span>${esc(r.label)}</span><span>${r.pct}% (${r.c}/${r.total})</span></div>
+              <div style="height:8px;background:#E0E7FF;border-radius:4px;overflow:hidden;margin-top:3px;"><div style="height:100%;width:${r.pct}%;background:#4A7C59;"></div></div>
+            </div>`).join('') || '<p style="font-size:13px;color:#57534e;">No matching segments.</p>';
+      } catch {
+        body.innerHTML = '<p style="font-size:13px;color:#b91c1c;">Could not load trend.</p>';
       }
     }
 
+    function ensureTrendPanel() {
+      let panel = document.getElementById('trendPanel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'trendPanel';
+        panel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70;display:none;align-items:center;justify-content:center;';
+        panel.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;max-width:440px;width:90%;max-height:80vh;overflow:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 class="font-display" style="font-size:18px;font-weight:700;color:#6B1D34;">Poll Trend — Hour 2 Ladder</h3>
+            <button onclick="document.getElementById('trendPanel').style.display='none'" style="border:none;background:#EDE9E3;border-radius:8px;padding:4px 10px;cursor:pointer;color:#284157;">✕</button>
+          </div>
+          <div id="trendBody"></div>
+        </div>`;
+        document.body.appendChild(panel);
+      }
+      return panel;
+    }
+
+    function renderGlobalCautions() {
+      const el = document.getElementById('globalCautions');
+      if (!el || !hostState) return;
+      const gc = hostState.globalFacilitatorCautions || [];
+      if (!gc.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="text-xs font-bold mb-1" style="color:#6B1D34;">SESSION-WIDE CAUTIONS</div>` +
+        gc.map(c => `<div class="caution">${esc(c.text)}</div>`).join('');
+    }
+
+    // ── CHECKLISTS ──
+    function renderChecklists() {
+      if (!hostState) return;
+      const pre = document.getElementById('preFlightList');
+      const preItems = hostState.preFlightChecklist || [];
+      if (pre) {
+        pre.innerHTML = `<div class="text-xs font-bold mb-2" style="color:#284157;">PRE-FLIGHT (read-only)</div>` +
+          (preItems.length
+            ? preItems.map(i => `<div class="text-sm mb-1" style="color:#44403c;">${i.critical ? '<span style="color:#6B1D34;font-weight:700;">[CRITICAL]</span> ' : ''}${esc(i.text)}</div>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+      }
+      const host = document.getElementById('hostChecklistList');
+      const items = hostState.hostChecklist || [];
+      if (host) {
+        host.innerHTML = `<div class="text-xs font-bold mb-2 mt-4" style="color:#284157;">HOST CHECKLIST</div>` +
+          (items.length
+            ? items.map((i, k) => `<label class="flex items-center gap-2 text-sm mb-1" style="color:#44403c;cursor:pointer;"><input type="checkbox" data-ck="${k}" ${i.done ? 'checked' : ''} style="accent-color:#4A7C59;"> ${esc(i.text)}</label>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+        host.querySelectorAll('input[data-ck]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const k = parseInt(cb.dataset.ck, 10);
+            if (hostState.hostChecklist[k]) hostState.hostChecklist[k].done = cb.checked;
+            scheduleChecklistSave();
+          });
+        });
+      }
+    }
+
+    function scheduleChecklistSave() {
+      clearTimeout(checklistDebounce);
+      checklistDebounce = setTimeout(() => {
+        patchSession({ hostChecklist: hostState.hostChecklist }, 'checklistSaved');
+      }, 800);
+    }
+
+    // ── SCRATCHPAD ──
+    function seedScratchpad() {
+      const ta = document.getElementById('scratchpad');
+      if (!ta || !hostState) return;
+      ta.value = hostState.hostScratchpad || '';
+      ta.addEventListener('input', () => {
+        clearTimeout(scratchpadDebounce);
+        scratchpadDebounce = setTimeout(() => {
+          patchSession({ hostScratchpad: ta.value }, 'scratchpadSaved');
+        }, 1200);
+      });
+    }
+
+    async function patchSession(body, savedIndicatorId) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok && savedIndicatorId) flashSaved(savedIndicatorId);
+      } catch {}
+    }
+
+    function flashSaved(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 1500);
+    }
+
+    // ── SEGMENT TIMER + WebAudio beep (host-only, no broadcast) ──
+    function startSegmentTimer(idx) {
+      const seg = hostState?.agenda?.[idx] || session.agenda?.[idx];
+      const timerEl = document.getElementById('segTimer');
+      if (!timerEl) return;
+      if (!seg || !seg.durationMin) { stopSegmentTimer(); return; }
+      clearInterval(segTimerInterval);
+      segTimerEndsAt = Date.now() + seg.durationMin * 60000;
+      timerEl.classList.remove('hidden', 'flash');
+      const lead = (hostState?.alarmLeadSec ?? 60);
+      let beeped = false;
+      const tick = () => {
+        const remaining = Math.round((segTimerEndsAt - Date.now()) / 1000);
+        if (remaining <= 0) {
+          timerEl.textContent = '0:00 ⏱';
+          timerEl.classList.add('flash');
+          clearInterval(segTimerInterval);
+          if (!beeped) { beeped = true; playBeep(); }
+          return;
+        }
+        const m = Math.floor(remaining / 60), s = remaining % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2, '0')} left`;
+        if (remaining <= lead) {
+          timerEl.classList.add('flash');
+          if (!beeped) { beeped = true; playBeep(); }
+        }
+      };
+      tick();
+      segTimerInterval = setInterval(tick, 1000);
+    }
+
+    function stopSegmentTimer() {
+      clearInterval(segTimerInterval);
+      const timerEl = document.getElementById('segTimer');
+      if (timerEl) { timerEl.classList.add('hidden'); timerEl.classList.remove('flash'); }
+    }
+
+    function playBeep() {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        [[880, 0], [660, 0.22]].forEach(([freq, offset]) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.0001, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.25, now + offset + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + offset); osc.stop(now + offset + 0.2);
+        });
+      } catch {}
+    }
+
+    // ── ISSUE CERTIFICATES ──
+    function renderCertButton() {
+      const wrap = document.getElementById('certWrap');
+      if (!wrap || !hostState) return;
+      const now = Date.now();
+      const ended = hostState.status === 'completed' ||
+        (session.scheduledEnd && now > new Date(session.scheduledEnd).getTime());
+      if (!ended) { wrap.innerHTML = ''; return; }
+      if (hostState.certificatesIssuedAt) {
+        const d = new Date(hostState.certificatesIssuedAt).toLocaleDateString();
+        wrap.innerHTML = `<button class="cert-btn" disabled>Issued ${d}</button>`;
+        return;
+      }
+      wrap.innerHTML = `<button class="cert-btn" id="issueCertBtn">Issue Certificates</button>`;
+      document.getElementById('issueCertBtn').addEventListener('click', issueCertificates);
+    }
+
+    // ── AUTOPILOT CONTROL ──
+    // Shows ON (syncing) / PAUSED / OFF and wires to PATCH /:id { autopilot }.
+    function renderAutopilotControl() {
+      const el = document.getElementById('autopilotCtl');
+      if (!el || !hostState) return;
+      const ap = hostState.autopilot || { enabled: false };
+      if (ap.enabled && ap.pausedAt) {
+        el.innerHTML = `<span class="ap-pill ap-paused"><span class="ap-dot"></span>Autopilot paused</span>
+          <button class="ap-btn" id="apResumeBtn" title="Clear pause and re-sync to the clock">Resume</button>`;
+        document.getElementById('apResumeBtn').addEventListener('click', resumeAutopilot);
+      } else if (ap.enabled) {
+        el.innerHTML = `<span class="ap-pill ap-on"><span class="ap-dot"></span>Autopilot on · syncing</span>
+          <button class="ap-btn ap-btn-off" id="apOffBtn">Turn off</button>`;
+        document.getElementById('apOffBtn').addEventListener('click', () => setAutopilot(false));
+      } else {
+        el.innerHTML = `<span class="ap-pill ap-off">Autopilot off</span>
+          <button class="ap-btn" id="apOnBtn" title="Auto-start + timed segment advance">Turn on</button>`;
+        document.getElementById('apOnBtn').addEventListener('click', () => setAutopilot(true));
+      }
+    }
+
+    async function setAutopilot(enabled) {
+      if (!hostState) return;
+      hostState.autopilot = hostState.autopilot || {};
+      hostState.autopilot.enabled = enabled;
+      if (!enabled) hostState.autopilot.pausedAt = null;
+      renderAutopilotControl();
+      await patchSession({ autopilot: { enabled } });
+    }
+
+    // Resume clears pausedAt; the next tick re-syncs the segment to the clock.
+    async function resumeAutopilot() {
+      if (!hostState) return;
+      hostState.autopilot = hostState.autopilot || {};
+      hostState.autopilot.pausedAt = null;
+      renderAutopilotControl();
+      await patchSession({ autopilot: { pausedAt: null } });
+    }
+
+    async function issueCertificates() {
+      const btn = document.getElementById('issueCertBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Issuing…'; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/issue-certificates`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        if (!res.ok) {
+          toast(d.error || 'Failed to issue certificates.');
+          if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+          return;
+        }
+        const count = d.issued ?? d.count ?? d.certificatesIssued ?? (Array.isArray(d.certificates) ? d.certificates.length : 0);
+        toast(`Issued ${count} certificate${count === 1 ? '' : 's'}.`);
+        hostState.certificatesIssuedAt = new Date().toISOString();
+        renderCertButton();
+      } catch {
+        toast('Could not issue certificates.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+      }
+    }
+
+    function toast(msg) {
+      let t = document.getElementById('hostToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'hostToast';
+        t.className = 'host-toast';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
     init();
   </script>
-
-  <div id="checkinModal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;">
-    <div style="background:#fff;border-radius:16px;padding:28px;max-width:360px;text-align:center;">
-      <h2 style="font-size:18px;font-weight:700;color:#6B1D34;margin-bottom:8px;">Still with us?</h2>
-      <p style="font-size:14px;color:#44403c;margin-bottom:6px;">Please confirm you're still present.</p>
-      <div id="checkinTimer" style="font-size:28px;font-weight:800;color:#b91c1c;margin-bottom:16px;"></div>
-      <button onclick="respondToCheckin()" style="background:#6B1D34;color:#fff;border-radius:10px;padding:10px 24px;font-size:15px;font-weight:700;">I'm here</button>
-    </div>
-  </div>
 </body>
 </html>
