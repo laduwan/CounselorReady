@@ -173,6 +173,18 @@ const liveSessionSchema = new mongoose.Schema({
   attendanceThresholdPct: { type: Number, default: 90, min: 50, max: 100 },
   certificatesIssuedAt: Date,
 
+  // ─── Autopilot (Live Session Autopilot) ──────────────────────────────
+  // When enabled, the 1-minute sessionProducerTick cron auto-starts the
+  // session at scheduledStart and walks agenda segments on the clock. A
+  // manual host action (▶ Go) sets pausedAt to hand control back to the host;
+  // a Resume clears pausedAt. Additive — default disabled means legacy
+  // behavior is byte-for-byte unchanged.
+  autopilot: {
+    enabled: { type: Boolean, default: false },
+    startedAt: Date, // clock origin for timed segment advance
+    pausedAt: Date   // set when the host takes the wheel; cleared on Resume
+  },
+
   // Optional custom evaluation questions; falls back to DEFAULT_EVALUATION_QUESTIONS
   // (server/src/routes/liveSessions.js) when empty, same pattern as course.evaluationQuestions
   evaluationQuestions: [{
@@ -310,7 +322,18 @@ const liveSessionSchema = new mongoose.Schema({
     // Self-hosted transcription (AWS Transcribe) state — written by transcriptionService.js
     transcribeJobName: String,
     transcribeStatus: { type: String, enum: ['none', 'in_progress', 'completed', 'failed'], default: 'none' },
-    catchupFollowupSentAt: Date
+    catchupFollowupSentAt: Date,
+    // Autopilot certificate auto-issuance stamp — set once the tick has
+    // handled cert issuance (or warned on empty attendance). Separate from
+    // certificatesIssuedAt so a manual issue and an autopilot issue never
+    // fight each other.
+    certificatesAutoIssuedAt: Date,
+    // T-24h / T-1h registrant reminder stamps — set once each reminder has
+    // been dispatched so the tick never double-sends.
+    remindersSent: {
+      h24: Date,
+      h1: Date
+    }
   },
 
   status: {

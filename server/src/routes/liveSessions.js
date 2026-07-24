@@ -549,9 +549,33 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
 
     const wasPublished = session.isPublished;
 
-    // Never allow client payloads to overwrite room URLs or attendance
-    const { whereby, attendance, registrants, recordings, ...safe } = req.body;
+    // Never allow client payloads to overwrite room URLs or attendance.
+    // `autopilot` is pulled out and MERGED (not Object.assign-replaced) so a
+    // toggle payload like { autopilot: { enabled: true } } doesn't wipe
+    // startedAt/pausedAt written by the tick.
+    const { whereby, attendance, registrants, recordings, autopilot, ...safe } = req.body;
     Object.assign(session, safe);
+
+    if (autopilot && typeof autopilot === 'object') {
+      if (!session.autopilot) session.autopilot = {};
+      if (typeof autopilot.enabled === 'boolean') {
+        session.autopilot.enabled = autopilot.enabled;
+        // Enabling mid-session: anchor the segment clock to the scheduled start
+        // so timed auto-advance lines up with the planned agenda.
+        if (autopilot.enabled && session.status === 'live' && !session.autopilot.startedAt) {
+          session.autopilot.startedAt = session.scheduledStart;
+        }
+      }
+      if ('startedAt' in autopilot && autopilot.startedAt) {
+        session.autopilot.startedAt = new Date(autopilot.startedAt);
+      }
+      // pausedAt: a truthy value pauses (host takes the wheel); null/false clears (Resume).
+      if ('pausedAt' in autopilot) {
+        session.autopilot.pausedAt = autopilot.pausedAt ? new Date(autopilot.pausedAt) : undefined;
+      }
+      session.markModified('autopilot');
+    }
+
     await session.save(); // pre-validate re-runs hard-locks
 
     // Fire the announcement email only on the false→true transition, and only
@@ -718,6 +742,11 @@ router.get('/:id/host-state', protect, requireAdmin, async (req, res) => {
       alarmLeadSec: session.alarmLeadSec ?? 60,
       attendanceThresholdPct: session.attendanceThresholdPct,
       certificatesIssuedAt: session.certificatesIssuedAt || null,
+      autopilot: {
+        enabled: !!session.autopilot?.enabled,
+        startedAt: session.autopilot?.startedAt || null,
+        pausedAt: session.autopilot?.pausedAt || null
+      },
       agenda: (session.agenda || []).map(seg => ({
         order: seg.order,
         type: seg.type,
