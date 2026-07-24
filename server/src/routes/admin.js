@@ -12,6 +12,9 @@
 import express from 'express';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import adminUsersRouter from './adminUsers.js';
 import adminCoursesRouter from './adminCourses.js';
 import adminAIRouter from './adminAI.js';
@@ -152,6 +155,66 @@ router.post('/users/:userId/certificates/:certId/regenerate', protect, adminOnly
   } catch (err) {
     console.error('Regenerate certificate error:', err);
     return res.status(500).json({ success: false, error: 'Failed to regenerate certificate' });
+  }
+});
+
+// ── CONTENT MANIFEST (live-session content) ──────────────────────
+// The manifest is a static JSON file in client/public, not a DB doc.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const CONTENT_MANIFEST_PATH = path.resolve(
+  __dirname,
+  '../../../client/public/content-manifest.json'
+);
+
+// Recursive deep-merge: source values win, but nested objects merge instead
+// of clobbering. Arrays are replaced wholesale (a slide/handout list is
+// authored as a unit, not merged element-by-element).
+function deepMerge(target, source) {
+  if (Array.isArray(source) || typeof source !== 'object' || source === null) {
+    return source;
+  }
+  const out = (target && typeof target === 'object' && !Array.isArray(target)) ? { ...target } : {};
+  for (const key of Object.keys(source)) {
+    out[key] = deepMerge(out[key], source[key]);
+  }
+  return out;
+}
+
+// @route   PATCH /api/admin/content-manifest
+// @desc    Deep-merge a session entry into content-manifest.json (static file)
+// @access  Admin only
+router.patch('/content-manifest', protect, adminOnly, async (req, res) => {
+  try {
+    const { slug, entry } = req.body || {};
+    if (!slug || typeof slug !== 'string') {
+      return res.status(400).json({ error: 'slug (string) is required' });
+    }
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return res.status(400).json({ error: 'entry (object) is required' });
+    }
+
+    let manifest;
+    try {
+      manifest = JSON.parse(fs.readFileSync(CONTENT_MANIFEST_PATH, 'utf8'));
+    } catch (readErr) {
+      console.error('Read content-manifest.json error:', readErr?.message || readErr);
+      return res.status(500).json({ error: 'Failed to read content-manifest.json' });
+    }
+
+    if (!manifest.sessions || typeof manifest.sessions !== 'object') {
+      manifest.sessions = {};
+    }
+    manifest.sessions[slug] = deepMerge(manifest.sessions[slug], entry);
+
+    // Write atomically: write to a temp file, then rename over the original.
+    const tmpPath = CONTENT_MANIFEST_PATH + '.tmp';
+    fs.writeFileSync(tmpPath, JSON.stringify(manifest, null, 2) + '\n');
+    fs.renameSync(tmpPath, CONTENT_MANIFEST_PATH);
+
+    return res.json({ ok: true, slug });
+  } catch (err) {
+    console.error('PATCH content-manifest error:', err?.message || err);
+    return res.status(500).json({ error: 'Failed to update content-manifest.json' });
   }
 });
 
