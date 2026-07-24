@@ -113,6 +113,71 @@ function extractRunOfShowTable(markdown) {
 }
 
 /**
+ * Fallback: synthesize agenda segments directly from a run-of-show pipe table
+ * when the guide contains the table but no `## Segment` headings.
+ * Handles an optional leading hour-grouping column, e.g.:
+ *   | | Segment | Min | Format |
+ *   | **Hour 1** | Framing | 5 | On camera |
+ *   | | What the statute says | 15 | Slides |
+ */
+function synthesizeAgendaFromTable(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  let inSection = false;
+  let header = null;
+  const rows = [];
+  for (const line of lines) {
+    if (RUN_OF_SHOW_TABLE_RE.test(line)) { inSection = true; continue; }
+    if (inSection && /^#{1,2}\s+/.test(line.trim())) break;
+    if (!inSection) continue;
+    if (!line.trim().startsWith('|')) continue;
+    // Preserve empty cells: strip only the boundary pipes, then split.
+    const inner = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    const cells = inner.split('|').map(c => c.trim());
+    if (cells.every(c => c === '' || /^:?-+:?$/.test(c))) continue; // separator
+    if (!header) { header = cells.map(c => c.toLowerCase()); continue; }
+    rows.push(cells);
+  }
+  if (!header || !rows.length) return null;
+
+  const titleIdx = header.findIndex(h => /segment|title|topic/.test(h));
+  const minIdx = header.findIndex(h => /min|duration/.test(h));
+  const formatIdx = header.findIndex(h => /format|type|mode/.test(h));
+  if (titleIdx < 0 || minIdx < 0) return null;
+
+  const agenda = [];
+  let order = 0;
+  let currentHourLabel = '';
+  for (const row of rows) {
+    // Any non-empty cell before the title column is an hour/group label.
+    for (let i = 0; i < titleIdx; i++) {
+      if (row[i]) currentHourLabel = row[i].replace(/\*\*/g, '').trim();
+    }
+    let title = (row[titleIdx] || '').replace(/\*\*/g, '').trim();
+    // Hour-label rows sometimes carry the first segment title in the same row;
+    // if the title cell itself is the hour label (title col empty but label
+    // present), skip — it was captured above.
+    if (!title) continue;
+    const durationMin = parseInt(row[minIdx], 10);
+    if (!Number.isFinite(durationMin)) continue;
+    const format = formatIdx >= 0 ? (row[formatIdx] || '') : '';
+    const seg = {
+      order: order++,
+      type: guessSegmentType(`${title} ${format}`),
+      title: title.replace(/^\*|\*$/g, '').trim(),
+      durationMin,
+      prompt: '',
+      speakerNotes: currentHourLabel ? `[${currentHourLabel}]` : '',
+      activityInstructions: format ? `Format: ${format}` : '',
+      facilitatorCautions: [],
+      polls: [],
+      breakoutPrompts: []
+    };
+    agenda.push(seg);
+  }
+  return agenda.length ? agenda : null;
+}
+
+/**
  * Core parser: takes markdown text (from paste or from mammoth), returns
  * { agenda, preFlightChecklist, globalFacilitatorCautions, warnings }.
  */
@@ -331,6 +396,17 @@ export function parseRunOfShowMarkdown(markdown) {
   for (const seg of agenda) {
     if (seg.exercise && !seg.exercise.instructions && !seg.exercise.deliverable && !seg.exercise.debriefFormat) {
       delete seg.exercise;
+    }
+  }
+
+  // Fallback: no `## Segment` headings found, but the guide has a run-of-show
+  // table — synthesize the agenda from the table rows directly.
+  if (agenda.length === 0) {
+    const synthesized = synthesizeAgendaFromTable(markdown);
+    if (synthesized) {
+      const cleanWarnings = warnings.filter(w => !/^Ignored content before first segment/.test(w));
+      cleanWarnings.push(`No segment headings found — synthesized ${synthesized.length} segments from the run-of-show table. Add speaker notes per segment in the editor.`);
+      return { agenda: synthesized, preFlightChecklist, globalFacilitatorCautions, objectives, warnings: cleanWarnings };
     }
   }
 
