@@ -1,1 +1,249 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Live Sessions - CounselorReady</title>
+  <meta name="description" content="Live, interactive NBCC-approved continuing education webinars for counselors. Earn synchronous CE hours from licensed presenters.">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    @media(min-width:768px){#sessions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;}}
+    @media(min-width:1024px){#sessions{grid-template-columns:repeat(3,minmax(0,1fr));}}
+  </style>
+</head>
+<body>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <header class="mb-8">
+      <span class="inline-block badge-live text-xs font-semibold tracking-wide uppercase rounded-full px-3 py-1 mb-3">Live &amp; Interactive</span>
+      <h1 class="font-display text-4xl md:text-5xl font-bold" style="color:#6B1D34;">Live Sessions</h1>
+      <p class="mt-3 max-w-2xl" style="color:#284157;">Synchronous, NBCC-approved webinars with real-time interaction, verified attendance, and automatic certificate delivery. Attend live in your browser — no downloads required.</p>
+    </header>
+
+    <div id="alert" class="hidden mb-6 rounded-lg px-4 py-3 text-sm"></div>
+
+    <div class="mb-8 bg-white rounded-xl border p-4 flex items-end gap-3 flex-wrap" style="border-color:#EDE9E3;">
+      <div class="flex-1 min-w-[220px]">
+        <label for="sessionCodeInput" class="block text-sm font-medium mb-2" style="color:#284157;">Have a private session code?</label>
+        <input type="text" id="sessionCodeInput" placeholder="Enter code" onkeydown="if(event.key==='Enter'){event.preventDefault();lookupSessionByCode(this.value);}" class="w-full px-4 py-3 border rounded-xl outline-none" style="border-color:#EDE9E3;">
+      </div>
+      <button type="button" onclick="lookupSessionByCode(document.getElementById('sessionCodeInput').value)" class="cta rounded-lg px-4 py-3 font-semibold text-sm">Go</button>
+    </div>
+
+    <div id="sessions" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <div class="text-center py-16" style="color:#284157;" id="loading">Loading upcoming sessions…</div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('registered')) showAlert('You are registered! A confirmation is on its way to your inbox.', true);
+    if (params.get('canceled')) showAlert('Checkout was canceled. Your seat was not reserved.', false);
+    if (params.get('code')) {
+      const codeInput = document.getElementById('sessionCodeInput');
+      if (codeInput) codeInput.value = params.get('code');
+      lookupSessionByCode(params.get('code'));
+    }
+
+    function showAlert(msg, ok) {
+      const el = document.getElementById('alert');
+      el.textContent = msg;
+      el.className = 'mb-6 rounded-lg px-4 py-3 text-sm ' + (ok
+        ? 'bg-green-50 text-green-800 border border-green-200'
+        : 'bg-red-50 text-red-800 border border-red-200');
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleString('en-US', {
+        weekday:'short', month:'short', day:'numeric',
+        hour:'numeric', minute:'2-digit', timeZoneName:'short'
+      });
+    }
+
+    async function load() {
+      try {
+        // Fetch individual sessions AND published series in parallel. Series are
+        // rendered as their own cards above the individual session cards.
+        const [res, seriesRes] = await Promise.all([
+          fetch(`${API_URL}/api/live-sessions/upcoming`),
+          fetch(`${API_URL}/api/session-series/public/upcoming`).catch(() => null)
+        ]);
+        const data = await res.json();
+        let seriesList = [];
+        try { if (seriesRes && seriesRes.ok) seriesList = (await seriesRes.json()).series || []; } catch {}
+
+        const wrap = document.getElementById('sessions');
+        wrap.innerHTML = '';
+
+        // Map each series-member session id → series title, for the "Part of" chip
+        // on the individual session cards below.
+        const memberToSeries = {};
+        for (const ser of seriesList) {
+          for (const m of (ser.members || [])) memberToSeries[m._id] = ser.title;
+        }
+
+        // Series cards first — one register click enrolls in every member session.
+        for (const ser of seriesList) {
+          const members = ser.members || [];
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-xl border p-6 flex flex-col md:flex-row md:items-center gap-4';
+          card.style.borderColor = '#EDE9E3';
+          const memberRows = members
+            .map(m => `<li>${esc(m.title)} — <span style="color:#6B1D34;">${fmtDate(m.scheduledStart)}</span></li>`)
+            .join('');
+          card.innerHTML = `
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="text-xs font-semibold rounded-full px-2.5 py-0.5" style="background:#F3EEDD;color:#6B4A25;border:1px solid #F0E2BC;">Series · ${members.length} session${members.length === 1 ? '' : 's'}</span>
+                <span class="badge-ce text-xs font-semibold rounded-full px-2.5 py-0.5">${ser.totalCeuHours} CE Hour${ser.totalCeuHours === 1 ? '' : 's'} total</span>
+              </div>
+              <h2 class="font-display text-2xl font-bold" style="color:#284157;">${esc(ser.title)}</h2>
+              <p class="text-sm mt-1" style="color:#57534e;">${esc(ser.description || '')}</p>
+              <ul class="text-sm mt-2 list-disc list-inside" style="color:#57534e;">${memberRows}</ul>
+            </div>
+            <div class="flex flex-col items-stretch gap-2 md:w-44">
+              <div class="text-center font-semibold" style="color:#284157;">One certificate</div>
+              <button class="cta rounded-lg px-4 py-2.5 font-semibold text-sm" onclick="registerForSeries('${ser._id}')">Register for series</button>
+            </div>`;
+          wrap.appendChild(card);
+        }
+
+        if (!data.sessions || data.sessions.length === 0) {
+          if (!seriesList.length) {
+            wrap.innerHTML = '<div class="text-center py-16 rounded-xl bg-white border" style="color:#284157;border-color:#EDE9E3;">No live sessions are scheduled right now. Check back soon — new webinars are added regularly.</div>';
+          }
+          return;
+        }
+
+        for (const s of data.sessions) {
+          const full = s.seatsRemaining <= 0;
+          const seriesTitle = memberToSeries[s._id];
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow';
+          card.style.cssText = 'display:flex;flex-direction:column;';
+          const presenterName = s.presenter?.name || 'Kejuiana Johnson';
+          const seatsLow = s.seatsRemaining <= 10 && !full;
+          // First 3 objectives
+          const objs = (s.objectives || []).slice(0, 3);
+          const objsHtml = objs.length ? `
+            <div style="margin-bottom:10px;">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#284157;margin:0 0 5px;">You will be able to:</p>
+              <ul style="margin:0;padding:0;list-style:none;">
+                ${objs.map(o => `<li style="font-size:11.5px;color:#44403c;padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><span style="color:#D4A855;font-weight:700;flex-shrink:0;">›</span>${esc(o)}</li>`).join('')}
+              </ul>
+            </div>` : '';
+          // Early bird pricing
+          const hasEarlyBird = s.earlyBirdPrice && s.earlyBirdDeadline && new Date(s.earlyBirdDeadline) > new Date();
+          const displayPrice = hasEarlyBird ? s.earlyBirdPrice : s.price;
+          const priceHtml = s.price > 0
+            ? hasEarlyBird
+              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${displayPrice}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(s.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${s.price}</span> after</span>`
+              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${s.price.toFixed(2)}</span>`
+            : '<span style="font-size:16px;font-weight:700;color:#4A7C59;">Free</span>';
+          card.innerHTML = `
+            <div style="height:160px;background:linear-gradient(135deg,#fdf1f4,#f0f4f0);display:flex;align-items:center;justify-content:center;">
+              <svg width="52" height="52" fill="none" stroke="#D0A0B0" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <div style="padding:18px;flex:1;display:flex;flex-direction:column;">
+              <h3 class="font-display" style="font-size:19px;font-weight:700;color:#6B1D34;margin:0 0 6px;line-height:1.25;">${esc(s.title)}</h3>
+              ${s.description ? `<p style="font-size:12.5px;color:#57534e;margin:0 0 10px;line-height:1.5;">${esc(s.description)}</p>` : ''}
+              ${objsHtml}
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.12);color:#4A7C59;">${s.ceuHours} CE Hr${s.ceuHours===1?'':'s'}</span>
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157;">${fmtDate(s.scheduledStart)}</span>
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34;">NBCC</span>
+                ${seatsLow && !full ? '<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.12);color:#6B1D34;">Almost full</span>' : ''}
+                ${s.recordingEnabled ? '<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.10);color:#4A7C59;">Replay included</span>' : ''}
+                ${seriesTitle ? `<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(212,168,85,0.15);color:#8B6914;">Part of: ${esc(seriesTitle)}</span>` : ''}
+              </div>
+              <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #EDE9E3;">
+                <div>
+                  <div style="font-size:11px;color:${full?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||full?'600':'400'};margin-bottom:2px;">${full?'Session full':s.seatsRemaining+' seats left'}</div>
+                  <div>${priceHtml}</div>
+                </div>
+                <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${full?'opacity:.5;cursor:not-allowed;':''}" ${full?'disabled':''} onclick="register('${s._id}')">${full?'Full':'Register'}</button>
+              </div>
+            </div>`;
+          wrap.appendChild(card);
+        }
+      } catch (e) {
+        document.getElementById('sessions').innerHTML = '<div class="text-center py-16 text-red-700">Could not load sessions. Please refresh.</div>';
+      }
+    }
+
+    async function registerForSeries(seriesId) {
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/session-series/${seriesId}/register`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) { showAlert(data.error || 'Registration failed.', false); return; }
+        const count = (data.enrolled || []).filter(e => e.status === 'registered').length;
+        const already = (data.enrolled || []).filter(e => e.status === 'already-registered').length;
+        showAlert(`Registered for series "${data.seriesTitle}" — enrolled in ${count} new session${count === 1 ? '' : 's'}${already ? ` (${already} already registered)` : ''}.`, true);
+        load(); // refresh the catalog
+      } catch {
+        showAlert('Registration failed. Please try again.', false);
+      }
+    }
+
+    async function lookupSessionByCode(code) {
+      if (!code || !code.trim()) return;
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/code/${encodeURIComponent(code.trim())}`);
+        if (!res.ok) { showAlert('No session found for that code.', false); return; }
+        const { session } = await res.json();
+        const ok = await register(session._id, code.trim());
+        if (ok) window.location.href = `/live-room.html?session=${encodeURIComponent(session.slug)}`;
+      } catch (error) {
+        showAlert('Network error. Please try again.', false);
+      }
+    }
+
+    async function register(id, code) {
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return false; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${id}/register`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(code ? { code } : {})
+        });
+        const data = await res.json();
+        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return false; }
+        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); return true; }
+        showAlert(data.error || 'Registration failed.', false);
+        return false;
+      } catch {
+        showAlert('Registration failed. Please try again.', false);
+        return false;
+      } finally {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+    load();
+  </script>
+</body>
+</html>
