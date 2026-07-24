@@ -102,24 +102,46 @@
         for (const ser of seriesList) {
           const members = ser.members || [];
           const card = document.createElement('div');
-          card.className = 'bg-white rounded-xl border p-6 flex flex-col md:flex-row md:items-center gap-4';
-          card.style.borderColor = '#EDE9E3';
-          const memberRows = members
-            .map(m => `<li>${esc(m.title)} — <span style="color:#6B1D34;">${fmtDate(m.scheduledStart)}</span></li>`)
-            .join('');
+          card.className = 'bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow';
+          card.style.cssText = 'display:flex;flex-direction:column;';
+          // Date range across member sessions (earliest → latest scheduledStart)
+          const memberTimes = members.map(m => +new Date(m.scheduledStart)).sort((a, b) => a - b);
+          const fmtRange = t => new Date(t).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+          const dateRange = memberTimes.length
+            ? (memberTimes[0] === memberTimes[memberTimes.length - 1]
+                ? fmtRange(memberTimes[0])
+                : `${fmtRange(memberTimes[0])} — ${fmtRange(memberTimes[memberTimes.length - 1])}`)
+            : '';
+          // Series early-bird pricing (mirrors the individual session card)
+          const sHasEarlyBird = ser.earlyBirdPrice && ser.earlyBirdDeadline && new Date(ser.earlyBirdDeadline) > new Date();
+          const sDisplayPrice = sHasEarlyBird ? ser.earlyBirdPrice : ser.price;
+          const sPriceHtml = ser.price > 0
+            ? sHasEarlyBird
+              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${sDisplayPrice}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(ser.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${ser.price}</span> after</span>`
+              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${ser.price.toFixed(2)}</span>`
+            : '<span style="font-size:16px;font-weight:700;color:#4A7C59;">Free</span>';
           card.innerHTML = `
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2 mb-2">
-                <span class="text-xs font-semibold rounded-full px-2.5 py-0.5" style="background:#F3EEDD;color:#6B4A25;border:1px solid #F0E2BC;">Series · ${members.length} session${members.length === 1 ? '' : 's'}</span>
-                <span class="badge-ce text-xs font-semibold rounded-full px-2.5 py-0.5">${ser.totalCeuHours} CE Hour${ser.totalCeuHours === 1 ? '' : 's'} total</span>
-              </div>
-              <h2 class="font-display text-2xl font-bold" style="color:#284157;">${esc(ser.title)}</h2>
-              <p class="text-sm mt-1" style="color:#57534e;">${esc(ser.description || '')}</p>
-              <ul class="text-sm mt-2 list-disc list-inside" style="color:#57534e;">${memberRows}</ul>
+            <div style="height:160px;background:linear-gradient(135deg,#fdf1f4,#f0f4f0);display:flex;align-items:center;justify-content:center;">
+              <svg width="52" height="52" fill="none" stroke="#D0A0B0" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3 2 8l10 5 10-5-10-5zM2 13l10 5 10-5"/>
+              </svg>
             </div>
-            <div class="flex flex-col items-stretch gap-2 md:w-44">
-              <div class="text-center font-semibold" style="color:#284157;">One certificate</div>
-              <button class="cta rounded-lg px-4 py-2.5 font-semibold text-sm" onclick="registerForSeries('${ser._id}')">Register for series</button>
+            <div style="padding:18px;flex:1;display:flex;flex-direction:column;">
+              <h3 class="font-display" style="font-size:19px;font-weight:700;color:#6B1D34;margin:0 0 6px;line-height:1.25;">${esc(ser.title)}</h3>
+              ${ser.description ? `<p style="font-size:12.5px;color:#57534e;margin:0 0 10px;line-height:1.5;">${esc(ser.description)}</p>` : ''}
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(139,74,37,0.12);color:#6B4A25;">Series · ${members.length} session${members.length === 1 ? '' : 's'}</span>
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.12);color:#4A7C59;">${ser.totalCeuHours} CE Hr${ser.totalCeuHours === 1 ? '' : 's'} total</span>
+                ${dateRange ? `<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157;">${dateRange}</span>` : ''}
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34;">NBCC</span>
+              </div>
+              <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #EDE9E3;">
+                <div>
+                  <div style="font-size:11px;color:#78716c;margin-bottom:2px;">One certificate</div>
+                  <div>${sPriceHtml}</div>
+                </div>
+                <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;" onclick="registerForSeries('${ser._id}')">Register for series</button>
+              </div>
             </div>`;
           wrap.appendChild(card);
         }
@@ -132,6 +154,7 @@
         }
 
         for (const s of data.sessions) {
+          if (memberToSeries[s._id]) continue; // hide series members — register via series card above
           const full = s.seatsRemaining <= 0;
           const seriesTitle = memberToSeries[s._id];
           const card = document.createElement('div');
