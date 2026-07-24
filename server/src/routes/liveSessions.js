@@ -1486,6 +1486,57 @@ async function aiRouteSlides(segments, filenames) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
+// Manifest/tabbed-loader contract: route arbitrary content files (slides AND
+// handouts) to segments, honoring a per-file hint. Additive — the older
+// aiRouteSlides above is untouched and still serves the drop/paste path.
+const AI_ROUTE_ITEMS_SYSTEM_PROMPT = 'You are routing content files to CE course segments. Match each file to the most appropriate segment index. Return ONLY a JSON array: [{filename, segmentIndex, confidence, reason}]. No other text.';
+
+// Ask Claude to map content items → segment indexes given segment titles and an
+// optional per-file hint. Body items: [{ filename, hint }]. segmentTitles:
+// [{ idx, title }]. Returns [{ filename, segmentIndex, confidence, reason }].
+async function aiRouteContentItems(segmentTitles, items) {
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
+  const list = (items || [])
+    .map(it => ({ filename: String(it?.filename || '').trim(), hint: String(it?.hint || '').trim() }))
+    .filter(it => it.filename);
+  if (!list.length) return [];
+
+  const segLines = (segmentTitles || [])
+    .map((s, i) => `${(s.idx ?? s.segmentIndex ?? i)}: ${s.title || '(untitled)'}`)
+    .join('\n');
+  const userPrompt =
+    `Course segments (index: title):\n${segLines || '(no segments)'}\n\n` +
+    `Files to route:\n${list.map(it => `- ${it.filename}${it.hint ? ` (hint: ${it.hint})` : ''}`).join('\n')}\n\n` +
+    'Return ONLY a JSON array, one object per file, shaped exactly ' +
+    '[{"filename": string, "segmentIndex": number, "confidence": number (0-1), "reason": string}].';
+
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      system: AI_ROUTE_ITEMS_SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!response.ok) {
+    const detail = await response.text().catch(() => '');
+    throw new Error(`Anthropic API error ${response.status}: ${detail.slice(0, 200)}`);
+  }
+  const data = await response.json();
+  const text = (data.content || []).map(c => c.text || '').join('').trim();
+  const start = text.indexOf('[');
+  const end = text.lastIndexOf(']');
+  if (start < 0 || end < 0) throw new Error('AI routing did not return a JSON array.');
+  return JSON.parse(text.slice(start, end + 1));
+}
+
 // Classify a server-fetched asset as a slide (PNG/JPG) or handout
 // (PDF/DOCX/PPTX/XLSX), from its Content-Type first, then its URL extension.
 // Images always sort to slides. Returns null for anything unsupported.
@@ -1518,14 +1569,17 @@ function uploadBufferToCloudinary(buffer, folder, resourceType, publicId) {
   });
 }
 
-// POST /api/live-sessions/ai-route — thin admin-only proxy to Anthropic. The
-// browser sends { segments:[{ index/segmentIndex, title }], filenames:[String] }
-// and gets back { routing:[{ filename, segmentIndex, confidence, reason }] }.
-// This exists so the ANTHROPIC_API_KEY is never exposed to the frontend.
+// POST /api/live-sessions/ai-route — thin admin-only proxy to Anthropic so the
+// ANTHROPIC_API_KEY is never exposed to the frontend. Accepts either contract:
+//   • manifest/tabbed loader: { segmentTitles:[{idx,title}], items:[{filename,hint}] }
+//   • drop/paste (original):  { segments:[{index/segmentIndex,title}], filenames:[String] }
+// Both return { routing:[{ filename, segmentIndex, confidence, reason }] }.
 router.post('/ai-route', protect, requireAdmin, async (req, res) => {
   try {
-    const { segments, filenames } = req.body || {};
-    const routing = await aiRouteSlides(segments || [], filenames || []);
+    const { segments, filenames, segmentTitles, items } = req.body || {};
+    const routing = (Array.isArray(items) || Array.isArray(segmentTitles))
+      ? await aiRouteContentItems(segmentTitles || [], items || [])
+      : await aiRouteSlides(segments || [], filenames || []);
     res.json({ routing });
   } catch (err) {
     console.error('[live] ai-route:', err.message);
@@ -1545,6 +1599,65 @@ router.post('/:id/fetch-and-load', protect, requireAdmin, async (req, res) => {
     // HIPAA hard-lock: no external content on supervision sessions (no Cloudinary BAA).
     if (session.sessionType === 'supervision') {
       return res.status(403).json({ error: 'Bulk content load is not permitted on supervision sessions.' });
+    }
+
+    // ── Explicit-items contract (manifest / tabbed loader) ──
+    // Body: { items: [{ url, type:'slide'|'handout', segmentIndex?, label? }] }.
+    // The client has already resolved type + segment (via /ai-route), so each
+    // URL is fetched server-side and piped straight to the right upload path.
+    // Returns { loaded:[{url,type,segmentIndex?,handoutId?}], errors:[{url,error}] }.
+    if (Array.isArray(req.body?.items)) {
+      const loaded = [];
+      const errors = [];
+      const HANDOUT_EXT = { pdf: 'pdf', docx: 'docx', pptx: 'pptx', xlsx: 'xlsx', png: 'png', jpg: 'jpg', jpeg: 'jpg' };
+      for (const it of req.body.items) {
+        const url = String(it?.url || '').trim();
+        if (!url) { errors.push({ url: '', error: 'Missing url' }); continue; }
+        try {
+          const controller = new AbortController();
+          const tid = setTimeout(() => controller.abort(), 30000);
+          const r = await fetch(url, { signal: controller.signal });
+          clearTimeout(tid);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const buf = Buffer.from(await r.arrayBuffer());
+          const name = (decodeURIComponent(url.split('?')[0].split('/').pop() || '') || 'file').trim() || 'file';
+
+          if (it.type === 'slide') {
+            const segIdx = Number(it.segmentIndex);
+            const seg = session.agenda?.[segIdx];
+            if (!Number.isInteger(segIdx) || !seg) { errors.push({ url, error: `Segment ${it.segmentIndex} not found` }); continue; }
+            const result = await uploadBufferToCloudinary(
+              buf, `counselorready/live-sessions/${session._id}/slides`, 'image', `slide_${segIdx}_${Date.now()}`
+            );
+            if (!seg.media) seg.media = [];
+            seg.media.push({ url: result.secure_url, publicId: result.public_id, caption: name });
+            session.markModified('agenda');
+            loaded.push({ url, type: 'slide', segmentIndex: segIdx });
+          } else {
+            const ct = (r.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+            const fileType = (HANDOUT_MIME_TO_TYPE[ct]) || HANDOUT_EXT[(name.split('.').pop() || '').toLowerCase()];
+            if (!fileType) { errors.push({ url, error: 'Unsupported handout type' }); continue; }
+            const result = await uploadBufferToCloudinary(
+              buf, `counselorready/live-sessions/${session._id}`, 'raw', `handout_${Date.now()}`
+            );
+            const fileUrl = result.secure_url.replace('/upload/', '/upload/fl_attachment/');
+            session.handouts.push({
+              title: (it.label || '').trim() || name.replace(/\.[^.]+$/, ''),
+              cloudinaryPublicId: result.public_id,
+              fileUrl,
+              fileType,
+              sizeKB: Math.round(result.bytes / 1024),
+              availability: 'during',
+            });
+            const handout = session.handouts[session.handouts.length - 1];
+            loaded.push({ url, type: 'handout', handoutId: handout._id });
+          }
+        } catch (e) {
+          errors.push({ url, error: e.message });
+        }
+      }
+      await session.save();
+      return res.json({ loaded, errors });
     }
 
     const urls = (req.body?.urls || []).map(u => String(u || '').trim()).filter(Boolean);

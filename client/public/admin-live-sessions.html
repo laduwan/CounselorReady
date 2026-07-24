@@ -667,7 +667,39 @@
         </button>
       </div>
 
-      <div class="px-6 py-5 space-y-6" style="background:#F8F7F4;">
+      <!-- Tab bar -->
+      <div class="flex gap-1 px-6 pt-3" style="background:#F8F7F4;border-bottom:1px solid #e5e7eb;">
+        <button id="lcTabBtn-manifest" type="button" onclick="lcSwitchTab('manifest')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">1 · Manifest</button>
+        <button id="lcTabBtn-droppaste" type="button" onclick="lcSwitchTab('droppaste')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">2 · Drop / Paste</button>
+        <button id="lcTabBtn-summary" type="button" onclick="lcSwitchTab('summary')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">3 · Summary</button>
+      </div>
+
+      <div class="px-6 py-5" style="background:#F8F7F4;">
+
+        <!-- ═══ TAB 1: MANIFEST ═══ -->
+        <div id="lcTab-manifest" class="space-y-4">
+          <p class="text-xs text-forest-600">
+            The <code class="text-burgundy-700">content-manifest.json</code> file is the single source of truth — edited in GitHub, verified at merge, never fumbled day-of. Load the entry matching this session's slug, confirm the AI segment matches, then load everything at once.
+          </p>
+          <button id="lcManifestLoadBtn" type="button" onclick="lcLoadManifest()"
+            class="px-4 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2" style="background:#284157;">
+            <i class="fas fa-file-code text-xs"></i> Load from manifest
+          </button>
+          <div id="lcManifestStatus" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
+          <div id="lcManifestPreview" class="hidden space-y-4"></div>
+          <div id="lcManifestActions" class="hidden flex items-center justify-end gap-3 pt-2" style="border-top:1px solid #e5e7eb;">
+            <button id="lcManifestLoadAllBtn" type="button" onclick="lcLoadAllFromManifest()"
+              class="px-5 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2" style="background:#284157;">
+              <i class="fas fa-bolt text-xs"></i> <span id="lcManifestLoadAllLabel">Load All from Manifest</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ TAB 2: DROP / PASTE ═══ -->
+        <div id="lcTab-droppaste" class="hidden space-y-6">
 
         <!-- SECTION 1: GUIDE -->
         <section>
@@ -722,32 +754,46 @@
           <div id="lcRoutingList" class="space-y-2"></div>
         </section>
 
-        <!-- PROGRESS -->
-        <section id="lcProgressSection" class="hidden space-y-3">
-          <div>
-            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Guide</span><span id="lcGuidePct">—</span></div>
-            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcGuideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
-          </div>
-          <div>
-            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Slides</span><span id="lcSlidePct">—</span></div>
-            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcSlideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
-          </div>
-          <div>
-            <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Handouts</span><span id="lcHandoutPct">—</span></div>
-            <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcHandoutBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
-          </div>
-        </section>
-
-        <!-- SUMMARY + ERRORS -->
-        <div id="lcSummary" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
-        <div id="lcErrors" class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 whitespace-pre-wrap"></div>
-
-        <!-- BUTTONS -->
         <div class="flex items-center justify-end gap-3 pt-2" style="border-top:1px solid #e5e7eb;">
-          <button type="button" onclick="closeLoadContentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-white transition-colors">Close</button>
           <button id="lcLoadAllBtn" type="button" onclick="lcLoadAll()" class="px-5 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 transition-colors" style="background:#284157;">
             <i class="fas fa-bolt text-xs"></i> <span id="lcLoadAllLabel">Load All</span>
           </button>
+        </div>
+        </div><!-- /Tab 2 -->
+
+        <!-- ═══ TAB 3: SUMMARY ═══ -->
+        <div id="lcTab-summary" class="hidden space-y-3">
+          <!-- PROGRESS -->
+          <section id="lcProgressSection" class="hidden space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Segments / Guide</span><span id="lcGuidePct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcGuideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Slides</span><span id="lcSlidePct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcSlideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Handouts</span><span id="lcHandoutPct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcHandoutBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+          </section>
+
+          <div id="lcSummary" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
+          <div id="lcErrors" class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 whitespace-pre-wrap"></div>
+          <div id="lcSnippetWrap" class="hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold" style="color:#284157;">Manifest snippet (paste into content-manifest.json)</span>
+              <button type="button" onclick="lcCopySnippet()" class="text-xs px-2 py-1 rounded border border-gray-300 text-forest-700 hover:bg-white"><i class="fas fa-copy"></i> Copy</button>
+            </div>
+            <textarea id="lcSnippet" rows="6" readonly class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs font-mono bg-white"></textarea>
+          </div>
+          <p id="lcSummaryEmpty" class="text-sm text-forest-500">Run a load from the Manifest or Drop / Paste tab — results appear here.</p>
+        </div>
+
+        <!-- Shared footer -->
+        <div class="flex items-center justify-end gap-3 pt-4 mt-4" style="border-top:1px solid #e5e7eb;">
+          <button type="button" onclick="closeLoadContentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-white transition-colors">Close</button>
         </div>
       </div>
     </div>
@@ -2411,6 +2457,26 @@
     let lcRouting = {};     // filename -> { segmentIndex, confidence, reason, chosen }
     let lcPrepared = false; // AI routing prepared and awaiting confirm
     let lcGuideAgenda = null; // parsed agenda from the pasted guide (segment titles for routing)
+    let lcActiveTab = 'manifest';
+    let lcManifestEntry = null;   // the manifest entry matching this session's slug
+    let lcManifestRouting = {};   // slide filename -> { segmentIndex, confidence, reason, chosen }
+    let lcSnippetText = '';       // last "save to manifest" snippet
+
+    const LC_TABS = ['manifest', 'droppaste', 'summary'];
+    function lcSwitchTab(tab) {
+      lcActiveTab = tab;
+      LC_TABS.forEach(t => {
+        const panel = document.getElementById('lcTab-' + t);
+        const btn = document.getElementById('lcTabBtn-' + t);
+        if (panel) panel.classList.toggle('hidden', t !== tab);
+        if (btn) {
+          const on = t === tab;
+          btn.style.background = on ? '#fff' : 'transparent';
+          btn.style.color = on ? '#284157' : '#6b7280';
+          btn.style.borderColor = on ? '#e5e7eb' : 'transparent';
+        }
+      });
+    }
 
     // Extension → which list a dropped file self-sorts into.
     const LC_SLIDE_EXT = { png: true, jpg: true, jpeg: true };
@@ -2442,8 +2508,11 @@
       lcRouting = {};
       lcPrepared = false;
       lcGuideAgenda = null;
+      lcManifestEntry = null;
+      lcManifestRouting = {};
+      lcSnippetText = '';
       document.getElementById('lcSubtitle').textContent =
-        s.title + ' — one modal loads the guide, slides (AI-routed to segments) and handouts.';
+        s.title + ' — load the guide, slides (AI-routed to segments) and handouts from a manifest, drop zone, or URLs.';
       document.getElementById('lcGuide').value = '';
       document.getElementById('lcUrls').value = '';
       document.getElementById('lcGuideChars').textContent = '0';
@@ -2451,10 +2520,18 @@
       document.getElementById('lcProgressSection').classList.add('hidden');
       document.getElementById('lcSummary').classList.add('hidden');
       document.getElementById('lcErrors').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
+      document.getElementById('lcSummaryEmpty').classList.remove('hidden');
       document.getElementById('lcLoadAllLabel').textContent = 'Load All';
       document.getElementById('lcLoadAllBtn').disabled = false;
+      // Manifest tab reset
+      document.getElementById('lcManifestStatus').classList.add('hidden');
+      document.getElementById('lcManifestPreview').classList.add('hidden');
+      document.getElementById('lcManifestActions').classList.add('hidden');
+      document.getElementById('lcManifestPreview').innerHTML = '';
       lcResetBars();
       lcRenderLists();
+      lcSwitchTab('manifest');
       document.getElementById('loadContentModal').classList.remove('hidden');
     }
 
@@ -2665,11 +2742,15 @@
       // ── Phase B: everything runs. ──
       btn.disabled = true;
       label.textContent = 'Loading…';
+      lcSwitchTab('summary');
+      document.getElementById('lcSummaryEmpty').classList.add('hidden');
       document.getElementById('lcProgressSection').classList.remove('hidden');
       document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
       lcResetBars();
 
       let segCount = 0, slidesLoaded = 0, segmentsTouched = new Set(), handoutsLoaded = 0;
+      const uploadedSlides = [], uploadedHandouts = []; // for the "save to manifest" snippet
 
       // 1) Guide (only if not already committed during Phase A).
       if (guideText && !lcGuideAgenda) {
@@ -2702,6 +2783,8 @@
             const d = await resp.json();
             if (!resp.ok) throw new Error(d.error || 'upload failed');
             slidesLoaded++; segmentsTouched.add(segIdx);
+            const mu = (d.media || []).slice(-1)[0];
+            if (mu) uploadedSlides.push({ file: mu.url, segmentHint: (lcSession?.agenda || [])[segIdx]?.title || '' });
           } catch (e) { errors.push(`${f.name}: ${e.message}`); }
           done++; lcSetBar('Slide', done, slides.length);
         }));
@@ -2724,6 +2807,7 @@
             const d = await resp.json();
             if (!resp.ok) throw new Error(d.error || 'upload failed');
             handoutsLoaded++;
+            if (d.handout) uploadedHandouts.push({ file: d.handout.fileUrl, label: d.handout.title });
           } catch (e) { errors.push(`${f.name}: ${e.message}`); }
           done++; lcSetBar('Handout', done, handouts.length);
         }));
@@ -2749,13 +2833,17 @@
       }
 
       // Summary.
+      const segNames = Array.from(segmentsTouched)
+        .filter(x => typeof x === 'number')
+        .map(i => (lcGuideAgenda || lcSession?.agenda || [])[i]?.title || ('segment ' + i));
       const summary = document.getElementById('lcSummary');
-      summary.innerHTML = `<strong>Done.</strong> ${segCount ? segCount + ' segments · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s) · ${handoutsLoaded} handout(s).`;
+      summary.innerHTML = `<strong>Done.</strong> ${segCount ? segCount + ' segments imported · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s)${segNames.length ? ' (' + escHtml(segNames.join(', ')) + ')' : ''} · ${handoutsLoaded} handout(s).`;
       summary.classList.remove('hidden');
       if (errors.length) {
         errEl.textContent = errors.join('\n');
         errEl.classList.remove('hidden');
       }
+      lcShowSnippet(uploadedSlides, uploadedHandouts);
 
       // Refresh the in-memory session so the table badges update.
       showToast('Content loaded.', '#284157');
@@ -2791,6 +2879,239 @@
       lcGuideAgenda = parsed.agenda || [];
       if (lcSession) lcSession.agenda = lcGuideAgenda;
       return cd;
+    }
+
+    /* ── Tab 1: Content manifest ── */
+
+    // Resolve a manifest file reference to a fetchable URL. Absolute http(s)
+    // URLs (Cloudinary/Drive) pass through; relative paths resolve against
+    // baseUrl (default same origin). TODO placeholders resolve to null.
+    function lcResolveManifestRef(ref, baseUrl) {
+      const s = String(ref || '').trim();
+      if (!s || /todo/i.test(s)) return null;
+      if (/^https?:\/\//i.test(s)) return s;
+      const base = (baseUrl || '').replace(/\/$/, '');
+      return (base ? base + '/' : '/') + s.replace(/^\//, '');
+    }
+
+    async function lcLoadManifest() {
+      if (!lcSession) return;
+      const btn = document.getElementById('lcManifestLoadBtn');
+      const statusEl = document.getElementById('lcManifestStatus');
+      btn.disabled = true;
+      statusEl.classList.remove('hidden');
+      statusEl.textContent = 'Loading content-manifest.json…';
+      document.getElementById('lcManifestPreview').classList.add('hidden');
+      document.getElementById('lcManifestActions').classList.add('hidden');
+      lcManifestRouting = {};
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const r = await fetch('/content-manifest.json', { signal: controller.signal, cache: 'no-store' });
+        clearTimeout(tid);
+        if (!r.ok) throw new Error('content-manifest.json not found (HTTP ' + r.status + ')');
+        const manifest = await r.json();
+        const entry = (manifest.sessions || {})[lcSession.slug];
+        if (!entry) throw new Error('No manifest entry for slug "' + lcSession.slug + '".');
+        lcManifestEntry = { ...entry, _baseUrl: manifest.baseUrl || '' };
+
+        // AI-route manifest slides against this session's agenda titles.
+        const slides = entry.slides || [];
+        if (slides.length && (lcSession.agenda || []).length) {
+          const segmentTitles = (lcSession.agenda || []).map((s, i) => ({ idx: i, title: s.title || '' }));
+          try {
+            const rr = await fetch(`${API}/ai-route`, {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ segmentTitles, items: slides.map(sl => ({ filename: sl.file, hint: sl.segmentHint || '' })) })
+            });
+            const rd = await rr.json();
+            if (rr.ok) (rd.routing || []).forEach(x => { lcManifestRouting[x.filename] = x; });
+          } catch { /* leave unrouted — host assigns manually */ }
+        }
+        statusEl.classList.add('hidden');
+        lcRenderManifestPreview();
+      } catch (e) {
+        statusEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function lcRenderManifestPreview() {
+      const entry = lcManifestEntry;
+      const agenda = lcSession?.agenda || [];
+      const segOptions = (chosen) =>
+        ['<option value="">— unassigned —</option>']
+          .concat(agenda.map((s, i) => `<option value="${i}"${String(chosen) === String(i) ? ' selected' : ''}>${i}. ${escHtml(s.title || '(untitled)')}</option>`))
+          .join('');
+
+      const guide = String(entry.guide || '').trim();
+      const guideIsPath = guide && !/\n/.test(guide) && /\.(md|markdown|txt)$/i.test(guide);
+      const guideFirstLine = guide ? guide.split('\n')[0].slice(0, 80) : '';
+      const guideCard = guide
+        ? `<div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <p class="text-xs font-semibold mb-1" style="color:#284157;">Guide</p>
+            <p class="text-xs text-forest-600">${guideIsPath ? 'File: ' : (guide.length + ' chars · ')}${escHtml(guideFirstLine)}${guide.length > 80 && !guideIsPath ? '…' : ''}</p>
+          </div>`
+        : `<div class="border border-gray-200 rounded-lg p-3 bg-white"><p class="text-xs text-forest-500">No guide in manifest.</p></div>`;
+
+      const slides = entry.slides || [];
+      const slideRows = slides.map(sl => {
+        const r = lcManifestRouting[sl.file] || {};
+        const conf = Number(r.confidence);
+        const matched = Number.isInteger(Number(r.segmentIndex)) && conf >= 0;
+        const resolved = lcResolveManifestRef(sl.file, entry._baseUrl);
+        const chosen = r.chosen != null ? r.chosen : (matched ? Number(r.segmentIndex) : '');
+        let badge;
+        if (!resolved) badge = '<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">TODO URL</span>';
+        else if (!matched) badge = '<span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">unmatched</span>';
+        else if (conf >= 0.8) badge = `<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">auto · ${(conf * 100).toFixed(0)}%</span>`;
+        else badge = `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">confirm · ${(conf * 100).toFixed(0)}%</span>`;
+        return `<div class="border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs font-medium text-forest-800 truncate" title="${escHtml(sl.file)}">${escHtml(sl.file)}</span>
+            ${badge}
+          </div>
+          <select data-fname="${escHtml(sl.file)}" onchange="lcManifestSetRoute(this)" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:border-burgundy-500">${segOptions(chosen)}</select>
+          ${sl.segmentHint ? `<p class="text-xs text-forest-400 mt-1">hint: ${escHtml(sl.segmentHint)}</p>` : ''}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No slides in manifest.</p>';
+
+      const handouts = entry.handouts || [];
+      const handoutRows = handouts.map(h => {
+        const resolved = lcResolveManifestRef(h.file, entry._baseUrl);
+        return `<div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <span class="text-xs text-forest-700 truncate" title="${escHtml(h.file)}">${escHtml(h.label || h.file)}</span>
+          ${resolved ? '' : '<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">TODO URL</span>'}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No handouts in manifest.</p>';
+
+      document.getElementById('lcManifestPreview').innerHTML =
+        guideCard +
+        `<div><p class="text-xs font-semibold mb-1" style="color:#284157;">Slides (${slides.length}) — AI segment matches</p><div class="space-y-2">${slideRows}</div></div>` +
+        `<div><p class="text-xs font-semibold mb-1" style="color:#284157;">Handouts (${handouts.length})</p><div class="space-y-2">${handoutRows}</div></div>`;
+      document.getElementById('lcManifestPreview').classList.remove('hidden');
+      document.getElementById('lcManifestActions').classList.remove('hidden');
+    }
+
+    function lcManifestSetRoute(sel) {
+      const name = sel.getAttribute('data-fname');
+      if (!lcManifestRouting[name]) lcManifestRouting[name] = {};
+      lcManifestRouting[name].chosen = sel.value === '' ? null : parseInt(sel.value, 10);
+    }
+
+    async function lcLoadAllFromManifest() {
+      if (!lcManifestEntry) return;
+      const btn = document.getElementById('lcManifestLoadAllBtn');
+      const label = document.getElementById('lcManifestLoadAllLabel');
+      btn.disabled = true;
+      label.textContent = 'Loading…';
+      lcSwitchTab('summary');
+      document.getElementById('lcSummaryEmpty').classList.add('hidden');
+      document.getElementById('lcProgressSection').classList.remove('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcErrors').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
+      lcResetBars();
+
+      const entry = lcManifestEntry;
+      const errors = [];
+      let segCount = 0, slidesLoaded = 0, handoutsLoaded = 0;
+      const segmentsTouched = new Set();
+
+      // 1) Guide — path (fetch text) or inline; then preview + commit.
+      const guideRaw = String(entry.guide || '').trim();
+      if (guideRaw) {
+        try {
+          let markdown = guideRaw;
+          const guideIsPath = !/\n/.test(guideRaw) && /\.(md|markdown|txt)$/i.test(guideRaw);
+          if (guideIsPath) {
+            const gu = lcResolveManifestRef(guideRaw, entry._baseUrl);
+            if (!gu) throw new Error('guide path unresolved (TODO)');
+            const gr = await fetch(gu);
+            if (!gr.ok) throw new Error('guide fetch HTTP ' + gr.status);
+            markdown = await gr.text();
+          }
+          const res = await lcCommitGuide(markdown);
+          segCount = res.segmentCount || (lcGuideAgenda || []).length;
+          lcSetBar('Guide', 1, 1);
+        } catch (e) { errors.push('Guide: ' + e.message); lcSetBar('Guide', 0, 1); }
+      } else { document.getElementById('lcGuidePct').textContent = 'skipped'; }
+
+      // 2/3) Slides + handouts → server fetch-and-load with explicit items.
+      const slideItems = [];
+      (entry.slides || []).forEach(sl => {
+        const url = lcResolveManifestRef(sl.file, entry._baseUrl);
+        const r = lcManifestRouting[sl.file] || {};
+        const segIdx = r.chosen != null ? r.chosen : (Number.isInteger(Number(r.segmentIndex)) && Number(r.confidence) >= 0.8 ? Number(r.segmentIndex) : null);
+        if (!url) { errors.push(`${sl.file}: TODO URL — fill in the manifest after first upload.`); return; }
+        if (segIdx == null) { errors.push(`${sl.file}: no segment assigned — skipped.`); return; }
+        slideItems.push({ url, type: 'slide', segmentIndex: segIdx });
+      });
+      const handoutItems = [];
+      (entry.handouts || []).forEach(h => {
+        const url = lcResolveManifestRef(h.file, entry._baseUrl);
+        if (!url) { errors.push(`${h.label || h.file}: TODO URL — fill in the manifest.`); return; }
+        handoutItems.push({ url, type: 'handout', label: h.label || '' });
+      });
+
+      lcSetBar('Slide', 0, slideItems.length);
+      lcSetBar('Handout', 0, handoutItems.length);
+      const items = slideItems.concat(handoutItems);
+      if (items.length) {
+        try {
+          const resp = await fetch(`${API}/${lcSessionId}/fetch-and-load`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+          });
+          const d = await resp.json();
+          if (!resp.ok) throw new Error(d.error || 'Load failed');
+          (d.loaded || []).forEach(l => {
+            if (l.type === 'slide') { slidesLoaded++; segmentsTouched.add(l.segmentIndex); }
+            else handoutsLoaded++;
+          });
+          (d.errors || []).forEach(e => errors.push(`${e.url || ''}: ${e.error}`));
+        } catch (e) { errors.push('Load: ' + e.message); }
+      }
+      lcSetBar('Slide', slideItems.length, slideItems.length);
+      lcSetBar('Handout', handoutItems.length, handoutItems.length);
+      if (!slideItems.length) document.getElementById('lcSlidePct').textContent = 'skipped';
+      if (!handoutItems.length) document.getElementById('lcHandoutPct').textContent = 'skipped';
+
+      const segNames = Array.from(segmentsTouched).map(i => (lcSession?.agenda || [])[i]?.title || ('segment ' + i));
+      const summary = document.getElementById('lcSummary');
+      summary.innerHTML = `<strong>Done (manifest).</strong> ${segCount ? segCount + ' segments imported · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s)${segNames.length ? ' (' + escHtml(segNames.join(', ')) + ')' : ''} · ${handoutsLoaded} handout(s).`;
+      summary.classList.remove('hidden');
+      if (errors.length) {
+        const errEl = document.getElementById('lcErrors');
+        errEl.textContent = errors.join('\n');
+        errEl.classList.remove('hidden');
+      }
+      showToast('Manifest content loaded.', '#284157');
+      loadSessions();
+      btn.disabled = false;
+      label.textContent = 'Load All from Manifest';
+    }
+
+    // "Save to manifest": after a drop/paste load, surface a JSON snippet of the
+    // freshly-minted Cloudinary URLs to paste back into content-manifest.json.
+    function lcShowSnippet(slides, handouts) {
+      if (!slides.length && !handouts.length) return;
+      const entry = {};
+      if (slides.length) entry.slides = slides;
+      if (handouts.length) entry.handouts = handouts;
+      lcSnippetText = JSON.stringify({ [lcSession?.slug || 'SESSION_SLUG']: entry }, null, 2);
+      document.getElementById('lcSnippet').value = lcSnippetText;
+      document.getElementById('lcSnippetWrap').classList.remove('hidden');
+    }
+
+    function lcCopySnippet() {
+      const ta = document.getElementById('lcSnippet');
+      ta.select();
+      try { document.execCommand('copy'); showToast('Snippet copied.', '#284157'); }
+      catch { showToast('Select and copy manually.', '#c0392b'); }
     }
 
     /* Close bulk-content modal on backdrop click */
