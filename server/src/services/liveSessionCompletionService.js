@@ -76,6 +76,19 @@ export async function issueLiveSessionCertificates(liveSessionId) {
         continue;
       }
 
+      // Assessment gate — ONLY when enabled. Requires a passing attempt on top of
+      // attendance + evaluation. When disabled, this block is skipped entirely and
+      // eligibility is attendance + evaluation exactly as before.
+      if (session.assessment?.enabled) {
+        const passedAttempt = (session.assessmentAttempts || []).some(
+          a => a.userId && a.userId.toString() === userId.toString() && a.passed
+        );
+        if (!passedAttempt) {
+          skipped.push({ userId, reason: 'assessment-not-passed' });
+          continue;
+        }
+      }
+
       // Idempotency: title + user + platform source (no courseId for live sessions;
       // liveSessionId field added to CertificateSchema — see WIRING.md)
       const existing = await Certificate.findOne({

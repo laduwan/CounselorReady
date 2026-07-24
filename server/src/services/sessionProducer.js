@@ -227,12 +227,21 @@ function wrapUpHtml(session, user, gaps, handouts, replayUrl) {
     ? `<p>The <strong>replay</strong> is available — <a href="${replayDeepLink(session)}" style="color:#4A7C59;">watch it here</a>.</p>`
     : `<p>The replay is being processed and will be available shortly. We'll send you a follow-up email when it's ready.</p>`;
 
+  // Assessment CTA — ONLY when the session has an enabled graded assessment.
+  const assessmentHtml = session.assessment?.enabled
+    ? `<div style="background:#F8F7F4;border:1px solid #EDE9E3;border-radius:8px;padding:16px;margin:16px 0;">
+        <p style="margin:0 0 8px;"><strong>One more step for your certificate:</strong> this session requires a short assessment (passing score ${session.assessment.passThresholdPct ?? 80}%).</p>
+        <a class="btn" href="${SITE}/live-assessment.html?session=${esc(session.slug)}">Take the Assessment</a>
+      </div>`
+    : '';
+
   return emailShell(`
     <p>Hi ${esc(firstName)},</p>
     <p>Thank you for attending <strong>${esc(session.title)}</strong>! We're glad you joined us.</p>
     ${gapBlock}
     ${handoutsHtml}
     ${replayHtml}
+    ${assessmentHtml}
     <p>Your CE certificate (${session.ceuHours} hours) will be issued within 24 hours to eligible participants. You'll receive a separate email when it's ready.</p>
     <p style="font-size:13px;color:#57534e;">CE credit is based on verified live attendance minutes and cannot be earned through replay or catch-up content.</p>
   `);

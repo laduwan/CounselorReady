@@ -128,6 +128,11 @@ export async function runSessionProducerTick() {
     console.error(`${LOG} autopilot auto-cert batch error:`, err.message);
   }
   try {
+    await processAutopilotAssessmentCertificates(now);
+  } catch (err) {
+    console.error(`${LOG} autopilot assessment-cert batch error:`, err.message);
+  }
+  try {
     await processLiveSessionReminders(now);
   } catch (err) {
     console.error(`${LOG} live-session reminder batch error:`, err.message);
@@ -237,6 +242,9 @@ async function processAutopilotCertificates(now) {
     sessionType: 'live-course',
     'autopilot.enabled': true,
     seriesId: null,
+    // Assessment-enabled sessions issue ROLLING via processAutopilotAssessmentCertificates
+    // (people need time to take the quiz); exclude them from the one-shot path.
+    'assessment.enabled': { $ne: true },
     scheduledEnd: { $lte: graceCutoff },
     certificatesIssuedAt: { $exists: false },
     'producer.certificatesAutoIssuedAt': { $exists: false }
@@ -273,6 +281,69 @@ async function processAutopilotCertificates(now) {
       console.log(`${LOG} autopilot auto-issued certificates for "${session.title}" (${session._id}) — ${result?.issued?.length || 0} issued`);
     } catch (err) {
       console.error(`${LOG} autopilot auto-cert error on ${session._id}:`, err.message);
+    }
+  }
+}
+
+/**
+ * Rolling certificate issuance for autopilot live-courses that have an ENABLED
+ * post-session assessment. Attendees need time to take the quiz, so instead of a
+ * one-shot we re-run the (idempotent) issuance every tick from CERT_GRACE_MIN
+ * after end up to 24h — each registrant's cert issues the tick after they pass.
+ * After the 24h window we stamp producer.certificatesAutoIssuedAt to stop.
+ * Empty attendance is never auto-issued; it warns the admin once at window close.
+ */
+async function processAutopilotAssessmentCertificates(now) {
+  const candidates = await LiveSession.find({
+    status: 'completed',
+    sessionType: 'live-course',
+    'autopilot.enabled': true,
+    'assessment.enabled': true,
+    seriesId: null,
+    'producer.certificatesAutoIssuedAt': { $exists: false }
+  });
+
+  for (const session of candidates) {
+    try {
+      const endMs = session.scheduledEnd.getTime();
+      if (now.getTime() < endMs + CERT_GRACE_MIN * 60000) continue; // brief grace before first pass
+      const windowClosed = now.getTime() >= endMs + H24_MS;
+
+      const hasAttendance = Array.isArray(session.attendance) && session.attendance.length > 0;
+      if (!hasAttendance) {
+        // Only warn + finalize once the window has closed — attendance may still
+        // sync in early on. Never auto-issue with empty attendance.
+        if (windowClosed) {
+          await sendAutopilotEmptyAttendanceWarning(session);
+          session.producer = session.producer || {};
+          session.producer.certificatesAutoIssuedAt = now;
+          session.markModified('producer');
+          await session.save();
+          console.warn(`${LOG} autopilot assessment cert SKIPPED (empty attendance) "${session.title}" (${session._id})`);
+        }
+        continue;
+      }
+
+      // Idempotent per-cert: issues only newly-passed registrants this tick.
+      const result = await issueLiveSessionCertificates(session._id);
+      if (result?.issued?.length) {
+        const fresh = await LiveSession.findById(session._id);
+        if (fresh) await sendAutopilotCertAdminSummary(fresh, result);
+        console.log(`${LOG} autopilot assessment rolling issue "${session.title}" — ${result.issued.length} new`);
+      }
+
+      if (windowClosed) {
+        // 24h assessment window done — stamp so we stop re-processing this session.
+        const fresh = await LiveSession.findById(session._id);
+        if (fresh) {
+          fresh.producer = fresh.producer || {};
+          fresh.producer.certificatesAutoIssuedAt = now;
+          fresh.markModified('producer');
+          await fresh.save();
+        }
+      }
+    } catch (err) {
+      console.error(`${LOG} autopilot assessment cert error on ${session._id}:`, err.message);
     }
   }
 }
