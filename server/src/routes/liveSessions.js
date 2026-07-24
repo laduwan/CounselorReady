@@ -75,6 +75,18 @@ const rosDocxUpload = multer({
   },
 });
 
+// Per-segment slide upload — PNG/JPG only. Reuses the handout Cloudinary
+// machinery (memory buffer → upload_stream), image resource type.
+const SLIDE_MIME = { 'image/png': true, 'image/jpeg': true };
+const slideUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    if (SLIDE_MIME[file.mimetype]) cb(null, true);
+    else cb(new Error(`Slide images must be PNG or JPG (got ${file.mimetype}).`), false);
+  },
+});
+
 const JOIN_WINDOW_BEFORE_MIN = 15; // doors open 15 min early
 const JOIN_WINDOW_AFTER_MIN = 30;  // grace after scheduled end (overruns)
 
@@ -757,7 +769,8 @@ router.get('/:id/host-state', protect, requireAdmin, async (req, res) => {
         speakerNotes: seg.speakerNotes,
         activityInstructions: seg.activityInstructions,
         facilitatorCautions: seg.facilitatorCautions || [],
-        polls: seg.polls || []
+        polls: seg.polls || [],
+        media: seg.media || []
       })),
       hostScratchpad: session.hostScratchpad || '',
       hostChecklist: session.hostChecklist || [],
@@ -800,7 +813,7 @@ router.post('/series/:seriesId/issue-certificates', protect, requireAdmin, async
 router.get('/:id/live-state', protect, async (req, res) => {
   try {
     const session = await LiveSession.findById(req.params.id)
-      .select('liveState agenda status scheduledStart scheduledEnd registrants attendance breaks alarmLeadSec hostScratchpad hostChecklist globalFacilitatorCautions preFlightChecklist')
+      .select('liveState agenda pollResponses status scheduledStart scheduledEnd registrants attendance breaks alarmLeadSec hostScratchpad hostChecklist globalFacilitatorCautions preFlightChecklist')
       .lean();
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
@@ -823,8 +836,11 @@ router.get('/:id/live-state', protect, async (req, res) => {
           activityInstructions: undefined,
           facilitatorCautions: undefined,
           polls: undefined,
-          breakoutPrompts: undefined,
+          // breakoutPrompts stay for the attendee ONLY while this is a breakout
+          // segment (they need the prompts to run their group); stripped otherwise.
+          breakoutPrompts: seg.type === 'breakout' ? seg.breakoutPrompts : undefined,
           exercise: undefined
+          // media (slide images) is public — intentionally NOT stripped.
         }
       : seg;
 
@@ -837,6 +853,33 @@ router.get('/:id/live-state', protect, async (req, res) => {
       scheduledStart: session.scheduledStart,
       scheduledEnd: session.scheduledEnd
     };
+
+    // Active poll — exposed to attendees ONLY while launched (never the full
+    // agenda polls array). Results included for host always, for attendees only
+    // once revealed.
+    const ap = session.liveState?.activePoll;
+    if (ap && ap.segIdx != null && ap.pollIdx != null && ap.launchedAt) {
+      const poll = session.agenda?.[ap.segIdx]?.polls?.[ap.pollIdx];
+      if (poll) {
+        const myVote = (session.pollResponses || []).find(r =>
+          r.userId && r.userId.toString() === req.user._id.toString() &&
+          r.segIdx === ap.segIdx && r.pollIdx === ap.pollIdx);
+        const out = {
+          segIdx: ap.segIdx,
+          pollIdx: ap.pollIdx,
+          question: poll.question,
+          options: (poll.options || []).map(o => ({ text: o.text })),
+          launchedAt: ap.launchedAt,
+          closedAt: ap.closedAt || null,
+          revealed: !!ap.revealed,
+          myOptionIdx: myVote ? myVote.optionIdx : null
+        };
+        if (isAdmin || ap.revealed) {
+          out.results = tallyPoll(session.pollResponses, ap.segIdx, ap.pollIdx, poll.options?.length || 0);
+        }
+        payload.activePoll = out;
+      }
+    }
 
     // Per-user check-in status — every attendee gets their own, not host-only
     const myAtt = (session.attendance || []).find(
@@ -1069,6 +1112,228 @@ router.delete('/:id/clips/:clipIndex', protect, requireAdmin, async (req, res) =
   }
 });
 
+/* ════════════════════════ NATIVE POLLS ════════════════════════ */
+
+// Returns the poll subdoc at agenda[segIdx].polls[pollIdx], or null.
+function findPoll(session, segIdx, pollIdx) {
+  return session.agenda?.[segIdx]?.polls?.[pollIdx] || null;
+}
+
+// POST /:id/poll/launch — host opens voting on a segment's poll
+router.post('/:id/poll/launch', protect, requireAdmin, async (req, res) => {
+  try {
+    const { segIdx, pollIdx } = req.body;
+    if (typeof segIdx !== 'number' || typeof pollIdx !== 'number') {
+      return res.status(400).json({ error: 'segIdx and pollIdx must be numbers.' });
+    }
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!findPoll(session, segIdx, pollIdx)) {
+      return res.status(404).json({ error: 'No poll at that segment/poll index.' });
+    }
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      activePoll: { segIdx, pollIdx, launchedAt: new Date(), closedAt: null, revealed: false }
+    };
+    session.markModified('liveState');
+    await session.save();
+    res.json({ activePoll: session.liveState.activePoll });
+  } catch (err) {
+    console.error('[live] poll launch:', err.message);
+    res.status(500).json({ error: 'Failed to launch poll' });
+  }
+});
+
+// POST /:id/poll/close — host stops accepting votes on the active poll
+router.post('/:id/poll/close', protect, requireAdmin, async (req, res) => {
+  try {
+    const { segIdx, pollIdx } = req.body;
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const ap = session.liveState?.activePoll;
+    if (!ap || ap.segIdx !== segIdx || ap.pollIdx !== pollIdx) {
+      return res.status(400).json({ error: 'That poll is not the active poll.' });
+    }
+    ap.closedAt = ap.closedAt || new Date();
+    session.markModified('liveState');
+    await session.save();
+    res.json({ activePoll: session.liveState.activePoll });
+  } catch (err) {
+    console.error('[live] poll close:', err.message);
+    res.status(500).json({ error: 'Failed to close poll' });
+  }
+});
+
+// POST /:id/poll/reveal — host makes results visible to attendees
+router.post('/:id/poll/reveal', protect, requireAdmin, async (req, res) => {
+  try {
+    const { segIdx, pollIdx } = req.body;
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const ap = session.liveState?.activePoll;
+    if (!ap || ap.segIdx !== segIdx || ap.pollIdx !== pollIdx) {
+      return res.status(400).json({ error: 'That poll is not the active poll.' });
+    }
+    ap.revealed = true;
+    session.markModified('liveState');
+    await session.save();
+    res.json({ activePoll: session.liveState.activePoll });
+  } catch (err) {
+    console.error('[live] poll reveal:', err.message);
+    res.status(500).json({ error: 'Failed to reveal poll' });
+  }
+});
+
+// POST /:id/poll/vote — attendee casts ONE vote on the active poll (idempotent)
+router.post('/:id/poll/vote', protect, async (req, res) => {
+  try {
+    const { segIdx, pollIdx, optionIdx } = req.body;
+    if ([segIdx, pollIdx, optionIdx].some(n => typeof n !== 'number')) {
+      return res.status(400).json({ error: 'segIdx, pollIdx and optionIdx must be numbers.' });
+    }
+    const session = await LiveSession.findById(req.params.id).select('liveState agenda registrants');
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!session.isRegistered(req.user._id)) {
+      return res.status(403).json({ error: 'You are not registered for this session.' });
+    }
+    const ap = session.liveState?.activePoll;
+    if (!ap || ap.segIdx !== segIdx || ap.pollIdx !== pollIdx || !ap.launchedAt) {
+      return res.status(400).json({ error: 'That poll is not open for voting.' });
+    }
+    if (ap.closedAt && Date.now() >= new Date(ap.closedAt).getTime()) {
+      return res.status(400).json({ error: 'Voting is closed for this poll.' });
+    }
+    const poll = findPoll(session, segIdx, pollIdx);
+    if (!poll) return res.status(404).json({ error: 'Poll not found.' });
+    if (optionIdx < 0 || optionIdx >= (poll.options?.length || 0)) {
+      return res.status(400).json({ error: 'Invalid option.' });
+    }
+
+    // Atomic idempotent write: push only if this user has no vote yet for this
+    // (segIdx, pollIdx). No load-modify-save, so concurrent voters never race.
+    const result = await LiveSession.updateOne(
+      { _id: session._id, pollResponses: { $not: { $elemMatch: { userId: req.user._id, segIdx, pollIdx } } } },
+      { $push: { pollResponses: { userId: req.user._id, segIdx, pollIdx, optionIdx, at: new Date() } } }
+    );
+    res.json({ recorded: true, alreadyVoted: result.modifiedCount === 0 });
+  } catch (err) {
+    console.error('[live] poll vote:', err.message);
+    res.status(500).json({ error: 'Failed to record vote' });
+  }
+});
+
+// GET /:id/poll/results — admin: active poll, or any (segIdx,pollIdx) via query
+// (used by the host TREND view). Registrant: active poll only, once revealed.
+router.get('/:id/poll/results', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id)
+      .select('liveState agenda pollResponses registrants').lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const isAdmin = req.user.role === 'admin';
+    const registered = (session.registrants || []).some(r => r.user && r.user.toString() === req.user._id.toString());
+    if (!isAdmin && !registered) return res.status(403).json({ error: 'Not registered for this session.' });
+
+    const ap = session.liveState?.activePoll || null;
+    let segIdx, pollIdx;
+    if (isAdmin && req.query.segIdx != null && req.query.pollIdx != null) {
+      segIdx = parseInt(req.query.segIdx, 10);
+      pollIdx = parseInt(req.query.pollIdx, 10);
+    } else if (ap) {
+      segIdx = ap.segIdx; pollIdx = ap.pollIdx;
+    } else {
+      return res.json({ activePoll: null, results: null });
+    }
+
+    const poll = session.agenda?.[segIdx]?.polls?.[pollIdx];
+    if (!poll) return res.status(404).json({ error: 'Poll not found.' });
+
+    // Registrant may only see results for the ACTIVE poll and only once revealed.
+    if (!isAdmin && (!ap || ap.segIdx !== segIdx || ap.pollIdx !== pollIdx || !ap.revealed)) {
+      return res.status(403).json({ error: 'Results are not available yet.' });
+    }
+
+    res.json({
+      activePoll: ap,
+      segIdx, pollIdx,
+      question: poll.question,
+      options: (poll.options || []).map(o => ({ text: o.text })),
+      results: tallyPoll(session.pollResponses, segIdx, pollIdx, poll.options?.length || 0)
+    });
+  } catch (err) {
+    console.error('[live] poll results:', err.message);
+    res.status(500).json({ error: 'Failed to load poll results' });
+  }
+});
+
+/* ════════════════════════ SEGMENT SLIDES (media) ════════════════════════ */
+
+// POST /:id/agenda/:segIdx/media — upload a PNG/JPG slide to a segment
+router.post('/:id/agenda/:segIdx/media', protect, requireAdmin, (req, res, next) => {
+  slideUpload.single('file')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+    next();
+  });
+}, async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file provided' });
+    const segIdx = parseInt(req.params.segIdx, 10);
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.sessionType === 'supervision') {
+      return res.status(403).json({ error: 'Slides are not permitted on supervision sessions.' });
+    }
+    const seg = session.agenda?.[segIdx];
+    if (!seg) return res.status(404).json({ error: 'Segment not found.' });
+
+    const folder = `counselorready/live-sessions/${session._id}/slides`;
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.v2.uploader.upload_stream(
+        { folder, resource_type: 'image', public_id: `slide_${segIdx}_${Date.now()}` },
+        (e, r) => (e ? reject(e) : resolve(r))
+      );
+      const readable = new Readable();
+      readable.push(req.file.buffer);
+      readable.push(null);
+      readable.pipe(stream);
+    });
+
+    if (!seg.media) seg.media = [];
+    seg.media.push({ url: result.secure_url, publicId: result.public_id, caption: (req.body.caption || '').trim() });
+    session.markModified('agenda');
+    await session.save();
+    res.status(201).json({ media: seg.media, segIdx });
+  } catch (err) {
+    console.error('[live] slide upload:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /:id/agenda/:segIdx/media/:mediaIdx — remove a slide (best-effort Cloudinary destroy)
+router.delete('/:id/agenda/:segIdx/media/:mediaIdx', protect, requireAdmin, async (req, res) => {
+  try {
+    const segIdx = parseInt(req.params.segIdx, 10);
+    const mediaIdx = parseInt(req.params.mediaIdx, 10);
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const seg = session.agenda?.[segIdx];
+    if (!seg || !Array.isArray(seg.media) || !seg.media[mediaIdx]) {
+      return res.status(404).json({ error: 'Slide not found.' });
+    }
+    const [removed] = seg.media.splice(mediaIdx, 1);
+    session.markModified('agenda');
+    try {
+      if (removed?.publicId) await cloudinary.v2.uploader.destroy(removed.publicId, { resource_type: 'image' });
+    } catch (e) {
+      console.error('[live] slide destroy (non-fatal):', e.message);
+    }
+    await session.save();
+    res.json({ media: seg.media });
+  } catch (err) {
+    console.error('[live] slide delete:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ════════════════════════ CATCH-UP ════════════════════════ */
 
 // POST /api/live-sessions/:id/catchup
@@ -1124,6 +1389,20 @@ router.post('/:id/catchup', protect, async (req, res) => {
 });
 
 /* ── helpers ── */
+// Tally votes for one poll into per-option counts + total. Pure function so it
+// can be reused by the live-state and poll/results routes.
+function tallyPoll(pollResponses, segIdx, pollIdx, optionCount) {
+  const counts = new Array(optionCount).fill(0);
+  let total = 0;
+  for (const r of (pollResponses || [])) {
+    if (r.segIdx === segIdx && r.pollIdx === pollIdx && r.optionIdx >= 0 && r.optionIdx < optionCount) {
+      counts[r.optionIdx]++;
+      total++;
+    }
+  }
+  return { counts, total };
+}
+
 async function findByIdOrSlug(idOrSlug) {
   if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) {
     const byId = await LiveSession.findById(idOrSlug);

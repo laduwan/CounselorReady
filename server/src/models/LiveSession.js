@@ -291,7 +291,17 @@ const liveSessionSchema = new mongoose.Schema({
         debriefFormat: String        // how findings are shared (e.g. "1 person reads aloud")
       },
       default: undefined // omit entirely when segment has no exercise
-    }
+    },
+
+    // Per-segment slide media (PNG/JPG). Public — auto-rendered in the
+    // attendee NOW card when the segment activates. Uploaded via the Run of
+    // Show editor, stored on Cloudinary (same machinery as handouts).
+    media: [{
+      _id: false,
+      url: { type: String, required: true },
+      publicId: String,   // Cloudinary public_id, for deletion
+      caption: String
+    }]
   }],
 
   // Live sync state — host writes, attendees poll via GET /:id/live-state
@@ -303,8 +313,36 @@ const liveSessionSchema = new mongoose.Schema({
       playing: { type: Boolean, default: false },
       positionSec: { type: Number, default: 0 },
       stateUpdatedAt: Date
+    },
+    // Native poll session. Points at agenda[segIdx].polls[pollIdx]. null when no
+    // poll is live. launchedAt→attendees can vote; closedAt→voting rejected;
+    // revealed→results visible to attendees.
+    activePoll: {
+      type: {
+        _id: false,
+        segIdx: Number,
+        pollIdx: Number,
+        launchedAt: Date,
+        closedAt: Date,
+        revealed: { type: Boolean, default: false }
+      },
+      default: null
     }
   },
+
+  // Native poll votes — one per user per (segIdx, pollIdx), enforced by an
+  // atomic guarded $push at the vote route. Embedded (not a separate
+  // collection): at schema-max capacity 200 × ~10 polls ≈ 2,000 ~100-byte
+  // subdocs (~200 KB), far under the 16 MB doc cap and smaller than the
+  // existing attendance[] with its checkins.
+  pollResponses: [{
+    _id: false,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    segIdx: { type: Number, required: true },
+    pollIdx: { type: Number, required: true },
+    optionIdx: { type: Number, required: true },
+    at: { type: Date, default: Date.now }
+  }],
 
   // Scheduled breaks — excluded from the NBCC attendance denominator
   breaks: [{

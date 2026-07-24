@@ -54,12 +54,21 @@
           <p id="muteReminder" class="hidden text-xs mt-2 text-center" style="color:#7a5c1e;">🔇 Mute your mic in the video call while watching the clip.</p>
         </div>
         <aside class="lg:col-span-1">
+          <!-- Live poll — appears above the NOW card only while a poll is launched -->
+          <div id="pollCard" class="hidden" style="background:#EEF2FF;border:1px solid #C7D2FE;border-radius:12px;padding:14px;margin-bottom:12px;">
+            <h3 style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#3730A3;margin-bottom:6px;">Live Poll</h3>
+            <div id="pollQuestion" style="font-size:14px;font-weight:600;color:#284157;margin-bottom:10px;"></div>
+            <div id="pollOptions" style="display:flex;flex-direction:column;gap:6px;"></div>
+            <div id="pollStatus" style="font-size:12px;color:#4A7C59;font-weight:600;margin-top:8px;"></div>
+          </div>
           <div id="nowCard" class="hidden">
             <h3>Now</h3>
             <div id="breakoutBadge">Breakout</div>
             <div id="nowBreakBadge" style="display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;">☕ On Break</div>
             <div id="nowSegTitle"></div>
             <div id="nowPrompt"></div>
+            <div id="nowMedia" style="display:none;margin-bottom:8px;"></div>
+            <div id="nowBreakout" style="display:none;background:#EEF2FF;border:1px solid #C7D2FE;border-radius:8px;padding:10px;margin-bottom:8px;"></div>
             <div id="nowCountdown"></div>
           </div>
           <div id="hostPanel" class="hidden mt-3 rounded-xl p-4" style="background:#FBF6EC;border:1px solid #EFE0C2;">
@@ -487,6 +496,7 @@
         if (!res.ok) return;
         const data = await res.json();
         updateNowCard(data.currentSegment, data.liveState);
+        updateActivePoll(data.activePoll);
         updateWatchParty(data.liveState);
         updateHostPanel(data);
         updateMyCheckin(data.myCheckin);
@@ -758,6 +768,63 @@
       } catch { /* poll will retry on next 3s cycle */ }
     }
 
+    /* ── Native poll (attendee) ────────────────────────────────────────── */
+    let lastPollKey = null;
+    let myPollVote = null; // optionIdx I've voted for the current poll (optimistic + confirmed)
+
+    function updateActivePoll(activePoll) {
+      const card = document.getElementById('pollCard');
+      if (!activePoll) { card.classList.add('hidden'); lastPollKey = null; myPollVote = null; return; }
+      card.classList.remove('hidden');
+
+      const key = activePoll.segIdx + ':' + activePoll.pollIdx;
+      if (key !== lastPollKey) { lastPollKey = key; myPollVote = (activePoll.myOptionIdx != null ? activePoll.myOptionIdx : null); }
+      else if (activePoll.myOptionIdx != null) { myPollVote = activePoll.myOptionIdx; } // server confirmed a vote
+
+      document.getElementById('pollQuestion').textContent = activePoll.question || '';
+      const optsEl = document.getElementById('pollOptions');
+      const statusEl = document.getElementById('pollStatus');
+
+      const voted = myPollVote != null;
+      const closed = !!activePoll.closedAt && Date.now() >= new Date(activePoll.closedAt).getTime();
+      const revealed = !!activePoll.revealed && !!activePoll.results;
+
+      optsEl.innerHTML = (activePoll.options || []).map((o, i) => {
+        let bar = '';
+        if (revealed) {
+          const total = activePoll.results.total || 0;
+          const c = (activePoll.results.counts && activePoll.results.counts[i]) || 0;
+          const pct = total ? Math.round((c / total) * 100) : 0;
+          bar = `<div style="height:6px;background:#E0E7FF;border-radius:4px;margin-top:5px;overflow:hidden;"><div style="height:100%;width:${pct}%;background:#3B5FCC;"></div></div>`
+              + `<div style="font-size:11px;color:#3730A3;margin-top:2px;">${pct}% · ${c} vote${c === 1 ? '' : 's'}</div>`;
+        }
+        const mine = (myPollVote === i);
+        const disabled = voted || closed || revealed;
+        return `<button ${disabled ? 'disabled' : ''} onclick="castVote(${activePoll.segIdx},${activePoll.pollIdx},${i})"
+          style="text-align:left;padding:8px 10px;border-radius:8px;border:1px solid ${mine ? '#3B5FCC' : '#C7D2FE'};background:${mine ? '#DDE3FF' : '#fff'};color:#284157;font-size:13px;cursor:${disabled ? 'default' : 'pointer'};">
+          ${String.fromCharCode(65 + i)}. ${esc(o.text)}${mine ? ' ✓' : ''}${bar}
+        </button>`;
+      }).join('');
+
+      if (revealed) statusEl.textContent = 'Results are in.';
+      else if (closed) statusEl.textContent = voted ? 'Vote recorded — voting closed.' : 'Voting is closed.';
+      else if (voted) statusEl.textContent = 'Vote recorded ✓';
+      else statusEl.textContent = 'Tap an option to vote.';
+    }
+
+    async function castVote(segIdx, pollIdx, optionIdx) {
+      myPollVote = optionIdx; // optimistic — next poll reconciles from the server
+      document.getElementById('pollStatus').textContent = 'Vote recorded ✓';
+      document.querySelectorAll('#pollOptions button').forEach(b => { b.disabled = true; });
+      try {
+        await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/poll/vote`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segIdx, pollIdx, optionIdx })
+        });
+      } catch { /* next 3s poll will reconcile */ }
+    }
+
     function updateNowCard(seg, liveState) {
       const card = document.getElementById('nowCard');
       if (!seg) { card.classList.add('hidden'); return; }
@@ -768,6 +835,40 @@
       const promptEl = document.getElementById('nowPrompt');
       promptEl.textContent = prompt;
       promptEl.style.display = prompt ? '' : 'none';
+
+      // Slide media — auto-renders whenever this segment is active (autopilot or
+      // manual advance; same liveState path). Advancing the segment IS loading the slide.
+      const mediaEl = document.getElementById('nowMedia');
+      const media = seg.media || [];
+      if (media.length) {
+        mediaEl.style.display = '';
+        mediaEl.innerHTML = media.map(m => `
+          <figure style="margin:0 0 8px;">
+            <img src="${esc(m.url)}" alt="${esc(m.caption || 'slide')}" loading="lazy" style="width:100%;border-radius:8px;border:1px solid #C7DDD0;">
+            ${m.caption ? `<figcaption style="font-size:11px;color:#57534e;margin-top:2px;">${esc(m.caption)}</figcaption>` : ''}
+          </figure>`).join('');
+      } else {
+        mediaEl.style.display = 'none';
+        mediaEl.innerHTML = '';
+      }
+
+      // Breakout — prominent prompts + banner while a breakout segment is active.
+      const breakoutEl = document.getElementById('nowBreakout');
+      if (seg.type === 'breakout') {
+        const prompts = seg.breakoutPrompts || [];
+        breakoutEl.style.display = '';
+        breakoutEl.innerHTML =
+          `<div style="font-size:13px;font-weight:700;color:#3B5FCC;margin-bottom:6px;">Breakout in progress — join your group in the video panel</div>` +
+          (prompts.length
+            ? prompts.map((p, i) => {
+                const tb = p.timeboxMin ? ` <span style="color:#3730A3;font-weight:600;">(${p.timeboxMin} min)</span>` : '';
+                return `<div style="font-size:13px;color:#284157;line-height:1.5;margin-bottom:4px;">${i + 1}. ${esc(p.text)}${tb}</div>`;
+              }).join('')
+            : `<div style="font-size:12px;color:#57534e;">Follow your facilitator's instructions for your group.</div>`);
+      } else {
+        breakoutEl.style.display = 'none';
+        breakoutEl.innerHTML = '';
+      }
 
       const badge = document.getElementById('breakoutBadge');
       badge.style.display = seg.type === 'breakout' ? '' : 'none';
