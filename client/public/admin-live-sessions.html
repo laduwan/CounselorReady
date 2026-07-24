@@ -18,6 +18,15 @@
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     #createModal { display:none; }
     #createModal.open { display:flex; }
+    /* Print layout: strip the app chrome and per-row actions, leave a clean sessions table. */
+    @media print {
+      header, aside, #toast, .no-print { display: none !important; }
+      main { padding: 0 !important; }
+      body { background: #fff !important; }
+      #mainContent .shadow-sm, #mainContent .border { box-shadow: none !important; }
+      /* Hide the Actions column (last cell of each row + its header). */
+      #sessionsBody tr td:last-child, thead th:last-child { display: none !important; }
+    }
   </style>
 <script src="/js/cr-gtag.js"></script>
 </head>
@@ -92,7 +101,10 @@
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
-        <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-2 flex-wrap no-print">
+          <button onclick="window.print()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-print text-xs"></i> Print
+          </button>
           <button onclick="openSeriesListModal()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-layer-group text-xs"></i> Manage Series
           </button>
