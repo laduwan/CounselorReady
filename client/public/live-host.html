@@ -60,6 +60,15 @@
     .ap-btn:hover{background:#1f3444;}
     .ap-btn.ap-btn-off{background:#8B2542;}
     .ap-btn.ap-btn-off:hover{background:#7a1d38;}
+    /* ── Poll controls ── */
+    .pbtn{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;border:none;cursor:pointer;background:#284157;color:#fff;}
+    .pbtn:hover{background:#1f3444;}
+    .pbtn.rev{background:#4A7C59;}
+    .pbtn.rev:hover{background:#3d6b4b;}
+    .pbtn.warn{background:#8B2542;}
+    .pbtn.warn:hover{background:#7a1d38;}
+    .poll-box{border:1px solid #C7D2FE;background:#EEF2FF;border-radius:8px;padding:10px;margin-bottom:8px;}
+    .slide-thumb{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #EDE9E3;}
   </style>
 </head>
 <body>
@@ -414,6 +423,8 @@
           renderRoster(d.rawAttendance || []);
         }
       } catch {}
+      // Piggyback the poll tally refresh on this same 10s cycle — no new interval.
+      refreshPollResults();
     }
 
     function startElapsedTimer() {
@@ -427,6 +438,7 @@
 
     /* ═══════════════ HOST CONTROLS ═══════════════ */
     let hostState = null;
+    let activePollState = null; // { activePoll, results, ... } from GET /poll/results
     let segTimerInterval = null;
     let segTimerEndsAt = null;
     let checklistDebounce = null;
@@ -500,7 +512,161 @@
       if (!seg.speakerNotes && !seg.activityInstructions && !cautions.length) {
         html += `<p class="text-sm" style="color:#57534e;">No facilitator notes for this segment.</p>`;
       }
+
+      // Slides (what the room sees) — thumbnails of this segment's media
+      const media = seg.media || [];
+      if (media.length) {
+        html += `<div class="mt-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SLIDES (what the room sees)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">` +
+          media.map(m => `<img src="${esc(m.url)}" alt="${esc(m.caption || 'slide')}" title="${esc(m.caption || '')}" class="slide-thumb">`).join('') +
+          `</div></div>`;
+      }
+
+      // Native poll controls — Launch / Close / Reveal + live tally + Trend
+      html += renderSegmentPolls(idx, seg);
+
       el.innerHTML = html;
+    }
+
+    // Build the poll-control block for a segment's notes pane.
+    function renderSegmentPolls(idx, seg) {
+      const polls = seg.polls || [];
+      if (!polls.length) return '';
+      const ap = activePollState && activePollState.activePoll;
+      const results = activePollState && activePollState.results;
+      let html = `<div class="mt-4"><div class="text-xs font-bold mb-2" style="color:#284157;">POLLS</div>`;
+      polls.forEach((p, pi) => {
+        const isActive = ap && ap.segIdx === idx && ap.pollIdx === pi;
+        const closed = isActive && !!ap.closedAt;
+        const revealed = isActive && !!ap.revealed;
+        html += `<div class="poll-box"><div style="font-size:13px;font-weight:600;color:#312e81;margin-bottom:6px;">${esc(p.question)}</div>`;
+        html += (p.options || []).map((o, oi) => {
+          let tally = '';
+          if (isActive && results) {
+            const total = results.total || 0;
+            const c = (results.counts && results.counts[oi]) || 0;
+            const pct = total ? Math.round((c / total) * 100) : 0;
+            tally = `<span style="float:right;font-size:11px;color:#3730A3;">${pct}% (${c})</span>`;
+          }
+          return `<div style="font-size:12px;color:#312e81;line-height:1.7;">${String.fromCharCode(65 + oi)}. ${esc(o.text)}${tally}</div>`;
+        }).join('');
+        html += `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">`;
+        if (!isActive) {
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Launch</button>`;
+        } else {
+          if (!closed) html += `<button class="pbtn warn" onclick="pollAction('close',${idx},${pi})">Close</button>`;
+          if (!revealed) html += `<button class="pbtn rev" onclick="pollAction('reveal',${idx},${pi})">Reveal</button>`;
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Relaunch</button>`;
+          html += `<span style="font-size:11px;color:#3730A3;">${revealed ? 'revealed' : (closed ? 'closed' : 'live')}${results ? ' · ' + (results.total || 0) + ' votes' : ''}</span>`;
+        }
+        if (questionRepeats(p.question)) {
+          html += `<button class="pbtn rev" onclick="showPollTrendFor(${idx},${pi})">Trend</button>`;
+        }
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+      return html;
+    }
+
+    // True when this exact question text appears on more than one segment (the
+    // Hour 2 escalation ladder), so a Trend button is worth showing.
+    function questionRepeats(q) {
+      const target = (q || '').trim();
+      let count = 0;
+      for (const s of (hostState?.agenda || [])) {
+        for (const p of (s.polls || [])) {
+          if ((p.question || '').trim() === target) count++;
+        }
+      }
+      return count > 1;
+    }
+
+    async function pollAction(action, segIdx, pollIdx) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/${action}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segIdx, pollIdx })
+        });
+        if (res.ok) { await refreshPollResults(); }
+        else { const d = await res.json().catch(() => ({})); toast(d.error || 'Poll action failed.'); }
+      } catch { toast('Poll action failed.'); }
+    }
+
+    // Refreshed on the existing 10s attendance cycle — no new interval.
+    async function refreshPollResults() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        activePollState = await res.json();
+        renderSegmentNotes(currentSegIdx); // repaint tally in the open notes pane
+      } catch { /* try again next cycle */ }
+    }
+
+    function showPollTrendFor(segIdx, pollIdx) {
+      const q = hostState?.agenda?.[segIdx]?.polls?.[pollIdx]?.question || '';
+      showPollTrend(q);
+    }
+
+    // Renders yes-% per segment for a repeated question — the Hour 2 trend-line
+    // reveal, computed from real votes across every segment carrying that question.
+    async function showPollTrend(question) {
+      const q = (question || '').trim();
+      const matches = [];
+      (hostState?.agenda || []).forEach((seg, si) => {
+        (seg.polls || []).forEach((p, pi) => {
+          if ((p.question || '').trim() === q) matches.push({ si, pi, seg, poll: p });
+        });
+      });
+      const panel = ensureTrendPanel();
+      const body = panel.querySelector('#trendBody');
+      body.innerHTML = 'Loading…';
+      panel.style.display = 'flex';
+      try {
+        const rows = await Promise.all(matches.map(async m => {
+          const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results?segIdx=${m.si}&pollIdx=${m.pi}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const d = res.ok ? await res.json() : null;
+          const opts = m.poll.options || [];
+          let primary = opts.findIndex(o => /^\s*yes\s*$/i.test(o.text || ''));
+          if (primary < 0) primary = 0;
+          const total = d?.results?.total || 0;
+          const c = (d?.results?.counts && d.results.counts[primary]) || 0;
+          const pct = total ? Math.round((c / total) * 100) : 0;
+          return { label: m.seg.title || ('Segment ' + (m.si + 1)), pct, c, total, primaryText: opts[primary]?.text || 'Option A' };
+        }));
+        const primaryLabel = rows[0]?.primaryText || 'Yes';
+        body.innerHTML =
+          `<div style="font-size:12px;color:#57534e;margin-bottom:10px;">"${esc(q)}" — % choosing "${esc(primaryLabel)}" across segments (live votes)</div>` +
+          rows.map(r => `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#284157;"><span>${esc(r.label)}</span><span>${r.pct}% (${r.c}/${r.total})</span></div>
+              <div style="height:8px;background:#E0E7FF;border-radius:4px;overflow:hidden;margin-top:3px;"><div style="height:100%;width:${r.pct}%;background:#4A7C59;"></div></div>
+            </div>`).join('') || '<p style="font-size:13px;color:#57534e;">No matching segments.</p>';
+      } catch {
+        body.innerHTML = '<p style="font-size:13px;color:#b91c1c;">Could not load trend.</p>';
+      }
+    }
+
+    function ensureTrendPanel() {
+      let panel = document.getElementById('trendPanel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'trendPanel';
+        panel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70;display:none;align-items:center;justify-content:center;';
+        panel.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;max-width:440px;width:90%;max-height:80vh;overflow:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 class="font-display" style="font-size:18px;font-weight:700;color:#6B1D34;">Poll Trend — Hour 2 Ladder</h3>
+            <button onclick="document.getElementById('trendPanel').style.display='none'" style="border:none;background:#EDE9E3;border-radius:8px;padding:4px 10px;cursor:pointer;color:#284157;">✕</button>
+          </div>
+          <div id="trendBody"></div>
+        </div>`;
+        document.body.appendChild(panel);
+      }
+      return panel;
     }
 
     function renderGlobalCautions() {

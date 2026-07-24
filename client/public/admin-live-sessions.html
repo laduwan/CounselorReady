@@ -1144,6 +1144,7 @@
       if ((a.polls || []).length) row.polls = a.polls;
       if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
       if (a.exercise) row.exercise = a.exercise;
+      if ((a.media || []).length) row.media = a.media;
       return row;
     }
 
@@ -1383,6 +1384,7 @@
           <textarea id="ros_notes_${i}" placeholder="Speaker notes (private — only you see this in the room)" ${ro ? 'disabled' : ''}
             rows="2" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.speakerNotes)}</textarea>
           ${clipCell}
+          ${slidesCell(a, i, ro)}
         </div>`;
       }).join('');
 
@@ -1401,6 +1403,61 @@
         <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Agenda / Run of Show</h3>
         <div class="space-y-2 mb-3">${rows || '<p class="text-sm text-forest-500">No agenda rows yet.</p>'}</div>
         ${controls}`;
+    }
+
+    // Per-segment slide (media) cell — thumbnails + PNG/JPG upload. Uploads go
+    // through POST /:id/agenda/:segIdx/media (reuses the handout Cloudinary machinery).
+    function slidesCell(a, i, ro) {
+      const thumbs = (a.media || []).map((m, mi) =>
+        `<div style="position:relative;display:inline-block;">
+          <img src="${escHtml(m.url)}" title="${escHtml(m.caption || '')}" style="width:64px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;">
+          ${ro ? '' : `<button type="button" onclick="deleteSlide(${i},${mi})" title="Remove slide" style="position:absolute;top:-6px;right:-6px;background:#8B2542;color:#fff;border:none;border-radius:999px;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;">×</button>`}
+        </div>`).join('');
+      return `<div>
+        <label class="block text-xs text-forest-600 mb-1">Slides (PNG/JPG — auto-shown to attendees when this segment is active)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          ${thumbs}
+          ${ro ? '' : `<label style="cursor:pointer;" class="text-xs text-burgundy-700 border border-burgundy-200 rounded-lg px-2 py-1 hover:bg-burgundy-50">
+            + Slide<input type="file" accept="image/png,image/jpeg" style="display:none;" onchange="uploadSlide(${i}, this)">
+          </label>`}
+        </div>
+      </div>`;
+    }
+
+    async function uploadSlide(i, input) {
+      const file = input.files && input.files[0];
+      if (!file || rosReadOnly()) { if (input) input.value = ''; return; }
+      // Persist the current agenda first so server segment indexes match the editor.
+      await saveAgenda(rosSession._id);
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const r = await fetch(`${API}/${rosSession._id}/agenda/${i}/media`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd
+        });
+        const d = await r.json();
+        if (!r.ok) { showToast(d.error || 'Slide upload failed.', '#8B2542'); return; }
+        rosAgenda[i].media = d.media || [];
+        renderRosAgenda();
+        showToast('Slide added.', '#284157');
+      } catch { showToast('Slide upload failed.', '#8B2542'); }
+      finally { if (input) input.value = ''; }
+    }
+
+    async function deleteSlide(i, mediaIdx) {
+      if (rosReadOnly()) return;
+      try {
+        const r = await fetch(`${API}/${rosSession._id}/agenda/${i}/media/${mediaIdx}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) { showToast(d.error || 'Could not remove slide.', '#8B2542'); return; }
+        rosAgenda[i].media = d.media || [];
+        renderRosAgenda();
+      } catch { showToast('Could not remove slide.', '#8B2542'); }
     }
 
     function syncAgendaFromDom() {
@@ -1471,6 +1528,7 @@
         if ((a.polls || []).length) row.polls = a.polls;
         if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
         if (a.exercise) row.exercise = a.exercise;
+        if ((a.media || []).length) row.media = a.media;
         return row;
       });
       try {
