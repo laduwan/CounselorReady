@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -116,8 +117,8 @@
           const sDisplayPrice = sHasEarlyBird ? ser.earlyBirdPrice : ser.price;
           const sPriceHtml = ser.price > 0
             ? sHasEarlyBird
-              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${sDisplayPrice}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(ser.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${ser.price}</span> after</span>`
-              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${ser.price.toFixed(2)}</span>`
+              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${(sDisplayPrice/100).toFixed(0)}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(ser.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${(ser.price/100).toFixed(0)}</span> after</span>`
+              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${(ser.price/100).toFixed(2)}</span>`
             : '<span style="font-size:16px;font-weight:700;color:#4A7C59;">Free</span>';
           card.innerHTML = `
             <div style="height:160px;background:linear-gradient(135deg,#fdf1f4,#f0f4f0);display:flex;align-items:center;justify-content:center;">
@@ -138,6 +139,7 @@
                 <div>
                   <div style="font-size:11px;color:#78716c;margin-bottom:2px;">One certificate</div>
                   <div>${sPriceHtml}</div>
+                  ${ser.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Members &amp; VIP: included</div>' : ''}
                 </div>
                 <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;" onclick="registerForSeries('${ser._id}')">Register for series</button>
               </div>
@@ -200,6 +202,7 @@
                 <div>
                   <div style="font-size:11px;color:${full?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||full?'600':'400'};margin-bottom:2px;">${full?'Session full':s.seatsRemaining+' seats left'}</div>
                   <div>${priceHtml}</div>
+                  ${s.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Members &amp; VIP: included</div>' : ''}
                 </div>
                 <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${full?'opacity:.5;cursor:not-allowed;':''}" ${full?'disabled':''} onclick="register('${s._id}')">${full?'Full':'Register'}</button>
               </div>
