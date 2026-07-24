@@ -12,7 +12,7 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/js/tailwind-config.js"></script>
   <style>
-    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif;}
+    body{background:#F5F1E8 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23D4A855' opacity='.15'/%3E%3C/svg%3E") repeat;font-family:'Lato',system-ui,sans-serif;}
     .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
     .seg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;margin-bottom:6px;cursor:pointer;transition:background .1s;}
     .seg-row.active{background:#F2F7F4;border-color:#4A7C59;}
@@ -95,8 +95,8 @@
       <div class="grid lg:grid-cols-2 gap-6 mb-6">
 
         <!-- Whereby host room embed -->
-        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:400px;">
-          <div id="roomGate" class="flex items-center justify-center" style="min-height:400px;">
+        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:560px;">
+          <div id="roomGate" class="flex items-center justify-center" style="min-height:560px;">
             <div class="text-center px-6">
               <div class="text-4xl mb-4">📹</div>
               <button onclick="joinRoom()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:#6B1D34;color:#fff;">
@@ -105,7 +105,7 @@
               <p class="mt-3 text-xs" style="color:#8a7a7b;">Host room opens here — no Whereby site visit needed.</p>
             </div>
           </div>
-          <iframe id="roomFrame" class="hidden w-full" style="height:400px;border:0;"
+          <iframe id="roomFrame" class="hidden w-full" style="height:560px;min-height:560px;border:0;"
                   allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
         </div>
 
