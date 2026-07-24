@@ -3138,7 +3138,7 @@
       try {
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(`${API}/content-manifest`, {
+        const r = await fetch(`${API.replace('/live-sessions', '/admin')}/content-manifest`, {
           method: 'PATCH',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ slug: lcSession.slug, entry: lcLastManifestEntry }),
