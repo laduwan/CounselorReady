@@ -57,6 +57,7 @@
           <div id="nowCard" class="hidden">
             <h3>Now</h3>
             <div id="breakoutBadge">Breakout</div>
+            <div id="nowBreakBadge" style="display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;">☕ On Break</div>
             <div id="nowSegTitle"></div>
             <div id="nowPrompt"></div>
             <div id="nowCountdown"></div>
@@ -771,6 +772,9 @@
       const badge = document.getElementById('breakoutBadge');
       badge.style.display = seg.type === 'breakout' ? '' : 'none';
 
+      const isBreak = seg.type === 'break';
+      document.getElementById('nowBreakBadge').style.display = isBreak ? '' : 'none';
+
       const segKey = (seg.title || '') + '|' + (seg.durationMin || '') + '|' + (liveState?.currentSegment ?? '');
       if (segKey !== lastSegAlarmKey) {
         lastSegAlarmKey = segKey;
@@ -779,7 +783,14 @@
       }
 
       const countEl = document.getElementById('nowCountdown');
-      if (seg.durationMin && liveState?.segmentStartedAt) {
+      if (isBreak && seg.durationMin && liveState?.segmentStartedAt) {
+        // Breaks render distinctly: no ticking countdown, just the return time.
+        const backAt = new Date(new Date(liveState.segmentStartedAt).getTime() + seg.durationMin * 60000);
+        const hhmm = backAt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        countEl.textContent = `We'll be back at ${hhmm}`;
+        countEl.style.color = '#3B5FCC';
+        countEl.style.fontWeight = '700';
+      } else if (seg.durationMin && liveState?.segmentStartedAt) {
         const elapsed = (Date.now() - new Date(liveState.segmentStartedAt).getTime()) / 1000;
         const remaining = Math.max(0, seg.durationMin * 60 - elapsed);
         const m = Math.floor(remaining / 60), s = Math.floor(remaining % 60);
