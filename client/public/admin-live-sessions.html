@@ -783,8 +783,11 @@
           <div id="lcErrors" class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 whitespace-pre-wrap"></div>
           <div id="lcSnippetWrap" class="hidden">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-xs font-semibold" style="color:#284157;">Manifest snippet (paste into content-manifest.json)</span>
-              <button type="button" onclick="lcCopySnippet()" class="text-xs px-2 py-1 rounded border border-gray-300 text-forest-700 hover:bg-white"><i class="fas fa-copy"></i> Copy</button>
+              <span class="text-xs font-semibold" style="color:#284157;">Manifest snippet (content-manifest.json)</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="lcCopySnippet()" class="text-xs px-2 py-1 rounded border border-gray-300 text-forest-700 hover:bg-white"><i class="fas fa-copy"></i> Copy</button>
+                <button type="button" id="lcSaveManifestBtn" onclick="lcSaveToManifest()" class="text-xs px-2 py-1 rounded text-white" style="background:#284157;"><i class="fas fa-floppy-disk"></i> Save to manifest</button>
+              </div>
             </div>
             <textarea id="lcSnippet" rows="6" readonly class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs font-mono bg-white"></textarea>
           </div>
@@ -2461,6 +2464,7 @@
     let lcManifestEntry = null;   // the manifest entry matching this session's slug
     let lcManifestRouting = {};   // slide filename -> { segmentIndex, confidence, reason, chosen }
     let lcSnippetText = '';       // last "save to manifest" snippet
+    let lcLastManifestEntry = null; // last confirmed { guide?, slides?, handouts? } for PATCH
 
     const LC_TABS = ['manifest', 'droppaste', 'summary'];
     function lcSwitchTab(tab) {
@@ -2511,6 +2515,7 @@
       lcManifestEntry = null;
       lcManifestRouting = {};
       lcSnippetText = '';
+      lcLastManifestEntry = null;
       document.getElementById('lcSubtitle').textContent =
         s.title + ' — load the guide, slides (AI-routed to segments) and handouts from a manifest, drop zone, or URLs.';
       document.getElementById('lcGuide').value = '';
@@ -2843,7 +2848,7 @@
         errEl.textContent = errors.join('\n');
         errEl.classList.remove('hidden');
       }
-      lcShowSnippet(uploadedSlides, uploadedHandouts);
+      lcShowSnippet(uploadedSlides, uploadedHandouts, guideText);
 
       // Refresh the in-memory session so the table badges update.
       showToast('Content loaded.', '#284157');
@@ -2914,6 +2919,14 @@
         const entry = (manifest.sessions || {})[lcSession.slug];
         if (!entry) throw new Error('No manifest entry for slug "' + lcSession.slug + '".');
         lcManifestEntry = { ...entry, _baseUrl: manifest.baseUrl || '' };
+
+        // Populate the Drop/Paste guide textarea when the manifest guide is
+        // inline markdown (not a file path) — filenames are shown in the preview.
+        const gv = String(entry.guide || '').trim();
+        if (gv && !/\.(md|markdown|txt)$/i.test(gv) && /\n|#|\s/.test(gv)) {
+          document.getElementById('lcGuide').value = gv;
+          lcGuideCount();
+        }
 
         // AI-route manifest slides against this session's agenda titles.
         const slides = entry.slides || [];
@@ -3095,13 +3108,16 @@
       label.textContent = 'Load All from Manifest';
     }
 
-    // "Save to manifest": after a drop/paste load, surface a JSON snippet of the
-    // freshly-minted Cloudinary URLs to paste back into content-manifest.json.
-    function lcShowSnippet(slides, handouts) {
-      if (!slides.length && !handouts.length) return;
+    // "Save to manifest": after a load, surface a JSON snippet of the freshly-
+    // minted Cloudinary URLs (and any inline guide) and stash the entry so the
+    // "Save to manifest" button can PATCH it into content-manifest.json.
+    function lcShowSnippet(slides, handouts, guide) {
+      if (!slides.length && !handouts.length && !guide) return;
       const entry = {};
+      if (guide) entry.guide = guide;
       if (slides.length) entry.slides = slides;
       if (handouts.length) entry.handouts = handouts;
+      lcLastManifestEntry = entry;
       lcSnippetText = JSON.stringify({ [lcSession?.slug || 'SESSION_SLUG']: entry }, null, 2);
       document.getElementById('lcSnippet').value = lcSnippetText;
       document.getElementById('lcSnippetWrap').classList.remove('hidden');
@@ -3112,6 +3128,31 @@
       ta.select();
       try { document.execCommand('copy'); showToast('Snippet copied.', '#284157'); }
       catch { showToast('Select and copy manually.', '#c0392b'); }
+    }
+
+    // Persist the confirmed entry server-side via PATCH — writes content-manifest.json.
+    async function lcSaveToManifest() {
+      if (!lcSession || !lcLastManifestEntry) { showToast('Nothing to save yet — run a load first.', '#c0392b'); return; }
+      const btn = document.getElementById('lcSaveManifestBtn');
+      btn.disabled = true;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API}/content-manifest`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: lcSession.slug, entry: lcLastManifestEntry }),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Save failed');
+        showToast('Saved to content-manifest.json.', '#284157');
+      } catch (e) {
+        showToast('Save failed: ' + e.message, '#c0392b');
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     /* Close bulk-content modal on backdrop click */
