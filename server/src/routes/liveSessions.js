@@ -666,6 +666,11 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
     // server-side and immutable — never writable from a client PATCH. The
     // `assessment` CONFIG (enable/threshold/maxAttempts/questions) DOES flow
     // through here so the admin question builder can save via PATCH.
+    //
+    // Safe-assign model is a denylist: everything NOT destructured out below is
+    // admin-writable via `safe`. `earlyBirdPrice` and `earlyBirdDeadline` are
+    // intentionally admin-writable this way (they are not on the denied list),
+    // so the admin session editor can set early-bird pricing through PATCH.
     const { whereby, attendance, registrants, recordings, autopilot, assessmentAttempts, ...safe } = req.body;
     Object.assign(session, safe);
 

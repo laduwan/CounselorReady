@@ -137,6 +137,11 @@ const liveSessionSchema = new mongoose.Schema({
   // Access & pricing
   capacity: { type: Number, default: 50, min: 1, max: 200 },
   price: { type: Number, default: 0, min: 0 }, // USD; 0 = free / included
+  // Optional early-bird pricing. When earlyBirdPrice is set and now <=
+  // earlyBirdDeadline, the discounted price applies; consumers decide how to
+  // display/charge it. Both omitted => standard `price` only (unchanged).
+  earlyBirdPrice: { type: Number, min: 0 },
+  earlyBirdDeadline: { type: Date },
   isPublished: { type: Boolean, default: false, index: true },
   visibility: {
     type: String,
@@ -541,6 +546,8 @@ liveSessionSchema.methods.toPublicJSON = function () {
     capacity: this.capacity,
     seatsRemaining: Math.max(0, this.capacity - this.registrants.length),
     price: this.price,
+    earlyBirdPrice: this.earlyBirdPrice,
+    earlyBirdDeadline: this.earlyBirdDeadline,
     status: this.status,
     recordingEnabled: this.recordingEnabled,
     handouts: (this.handouts || []).map(h => ({
