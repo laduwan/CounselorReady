@@ -102,6 +102,8 @@ import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
 import askPresenterRoutes from './routes/askPresenterRoutes.js';
+import booksRoutes from './routes/books.js';
+import adminBooksRoutes from './routes/adminBooks.js';
 import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -252,6 +254,8 @@ app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/admin/stripe', adminStripeRoutes);
 app.use('/api/admin/coupons', adminCouponsRoutes);
 app.use('/api/admin/course-presentation', adminCoursePresentationRoutes);
+app.use('/api/admin/books', adminBooksRoutes);
+app.use('/api/books', booksRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/audit', adminAuditRoutes);
 app.use('/api/admin/course-reviews', adminCourseReviewsRoutes);

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Books - CounselorReady</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main style="max-width:900px;margin:0 auto;padding:44px 20px 72px;">
+    <h1 class="font-display" style="font-size:36px;font-weight:600;color:#6B1D34;margin:0 0 24px;">My Books</h1>
+    <div id="list"></div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    if (!token){
+      const next = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = '/login.html?next=' + next;
+    }
+
+    function row(o){
+      const cover = o.coverUrl
+        ? '<img src="' + esc(o.coverUrl) + '" alt="' + esc(o.title) + '" style="width:72px;height:96px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.style.display=\'none\'">'
+        : '<div style="width:72px;height:96px;border-radius:8px;background:linear-gradient(135deg,#6B1D34,#4A7C59);flex-shrink:0;"></div>';
+
+      const used = (o.downloadCount || 0) + ' of ' + (o.downloadLimit || 5) + ' downloads used';
+      const canDl = o.canDownload;
+      const btn = canDl
+        ? '<button class="dlBtn" data-book="' + esc(o.bookId) + '" style="margin-top:8px;background:#4A7C59;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;" onmouseover="this.style.background=\'#3D6A4A\'" onmouseout="this.style.background=\'#4A7C59\'">Download</button>'
+        : '<button disabled style="margin-top:8px;background:#e5e0d8;color:#8a8378;border:none;border-radius:8px;padding:9px 18px;font-size:14px;font-weight:600;cursor:not-allowed;">Download</button>' +
+          (o.reason ? '<p style="font-size:12px;color:#b91c1c;margin:6px 0 0;">' + esc(o.reason) + '</p>' : '');
+
+      return '<div style="display:flex;gap:16px;background:#fff;border:1px solid #eee7dd;border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:0 2px 10px rgba(107,29,52,.05);">' +
+        cover +
+        '<div style="flex:1;min-width:0;">' +
+          '<h3 class="font-display" style="font-size:20px;font-weight:600;color:#6B1D34;margin:0;">' + esc(o.title) + '</h3>' +
+          '<p style="font-size:13px;color:#284157;margin:4px 0 0;">Order ' + esc(o.orderNumber || '') + '</p>' +
+          '<p style="font-size:13px;color:#57534e;margin:4px 0 0;">' + esc(used) + '</p>' +
+          btn +
+        '</div>' +
+      '</div>';
+    }
+
+    async function download(bookId, btn){
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Preparing…';
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 30000);
+        const res = await fetch(API_URL + '/api/books/' + bookId + '/download', {
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if (!res.ok){
+          let reason = 'Download failed';
+          try { reason = (await res.json()).error || reason; } catch(e){}
+          throw new Error(reason);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'counselorready-book.pdf';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        load(); // refresh counts
+      } catch (err) {
+        btn.disabled = false; btn.textContent = orig;
+        alert(err.message || 'Download failed.');
+      }
+    }
+
+    async function load(){
+      const list = document.getElementById('list');
+      list.innerHTML = '<p style="color:#57534e;">Loading your library…</p>';
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(API_URL + '/api/books/library/mine', {
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if (res.status === 401){ window.location.href = '/login.html?next=' + encodeURIComponent('/my-books.html'); return; }
+        if (!res.ok) throw new Error('bad status');
+        const orders = await res.json();
+        if (!Array.isArray(orders) || orders.length === 0){
+          list.innerHTML = '<div style="background:#fff;border:1px solid #eee7dd;border-radius:14px;padding:40px;text-align:center;">' +
+            '<p class="font-display" style="font-size:22px;color:#6B1D34;margin:0;">No books yet</p>' +
+            '<p style="color:#57534e;margin:8px 0 16px;">Browse the store to find your next read.</p>' +
+            '<a href="/books.html" style="display:inline-block;background:#4A7C59;color:#fff;text-decoration:none;border-radius:8px;padding:10px 20px;font-weight:600;">Browse Books</a></div>';
+          return;
+        }
+        list.innerHTML = orders.map(row).join('');
+        document.querySelectorAll('.dlBtn').forEach(btn => {
+          btn.addEventListener('click', () => download(btn.getAttribute('data-book'), btn));
+        });
+      } catch (err) {
+        list.innerHTML = '<p style="color:#b91c1c;">Could not load your library. Please refresh the page.</p>';
+      }
+    }
+
+    if (token) load();
+  </script>
+</body>
+</html>

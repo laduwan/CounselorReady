@@ -85,6 +85,8 @@ import liveSessionRoutes from './routes/liveSessions.js';
 import sessionSeriesRoutes from './routes/sessionSeries.js';
 import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
 import askPresenterRoutes from './routes/askPresenterRoutes.js';
+import booksRoutes from './routes/books.js';
+import adminBooksRoutes from './routes/adminBooks.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -112,6 +114,7 @@ export const ROUTE_MANIFEST = [
   ['/api/admin/courses',         bulkUploadRoutes,          'Admin Bulk Upload'],
   ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
   ['/api/admin/course-presentation', adminCoursePresentationRoutes, 'Admin Course Presentation'],
+  ['/api/admin/books',           adminBooksRoutes,          'Admin Books'],
 
   // ── Admin catch-alls (stacked on '/api/admin') ──
   ['/api/admin',                 adminRoutes,               'Admin (core)'],
@@ -140,6 +143,7 @@ export const ROUTE_MANIFEST = [
   ['/api/remediation',           remediationRoutes,         'Remediation'],
   ['/api/tools',                 toolsRoutes,               'Clinical Tools'],
   ['/api/partners',              partnersRoutes,            'Partners'],
+  ['/api/books',                 booksRoutes,               'Books'],
 
   // ── Course Builder / AI ──
   ['/api/course-builder',        courseBuilderRoutes,        'Course Builder'],
