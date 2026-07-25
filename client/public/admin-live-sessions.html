@@ -289,6 +289,14 @@
           </div>
         </div>
 
+        <!-- Registration cutoff -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Registration closes (hours before start)</label>
+          <input type="number" name="registrationCutoffHours" id="f-registrationCutoffHours" min="0" max="2160" value="72"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          <p class="text-xs text-forest-500 mt-1">Default 72. Set 0 to leave registration open until the session ends. Admins can always seat a late registrant.</p>
+        </div>
+
         <!-- Visibility & Access Code -->
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -1276,6 +1284,7 @@
       document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
       document.getElementById('f-capacity').value = s.capacity ?? 50;
       document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-registrationCutoffHours').value = s.registrationCutoffHours ?? 72;
       document.getElementById('f-visibility').value = s.visibility || 'public';
       document.getElementById('f-accessCode').value = s.accessCode || '';
       document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
@@ -1326,6 +1335,7 @@
       document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
       document.getElementById('f-capacity').value = s.capacity ?? 50;
       document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-registrationCutoffHours').value = s.registrationCutoffHours ?? 72;
       document.getElementById('f-visibility').value = s.visibility || 'public';
       document.getElementById('f-accessCode').value = ''; // force a new code — avoid colliding with the original
       document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
@@ -1404,6 +1414,7 @@
         ceuHours: parseFloat(fd.get('ceuHours') || '0'),
         capacity: parseInt(fd.get('capacity') || '50', 10),
         price: parseFloat(fd.get('price') || '0'),
+        registrationCutoffHours: parseInt(fd.get('registrationCutoffHours') ?? '72', 10),
         attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
         recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
         autopilot: { enabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('autopilotEnabled') },

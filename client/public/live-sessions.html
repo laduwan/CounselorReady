@@ -157,6 +157,12 @@
         for (const s of data.sessions) {
           if (memberToSeries[s._id]) continue; // hide series members — register via series card above
           const full = s.seatsRemaining <= 0;
+          // Registration cutoff (default 72h before start; server is authoritative)
+          const regClosed = s.registrationOpen === false;
+          const blocked = full || regClosed;
+          const regClosesTxt = (!regClosed && s.registrationClosesAt)
+            ? `Registration closes ${new Date(s.registrationClosesAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`
+            : '';
           const seriesTitle = memberToSeries[s._id];
           const card = document.createElement('div');
           card.className = 'bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow';
@@ -200,11 +206,12 @@
               </div>
               <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #EDE9E3;">
                 <div>
-                  <div style="font-size:11px;color:${full?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||full?'600':'400'};margin-bottom:2px;">${full?'Session full':s.seatsRemaining+' seats left'}</div>
+                  <div style="font-size:11px;color:${blocked?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||blocked?'600':'400'};margin-bottom:2px;">${regClosed?'Registration closed':full?'Session full':s.seatsRemaining+' seats left'}</div>
                   <div>${priceHtml}</div>
+                  ${regClosesTxt ? `<div style="font-size:10px;color:#78716c;margin-top:2px;">${regClosesTxt}</div>` : ''}
                   ${s.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Members &amp; VIP: included</div>' : ''}
                 </div>
-                <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${full?'opacity:.5;cursor:not-allowed;':''}" ${full?'disabled':''} onclick="register('${s._id}')">${full?'Full':'Register'}</button>
+                <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${blocked?'opacity:.5;cursor:not-allowed;':''}" ${blocked?'disabled':''} onclick="register('${s._id}')">${regClosed?'Closed':full?'Full':'Register'}</button>
               </div>
             </div>`;
           wrap.appendChild(card);
