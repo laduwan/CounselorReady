@@ -301,14 +301,19 @@ router.post('/:id/register', protect, async (req, res) => {
     if (!isAdmin && !isActiveVip && !hasValidPrivateCode && session.price > 0) {
       if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
       // Expire the Checkout Session at the registration cutoff so a seat can't
-      // be paid for after close. Stripe requires expires_at to be 30 min–24h
-      // out, so clamp into that window; the 30-min floor can overshoot the
-      // cutoff by minutes at most, and we always honor a completed payment.
+      // be paid for after close — but never give a buyer less than 60 minutes
+      // to finish paying. A card decline, a re-entry, or a quick check with a
+      // supervisor before spending on CE all need real runway. Stripe caps
+      // expires_at at 24h, which the Math.min preserves for early buyers.
+      // Consequence of the floor: someone starting checkout inside the last
+      // hour can complete payment up to 60 min AFTER registration closed. At a
+      // 72h cutoff that's immaterial — the session is still ~71 hours out.
       const regDeadline = session.registrationDeadline();
       const nowSec = Math.floor(Date.now() / 1000);
+      const MIN_CHECKOUT_WINDOW_SEC = 60 * 60;
       const expiresAt = regDeadline
         ? Math.min(
-            Math.max(Math.floor(regDeadline.getTime() / 1000), nowSec + 31 * 60),
+            Math.max(Math.floor(regDeadline.getTime() / 1000), nowSec + MIN_CHECKOUT_WINDOW_SEC),
             nowSec + 24 * 3600
           )
         : undefined;
