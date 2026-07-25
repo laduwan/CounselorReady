@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Admin Books - CounselorReady</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .modal-bg { position:fixed; inset:0; background:rgba(40,65,87,0.45); z-index:60; display:none; }
+    .modal-bg.open { display:flex; }
+    .fld { width:100%; border:1px solid #d6d3cd; border-radius:8px; padding:8px 10px; font-size:14px; }
+    .fld:focus { outline:none; border-color:#6B1D34; }
+    .lbl { display:block; font-size:12px; font-weight:600; color:#284157; margin-bottom:4px; }
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/admin.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-arrow-left text-xs"></i> Admin Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-semibold text-burgundy-800">Books</h1>
+        <p class="text-sm text-stone-500 mt-1">Manage the books store, private assets, and order logs.</p>
+      </div>
+      <button onclick="openNew()" class="bg-forest-600 hover:bg-forest-700 text-white font-medium px-4 py-2 rounded-xl flex items-center gap-2 text-sm">
+        <i class="fas fa-plus"></i> New Book
+      </button>
+    </div>
+
+    <div class="mb-4">
+      <input id="search" oninput="renderTable()" placeholder="Search by title or slug…" class="fld" style="max-width:340px;">
+    </div>
+
+    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-stone-50 text-stone-500 text-xs uppercase">
+          <tr>
+            <th class="text-left px-4 py-3">Cover</th>
+            <th class="text-left px-4 py-3">Title</th>
+            <th class="text-left px-4 py-3">Slug</th>
+            <th class="text-left px-4 py-3">Price</th>
+            <th class="text-left px-4 py-3">Status</th>
+            <th class="text-left px-4 py-3">Sales</th>
+            <th class="text-left px-4 py-3">Order</th>
+            <th class="text-right px-4 py-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="empty" class="hidden text-center text-stone-400 py-12">No books yet.</div>
+    </div>
+  </main>
+
+  <!-- Book Modal -->
+  <div class="modal-bg" id="modal">
+    <div style="background:#fff;border-radius:16px;max-width:640px;width:92%;margin:auto;max-height:90vh;overflow-y:auto;padding:24px;">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-800" id="modalTitle">New Book</h2>
+        <button onclick="closeModal()" class="text-stone-400 hover:text-stone-700"><i class="fas fa-times text-lg"></i></button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2"><label class="lbl">Title</label><input id="f_title" class="fld"></div>
+        <div class="col-span-2"><label class="lbl">Subtitle</label><input id="f_subtitle" class="fld"></div>
+        <div><label class="lbl">Slug</label><input id="f_slug" class="fld" placeholder="my-book"></div>
+        <div><label class="lbl">Author</label><input id="f_author" class="fld"></div>
+        <div class="col-span-2"><label class="lbl">Blurb (catalog card)</label><input id="f_blurb" class="fld"></div>
+        <div class="col-span-2"><label class="lbl">Description (HTML allowed)</label><textarea id="f_description" rows="4" class="fld"></textarea></div>
+        <div><label class="lbl">Price ($)</label><input id="f_price" type="number" step="0.01" class="fld"></div>
+        <div><label class="lbl">Compare-at Price ($)</label><input id="f_compareAtPrice" type="number" step="0.01" class="fld"></div>
+        <div><label class="lbl">Format</label><select id="f_format" class="fld"><option value="ebook">eBook</option><option value="paperback">Paperback</option><option value="both">Both</option></select></div>
+        <div><label class="lbl">Page Count</label><input id="f_pageCount" type="number" class="fld"></div>
+        <div><label class="lbl">ISBN</label><input id="f_isbn" class="fld"></div>
+        <div><label class="lbl">Category</label><input id="f_category" class="fld"></div>
+        <div class="col-span-2"><label class="lbl">Tags (comma-separated)</label><input id="f_tags" class="fld"></div>
+        <div class="col-span-2"><label class="lbl">External URL (Amazon, optional)</label><input id="f_externalUrl" class="fld"></div>
+        <div><label class="lbl">Download Limit</label><input id="f_downloadLimit" type="number" class="fld" value="5"></div>
+        <div><label class="lbl">Download Window (days)</label><input id="f_downloadWindowDays" type="number" class="fld" value="90"></div>
+        <div><label class="lbl">Order</label><input id="f_order" type="number" class="fld" value="0"></div>
+        <div><label class="lbl">Status</label><select id="f_status" class="fld"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
+        <div class="col-span-2 flex items-center gap-2">
+          <input id="f_memberFree" type="checkbox">
+          <label for="f_memberFree" class="text-sm text-stone-600">Free for active members / VIP</label>
+        </div>
+
+        <!-- Cover image (PUBLIC) -->
+        <div class="col-span-2 border-t border-stone-100 pt-3">
+          <label class="lbl">Cover Image</label>
+          <div class="flex items-center gap-3">
+            <img id="coverPreview" src="" alt="" style="width:48px;height:64px;object-fit:cover;border-radius:6px;display:none;">
+            <input type="file" id="coverFile" accept="image/*" class="text-sm">
+            <span id="coverStatus" class="text-xs text-stone-500"></span>
+          </div>
+          <input type="hidden" id="f_coverUrl">
+        </div>
+
+        <!-- Book PDF (PRIVATE) -->
+        <div class="col-span-2">
+          <label class="lbl">Book PDF (private)</label>
+          <div class="flex items-center gap-3">
+            <input type="file" id="assetFile" accept="application/pdf" class="text-sm">
+            <span id="assetStatus" class="text-xs text-stone-500"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 mt-6">
+        <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-sm text-stone-600 hover:bg-stone-100">Cancel</button>
+        <button onclick="saveBook()" id="saveBtn" class="bg-burgundy-700 hover:bg-burgundy-800 text-white px-5 py-2 rounded-xl text-sm font-medium">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders Drawer -->
+  <div class="modal-bg" id="ordersModal">
+    <div style="background:#fff;border-radius:16px;max-width:720px;width:94%;margin:auto;max-height:90vh;overflow-y:auto;padding:24px;">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-800">Orders &amp; Download Log</h2>
+        <button onclick="closeOrders()" class="text-stone-400 hover:text-stone-700"><i class="fas fa-times text-lg"></i></button>
+      </div>
+      <div id="ordersBody" class="text-sm"></div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-[70]">
+    <div id="toastMsg" class="text-white px-4 py-3 rounded-xl shadow-lg text-sm" style="background:#6b1d34"></div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login.html';
+    const authHeaders = { Authorization: 'Bearer ' + token };
+
+    let books = [];
+    let editingId = null;
+    let pendingAsset = null; // holds the private upload response; spread into payload on save
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function money(n){ return '$' + Number(n || 0).toFixed(2); }
+    function mb(bytes){ return (Number(bytes || 0) / (1024 * 1024)).toFixed(1) + ' MB'; }
+
+    function showToast(msg, bg = '#6b1d34'){
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg; el.style.background = bg;
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
+    }
+
+    async function init(){
+      try {
+        const r = await fetch(API_URL + '/api/auth/me', { headers: authHeaders });
+        if (r.ok){
+          const u = await r.json();
+          document.getElementById('adminEmail').textContent = u.email || 'Admin';
+          if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
+        } else { window.location.href = '/login.html'; }
+      } catch(e){ window.location.href = '/login.html'; }
+      loadBooks();
+    }
+
+    async function loadBooks(){
+      try {
+        const r = await fetch(API_URL + '/api/admin/books', { headers: authHeaders });
+        if (!r.ok) throw new Error('Failed to load');
+        books = await r.json();
+        renderTable();
+      } catch(e){ showToast('Error loading books: ' + e.message, '#dc2626'); }
+    }
+
+    function renderTable(){
+      const q = (document.getElementById('search').value || '').toLowerCase();
+      const rows = books.filter(b =>
+        !q || (b.title || '').toLowerCase().includes(q) || (b.slug || '').toLowerCase().includes(q));
+      const tbody = document.getElementById('tbody');
+      document.getElementById('empty').classList.toggle('hidden', rows.length > 0);
+      tbody.innerHTML = rows.map(b => {
+        const cover = b.coverUrl
+          ? '<img src="' + esc(b.coverUrl) + '" style="width:36px;height:48px;object-fit:cover;border-radius:4px;">'
+          : '<div style="width:36px;height:48px;border-radius:4px;background:linear-gradient(135deg,#6B1D34,#4A7C59);"></div>';
+        const statusColor = b.status === 'published' ? '#4A7C59' : (b.status === 'archived' ? '#9a8f80' : '#b8893f');
+        return '<tr class="border-t border-stone-100">' +
+          '<td class="px-4 py-3">' + cover + '</td>' +
+          '<td class="px-4 py-3 font-medium text-stone-700">' + esc(b.title) + '</td>' +
+          '<td class="px-4 py-3 text-stone-500">' + esc(b.slug) + '</td>' +
+          '<td class="px-4 py-3">' + money(b.price) + '</td>' +
+          '<td class="px-4 py-3"><span style="color:' + statusColor + ';font-weight:600;text-transform:capitalize;">' + esc(b.status) + '</span></td>' +
+          '<td class="px-4 py-3">' + (b.salesCount || 0) + '</td>' +
+          '<td class="px-4 py-3">' + (b.order || 0) + '</td>' +
+          '<td class="px-4 py-3 text-right whitespace-nowrap">' +
+            '<button onclick="editBook(\'' + b._id + '\')" class="text-burgundy-600 hover:text-burgundy-800 px-2" title="Edit"><i class="fas fa-pen"></i></button>' +
+            '<button onclick="togglePublish(\'' + b._id + '\')" class="text-forest-600 hover:text-forest-800 px-2" title="Publish/Unpublish"><i class="fas fa-' + (b.status === 'published' ? 'eye-slash' : 'eye') + '"></i></button>' +
+            '<button onclick="viewOrders(\'' + b._id + '\')" class="text-navy-600 hover:text-navy-800 px-2" style="color:#284157" title="Orders"><i class="fas fa-list"></i></button>' +
+            '<button onclick="archiveBook(\'' + b._id + '\')" class="text-stone-400 hover:text-red-600 px-2" title="Archive"><i class="fas fa-box-archive"></i></button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function fillForm(b){
+      const g = id => document.getElementById(id);
+      g('f_title').value = b.title || '';
+      g('f_subtitle').value = b.subtitle || '';
+      g('f_slug').value = b.slug || '';
+      g('f_author').value = b.author || '';
+      g('f_blurb').value = b.blurb || '';
+      g('f_description').value = b.description || '';
+      g('f_price').value = b.price != null ? b.price : '';
+      g('f_compareAtPrice').value = b.compareAtPrice != null ? b.compareAtPrice : '';
+      g('f_format').value = b.format || 'ebook';
+      g('f_pageCount').value = b.pageCount != null ? b.pageCount : '';
+      g('f_isbn').value = b.isbn || '';
+      g('f_category').value = b.category || '';
+      g('f_tags').value = Array.isArray(b.tags) ? b.tags.join(', ') : '';
+      g('f_externalUrl').value = b.externalUrl || '';
+      g('f_downloadLimit').value = b.downloadLimit != null ? b.downloadLimit : 5;
+      g('f_downloadWindowDays').value = b.downloadWindowDays != null ? b.downloadWindowDays : 90;
+      g('f_order').value = b.order != null ? b.order : 0;
+      g('f_status').value = b.status || 'draft';
+      g('f_memberFree').checked = !!b.memberFree;
+      g('f_coverUrl').value = b.coverUrl || '';
+      const cp = g('coverPreview');
+      if (b.coverUrl){ cp.src = b.coverUrl; cp.style.display = 'block'; } else { cp.style.display = 'none'; }
+      g('coverStatus').textContent = '';
+      g('assetStatus').textContent = '';
+      g('coverFile').value = ''; g('assetFile').value = '';
+    }
+
+    function openNew(){
+      editingId = null; pendingAsset = null;
+      document.getElementById('modalTitle').textContent = 'New Book';
+      fillForm({});
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function editBook(id){
+      const b = books.find(x => x._id === id);
+      if (!b) return;
+      editingId = id; pendingAsset = null;
+      document.getElementById('modalTitle').textContent = 'Edit Book';
+      fillForm(b);
+      document.getElementById('modal').classList.add('open');
+    }
+
+    function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+
+    // Cover upload -> PUBLIC image endpoint
+    document.getElementById('coverFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('coverStatus').textContent = 'Uploading…';
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        fd.append('folder', 'counselorready/book-covers');
+        const r = await fetch(API_URL + '/api/images/upload', { method: 'POST', headers: authHeaders, body: fd });
+        const data = await r.json();
+        if (!r.ok || !data.success) throw new Error((data && data.error) || 'Upload failed');
+        document.getElementById('f_coverUrl').value = data.data.url;
+        const cp = document.getElementById('coverPreview');
+        cp.src = data.data.url; cp.style.display = 'block';
+        document.getElementById('coverStatus').textContent = 'Uploaded ✓';
+      } catch(err){ document.getElementById('coverStatus').textContent = 'Failed: ' + err.message; }
+    });
+
+    // Private book PDF upload -> admin books endpoint. Never render the storage key.
+    document.getElementById('assetFile').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('assetStatus').textContent = 'Uploading…';
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await fetch(API_URL + '/api/admin/books/upload', { method: 'POST', headers: authHeaders, body: fd });
+        const data = await r.json();
+        if (!r.ok) throw new Error((data && data.error) || 'Upload failed');
+        pendingAsset = data; // { <storage key>, bytes } — spread into payload on save, not shown
+        document.getElementById('assetStatus').textContent = 'Uploaded ✓ (' + mb(data.bytes) + ')';
+      } catch(err){ document.getElementById('assetStatus').textContent = 'Failed: ' + err.message; pendingAsset = null; }
+    });
+
+    function collectForm(){
+      const v = id => document.getElementById(id).value;
+      const payload = {
+        title: v('f_title'), subtitle: v('f_subtitle'), slug: v('f_slug').toLowerCase(),
+        author: v('f_author'), blurb: v('f_blurb'), description: v('f_description'),
+        price: parseFloat(v('f_price')) || 0,
+        compareAtPrice: v('f_compareAtPrice') ? parseFloat(v('f_compareAtPrice')) : undefined,
+        format: v('f_format'),
+        pageCount: v('f_pageCount') ? parseInt(v('f_pageCount')) : undefined,
+        isbn: v('f_isbn'), category: v('f_category'),
+        tags: v('f_tags').split(',').map(s => s.trim()).filter(Boolean),
+        externalUrl: v('f_externalUrl'),
+        downloadLimit: parseInt(v('f_downloadLimit')) || 5,
+        downloadWindowDays: parseInt(v('f_downloadWindowDays')) || 90,
+        order: parseInt(v('f_order')) || 0,
+        status: v('f_status'),
+        memberFree: document.getElementById('f_memberFree').checked,
+        coverUrl: v('f_coverUrl')
+      };
+      // Merge private asset (contains the storage key) from the upload response.
+      if (pendingAsset) Object.assign(payload, pendingAsset);
+      return payload;
+    }
+
+    async function saveBook(){
+      const payload = collectForm();
+      if (!payload.title || !payload.slug){ showToast('Title and slug are required', '#dc2626'); return; }
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      try {
+        const url = editingId ? API_URL + '/api/admin/books/' + editingId : API_URL + '/api/admin/books';
+        const method = editingId ? 'PUT' : 'POST';
+        const r = await fetch(url, {
+          method,
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await r.json();
+        if (!r.ok) throw new Error((data && data.error) || 'Save failed');
+        showToast('✓ Saved', '#4A7C59');
+        closeModal();
+        loadBooks();
+      } catch(err){ showToast('Error: ' + err.message, '#dc2626'); }
+      finally { btn.disabled = false; btn.textContent = 'Save'; }
+    }
+
+    async function togglePublish(id){
+      const b = books.find(x => x._id === id);
+      if (!b) return;
+      const next = b.status === 'published' ? 'draft' : 'published';
+      try {
+        const r = await fetch(API_URL + '/api/admin/books/' + id, {
+          method: 'PUT',
+          headers: { ...authHeaders, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: next })
+        });
+        if (!r.ok) throw new Error('Update failed');
+        showToast(next === 'published' ? '✓ Published' : '✓ Unpublished', next === 'published' ? '#4A7C59' : '#b8893f');
+        loadBooks();
+      } catch(err){ showToast('Error: ' + err.message, '#dc2626'); }
+    }
+
+    async function archiveBook(id){
+      if (!confirm('Archive this book? It will be hidden from the store.')) return;
+      try {
+        const r = await fetch(API_URL + '/api/admin/books/' + id, { method: 'DELETE', headers: authHeaders });
+        if (!r.ok) throw new Error('Archive failed');
+        showToast('✓ Archived', '#6b1d34');
+        loadBooks();
+      } catch(err){ showToast('Error: ' + err.message, '#dc2626'); }
+    }
+
+    async function viewOrders(id){
+      const body = document.getElementById('ordersBody');
+      body.innerHTML = '<p class="text-stone-400">Loading…</p>';
+      document.getElementById('ordersModal').classList.add('open');
+      try {
+        const r = await fetch(API_URL + '/api/admin/books/' + id + '/orders', { headers: authHeaders });
+        if (!r.ok) throw new Error('Failed to load orders');
+        const orders = await r.json();
+        if (!orders.length){ body.innerHTML = '<p class="text-stone-400 py-6 text-center">No orders yet.</p>'; return; }
+        body.innerHTML = orders.map(o => {
+          const u = o.userId && typeof o.userId === 'object' ? o.userId : null;
+          const buyer = u ? ((u.firstName || '') + ' ' + (u.lastName || '')).trim() + ' · ' + (u.email || '') : (o.watermarkEmail || '—');
+          const dls = (o.downloads || []).map(d =>
+            '<div class="text-xs text-stone-500 pl-3">• ' + esc(d.at ? new Date(d.at).toLocaleString() : '') + ' — IP ' + esc(d.ip || '—') + '</div>').join('');
+          return '<div class="border-b border-stone-100 py-3">' +
+            '<div class="flex justify-between"><span class="font-medium text-stone-700">' + esc(buyer) + '</span>' +
+            '<span class="text-stone-500">' + esc(o.orderNumber || '') + '</span></div>' +
+            '<div class="text-xs text-stone-500 mt-1">Downloads: ' + (o.downloadCount || 0) + ' · Status: ' + esc(o.status) + '</div>' +
+            dls +
+          '</div>';
+        }).join('');
+      } catch(err){ body.innerHTML = '<p class="text-red-600">' + esc(err.message) + '</p>'; }
+    }
+
+    function closeOrders(){ document.getElementById('ordersModal').classList.remove('open'); }
+
+    init();
+  </script>
+</body>
+</html>

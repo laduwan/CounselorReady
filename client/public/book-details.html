@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book - CounselorReady</title>
+  <meta name="description" content="Book details — CounselorReady.">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+    .prose p{margin:0 0 12px;line-height:1.65;color:#3f3a34;}
+    .prose h2,.prose h3{font-family:'Cormorant Garamond',Georgia,serif;color:#6B1D34;margin:18px 0 8px;}
+    .prose ul,.prose ol{margin:0 0 12px 20px;line-height:1.6;color:#3f3a34;}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main style="max-width:1000px;margin:0 auto;padding:40px 20px 72px;">
+    <div id="content"></div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function money(n){ return '$' + Number(n || 0).toFixed(2); }
+    function getSlug(){ return new URLSearchParams(window.location.search).get('slug'); }
+
+    function render(b){
+      const cover = b.coverUrl
+        ? '<img src="' + esc(b.coverUrl) + '" alt="' + esc(b.title) + '" style="width:100%;border-radius:14px;box-shadow:0 12px 40px rgba(107,29,52,.15);" onerror="this.style.display=\'none\'">'
+        : '<div style="width:100%;aspect-ratio:3/4;border-radius:14px;background:linear-gradient(135deg,#6B1D34,#4A7C59);"></div>';
+
+      const meta = [];
+      if (b.format){ meta.push('Format: ' + esc(b.format === 'both' ? 'eBook + Paperback' : b.format.charAt(0).toUpperCase() + b.format.slice(1))); }
+      if (b.pageCount){ meta.push(b.pageCount + ' pages'); }
+
+      const external = b.externalUrl
+        ? '<a href="' + esc(b.externalUrl) + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;color:#284157;font-size:14px;text-decoration:underline;">Also on Amazon</a>'
+        : '';
+
+      document.getElementById('content').innerHTML =
+        '<div style="display:grid;grid-template-columns:1fr;gap:36px;" class="bd-grid">' +
+          '<div>' + cover + '</div>' +
+          '<div>' +
+            '<h1 class="font-display" style="font-size:38px;font-weight:600;color:#6B1D34;margin:0;line-height:1.1;">' + esc(b.title) + '</h1>' +
+            (b.subtitle ? '<p style="font-size:18px;color:#284157;margin:10px 0 0;">' + esc(b.subtitle) + '</p>' : '') +
+            '<p style="font-size:14px;color:#57534e;margin:12px 0 0;">by ' + esc(b.author || 'Kejuiana Johnson') + '</p>' +
+            (meta.length ? '<p style="font-size:13px;color:#57534e;margin:6px 0 0;">' + meta.map(esc).join(' · ') + '</p>' : '') +
+            '<p style="font-size:26px;font-weight:700;color:#4A7C59;margin:18px 0 0;">' + (b.memberFree ? 'Free for members · ' : '') + money(b.price) + '</p>' +
+            '<button id="buyBtn" style="margin-top:16px;width:100%;background:#4A7C59;color:#fff;border:none;border-radius:10px;padding:14px 20px;font-size:16px;font-weight:600;cursor:pointer;transition:background .15s;" ' +
+              'onmouseover="this.style.background=\'#3D6A4A\'" onmouseout="this.style.background=\'#4A7C59\'">Buy — ' + money(b.price) + '</button>' +
+            '<p id="buyMsg" style="font-size:13px;color:#b91c1c;margin:8px 0 0;display:none;"></p>' +
+            external +
+            '<p style="font-size:12px;color:#284157;background:#eef3f6;border:1px solid #d6e2ea;border-radius:8px;padding:10px 12px;margin:16px 0 0;line-height:1.5;">Your copy is watermarked with your name and order number. Licensed for your personal professional use only.</p>' +
+            (b.description ? '<div class="prose" style="margin-top:28px;">' + b.description + '</div>' : '') +
+          '</div>' +
+        '</div>';
+
+      // Responsive two-column on desktop
+      const mq = window.matchMedia('(min-width:768px)');
+      const grid = document.querySelector('.bd-grid');
+      function applyCols(){ grid.style.gridTemplateColumns = mq.matches ? '340px 1fr' : '1fr'; }
+      applyCols();
+      mq.addEventListener('change', applyCols);
+
+      document.getElementById('buyBtn').addEventListener('click', () => buy(b));
+    }
+
+    async function buy(b){
+      const token = localStorage.getItem('token');
+      if (!token){
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = '/login.html?next=' + next;
+        return;
+      }
+      const btn = document.getElementById('buyBtn');
+      const msg = document.getElementById('buyMsg');
+      btn.disabled = true; btn.textContent = 'Starting checkout…';
+      msg.style.display = 'none';
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(API_URL + '/api/books/' + encodeURIComponent(b.slug) + '/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Checkout failed');
+        if (data.alreadyOwned || data.free){
+          window.location.href = '/my-books.html';
+          return;
+        }
+        if (data.url){ window.location.href = data.url; return; }
+        throw new Error('Could not start checkout');
+      } catch (err) {
+        btn.disabled = false; btn.textContent = 'Buy — ' + money(b.price);
+        msg.textContent = err.message || 'Something went wrong. Please try again.';
+        msg.style.display = 'block';
+      }
+    }
+
+    async function load(){
+      const slug = getSlug();
+      if (!slug){
+        document.getElementById('content').innerHTML = '<p class="font-display" style="font-size:24px;color:#6B1D34;">Book not found</p>';
+        return;
+      }
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(API_URL + '/api/books/' + encodeURIComponent(slug), { signal: ctrl.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error('not found');
+        const book = await res.json();
+        document.title = book.title + ' - CounselorReady';
+        render(book);
+      } catch (err) {
+        document.getElementById('content').innerHTML = '<p class="font-display" style="font-size:24px;color:#6B1D34;">Book not found</p><p style="color:#57534e;">This title may no longer be available. <a href="/books.html" style="color:#4A7C59;text-decoration:underline;">Browse all books</a>.</p>';
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>
