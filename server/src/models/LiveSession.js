@@ -142,6 +142,16 @@ const liveSessionSchema = new mongoose.Schema({
   // display/charge it. Both omitted => standard `price` only (unchanged).
   earlyBirdPrice: { type: Number, min: 0 },
   earlyBirdDeadline: { type: Date },
+
+  // ─── Registration cutoff ─────────────────────────────────────────────
+  // Registration closes this many hours before scheduledStart. Platform
+  // default is 72h, which gives Ke time to send materials, confirm the
+  // roster, and provision the Whereby room. Override per session by setting
+  // a different number; set 0 to keep registration open right up to (and
+  // through) the session, which is the pre-cutoff legacy behavior.
+  // Admins are never blocked by this — see routes/liveSessions.js register.
+  registrationCutoffHours: { type: Number, default: 72, min: 0, max: 2160 },
+
   isPublished: { type: Boolean, default: false, index: true },
   visibility: {
     type: String,
@@ -466,6 +476,31 @@ liveSessionSchema.pre('validate', function (next) {
 });
 
 /* ── Helpers ───────────────────────────────────────────────────────────── */
+
+/**
+ * Moment registration closes. Returns null when the session has opted out of
+ * the cutoff (registrationCutoffHours === 0), meaning registration stays open
+ * until status leaves 'scheduled'/'live'.
+ */
+liveSessionSchema.methods.registrationDeadline = function () {
+  const hrs = typeof this.registrationCutoffHours === 'number'
+    ? this.registrationCutoffHours
+    : 72;
+  if (hrs <= 0 || !this.scheduledStart) return null;
+  return new Date(this.scheduledStart.getTime() - hrs * 3600000);
+};
+
+/**
+ * True when a learner may still register. Does NOT consider capacity or
+ * VIP/payment eligibility — those stay in the route where they already live.
+ */
+liveSessionSchema.methods.isRegistrationOpen = function (now = new Date()) {
+  if (!['scheduled', 'live'].includes(this.status)) return false;
+  const deadline = this.registrationDeadline();
+  if (!deadline) return true;
+  return now.getTime() < deadline.getTime();
+};
+
 liveSessionSchema.methods.isRegistered = function (userId) {
   return this.registrants.some(r => r.user && r.user.toString() === userId.toString());
 };
@@ -548,6 +583,9 @@ liveSessionSchema.methods.toPublicJSON = function () {
     price: this.price,
     earlyBirdPrice: this.earlyBirdPrice,
     earlyBirdDeadline: this.earlyBirdDeadline,
+    registrationCutoffHours: this.registrationCutoffHours,
+    registrationClosesAt: this.registrationDeadline(),
+    registrationOpen: this.isRegistrationOpen(),
     status: this.status,
     recordingEnabled: this.recordingEnabled,
     handouts: (this.handouts || []).map(h => ({

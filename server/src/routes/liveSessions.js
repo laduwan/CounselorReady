@@ -220,6 +220,19 @@ router.post('/:id/register', protect, async (req, res) => {
     if (session.isRegistered(req.user._id)) {
       return res.json({ registered: true, message: 'Already registered.' });
     }
+    // Registration cutoff (default 72h before start; per-session override via
+    // registrationCutoffHours, 0 = no cutoff). Admins bypass so Ke can seat a
+    // late registrant manually.
+    if (req.user.role !== 'admin' && !session.isRegistrationOpen()) {
+      const closedAt = session.registrationDeadline();
+      return res.status(400).json({
+        error: closedAt
+          ? `Registration for this session closed on ${closedAt.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' })}.`
+          : 'Registration is closed for this session.',
+        reason: 'registration_closed',
+        registrationClosesAt: closedAt
+      });
+    }
     if (session.registrants.length >= session.capacity) {
       return res.status(400).json({ error: 'This session is full.' });
     }
@@ -249,9 +262,22 @@ router.post('/:id/register', protect, async (req, res) => {
     // Paid sessions → Stripe Checkout for non-VIP; fulfillment registers via webhook (WIRING.md)
     if (!isAdmin && !isActiveVip && !hasValidPrivateCode && session.price > 0) {
       if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
+      // Expire the Checkout Session at the registration cutoff so a seat can't
+      // be paid for after close. Stripe requires expires_at to be 30 min–24h
+      // out, so clamp into that window; the 30-min floor can overshoot the
+      // cutoff by minutes at most, and we always honor a completed payment.
+      const regDeadline = session.registrationDeadline();
+      const nowSec = Math.floor(Date.now() / 1000);
+      const expiresAt = regDeadline
+        ? Math.min(
+            Math.max(Math.floor(regDeadline.getTime() / 1000), nowSec + 31 * 60),
+            nowSec + 24 * 3600
+          )
+        : undefined;
       const checkout = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
+        ...(expiresAt ? { expires_at: expiresAt } : {}),
         line_items: [{
           price_data: {
             currency: 'usd',
