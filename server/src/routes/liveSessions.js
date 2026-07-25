@@ -21,6 +21,7 @@ import multer from 'multer';
 import cloudinary from 'cloudinary';
 import { Readable } from 'stream';
 import LiveSession from '../models/LiveSession.js';
+import User from '../models/User.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates, issueSeriesCertificates } from '../services/liveSessionCompletionService.js';
@@ -248,6 +249,43 @@ router.post('/:id/register', protect, async (req, res) => {
     const hasValidPrivateCode = session.visibility === 'private' &&
       session.accessCode &&
       suppliedCode === session.accessCode;
+
+    // ── New membership live-session gate ──
+    // Members (Monthly / Annual / active VIP) are gated by their allowance here.
+    // Non-members (plan:null) fall through to the existing per-session paid /
+    // private-code / free flow below — unchanged.
+    const liveAccess = await req.user.canAccessLiveSession(session);
+    if (!isAdmin && liveAccess.plan) {
+      if (!liveAccess.allowed) {
+        return res.status(403).json({
+          error: liveAccess.reason,
+          upgradeRequired: true,
+          upgradeUrl: '/subscription.html'
+        });
+      }
+      session.registrants.push({ user: req.user._id, paid: false });
+      await session.save();
+      if (liveAccess.plan === 'monthly') {
+        await User.findByIdAndUpdate(req.user._id, {
+          liveSessionUsedThisMonth: true,
+          ...(liveAccess.windowElapsed
+            ? { liveSessionMonthResetAt: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1) }
+            : {})
+        });
+      } else if (liveAccess.plan === 'annual' || liveAccess.plan === 'vip') {
+        if (liveAccess.windowElapsed) {
+          await User.findByIdAndUpdate(req.user._id, {
+            liveHoursUsedThisYear: (session.ceuHours || 0),
+            liveHoursYearResetAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+          });
+        } else {
+          await User.findByIdAndUpdate(req.user._id, {
+            $inc: { liveHoursUsedThisYear: session.ceuHours || 0 }
+          });
+        }
+      }
+      return res.json({ registered: true });
+    }
 
     // Live sessions are free for current VIP subscribers. Everyone else must pay per-session
     // when the session is priced; if it isn't priced, there's no non-VIP path in.

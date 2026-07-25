@@ -548,6 +548,24 @@ router.post('/:id/enroll', protect, async (req, res) => {
       pc => pc.courseId?.toString() === course._id.toString()
     );
 
+    // ── New membership async-course cap ──
+    // Only the Monthly plan and the single grandfathered Starter account are
+    // hour-capped (≤4 CE). Every existing plan keeps its current access path
+    // below (VIP/Annual are uncapped; purchased/admin/free bypass this).
+    if (!isAdmin && !isFree && !hasPurchased && (user.isMonthly?.() || user.isGrandfatheredStarter?.())) {
+      if (!user.canAccessAsyncCourse(course)) {
+        const hrs = course.ceHours || course.ceuHours || 0;
+        return res.status(403).json({
+          success: false,
+          error: hrs > 4
+            ? `This course is ${hrs} CE hours. Monthly members access courses up to 4 CE hours. Upgrade to Annual for full catalog access.`
+            : 'Active membership required.',
+          upgradeRequired: true,
+          upgradeUrl: '/subscription.html'
+        });
+      }
+    }
+
     let accessGranted = false;
     let usedFreeHours = false;
     let freeDenial = null;
