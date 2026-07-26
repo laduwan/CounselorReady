@@ -76,6 +76,7 @@
 /terms               /terms.html               200
 /refund-policy       /refund-policy.html        200
 /verify              /verify.html              200
+/verify/*            /verify.html              200
 /verify-email        /verify-email.html         200
 /forgot-password     /forgot-password.html      200
 /reset-password      /reset-password.html       200
