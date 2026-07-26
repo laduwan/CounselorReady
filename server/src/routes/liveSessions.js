@@ -30,6 +30,24 @@ import { sendLiveSessionRegistrationConfirmation } from '../services/emailServic
 import { parseRunOfShowMarkdown, parseRunOfShowDocx } from '../services/runOfShowParser.js';
 import rateLimit from 'express-rate-limit';
 import { assertSafeOutboundUrl } from '../utils/outboundUrlGuard.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+
+// Non-blocking activity log for a completed live-session registration.
+// One helper, called from BOTH registration success paths (membership + per-session),
+// so admin tracking never blocks or fails a user-facing response.
+function logLiveSessionRegistration(session, user) {
+  try {
+    const userName = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email;
+    logActivity(ACTIVITY_TYPES.LIVE_SESSION_REGISTERED, {
+      sessionId: session._id,
+      sessionTitle: session.title,
+      sessionDate: session.scheduledStart
+    }, { userId: user._id, userName, userEmail: user.email, notifyAdmin: true })
+      .catch(err => console.error('[live] registration activity log failed:', err.message));
+  } catch (err) {
+    console.error('[live] registration activity log failed:', err.message);
+  }
+}
 
 const router = express.Router();
 
@@ -297,6 +315,7 @@ router.post('/:id/register', protect, async (req, res) => {
           });
         }
       }
+      logLiveSessionRegistration(session, req.user);
       return res.json({ registered: true });
     }
 
@@ -360,6 +379,7 @@ router.post('/:id/register', protect, async (req, res) => {
     sendLiveSessionRegistrationConfirmation(req.user, session, {
       seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
     }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
+    logLiveSessionRegistration(session, req.user);
     res.json({ registered: true });
   } catch (err) {
     console.error('[live] register:', err.message);
@@ -408,6 +428,18 @@ router.post('/:id/join', protect, async (req, res) => {
       isHost: isAdmin,
       session: session.toPublicJSON()
     });
+
+    // Non-blocking — notifyAdmin false: join fires every session, too noisy for alerts.
+    try {
+      const userName = `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim() || req.user.email;
+      logActivity(ACTIVITY_TYPES.LIVE_SESSION_ATTENDED, {
+        sessionId: session._id,
+        sessionTitle: session.title
+      }, { userId: req.user._id, userName, userEmail: req.user.email, notifyAdmin: false })
+        .catch(err => console.error('[live] attended activity log failed:', err.message));
+    } catch (logErr) {
+      console.error('[live] attended activity log failed:', logErr.message);
+    }
   } catch (err) {
     console.error('[live] join:', err.message);
     res.status(500).json({ error: 'Failed to join session' });
@@ -444,6 +476,17 @@ router.get('/:id/replay', protect, async (req, res) => {
     );
 
     res.json({ replayUrl: url, expiresInSeconds: 3600, title: session.title });
+
+    // Non-blocking replay-watch tracking; never blocks the signed-URL response.
+    try {
+      logActivity(ACTIVITY_TYPES.REPLAY_WATCHED, {
+        sessionId: session._id,
+        sessionTitle: session.title
+      }, { userId: req.user._id, notifyAdmin: false })
+        .catch(err => console.error('[live] replay activity log failed:', err.message));
+    } catch (logErr) {
+      console.error('[live] replay activity log failed:', logErr.message);
+    }
   } catch (err) {
     console.error('[live] replay:', err.message);
     res.status(500).json({ error: 'Failed to load replay' });

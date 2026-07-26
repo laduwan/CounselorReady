@@ -25,7 +25,15 @@ export const ACTIVITY_TYPES = {
   SUBSCRIPTION_CANCELED: 'subscription_canceled',
   CERTIFICATE_GENERATED: 'certificate_generated',
   LESSON_COMPLETED: 'lesson_completed',
-  TOOL_USED: 'tool_used'
+  TOOL_USED: 'tool_used',
+  LIVE_SESSION_REGISTERED: 'live_session_registered',
+  LIVE_SESSION_ATTENDED: 'live_session_attended',
+  LIVE_SESSION_CERT_ISSUED: 'live_session_cert_issued',
+  CREDENTIAL_ADDED: 'credential_added',
+  CREDENTIAL_RENEWED: 'credential_renewed',
+  CREDENTIAL_DELETED: 'credential_deleted',
+  CERTIFICATE_DOWNLOADED: 'certificate_downloaded',
+  REPLAY_WATCHED: 'replay_watched'
 };
 
 /**
@@ -91,6 +99,11 @@ export async function logActivity(type, data, options = {}) {
       payment_succeeded:     'notifyPayment',
       payment_failed:        'notifyPaymentFail',
       certificate_generated: 'notifyCertificate',
+      live_session_registered:  'notifyLiveRegistration',
+      live_session_attended:    'notifyLiveAttended',
+      live_session_cert_issued: 'notifyLiveCert',
+      certificate_downloaded:   'notifyDownload',
+      replay_watched:           'notifyReplay',
     };
     User.findOne({ role: 'admin' }, 'adminNotifPrefs').lean()
       .then(admin => {
