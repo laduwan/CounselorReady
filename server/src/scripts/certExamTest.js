@@ -3,7 +3,7 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-import fetch from "node-fetch";
+// Uses native global fetch (Node 18+).
 
 /**
  * CounselorReady Certificate & Exam E2E Tests

@@ -28,8 +28,9 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID
 const router = express.Router();
 
 // Initialize Stripe
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY) 
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, process.env.STRIPE_API_VERSION
+      ? { apiVersion: process.env.STRIPE_API_VERSION } : {})
   : null;
 
 // Price IDs from Stripe Dashboard (set in environment)
