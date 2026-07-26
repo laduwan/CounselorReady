@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import useragent from 'useragent';
+import { UAParser } from 'ua-parser-js';
 import Session from '../models/Session.js';
 
 export function hashToken(token) {
@@ -20,7 +20,7 @@ export async function trackSession(req, res, next) {
     if (!token) return next();
 
     const tokenHash = hashToken(token);
-    const ua = useragent.parse(req.headers['user-agent'] || '');
+    const ua = new UAParser(req.headers['user-agent'] || '').getResult();
     const ip = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim();
 
     const existing = await Session.findOne({ userId: req.user._id, tokenHash });
@@ -36,9 +36,9 @@ export async function trackSession(req, res, next) {
       const newSession = await Session.create({
         userId:     req.user._id,
         tokenHash,
-        browser:    ua.family || 'Unknown',
-        os:         ua.os.family || 'Unknown',
-        device:     ua.device.family || 'Unknown',
+        browser:    ua.browser.name || 'Unknown',
+        os:         ua.os.name || 'Unknown',
+        device:     ua.device.model || ua.device.type || 'Unknown',
         ip,
         location,
         createdAt:  new Date(),

@@ -3,7 +3,7 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
-import fetch from "node-fetch";
+// Uses native global fetch (Node 18+).
 
 /**
  * CounselorReady API Smoke Tests
@@ -17,7 +17,7 @@ import fetch from "node-fetch";
  *   COURSE_SLUG=28-days-later-understanding-addiction-and-recovery node src/scripts/smokeTest.js
  *
  * Requirements:
- *   npm install node-fetch (if not already installed)
+ *   Node 18+ (uses the native global fetch)
  */
 
 const BASE_URL = process.env.API_URL || "https://api.counselorready.com";
