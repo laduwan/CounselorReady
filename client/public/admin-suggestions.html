@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Suggestions - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em}
+    .pill-new{background:#FDF5F7;color:#6B1D34}
+    .pill-reviewed{background:#EFF6FF;color:#1D4ED8}
+    .pill-in-progress{background:#FFF7ED;color:#B45309}
+    .pill-done{background:#F0FDF4;color:#15803D}
+    .pill-dismissed{background:#F5F5F4;color:#78716C}
+    .card{background:#fff;border:1px solid #EDEAE2;border-radius:12px;padding:16px 18px;}
+    select{border:1px solid #E3DED3;border-radius:7px;padding:6px 10px;font-size:13px;}
+  </style>
+  <script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-4xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="font-display text-3xl font-bold text-stone-800">Suggestion Box</h1>
+        <p class="text-sm text-stone-500 mt-1">Submissions from CounselorReady, PassReady Prep, and the GAITP site.</p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-3 mb-6">
+      <select id="filterPlatform">
+        <option value="">All platforms</option>
+        <option value="counselorready">CounselorReady</option>
+        <option value="passreadyprep">PassReady Prep</option>
+        <option value="gaitp">GAITP</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">All statuses</option>
+        <option value="new">New</option>
+        <option value="reviewed">Reviewed</option>
+        <option value="in-progress">In progress</option>
+        <option value="done">Done</option>
+        <option value="dismissed">Dismissed</option>
+      </select>
+      <div id="counts" class="text-xs text-stone-500 self-center"></div>
+    </div>
+
+    <div id="list" class="space-y-3">
+      <p class="text-stone-400 text-sm">Loading…</p>
+    </div>
+
+    <div class="flex justify-center gap-3 mt-6" id="pager"></div>
+  </main>
+
+  <script>
+    const API = location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const T = localStorage.getItem('token');
+    if (!T) location.href = '/login.html';
+
+    const PLATFORM_LABEL = { counselorready: 'CounselorReady', passreadyprep: 'PassReady Prep', gaitp: 'GAITP' };
+    let page = 1;
+
+    function esc(s) {
+      return (s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+    }
+
+    function load() {
+      const platform = document.getElementById('filterPlatform').value;
+      const status = document.getElementById('filterStatus').value;
+      const params = new URLSearchParams({ page });
+      if (platform) params.set('platform', platform);
+      if (status) params.set('status', status);
+
+      fetch(`${API}/api/suggestions?${params}`, { headers: { Authorization: `Bearer ${T}` } })
+        .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json(); })
+        .then(render)
+        .catch(() => {
+          document.getElementById('list').innerHTML = '<p class="text-red-600 text-sm">Could not load suggestions.</p>';
+        });
+    }
+
+    function render(data) {
+      const counts = data.counts || {};
+      document.getElementById('counts').textContent =
+        `New: ${counts.new || 0} · Reviewed: ${counts.reviewed || 0} · In progress: ${counts['in-progress'] || 0} · Done: ${counts.done || 0}`;
+
+      const list = document.getElementById('list');
+      if (!data.suggestions.length) {
+        list.innerHTML = '<p class="text-stone-400 text-sm">No suggestions match this filter.</p>';
+      } else {
+        list.innerHTML = data.suggestions.map(s => `
+          <div class="card" data-id="${s._id}">
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <div>
+                <span class="pill pill-${s.status}">${s.status}</span>
+                <span class="text-xs text-stone-500 ml-2">${PLATFORM_LABEL[s.platform] || s.platform} · ${s.category}</span>
+              </div>
+              <span class="text-xs text-stone-400">${new Date(s.createdAt).toLocaleString()}</span>
+            </div>
+            <p class="text-sm text-stone-700 whitespace-pre-wrap mb-2">${esc(s.message)}</p>
+            ${s.name || s.email ? `<p class="text-xs text-stone-400 mb-2">${esc(s.name)} ${s.email ? '· ' + esc(s.email) : ''}</p>` : ''}
+            ${s.pageUrl ? `<p class="text-xs text-stone-400 mb-3 truncate">${esc(s.pageUrl)}</p>` : ''}
+            <div class="flex items-center gap-2">
+              <select class="status-select text-xs">
+                ${['new','reviewed','in-progress','done','dismissed'].map(v => `<option value="${v}" ${v === s.status ? 'selected' : ''}>${v}</option>`).join('')}
+              </select>
+              <button class="save-btn text-xs bg-burgundy-800 text-white px-3 py-1.5 rounded-md" style="background:#6B1D34">Save</button>
+              <button class="del-btn text-xs text-red-500 ml-auto">Delete</button>
+            </div>
+          </div>
+        `).join('');
+
+        list.querySelectorAll('.card').forEach(card => {
+          const id = card.dataset.id;
+          card.querySelector('.save-btn').addEventListener('click', () => {
+            const status = card.querySelector('.status-select').value;
+            fetch(`${API}/api/suggestions/${id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${T}` },
+              body: JSON.stringify({ status }),
+            }).then(load);
+          });
+          card.querySelector('.del-btn').addEventListener('click', () => {
+            if (!confirm('Delete this suggestion?')) return;
+            fetch(`${API}/api/suggestions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${T}` } }).then(load);
+          });
+        });
+      }
+
+      const pager = document.getElementById('pager');
+      pager.innerHTML = '';
+      if (data.pages > 1) {
+        for (let i = 1; i <= data.pages; i++) {
+          const b = document.createElement('button');
+          b.textContent = i;
+          b.className = 'px-3 py-1 rounded-md text-xs ' + (i === data.page ? 'bg-burgundy-800 text-white' : 'bg-white border');
+          if (i === data.page) b.style.background = '#6B1D34';
+          b.addEventListener('click', () => { page = i; load(); });
+          pager.appendChild(b);
+        }
+      }
+    }
+
+    document.getElementById('filterPlatform').addEventListener('change', () => { page = 1; load(); });
+    document.getElementById('filterStatus').addEventListener('change', () => { page = 1; load(); });
+    load();
+  </script>
+</body>
+</html>

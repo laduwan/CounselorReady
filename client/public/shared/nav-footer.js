@@ -450,6 +450,150 @@
     });
   })();
 
+  // ── SUGGESTION BOX (persistent floating tab, bottom-right) ──
+  (function injectSuggestionBox() {
+    // Skip on admin/course-player/login pages — keep it out of the way
+    const path = window.location.pathname;
+    if (path.startsWith('/admin') || path.includes('interactive-course') ||
+        path.includes('login') || path.includes('register')) return;
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) {}
+
+    const wrap = document.createElement('div');
+    wrap.id = 'cr-suggest-wrap';
+    wrap.innerHTML = `
+      <button id="cr-suggest-tab" aria-label="Send a suggestion">
+        <span class="cr-suggest-tab-icon">💬</span>
+        <span class="cr-suggest-tab-label">Suggestion</span>
+      </button>
+      <div id="cr-suggest-panel" class="hidden" role="dialog" aria-label="Send a suggestion">
+        <div class="cr-suggest-head">
+          <span>Got an idea or found a bug?</span>
+          <button id="cr-suggest-close" aria-label="Close">✕</button>
+        </div>
+        <select id="cr-suggest-category">
+          <option value="feature-request">Feature idea</option>
+          <option value="bug">Something's broken</option>
+          <option value="content">Course/content feedback</option>
+          <option value="billing">Billing question</option>
+          <option value="other">Other</option>
+        </select>
+        <textarea id="cr-suggest-message" maxlength="4000" placeholder="Tell us what's on your mind..."></textarea>
+        ${!user ? `
+        <input id="cr-suggest-email" type="email" placeholder="Your email (optional)" />
+        ` : ''}
+        <button id="cr-suggest-submit">Send</button>
+        <div id="cr-suggest-status"></div>
+      </div>
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #cr-suggest-tab {
+        position: fixed; bottom: 28px; right: 0; z-index: 8900;
+        display: flex; align-items: center; gap: 6px;
+        background: #6B1D34; color: #fff; border: none;
+        padding: 10px 14px 10px 12px; border-radius: 8px 0 0 8px;
+        font-family: 'Lato', system-ui, sans-serif; font-size: 12.5px; font-weight: 700;
+        letter-spacing: .02em; cursor: pointer; box-shadow: -2px 2px 10px rgba(0,0,0,.18);
+        transition: padding-right .15s, background .15s;
+      }
+      #cr-suggest-tab:hover { background: #7E5966; padding-right: 18px; }
+      .cr-suggest-tab-icon { font-size: 15px; }
+      #cr-suggest-panel {
+        position: fixed; bottom: 76px; right: 20px; z-index: 8900;
+        width: min(320px, calc(100vw - 40px));
+        background: #fff; border-radius: 12px;
+        box-shadow: 0 10px 36px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.05);
+        font-family: 'Lato', system-ui, sans-serif;
+        padding: 16px; animation: cr-sg-slide .25s cubic-bezier(.16,1,.3,1);
+      }
+      #cr-suggest-panel.hidden { display: none; }
+      @keyframes cr-sg-slide { from { opacity:0; transform: translateY(12px);} to { opacity:1; transform: translateY(0);} }
+      .cr-suggest-head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        font-size: 13.5px; font-weight: 700; color: #3D1120; margin-bottom: 10px;
+      }
+      #cr-suggest-close { background:none; border:none; color:#999; font-size:13px; cursor:pointer; line-height:1; }
+      #cr-suggest-panel select, #cr-suggest-panel textarea, #cr-suggest-panel input {
+        width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
+        border: 1px solid #E3DED3; border-radius: 7px; padding: 8px 10px; margin-bottom: 8px;
+        color: #333;
+      }
+      #cr-suggest-panel textarea { min-height: 84px; resize: vertical; }
+      #cr-suggest-submit {
+        width: 100%; background: #6B1D34; color: #fff; border: none; border-radius: 7px;
+        padding: 9px 0; font-size: 13px; font-weight: 700; cursor: pointer;
+      }
+      #cr-suggest-submit:disabled { opacity: .6; cursor: default; }
+      #cr-suggest-submit:hover:not(:disabled) { background: #7E5966; }
+      #cr-suggest-status { font-size: 12px; margin-top: 8px; text-align: center; min-height: 16px; }
+      #cr-suggest-status.ok { color: #1E7E48; }
+      #cr-suggest-status.err { color: #b02a37; }
+      @media (max-width: 480px) {
+        .cr-suggest-tab-label { display: none; }
+        #cr-suggest-tab { padding: 12px; border-radius: 50% 0 0 50%; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.appendChild(wrap);
+
+      const panel = document.getElementById('cr-suggest-panel');
+      const tab = document.getElementById('cr-suggest-tab');
+      const submitBtn = document.getElementById('cr-suggest-submit');
+      const statusEl = document.getElementById('cr-suggest-status');
+
+      tab.addEventListener('click', () => panel.classList.toggle('hidden'));
+      document.getElementById('cr-suggest-close').addEventListener('click', () => panel.classList.add('hidden'));
+
+      submitBtn.addEventListener('click', function () {
+        const message = document.getElementById('cr-suggest-message').value.trim();
+        const category = document.getElementById('cr-suggest-category').value;
+        const emailField = document.getElementById('cr-suggest-email');
+
+        if (!message) {
+          statusEl.textContent = 'Please enter a message.';
+          statusEl.className = 'err';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        statusEl.textContent = '';
+        statusEl.className = '';
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (T) headers['Authorization'] = `Bearer ${T}`;
+
+        fetch(`${API}/api/suggestions`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            message,
+            category,
+            platform: 'counselorready',
+            email: emailField ? emailField.value.trim() : undefined,
+            pageUrl: window.location.href,
+          }),
+        })
+          .then(r => { if (!r.ok) throw 0; return r.json(); })
+          .then(() => {
+            statusEl.textContent = 'Thanks — got it!';
+            statusEl.className = 'ok';
+            document.getElementById('cr-suggest-message').value = '';
+            setTimeout(() => panel.classList.add('hidden'), 1600);
+          })
+          .catch(() => {
+            statusEl.textContent = 'Something went wrong. Please try again.';
+            statusEl.className = 'err';
+          })
+          .finally(() => { submitBtn.disabled = false; });
+      });
+    });
+  })();
+
   window.gtag_report_conversion = function (transactionId, value) {
     window.gtag('event', 'conversion', {
       'send_to': 'AW-16681104079/301FCOXuxp8cEM_llZI-',

@@ -390,6 +390,47 @@ export async function sendLiveSessionRegistrationConfirmation(user, session, opt
   }
 }
 
+/**
+ * Notify admin of a new suggestion-box submission (from any platform).
+ * Fire-and-forget from the caller's perspective — never throws.
+ */
+export async function sendSuggestionNotification(suggestion) {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.warn('[EMAIL] ADMIN_EMAIL not set — skipping suggestion notification');
+      return { success: false, error: 'ADMIN_EMAIL not set' };
+    }
+
+    const platformLabel = {
+      counselorready: 'CounselorReady',
+      passreadyprep: 'PassReady Prep',
+      gaitp: 'GA Integrated Therapeutic Perspectives',
+    }[suggestion.platform] || suggestion.platform;
+
+    const text =
+      `New suggestion submitted — ${platformLabel}\n\n` +
+      `Category: ${suggestion.category}\n` +
+      (suggestion.name ? `Name: ${suggestion.name}\n` : '') +
+      (suggestion.email ? `Email: ${suggestion.email}\n` : '') +
+      `Page: ${suggestion.pageUrl || 'n/a'}\n\n` +
+      `Message:\n${suggestion.message}\n`;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: adminEmail,
+      subject: `[Suggestion] ${platformLabel} — ${suggestion.category}`,
+      text,
+    });
+
+    if (error) throw new Error(error.message || 'Resend error');
+    return { success: true, data };
+  } catch (err) {
+    console.error('[EMAIL] sendSuggestionNotification error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // Default export for the `import emailService from '...'; const { x } = emailService;`
 // pattern used by routes/rewards.js and routes/adminRewards.js.
 export default {
@@ -398,4 +439,5 @@ export default {
   sendRedemptionAdminAlert,
   sendGiftCardCode,
   sendLiveSessionRegistrationConfirmation,
+  sendSuggestionNotification,
 };
