@@ -15,6 +15,21 @@ import { protect, requireSubscription } from '../middleware/auth.js';
 import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { syncCredentialToCalendar, removeEventFromCalendar } from '../services/googleCalendarService.js';
 import User from '../models/User.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+
+// Non-blocking activity log — must never block or fail a credential response.
+function logCredentialActivity(type, credential, userId, extra = {}) {
+  try {
+    logActivity(type, {
+      credentialType: credential.type || credential.credentialType,
+      licenseState: credential.state,
+      ...extra
+    }, { userId, notifyAdmin: false })
+      .catch(err => console.error('[credentials] activity log failed:', err.message));
+  } catch (err) {
+    console.error('[credentials] activity log failed:', err.message);
+  }
+}
 
 const router = express.Router();
 
@@ -214,6 +229,10 @@ router.post('/', protect, requireAddon('credentialManagement'), async (req, res)
     res.status(201).json({
       message: 'Credential added',
       credential
+    });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_ADDED, credential, req.user._id, {
+      expiresAt: credential.expirationDate
     });
   } catch (error) {
     console.error('Add credential error:', error);
@@ -807,6 +826,10 @@ router.put('/:id', protect, requireAddon('credentialManagement'), async (req, re
       message: 'Credential updated',
       credential
     });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_RENEWED, credential, req.user._id, {
+      newExpiresAt: credential.expirationDate
+    });
   } catch (error) {
     console.error('Update credential error:', error);
     res.status(500).json({ error: 'Failed to update credential' });
@@ -841,6 +864,8 @@ router.delete('/:id', protect, requireAddon('credentialManagement'), async (req,
     }
 
     res.json({ message: 'Credential deleted' });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_DELETED, credential, req.user._id);
   } catch (error) {
     console.error('Delete credential error:', error);
     res.status(500).json({ error: 'Failed to delete credential' });

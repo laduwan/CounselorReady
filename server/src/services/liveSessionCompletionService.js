@@ -26,6 +26,10 @@ import {
   generateCertificateNumber,
   buildApprovalBlock
 } from '../utils/certificate.js';
+// NOTE: activityTrackingService is imported lazily inside the non-blocking log
+// block below (mirroring the Gamification dynamic import) — a top-level import
+// pulls in adminNotificationService, which constructs a Resend client at module
+// load and throws without RESEND_API_KEY (breaking test environments).
 
 const LOG = '[LiveCert]';
 
@@ -193,6 +197,21 @@ export async function issueLiveSessionCertificates(liveSessionId) {
 
       issued.push({ userId, certificateNumber, certificateId: certificate._id });
       console.log(`${LOG} issued ${certificateNumber} to ${user.email} for "${session.title}"`);
+
+      // Non-blocking activity log — must never affect certificate issuance.
+      (async () => {
+        try {
+          const { logActivity, ACTIVITY_TYPES } = await import('../services/activityTrackingService.js');
+          await logActivity(ACTIVITY_TYPES.LIVE_SESSION_CERT_ISSUED, {
+            sessionId: session._id,
+            sessionTitle: session.title,
+            certificateNumber,
+            ceHours: session.ceuHours
+          }, { userId: user._id, userName, userEmail: user.email, notifyAdmin: true });
+        } catch (logErr) {
+          console.error(`${LOG} activity log failed:`, logErr.message);
+        }
+      })();
 
       // Non-blocking — gamification failure must never affect certificate issuance.
       // Pattern replicated locally from interactiveCourseRoutes.js recordGamification
