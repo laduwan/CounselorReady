@@ -14,6 +14,7 @@ describe('getPlanLimits', () => {
       maxUsers: 0,
       customDomain: false,
       bulkUpload: false,
+      aiBudgetCents: 0,
     });
   });
 
@@ -23,6 +24,7 @@ describe('getPlanLimits', () => {
     expect(limits.maxUsers).toBe(100);
     expect(limits.customDomain).toBe(false);
     expect(limits.bulkUpload).toBe(false);
+    expect(limits.aiBudgetCents).toBe(1000);
   });
 
   it('returns correct growth limits', () => {
@@ -31,6 +33,7 @@ describe('getPlanLimits', () => {
     expect(limits.maxUsers).toBe(500);
     expect(limits.customDomain).toBe(false);
     expect(limits.bulkUpload).toBe(true);
+    expect(limits.aiBudgetCents).toBe(2000);
   });
 
   it('returns correct professional limits', () => {
@@ -39,6 +42,7 @@ describe('getPlanLimits', () => {
     expect(limits.maxUsers).toBe(5000);
     expect(limits.customDomain).toBe(true);
     expect(limits.bulkUpload).toBe(true);
+    expect(limits.aiBudgetCents).toBe(7500);
   });
 
   it('returns unlimited for enterprise', () => {
@@ -47,6 +51,7 @@ describe('getPlanLimits', () => {
     expect(limits.maxUsers).toBe(-1);
     expect(limits.customDomain).toBe(true);
     expect(limits.bulkUpload).toBe(true);
+    expect(limits.aiBudgetCents).toBe(15000);
   });
 
   it('returns free limits for undefined input', () => {
