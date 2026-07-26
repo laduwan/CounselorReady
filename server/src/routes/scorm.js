@@ -7,7 +7,7 @@ import express from 'express';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import Course from '../models/Course.js';
-import { protect } from '../middleware/auth.js';
+import { protect, requireAdmin } from '../middleware/auth.js';
 import { parseScormManifest, scormToCourse, createScormPackage } from '../utils/scorm.js';
 
 const router = express.Router();
@@ -21,7 +21,7 @@ const upload = multer({
 // @route   POST /api/scorm/import
 // @desc    Import a SCORM package
 // @access  Private
-router.post('/import', protect, upload.single('scormPackage'), async (req, res) => {
+router.post('/import', protect, requireAdmin, upload.single('scormPackage'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
@@ -71,7 +71,7 @@ router.post('/import', protect, upload.single('scormPackage'), async (req, res) 
 // @route   GET /api/scorm/export/:id
 // @desc    Export a course as SCORM 1.2 package
 // @access  Private
-router.get('/export/:id', protect, async (req, res) => {
+router.get('/export/:id', protect, requireAdmin, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     
@@ -99,7 +99,7 @@ router.get('/export/:id', protect, async (req, res) => {
 // @route   GET /api/scorm/preview/:id
 // @desc    Preview SCORM manifest for a course
 // @access  Private
-router.get('/preview/:id', protect, async (req, res) => {
+router.get('/preview/:id', protect, requireAdmin, async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     
