@@ -14,6 +14,7 @@ import { PREMIUM_ADDONS, PREMIUM_BUNDLE_PRICE_CENTS } from '../utils/planLimits.
 import { bustAddonCache } from '../middleware/partnerFeatureGate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import { sendLiveSessionRegistrationConfirmation } from '../services/emailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
 import { constructStripeEvent } from '../utils/verifyStripeSignature.js';
@@ -895,6 +896,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             });
             await live.save();
             logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+
+            const buyer = await User.findById(liveUserId);
+            if (buyer) {
+              sendLiveSessionRegistrationConfirmation(buyer, live, {
+                seatsRemaining: Math.max(0, (live.capacity || 0) - live.registrants.length)
+              }).catch(err => logger.error({ err: err.message, liveSessionId, requestId: req.requestId }, 'Live session paid-registration email failed'));
+            }
           }
           break;
         }
@@ -920,7 +928,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                   'seriesMembership.required': { $ne: false }
                 });
 
-            let enrolledCount = 0;
+            const newlyEnrolled = [];
             for (const sess of memberSessions) {
               const already = sess.registrants.some(
                 r => r.user && r.user.toString() === seriesUserId.toString()
@@ -928,11 +936,18 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               if (already) continue;
               sess.registrants.push({ user: seriesUserId, registeredAt: new Date(), paid: true });
               await sess.save();
-              enrolledCount++;
+              newlyEnrolled.push(sess);
             }
-            logger.info({ seriesId, userId: seriesUserId, enrolledCount, requestId: req.requestId }, 'Session series purchased — member sessions enrolled');
+            logger.info({ seriesId, userId: seriesUserId, enrolledCount: newlyEnrolled.length, requestId: req.requestId }, 'Session series purchased — member sessions enrolled');
 
-            const seriesBuyer = await User.findById(seriesUserId).select('email profile.firstName');
+            const seriesBuyer = await User.findById(seriesUserId).select('email profile.firstName profile.lastName');
+            if (seriesBuyer) {
+              for (const sess of newlyEnrolled) {
+                sendLiveSessionRegistrationConfirmation(seriesBuyer, sess, {
+                  seatsRemaining: Math.max(0, (sess.capacity || 0) - sess.registrants.length)
+                }).catch(err => logger.error({ err: err.message, seriesId, liveSessionId: sess._id, requestId: req.requestId }, 'Session series paid-registration email failed'));
+              }
+            }
             logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
               seriesId,
               amount: session.amount_total,
