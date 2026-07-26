@@ -28,8 +28,21 @@ import { issueLiveSessionCertificates, issueSeriesCertificates } from '../servic
 import { triggerNewLiveSessionAnnouncement } from '../services/notificationTriggerService.js';
 import { sendLiveSessionRegistrationConfirmation } from '../services/emailService.js';
 import { parseRunOfShowMarkdown, parseRunOfShowDocx } from '../services/runOfShowParser.js';
+import rateLimit from 'express-rate-limit';
+import { assertSafeOutboundUrl } from '../utils/outboundUrlGuard.js';
 
 const router = express.Router();
+
+// Dedicated brute-force limiter for the public access-code lookup. Access codes
+// are short and grindable, so this route gets a tight per-IP cap on top of the
+// global limiter. A miss still returns a plain 404 (see the route) — no hint.
+const accessCodeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts — please wait a few minutes and try again.' }
+});
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 // Cloudinary raw-upload config for live-session handouts. Mirrors the stream
@@ -182,7 +195,7 @@ router.patch('/admin/publish-all', protect, requireAdmin, async (req, res) => {
 });
 
 // GET /api/live-sessions/code/:accessCode — direct lookup, public AND private sessions
-router.get('/code/:accessCode', async (req, res) => {
+router.get('/code/:accessCode', accessCodeLimiter, async (req, res) => {
   try {
     const session = await LiveSession.findOne({
       accessCode: req.params.accessCode.toUpperCase().trim()
@@ -1814,6 +1827,7 @@ router.post('/:id/fetch-and-load', protect, requireAdmin, async (req, res) => {
         const url = String(it?.url || '').trim();
         if (!url) { errors.push({ url: '', error: 'Missing url' }); continue; }
         try {
+          await assertSafeOutboundUrl(url); // SSRF guard: reject loopback/private/link-local targets
           const controller = new AbortController();
           const tid = setTimeout(() => controller.abort(), 30000);
           const r = await fetch(url, { signal: controller.signal });
@@ -1867,6 +1881,7 @@ router.post('/:id/fetch-and-load', protect, requireAdmin, async (req, res) => {
     const fetched = [];
     for (const url of urls) {
       try {
+        await assertSafeOutboundUrl(url); // SSRF guard: reject loopback/private/link-local targets
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 30000);
         const r = await fetch(url, { signal: controller.signal });
