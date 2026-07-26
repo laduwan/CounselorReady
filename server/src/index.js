@@ -55,6 +55,7 @@ import xapiRoutes from './routes/xapi.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js'; // MUST be interactiveCourseRoutes.js (NOT courseRoutes.js)
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
+import suggestionsRoutes from './routes/suggestions.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
@@ -274,6 +275,7 @@ app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
+app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/admin', adminCoursesRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
