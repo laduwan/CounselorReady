@@ -193,6 +193,48 @@ export async function issueLiveSessionCertificates(liveSessionId) {
 
       issued.push({ userId, certificateNumber, certificateId: certificate._id });
       console.log(`${LOG} issued ${certificateNumber} to ${user.email} for "${session.title}"`);
+
+      // Non-blocking — gamification failure must never affect certificate issuance.
+      // Pattern replicated locally from interactiveCourseRoutes.js recordGamification
+      // (fire-and-forget; do NOT import from that route file).
+      (async () => {
+        try {
+          const Gamification = (await import('../models/Gamification.js')).default;
+          let profile = await Gamification.findOne({ userId: user._id });
+          if (!profile) profile = await Gamification.create({ userId: user._id });
+
+          profile.recordActivity();
+
+          // Fires for both live_session_complete (with ceHours) and certificate_earned
+          const XP = { live_session_complete: 100, certificate_earned: 75 };
+          profile.xp += XP.live_session_complete + XP.certificate_earned;
+          profile.level = profile.calculateLevel();
+
+          profile.totalLiveSessionsCompleted += 1;
+          const ceHours = session.ceuHours || 0;
+          if (ceHours) {
+            profile.totalCEHoursEarned += ceHours;
+            profile.weeklyHoursCompleted += ceHours;
+          }
+
+          const BADGES = {
+            first_live_session: { check: () => profile.totalLiveSessionsCompleted >= 1, name: 'Showed Up Live', description: 'Attended your first live session', icon: 'video' },
+            live_five: { check: () => profile.totalLiveSessionsCompleted >= 5, name: 'Live Regular', description: 'Attended 5 live sessions', icon: 'radio' },
+            first_cert: { check: () => true, name: 'Certified', description: 'Earned your first certificate', icon: 'award' },
+            ten_hours: { check: () => profile.totalCEHoursEarned >= 10, name: '10 Hour Club', description: 'Earned 10+ CE hours', icon: 'clock' },
+            fifty_hours: { check: () => profile.totalCEHoursEarned >= 50, name: 'Half Century', description: 'Earned 50+ CE hours', icon: 'zap' }
+          };
+          for (const [key, def] of Object.entries(BADGES)) {
+            if (def.check() && !profile.badges.some(b => b.key === key)) {
+              profile.badges.push({ key, name: def.name, description: def.description, icon: def.icon });
+            }
+          }
+
+          await profile.save();
+        } catch (err) {
+          console.error('[liveSession] gamification non-blocking error:', err.message);
+        }
+      })();
     } catch (err) {
       console.error(`${LOG} failed for user ${userId}:`, err.message);
       failed.push({ userId, error: err.message });

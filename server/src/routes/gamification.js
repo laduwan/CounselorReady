@@ -22,7 +22,9 @@ const BADGE_DEFS = {
   first_cert: { name: 'Certified', description: 'Earned your first certificate', icon: 'award' },
   ten_hours: { name: '10 Hour Club', description: 'Earned 10+ CE hours', icon: 'clock' },
   fifty_hours: { name: 'Half Century', description: 'Earned 50+ CE hours', icon: 'zap' },
-  quiz_ace: { name: 'Quiz Ace', description: 'Passed 10 quizzes', icon: 'check-circle' }
+  quiz_ace: { name: 'Quiz Ace', description: 'Passed 10 quizzes', icon: 'check-circle' },
+  first_live_session: { name: 'Showed Up Live', description: 'Attended your first live session', icon: 'video' },
+  live_five: { name: 'Live Regular', description: 'Attended 5 live sessions', icon: 'radio' }
 };
 
 // XP rewards
@@ -31,7 +33,8 @@ const XP_VALUES = {
   quiz_pass: 25,
   daily_login: 5,
   streak_milestone: 50,
-  certificate_earned: 75
+  certificate_earned: 75,
+  live_session_complete: 100
 };
 
 // ── Get or create my gamification profile ──
@@ -143,6 +146,12 @@ router.post('/activity', protect, validate({
       }
     } else if (type === 'quiz_pass') {
       profile.totalQuizzesPassed += 1;
+    } else if (type === 'live_session_complete') {
+      profile.totalLiveSessionsCompleted += 1;
+      if (metadata?.ceHours) {
+        profile.totalCEHoursEarned += metadata.ceHours;
+        profile.weeklyHoursCompleted += metadata.ceHours;
+      }
     }
 
     // Check for new badges
@@ -156,6 +165,16 @@ router.post('/activity', protect, validate({
     }
     if (profile.totalCoursesCompleted >= 5 && !hasBadge('five_courses')) {
       const badge = { key: 'five_courses', ...BADGE_DEFS.five_courses };
+      profile.badges.push(badge);
+      newBadges.push(badge);
+    }
+    if (profile.totalLiveSessionsCompleted >= 1 && !hasBadge('first_live_session')) {
+      const badge = { key: 'first_live_session', ...BADGE_DEFS.first_live_session };
+      profile.badges.push(badge);
+      newBadges.push(badge);
+    }
+    if (profile.totalLiveSessionsCompleted >= 5 && !hasBadge('live_five')) {
+      const badge = { key: 'live_five', ...BADGE_DEFS.live_five };
       profile.badges.push(badge);
       newBadges.push(badge);
     }
