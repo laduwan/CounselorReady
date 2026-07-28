@@ -62,6 +62,9 @@
     }
   </style>
 <script src="/js/cr-gtag.js"></script>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#2b4133">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 </head>
 <body class="bg-stone-50 text-gray-900 antialiased">
   
@@ -712,5 +715,6 @@
   <!-- Footer -->
 <script src="/shared/nav-footer.js"></script>
 <div id="cr-footer"></div>
+<script>if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js');</script>
 </body>
 </html>
