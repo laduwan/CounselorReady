@@ -3,6 +3,6 @@
   "target": {
     "namespace": "android_app",
     "package_name": "com.counselorready.app",
-    "sha256_cert_fingerprints": ["PLACEHOLDER_UPDATE_AFTER_PLAY_CONSOLE_SETUP"]
+    "sha256_cert_fingerprints": ["95:84:1B:FD:A3:66:BC:92:32:F6:F2:8C:37:54:84:1F:25:05:29:ED:D9:36:DE:D2:6B:EF:AD:C0:39:39:93:75"]
   }
 }]
