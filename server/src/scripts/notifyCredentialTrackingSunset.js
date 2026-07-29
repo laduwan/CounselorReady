@@ -63,11 +63,12 @@ function buildEmail(firstName) {
       <div class="container">
         <h1 class="header">A change to credential tracking</h1>
         <p>Hi ${firstName},</p>
-        <p>Credential tracking (renewal dates, expiration reminders, and related notifications) is no longer included in the Free plan.</p>
+        <p>Thanks for being part of CounselorReady — we're glad the Free plan has been useful for getting your CE hours organized.</p>
+        <p>As we keep building the platform, we're updating what's included at each plan level. One change to know about: credential tracking (renewal dates, expiration reminders, and related notifications) will no longer be part of the Free plan.</p>
         <div class="summary">
           <p style="margin: 0;">Any credentials you've already entered are still saved on your account — you can still view them any time. Going forward, though, we won't be able to add new credentials, sync updates, or send you renewal reminders for them on the Free plan.</p>
         </div>
-        <p>If you'd like uninterrupted tracking and renewal reminders, Monthly ($35/mo) and Annual ($249/yr) plans both include full credential tracking with no state limit.</p>
+        <p>If you'd like to keep that peace of mind, Monthly ($35/mo) and Annual ($249/yr) plans both include full credential tracking with no state limit, plus renewal reminders so nothing slips through the cracks.</p>
         <a href="${CLIENT_URL}/subscription.html" class="cta">View plans</a>
         <div class="footer">
           <p>— The CounselorReady Team</p>
