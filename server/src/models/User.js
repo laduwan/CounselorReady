@@ -125,7 +125,11 @@ const userSchema = new mongoose.Schema({
       type: [String],
       default: []
       // Possible values: 'ending_soon', 'ending_tomorrow', 'ended'
-    }
+    },
+
+    // Set once notifyCredentialTrackingSunset.js emails a Free-tier user
+    // with tracked credentials — prevents re-sending on subsequent runs.
+    credentialSunsetNoticeSentAt: { type: Date }
   },
   
   // Hardship Pause System (VIP perk)
