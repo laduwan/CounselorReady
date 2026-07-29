@@ -5,7 +5,7 @@
  */
 import User from '../models/User.js';
 import UserActivity from '../models/UserActivity.js';
-import { sendAdminAlert } from './adminNotificationService.js';
+import { sendAdminAlert, sendAdminAlertIfEnabled } from './adminNotificationService.js';
 
 /**
  * Activity types for tracking
