@@ -339,6 +339,60 @@ export async function sendAutopilotCertAdminSummary(session, result) {
 }
 
 /**
+ * Admin roster email fired the moment a session's registration window
+ * closes (session.registrationDeadline()). Lists every registrant with
+ * name, email, paid status, and SMS opt-in so Ke has a final headcount
+ * without opening the Host Console. `session.registrants[].user` must be
+ * populated (with profile.firstName/lastName + email) before calling.
+ */
+export async function sendRegistrationClosedRoster(session) {
+  const regs = session.registrants || [];
+  const rows = regs.length
+    ? regs.map(r => {
+        const u = r.user;
+        const name = u ? esc(`${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim()) : '(user not found)';
+        const email = u ? esc(u.email) : '';
+        return `<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${name}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${email}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.paid ? 'Paid' : 'Unpaid'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.phoneOptIn ? 'Yes' : 'No'}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="4" style="padding:6px 10px;color:#78716c;">No registrants.</td></tr>`;
+
+  const startStr = session.scheduledStart
+    ? session.scheduledStart.toLocaleString('en-US', {
+        dateStyle: 'full', timeStyle: 'short', timeZone: session.timezone || 'America/New_York'
+      })
+    : 'TBD';
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `Registration closed — ${session.title} (${regs.length} registered)`,
+    html: emailShell(`
+      <p><strong>Registration just closed</strong> for <strong>${esc(session.title)}</strong>.</p>
+      <p style="margin:12px 0;">
+        <strong>Session starts:</strong> ${esc(startStr)} (${esc(session.timezone || 'America/New_York')})<br>
+        <strong>Total registered:</strong> ${regs.length}${session.capacity ? ` of ${session.capacity} seats` : ''}
+      </p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#284157;">
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Name</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Email</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Payment</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">SMS opt-in</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="font-size:13px;color:#57534e;margin-top:16px;">This is the full roster as of the registration cutoff. Late admin-added seats after this point won't appear here — check the Host Console for the live count.</p>
+    `)
+  });
+}
+
+/**
  * Admin warning email when a completed autopilot session has an EMPTY
  * attendance array. Autopilot never auto-issues in this case — it warns
  * the admin so a human can investigate the attendance sync.

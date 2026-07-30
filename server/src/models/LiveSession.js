@@ -430,7 +430,10 @@ const liveSessionSchema = new mongoose.Schema({
     remindersSent: {
       h24: Date,
       h1: Date
-    }
+    },
+    // Set once the registration-closed roster email has been sent to the
+    // admin, so the tick never double-sends for the same session.
+    rosterEmailSentAt: Date
   },
 
   status: {
