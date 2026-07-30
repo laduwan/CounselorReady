@@ -40,7 +40,8 @@ import {
   closeDanglingSegments,
   sendLiveSessionReminders,
   sendAutopilotCertAdminSummary,
-  sendAutopilotEmptyAttendanceWarning
+  sendAutopilotEmptyAttendanceWarning,
+  sendRegistrationClosedRoster
 } from '../services/sessionProducer.js';
 
 const LOG = '[ProducerTick]';
@@ -136,6 +137,11 @@ export async function runSessionProducerTick() {
     await processLiveSessionReminders(now);
   } catch (err) {
     console.error(`${LOG} live-session reminder batch error:`, err.message);
+  }
+  try {
+    await processRegistrationClosedRoster(now);
+  } catch (err) {
+    console.error(`${LOG} registration-closed roster batch error:`, err.message);
   }
 }
 
@@ -394,6 +400,43 @@ async function processLiveSessionReminders(now) {
       }
     } catch (err) {
       console.error(`${LOG} reminder error on ${session._id}:`, err.message);
+    }
+  }
+}
+
+/* ═══════════════════ REGISTRATION-CLOSED ROSTER EMAIL ══════════════════════ */
+
+/**
+ * Email the admin a full roster the moment a session's registration window
+ * closes. Fires for any published, still-scheduled live session whose
+ * registrationDeadline() has passed (checked via the model's own
+ * isRegistrationOpen/registrationDeadline so this stays in lockstep with the
+ * cutoff logic in routes/liveSessions.js). Stamped on producer.rosterEmailSentAt
+ * so it only ever fires once per session, even though the tick runs every
+ * minute. Sessions with no cutoff (registrationCutoffHours === 0) never match,
+ * since registrationDeadline() returns null for them — nothing to fire on.
+ */
+async function processRegistrationClosedRoster(now) {
+  const sessions = await LiveSession.find({
+    isPublished: true,
+    status: { $in: ['scheduled', 'live'] },
+    'producer.rosterEmailSentAt': { $exists: false }
+  }).populate('registrants.user', 'email profile.firstName profile.lastName');
+
+  for (const session of sessions) {
+    try {
+      const deadline = session.registrationDeadline();
+      if (!deadline || now.getTime() < deadline.getTime()) continue; // still open, or no cutoff at all
+
+      await sendRegistrationClosedRoster(session);
+
+      session.producer = session.producer || {};
+      session.producer.rosterEmailSentAt = now;
+      session.markModified('producer');
+      await session.save();
+      console.log(`${LOG} sent registration-closed roster for "${session.title}" (${session._id}) — ${session.registrants.length} registered`);
+    } catch (err) {
+      console.error(`${LOG} roster email error on ${session._id}:`, err.message);
     }
   }
 }
