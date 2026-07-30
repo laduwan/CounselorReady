@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.srv.whereby.com/embed/v3-embed.js" type="module"></script>
   <script src="/js/tailwind-config.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +18,7 @@
     body{background:#F8F7F4 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23D4A855' opacity='.15'/%3E%3C/svg%3E") repeat; font-family:'Lato', system-ui, sans-serif;}
     .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
     #roomFrame, #replayVideo{width:100%;aspect-ratio:16/10;border:0;border-radius:12px;background:#1a1a1a;}
+    #roomFrame{display:block;}
     #clipPlayer{width:100%;aspect-ratio:16/9;border-radius:12px;background:#000;display:none;}
     .clip-active #roomFrame{aspect-ratio:auto;height:140px;margin-top:12px;}
     .clip-active #clipPlayer{display:block;}
@@ -82,8 +84,7 @@
       <div class="grid lg:grid-cols-4 gap-6">
         <div id="mainCol" class="lg:col-span-3">
           <video id="clipPlayer" playsinline></video>
-          <iframe id="roomFrame" class="hidden"
-                  allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
+          <whereby-embed id="roomFrame" class="hidden"></whereby-embed>
           <video id="replayVideo" class="hidden" controls playsinline></video>
           <p id="muteReminder" class="hidden text-xs mt-2 text-center" style="color:#7a5c1e;">🔇 Mute your mic in the video call while watching the clip.</p>
         </div>
@@ -211,8 +212,9 @@
         showSession(data.session);
         const frame = document.getElementById('roomFrame');
         const rsep = data.roomUrl.includes('?') ? '&' : '?';
-        frame.src = data.roomUrl + rsep + 'breakout=on&lang=en';
+        frame.setAttribute('room', data.roomUrl + rsep + 'breakout=on&lang=en');
         frame.classList.remove('hidden');
+        attachWherebyProofListeners(frame);
         if (data.session.sessionType === 'live-course') document.getElementById('ceNote').classList.remove('hidden');
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('room').classList.remove('hidden');
@@ -339,6 +341,19 @@
     }
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+    let _wherebyListenersAttached = false;
+    function attachWherebyProofListeners(frame) {
+      if (_wherebyListenersAttached) return;
+      _wherebyListenersAttached = true;
+      // Stage 1 proof only. Later stages replace these logs with real
+      // attendance / host-panel wiring. Event names per Whereby SDK reference.
+      frame.addEventListener('ready', () => console.log('[whereby] ready'));
+      frame.addEventListener('join', () => console.log('[whereby] local join'));
+      frame.addEventListener('leave', (e) => console.log('[whereby] local leave', e.detail));
+      frame.addEventListener('participantupdate', (e) => console.log('[whereby] participant count', e.detail?.count));
+      frame.addEventListener('connection_status_change', (e) => console.log('[whereby] connection', e.detail?.status));
+    }
 
     /* ── Watch-party sync loop ─────────────────────────────────────────── */
     let syncInterval = null;
