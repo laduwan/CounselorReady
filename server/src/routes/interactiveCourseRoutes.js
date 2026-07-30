@@ -549,16 +549,22 @@ router.post('/:id/enroll', protect, async (req, res) => {
     );
 
     // ── New membership async-course cap ──
-    // Only the Monthly plan and the single grandfathered Starter account are
-    // hour-capped (≤4 CE). Every existing plan keeps its current access path
-    // below (VIP/Annual are uncapped; purchased/admin/free bypass this).
-    if (!isAdmin && !isFree && !hasPurchased && (user.isMonthly?.() || user.isGrandfatheredStarter?.())) {
+    // Monthly, the single grandfathered Starter account, and the new
+    // Starter/Professional plans are hour-capped. Every existing plan keeps
+    // its current access path below (VIP/Annual are uncapped; purchased/
+    // admin/free bypass this).
+    if (!isAdmin && !isFree && !hasPurchased &&
+        (user.isMonthly?.() || user.isGrandfatheredStarter?.() || user.isStarter?.() || user.isProfessional?.())) {
       if (!user.canAccessAsyncCourse(course)) {
         const hrs = course.ceHours || course.ceuHours || 0;
+        const cap = user.isProfessional?.() ? 5 : 4;
+        const upgradeMsg = user.isProfessional?.()
+          ? 'Upgrade to VIP or Annual for full catalog access.'
+          : 'Upgrade to Professional, VIP, or Annual for full catalog access.';
         return res.status(403).json({
           success: false,
-          error: hrs > 4
-            ? `This course is ${hrs} CE hours. Monthly members access courses up to 4 CE hours. Upgrade to Annual for full catalog access.`
+          error: hrs > cap
+            ? `This course is ${hrs} CE hours. Your plan covers courses up to ${cap} CE hours. ${upgradeMsg}`
             : 'Active membership required.',
           upgradeRequired: true,
           upgradeUrl: '/subscription.html'

@@ -296,7 +296,7 @@ router.post('/:id/register', protect, async (req, res) => {
       }
       session.registrants.push({ user: req.user._id, paid: false });
       await session.save();
-      if (liveAccess.plan === 'monthly') {
+      if (liveAccess.plan === 'monthly' || liveAccess.plan === 'starter' || liveAccess.plan === 'professional') {
         await User.findByIdAndUpdate(req.user._id, {
           liveSessionUsedThisMonth: true,
           ...(liveAccess.windowElapsed
