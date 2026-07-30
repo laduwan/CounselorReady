@@ -1099,6 +1099,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': subscription.status,
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
           };
+          if (subscription.status === 'active') {
+            if (subscription.metadata?.plan) userUpdate['subscription.plan'] = subscription.metadata.plan;
+            userUpdate['subscription.stripeSubscriptionId'] = subscription.id;
+            Object.assign(userUpdate, memberInitFields(subscription.metadata?.plan));
+          }
           if (Number.isFinite(rawStart)) {
             userUpdate['subscription.currentPeriodStart'] = new Date(rawStart * 1000);
           }
