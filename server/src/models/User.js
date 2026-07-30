@@ -772,6 +772,12 @@ userSchema.methods.isMonthly = function() {
 userSchema.methods.isAnnual = function() {
   return this.subscription?.plan === 'annual' && this.subscription?.status === 'active';
 };
+userSchema.methods.isStarter = function() {
+  return this.subscription?.plan === 'starter' && this.subscription?.status === 'active';
+};
+userSchema.methods.isProfessional = function() {
+  return this.subscription?.plan === 'professional' && this.subscription?.status === 'active';
+};
 
 // True when this user is the single grandfathered legacy Starter subscriber
 // (env-driven; never hardcode an email address).
@@ -819,6 +825,36 @@ userSchema.methods.canAccessLiveSession = function(session) {
     return { allowed: true, plan: 'monthly', windowElapsed };
   }
 
+  if (this.isStarter()) {
+    const windowElapsed = !!this.liveSessionMonthResetAt && now >= new Date(this.liveSessionMonthResetAt).getTime();
+    const usedThisMonth = windowElapsed ? false : !!this.liveSessionUsedThisMonth;
+    if (hours > 2) {
+      return { allowed: false, plan: 'starter',
+        reason: `This session is ${hours} hours. Starter members can attend sessions up to 2 CE hours. Upgrade to Professional or higher to access this session.` };
+    }
+    if (usedThisMonth) {
+      const when = this.liveSessionMonthResetAt ? new Date(this.liveSessionMonthResetAt).toLocaleDateString() : 'next month';
+      return { allowed: false, plan: 'starter',
+        reason: `You've used your live session for this month. Your next session unlocks on ${when}.` };
+    }
+    return { allowed: true, plan: 'starter', windowElapsed };
+  }
+
+  if (this.isProfessional()) {
+    const windowElapsed = !!this.liveSessionMonthResetAt && now >= new Date(this.liveSessionMonthResetAt).getTime();
+    const usedThisMonth = windowElapsed ? false : !!this.liveSessionUsedThisMonth;
+    if (hours > 4) {
+      return { allowed: false, plan: 'professional',
+        reason: `This session is ${hours} hours. Professional members can attend sessions up to 4 CE hours. Upgrade to VIP or Annual to access this session.` };
+    }
+    if (usedThisMonth) {
+      const when = this.liveSessionMonthResetAt ? new Date(this.liveSessionMonthResetAt).toLocaleDateString() : 'next month';
+      return { allowed: false, plan: 'professional',
+        reason: `You've used your live session for this month. Your next session unlocks on ${when}.` };
+    }
+    return { allowed: true, plan: 'professional', windowElapsed };
+  }
+
   return { allowed: false, plan: null,
     reason: 'Live sessions require an active membership or per-session purchase.' };
 };
@@ -831,6 +867,8 @@ userSchema.methods.canAccessAsyncCourse = function(course) {
   if (this.isVip() || this.isAnnual()) return true;
   if (this.isMonthly()) return hrs <= 4;
   if (this.isGrandfatheredStarter()) return hrs <= 4;
+  if (this.isStarter()) return hrs <= 4;
+  if (this.isProfessional()) return hrs <= 5;
   return false;
 };
 
