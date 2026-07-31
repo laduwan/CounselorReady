@@ -733,6 +733,24 @@
           return;
         }
 
+        if (data.requiresAction) {
+          const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret);
+
+          if (confirmError) {
+            document.getElementById('card-errors').textContent = confirmError.message;
+            btn.disabled = false;
+            btn.textContent = 'Subscribe Now';
+            return;
+          }
+
+          if (paymentIntent.status !== 'succeeded') {
+            document.getElementById('card-errors').textContent = 'Payment could not be completed. Please try again or use a different card.';
+            btn.disabled = false;
+            btn.textContent = 'Subscribe Now';
+            return;
+          }
+        }
+
         // Success!
         closeStripeModal();
         alert('Subscription successful! Welcome to ' + PLANS[selectedPlan].name + '!');
