@@ -80,6 +80,7 @@ import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
+import adminOrgsRoutes from './routes/adminOrgs.js';
 import complianceRoutes from './routes/complianceRoutes.js';
 import liveSessionRoutes from './routes/liveSessions.js';
 import sessionSeriesRoutes from './routes/sessionSeries.js';
@@ -170,6 +171,7 @@ export const ROUTE_MANIFEST = [
   ['/api/uploads',               uploadsRoutes,             'Uploads'],
   ['/api/admin/video-audit',      videoAuditRoutes,          'Video Link Audit'],
   ['/api/orgs',                  orgRoutes,                 'Practice Compliance — Orgs/Roster/Tracks/Assignments'],
+  ['/api/admin/orgs',            adminOrgsRoutes,           'Staff Troubleshooting — Org Roster (admin + support)'],
   ['/api/ask-presenter',         askPresenterRoutes,        'Ask the Presenter (course-scoped Q&A)'],
   ['/api',                       complianceRoutes,          'Practice Compliance — Credentials/Policies/Supervision/Audit Binder'],
   ['/api/live-sessions',         liveSessionRoutes,         'Live Sessions (Whereby)'],

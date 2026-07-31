@@ -488,6 +488,42 @@ router.put('/users/:userId/enable', protect, adminOnly, async (req, res) => {
   }
 });
 
+// @route   PUT /api/admin/users/:userId/role
+// @desc    Grant or revoke platform admin access for an existing user
+// @access  Admin only
+router.put('/users/:userId/role', protect, adminOnly, async (req, res) => {
+  try {
+    const { role } = req.body;
+    const allowedRoles = ['user', 'admin', 'partner_admin', 'support'];
+
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: `Role must be one of: ${allowedRoles.join(', ')}` });
+    }
+
+    // Prevent an admin from demoting themselves and getting locked out
+    if (String(req.params.userId) === String(req.user._id) && role !== 'admin') {
+      return res.status(400).json({ error: 'You cannot remove your own admin access' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.params.userId,
+      { $set: { role } },
+      { new: true }
+    ).select('-passwordHash');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    console.log(`Admin ${req.user.email} set role of ${user.email} to "${role}"`);
+
+    res.json({ message: `Role updated to ${role}`, user });
+  } catch (error) {
+    console.error('Update user role error:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+
 // @route   POST /api/admin/users/:userId/impersonate
 // @desc    Get login token to impersonate user
 // @access  Admin only
