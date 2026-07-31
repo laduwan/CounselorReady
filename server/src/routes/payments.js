@@ -336,7 +336,7 @@ router.post('/create-subscription', protect, async (req, res) => {
     const invoice = subscription.latest_invoice;
     const paymentIntent = invoice.payment_intent;
     
-    if (paymentIntent.status === 'requires_action') {
+    if (paymentIntent.status !== 'succeeded') {
       return res.json({
         requiresAction: true,
         clientSecret: paymentIntent.client_secret,
