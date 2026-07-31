@@ -246,8 +246,17 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later' }
 });
 
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many password reset requests, please try again later' }
+});
+
 app.use('/api/', globalLimiter);
-app.use('/api/auth', (req, res, next) => (req.path === '/me' ? next() : authLimiter(req, res, next)));
+app.use('/api/auth', (req, res, next) => (req.path === '/me' || req.path === '/forgot-password' ? next() : authLimiter(req, res, next)));
+app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
