@@ -391,6 +391,89 @@ export async function sendLiveSessionRegistrationConfirmation(user, session, opt
 }
 
 /**
+ * Notify a registrant their seat(s) were cancelled and refunded — used when
+ * an admin removes registration(s) and issues a refund via a script (e.g.
+ * refundLateSeriesRegistrant.js), rather than the learner cancelling
+ * themselves. Pass `opts.sessions` (array) when one refund covers multiple
+ * occurrences (e.g. a recurring weekly session) so the email lists every
+ * cancelled date against the single total refund, instead of implying a
+ * separate refund per session. Falls back to the single `session` param
+ * when only one occurrence is involved.
+ */
+export async function sendLiveSessionCancellationRefundEmail(user, session, opts = {}) {
+  try {
+    const firstName = user.profile?.firstName || 'there';
+    const sessions = (opts.sessions && opts.sessions.length ? opts.sessions : [session]).filter(Boolean);
+    const fmtWhen = (s) => s?.scheduledStart
+      ? new Date(s.scheduledStart).toLocaleString('en-US', {
+          dateStyle: 'full',
+          timeStyle: 'short',
+          timeZone: 'America/New_York',
+        }) + ' ET'
+      : 'TBD';
+    const title = sessions[0]?.title || session?.title || 'your session';
+    const refundLabel = typeof opts.refundAmountCents === 'number'
+      ? `$${(opts.refundAmountCents / 100).toFixed(2)}`
+      : null;
+    const baseUrl = process.env.CLIENT_URL || 'https://counselorready.com';
+    const browseUrl = `${baseUrl}/live-sessions.html`;
+
+    const occurrenceRows = sessions.map(s => `
+      <p style="margin: 4px 0 0;"><strong>${title === s.title ? 'Date' : s.title}:</strong> ${fmtWhen(s)}</p>
+    `).join('');
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Lato', Arial, sans-serif; line-height: 1.6; color: #2A2620; max-width: 600px; margin: 0 auto; padding: 24px; background: #F8F7F4; }
+          .container { background: #FFFFFF; border-radius: 14px; padding: 32px; }
+          .header { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 24px; color: #6B1D34; margin: 0 0 16px; }
+          .summary { background: rgba(40, 65, 87, 0.06); border-left: 3px solid #284157; padding: 16px 20px; border-radius: 4px; margin: 16px 0; }
+          .cta { display: inline-block; padding: 12px 24px; background: #6B1D34; color: #FFFFFF; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 8px; }
+          .footer { color: #284157; font-size: 13px; margin-top: 24px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1 class="header">Your seat${sessions.length > 1 ? 's have' : ' has'} been cancelled</h1>
+          <p>Hi ${firstName},</p>
+          <p>Registration for ${sessions.length > 1 ? `the ${sessions.length} dates below had` : 'the session below had'} already closed at the time you were enrolled, so we're not able to hold ${sessions.length > 1 ? 'those seats' : 'that seat'}.${refundLabel ? ` A full refund of <strong>${refundLabel}</strong> has been issued to your original payment method — please allow a few business days for it to appear.` : ' A refund has been issued to your original payment method.'}</p>
+          <div class="summary">
+            <p style="margin: 0 0 4px; font-size: 13px; color: #284157;">${sessions.length > 1 ? 'Cancelled sessions' : 'Cancelled session'}</p>
+            <p style="margin: 4px 0 0;"><strong>${title}</strong></p>
+            ${occurrenceRows}
+          </div>
+          <p>Please select an upcoming date to join instead:</p>
+          <p><a href="${browseUrl}" class="cta">Browse upcoming sessions</a></p>
+          <p>We're sorry for the inconvenience — reach out anytime at support@counselorready.com with questions.</p>
+          <div class="footer">
+            <p>— The CounselorReady Team</p>
+            <p style="font-size: 11px; color: #888;">NBCC ACEP Provider #7760</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: user.email,
+      subject: `Cancelled & refunded: ${title}`,
+      html,
+    });
+    if (error) {
+      console.error('[EMAIL] live session cancellation/refund email failed:', error);
+    }
+    return { success: !error, data };
+  } catch (err) {
+    console.error('[EMAIL] sendLiveSessionCancellationRefundEmail error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
+/**
  * Notify admin of a new suggestion-box submission (from any platform).
  * Fire-and-forget from the caller's perspective — never throws.
  */
