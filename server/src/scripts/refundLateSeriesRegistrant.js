@@ -19,9 +19,9 @@
  * makes NO changes. Set APPLY=1 to actually remove the registrant entries
  * and issue the Stripe refund.
  *
- * No email is sent to the registrant or admin by this script, either in
- * dry-run or APPLY mode — it only touches the database and Stripe. Send any
- * cancellation notice separately if one is needed.
+ * On APPLY, a single cancellation/refund email is sent to the registrant
+ * listing every cancelled occurrence against the one total refund — no email
+ * is sent in dry-run mode, and none is sent to admin (Ke already knows).
  *
  * Usage:
  *   node src/scripts/refundLateSeriesRegistrant.js <email> <seriesId> <sessionId1,sessionId2,...>
@@ -37,6 +37,7 @@ import Stripe from 'stripe';
 import User from '../models/User.js';
 import LiveSession from '../models/LiveSession.js';
 import SessionSeries from '../models/SessionSeries.js';
+import { sendLiveSessionCancellationRefundEmail } from '../services/emailService.js';
 
 const APPLY = process.env.APPLY === '1';
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
@@ -126,7 +127,7 @@ async function main() {
   }
 
   if (!APPLY) {
-    console.log('\nDRY RUN — no seats removed, no refund issued. Re-run with APPLY=1 to execute. Note: this script never sends email, in either mode.');
+    console.log('\nDRY RUN — no seats removed, no refund issued, no email sent. Re-run with APPLY=1 to execute.');
     return mongoose.disconnect();
   }
 
@@ -145,8 +146,21 @@ async function main() {
       reason: 'requested_by_customer'
     });
     console.log('Refund issued:', refund.id, refund.amount, refund.currency, refund.status);
+
+    // ── Notify the registrant: one email, listing every cancelled
+    //    occurrence against the single total refund. ──
+    try {
+      const emailResult = await sendLiveSessionCancellationRefundEmail(user, targetSessions[0], {
+        sessions: targetSessions,
+        refundAmountCents: refund.amount
+      });
+      console.log('Cancellation/refund email:', emailResult.success ? 'sent' : `FAILED (${emailResult.error})`);
+    } catch (err) {
+      console.error('Cancellation/refund email error:', err.message);
+    }
   } else {
     console.log('No refund issued (checkout session not found) — handle manually in Stripe if needed.');
+    console.log('No cancellation email sent, since no refund was confirmed.');
   }
 
   await mongoose.disconnect();
