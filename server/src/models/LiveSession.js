@@ -22,7 +22,14 @@ const registrantSchema = new mongoose.Schema({
   registeredAt: { type: Date, default: Date.now },
   paid: { type: Boolean, default: false },
   stripeCheckoutSessionId: String,
-  phoneOptIn: { type: Boolean, default: false }   // SMS consent for session logistics
+  phoneOptIn: { type: Boolean, default: false },  // SMS consent for session logistics
+  // Set once the late-series-registration detector (sessionProducerTick.js)
+  // has alerted the admin about this specific registrant landing after the
+  // session's own registrationDeadline() — keeps the alert to a single email
+  // even though the tick runs every minute. See payments.js session-series
+  // webhook branch for why this can happen (protected file — can't gate
+  // there directly, so this is the downstream catch).
+  lateRegistrationAlertSentAt: Date
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({

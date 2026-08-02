@@ -41,7 +41,8 @@ import {
   sendLiveSessionReminders,
   sendAutopilotCertAdminSummary,
   sendAutopilotEmptyAttendanceWarning,
-  sendRegistrationClosedRoster
+  sendRegistrationClosedRoster,
+  sendLateSeriesRegistrationAlert
 } from '../services/sessionProducer.js';
 
 const LOG = '[ProducerTick]';
@@ -142,6 +143,11 @@ export async function runSessionProducerTick() {
     await processRegistrationClosedRoster(now);
   } catch (err) {
     console.error(`${LOG} registration-closed roster batch error:`, err.message);
+  }
+  try {
+    await processLateSeriesRegistrationAlerts(now);
+  } catch (err) {
+    console.error(`${LOG} late-series-registration alert batch error:`, err.message);
   }
 }
 
@@ -437,6 +443,57 @@ async function processRegistrationClosedRoster(now) {
       console.log(`${LOG} sent registration-closed roster for "${session.title}" (${session._id}) — ${session.registrants.length} registered`);
     } catch (err) {
       console.error(`${LOG} roster email error on ${session._id}:`, err.message);
+    }
+  }
+}
+
+/* ═══════════════════ LATE SERIES-REGISTRATION DETECTOR ═════════════════════ */
+
+/**
+ * Catches the session-series purchase webhook gap in payments.js (protected
+ * — can't be edited directly here): that path enrolls a buyer into every
+ * member session without re-checking each occurrence's own registration
+ * cutoff, so a registrant can land in a session after its individual
+ * registrationDeadline() has passed (or the session has already run).
+ *
+ * Signature of a registrant who came in through that path: paid:true, no
+ * stripeCheckoutSessionId (only the single-session paid path stamps that).
+ * Scans ALL published sessions regardless of status — the incident this was
+ * built for included two sessions that were already 'completed' by the time
+ * the late registrant landed, so a scheduled/live filter would have missed it.
+ *
+ * Alerts once per registrant (producer.lateRegistrationAlertSentAt equivalent
+ * — stamped on the registrant subdocument itself, since this is a per-person
+ * event, not a per-session one) so the tick never double-sends.
+ */
+async function processLateSeriesRegistrationAlerts(now) {
+  const sessions = await LiveSession.find({
+    isPublished: true,
+    'registrants.paid': true
+  }).populate('registrants.user', 'email profile.firstName profile.lastName');
+
+  for (const session of sessions) {
+    const deadline = session.registrationDeadline();
+    if (!deadline) continue; // no cutoff configured — nothing to be late against
+
+    let dirty = false;
+    for (const r of session.registrants) {
+      if (!r.paid || r.stripeCheckoutSessionId || r.lateRegistrationAlertSentAt) continue;
+      if (!r.registeredAt || r.registeredAt.getTime() <= deadline.getTime()) continue;
+
+      try {
+        await sendLateSeriesRegistrationAlert(session, r.user, deadline, r.registeredAt);
+        r.lateRegistrationAlertSentAt = now;
+        dirty = true;
+        console.log(`${LOG} late-series-registration alert sent for "${session.title}" (${session._id}) — registrant ${r.user?.email || r.user}`);
+      } catch (err) {
+        console.error(`${LOG} late-series-registration alert error on ${session._id}:`, err.message);
+      }
+    }
+
+    if (dirty) {
+      session.markModified('registrants');
+      await session.save();
     }
   }
 }
