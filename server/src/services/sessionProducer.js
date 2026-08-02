@@ -393,6 +393,38 @@ export async function sendRegistrationClosedRoster(session) {
 }
 
 /**
+ * Admin alert fired the moment the detector in sessionProducerTick.js
+ * (processLateSeriesRegistrationAlerts) catches a registrant who was seated
+ * in a session AFTER that session's own registrationDeadline() — the
+ * signature left by the session-series purchase webhook in payments.js,
+ * which enrolls a buyer into every member session without re-checking each
+ * occurrence's individual cutoff. payments.js is protected (no direct
+ * edits), so this is the downstream catch: Ke gets notified immediately
+ * instead of finding out by accident, and can run
+ * refundLateSeriesRegistrant.js if the seat needs to be unwound.
+ */
+export async function sendLateSeriesRegistrationAlert(session, registrantUser, deadline, registeredAt) {
+  const name = registrantUser
+    ? `${registrantUser.profile?.firstName || ''} ${registrantUser.profile?.lastName || ''}`.trim() || registrantUser.email
+    : '(user not found)';
+  const email = registrantUser?.email || '(unknown)';
+  const lateByMin = Math.round((registeredAt.getTime() - deadline.getTime()) / 60000);
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `⚠️ Late series registration — ${esc(session.title)}`,
+    html: emailShell(`
+      <p><strong>${esc(name)}</strong> (${esc(email)}) was registered for <strong>${esc(session.title)}</strong> ${lateByMin} minute${lateByMin === 1 ? '' : 's'} after registration had already closed for this occurrence.</p>
+      <p style="margin:12px 0;">
+        <strong>Registered at:</strong> ${esc(registeredAt.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }))}<br>
+        <strong>Registration closed:</strong> ${esc(deadline.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }))}
+      </p>
+      <p style="font-size:13px;color:#57534e;">This is almost always a session-series purchase enrolling someone into every member session, including ones whose individual cutoff already passed. If this seat needs to be removed and refunded, run <code>refundLateSeriesRegistrant.js</code>.</p>
+    `)
+  });
+}
+
+/**
  * Admin warning email when a completed autopilot session has an EMPTY
  * attendance array. Autopilot never auto-issues in this case — it warns
  * the admin so a human can investigate the attendance sync.

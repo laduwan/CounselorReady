@@ -201,6 +201,16 @@ router.post('/:id/register', protect, async (req, res) => {
           enrolled.push({ sessionId: sess._id, status: 'already-registered' });
           continue;
         }
+        // Registration cutoff — same rule as the single-session /:id/register
+        // route. Admins bypass so Ke can seat someone manually. Without this,
+        // a series enrollment could seat someone into an occurrence whose
+        // individual registration window had already closed (or that had
+        // already run) — see refundLateSeriesRegistrant.js for the cleanup
+        // script written for exactly this gap.
+        if (!isAdmin && !sess.isRegistrationOpen()) {
+          failed.push({ sessionId: sess._id, error: 'Registration closed for this occurrence.' });
+          continue;
+        }
         // Simplified: no capacity check here (the per-session /register does
         // the full check, we defer complex Stripe-checkout flows to that path).
         // Series members are expected to be $0 VIP-inclusive; per-session
