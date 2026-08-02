@@ -110,8 +110,7 @@ function pageHtml(c) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <script type="application/ld+json">${JSON.stringify(courseLd)}</script>
   <script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>
   <style>body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif}.font-display{font-family:'Cormorant Garamond',Georgia,serif}</style>
