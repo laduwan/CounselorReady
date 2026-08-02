@@ -522,5 +522,6 @@ export default {
   sendRedemptionAdminAlert,
   sendGiftCardCode,
   sendLiveSessionRegistrationConfirmation,
+  sendLiveSessionCancellationRefundEmail,
   sendSuggestionNotification,
 };
