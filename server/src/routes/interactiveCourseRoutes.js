@@ -39,7 +39,6 @@ async function findCourseByIdOrSlug(param) {
 const FREE_COURSES_PER_MONTH = 4;   // free plan: 4 courses/month
 const FREE_MAX_COURSE_HOURS  = 1;   // free plan covers 1-CE-hour courses only
 const TRIAL_COURSES_TOTAL    = 2;   // no-card trial: 2 one-CE courses, lifetime
-const BASIC_MAX_COURSE_HOURS = 3;   // basic plan: unlimited courses up to 3 CE hours
 
 /**
  * Strip sensitive content from course for preview/unauthenticated users.
@@ -111,15 +110,11 @@ function freeTierDecision(user, course) {
   return { allowed: true, code: 'FREE_OK' };
 }
 
-// True if an active PAID plan covers THIS course. Accounts for the basic-tier
-// hour cap: basic gets unlimited courses up to BASIC_MAX_COURSE_HOURS CE hours;
-// all other paid plans (starter/professional/vip) are unlimited. free → false.
+// True if an active PAID plan covers THIS course. All paid plans
+// (starter/professional/vip) are unlimited here; per-plan CE-hour caps
+// are enforced separately by User.canAccessAsyncCourse. free → false.
 function planCoversCourse(plan, course) {
   if (plan === 'free') return false;
-  if (plan === 'basic') {
-    const hrs = course.ceHours || course.ceuHours || 1;
-    return hrs <= BASIC_MAX_COURSE_HOURS;
-  }
   return true;
 }
 
