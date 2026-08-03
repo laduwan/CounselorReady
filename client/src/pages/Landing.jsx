@@ -157,7 +157,7 @@ export default function Landing() {
             <p className="text-lg font-light" style={{ color: 'rgba(53,94,59,0.8)' }}>Choose the plan that works best for your practice</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Free */}
             <div className="bg-white rounded-2xl p-6 border shadow-sm card-hover hover:shadow-xl" style={{ borderColor: '#d5e1d7' }}>
               <div className="font-medium uppercase text-sm tracking-wide mb-3" style={{ color: '#4A7C59' }}>Free</div>
@@ -244,6 +244,50 @@ export default function Landing() {
                   Go VIP
                 </Link>
               </div>
+            </div>
+
+            {/* Monthly */}
+            <div className="bg-white rounded-2xl p-5 border shadow-sm card-hover hover:shadow-xl" style={{ borderColor: '#d5e1d7' }}>
+              <div className="font-medium uppercase text-sm tracking-wide mb-2" style={{ color: '#4A7C59' }}>Monthly</div>
+              <div className="flex items-baseline gap-1 mb-4">
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '2rem', fontWeight: 600, color: '#6b1d34' }}>$35</span>
+                <span className="font-light text-sm" style={{ color: '#6a9472' }}>/mo</span>
+              </div>
+              <ul className="space-y-2 mb-5 text-sm">
+                {['Full async catalog (4 hr and under)', '1 live session per month', 'Cancel anytime'].map(f => (
+                  <li key={f} className="flex items-start gap-2" style={{ color: '#355E3B' }}>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#4A7C59' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register?plan=monthly" className="block text-center w-full py-2.5 text-white font-semibold rounded-xl transition-all text-sm hover:opacity-90" style={{ background: '#4A7C59' }}>
+                Choose Monthly
+              </Link>
+            </div>
+
+            {/* Annual */}
+            <div className="bg-white rounded-2xl p-5 shadow-lg card-hover hover:shadow-xl relative" style={{ border: '2px solid #D4A855' }}>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-3 py-1 rounded-full" style={{ background: '#D4A855', color: '#4a1524' }}>
+                BEST VALUE
+              </div>
+              <div className="font-medium uppercase text-sm tracking-wide mb-2" style={{ color: '#a8790f' }}>Annual</div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '2rem', fontWeight: 600, color: '#6b1d34' }}>$249</span>
+                <span className="font-light text-sm" style={{ color: '#6a9472' }}>/yr</span>
+              </div>
+              <p className="text-xs font-semibold mb-3" style={{ color: '#a8790f' }}>Pays for itself with one day-long workshop</p>
+              <ul className="space-y-2 mb-5 text-sm">
+                {['100+ async & podcast courses', '15 hrs synchronous access', 'Audit reports, vault & credential tracking'].map(f => (
+                  <li key={f} className="flex items-start gap-2" style={{ color: '#355E3B' }}>
+                    <svg className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: '#D4A855' }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link to="/register?plan=annual" className="block text-center w-full py-2.5 font-bold rounded-xl transition-all text-sm hover:opacity-90" style={{ background: '#D4A855', color: '#4a1524' }}>
+                Choose Annual
+              </Link>
             </div>
           </div>
         </div>
