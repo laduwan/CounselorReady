@@ -1063,13 +1063,29 @@ router.get('/courses', protect, adminOnly, async (req, res) => {
         .sort({ createdAt: -1 })
         .lean(),
       InteractiveCourse.find()
-        .select('title slug ceHours status enrollmentCount createdAt wordCount courseCode isPublished')
+        .select('title slug ceHours status createdAt wordCount courseCode isPublished')
         .sort({ createdAt: -1 })
         .lean()
     ]);
 
+    // enrollmentCount is not a real field on InteractiveCourse (never
+    // incremented anywhere), so the admin UI's "X enrolled" badge never
+    // showed for interactive courses. Compute a live count per course from
+    // InteractiveCourseProgress in one aggregation instead of N+1 queries.
+    const interactiveCourseIds = interactiveCourses.map(c => c._id);
+    const enrollmentAgg = await InteractiveCourseProgress.aggregate([
+      { $match: { courseId: { $in: interactiveCourseIds } } },
+      { $group: { _id: '$courseId', count: { $sum: 1 } } }
+    ]);
+    const enrollmentMap = new Map(enrollmentAgg.map(e => [e._id.toString(), e.count]));
+
     const legacy = legacyCourses.map(c => ({ ...c, _collection: 'courses', wordCount: c.wordCount || 0 }));
-    const interactive = interactiveCourses.map(c => ({ ...c, _collection: 'interactivecourses', wordCount: c.wordCount || 0 }));
+    const interactive = interactiveCourses.map(c => ({
+      ...c,
+      _collection: 'interactivecourses',
+      wordCount: c.wordCount || 0,
+      enrollmentCount: enrollmentMap.get(c._id.toString()) || 0
+    }));
 
     const all = [...interactive, ...legacy];
 

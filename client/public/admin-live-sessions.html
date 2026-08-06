@@ -948,6 +948,10 @@
                 onclick="viewAttendance(event,'${s._id}')">
                 <i class="fas fa-chart-bar text-xs"></i> Attendance
               </a>
+              <button onclick="openRegistrantsModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-user-plus text-xs"></i> Registrants
+              </button>
               <button onclick="openBreaksModal('${s._id}')"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-mug-hot text-xs"></i> Breaks${(s.breaks && s.breaks.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.breaks.length}</span>` : ''}
@@ -1136,6 +1140,116 @@
           </div>`);
       } catch (e) {
         showToast('Failed to load attendance: ' + e.message, '#c0392b');
+      }
+    }
+
+    /* ── Registrants: manual enroll/unenroll ── */
+    async function openRegistrantsModal(id) {
+      try {
+        await loadAndRenderRegistrants(id);
+      } catch (e) {
+        showToast('Failed to load registrants: ' + e.message, '#c0392b');
+      }
+    }
+
+    async function loadAndRenderRegistrants(id) {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 10000);
+      const r = await fetch(`${API}/${id}/attendance`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error('Forbidden or error');
+      const d = await r.json();
+
+      const rows = (d.report || []).map(reg => `
+        <tr class="border-b border-gray-100">
+          <td class="px-3 py-2">${escHtml(reg.user?.email || '—')}</td>
+          <td class="px-3 py-2 text-xs text-forest-500">${reg.registeredAt ? new Date(reg.registeredAt).toLocaleDateString() : '—'}</td>
+          <td class="px-3 py-2 text-xs">${reg.paid ? '<span class="text-green-600">paid</span>' : '<span class="text-forest-400">free/comp</span>'}</td>
+          <td class="px-3 py-2 text-right">
+            <button onclick="removeRegistrant('${id}','${reg.user?._id}', this)"
+              class="px-2 py-1 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors">
+              Remove
+            </button>
+          </td>
+        </tr>`
+      ).join('');
+
+      showModal(`
+        <div class="p-6">
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(d.session?.title || 'Registrants')}</h3>
+          <p class="text-xs text-forest-500 mb-4">Manually seat or remove a registrant. Manual adds bypass capacity, cutoff, and payment — no Stripe charge occurs.</p>
+          <div class="flex gap-2 mb-4">
+            <input id="regAddEmail" type="email" placeholder="user@email.com"
+              class="flex-1 px-3 py-2 border border-forest-200 rounded-lg text-sm">
+            <button id="regAddBtn" onclick="addRegistrant('${id}')"
+              class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium whitespace-nowrap">
+              Add Registrant
+            </button>
+          </div>
+          <div id="regAddError" class="text-xs text-red-600 mb-2 hidden"></div>
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50 sticky top-0"><tr>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email</th>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Registered</th>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Status</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800"></th>
+              </tr></thead>
+              <tbody id="regTableBody">${rows || '<tr><td colspan="4" class="text-center py-6 text-forest-500">No registrants yet.</td></tr>'}</tbody>
+            </table>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
+          </div>
+        </div>`);
+    }
+
+    async function addRegistrant(sessionId) {
+      const input = document.getElementById('regAddEmail');
+      const errBox = document.getElementById('regAddError');
+      const btn = document.getElementById('regAddBtn');
+      const email = (input.value || '').trim();
+      errBox.classList.add('hidden');
+      if (!email) return;
+
+      btn.disabled = true;
+      try {
+        const r = await fetch(`${API}/${sessionId}/admin/registrants`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to add registrant');
+        showToast(d.message || 'Registrant added', '#2e7d32');
+        input.value = '';
+        await loadAndRenderRegistrants(sessionId);
+        loadSessions(); // refresh registrant count in the background table
+      } catch (e) {
+        errBox.textContent = e.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function removeRegistrant(sessionId, userId, btn) {
+      if (!userId) return;
+      if (!confirm('Remove this registrant? This does not affect attendance history or issued certificates.')) return;
+      btn.disabled = true;
+      try {
+        const r = await fetch(`${API}/${sessionId}/admin/registrants/${userId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to remove registrant');
+        showToast('Registrant removed', '#2e7d32');
+        await loadAndRenderRegistrants(sessionId);
+        loadSessions();
+      } catch (e) {
+        showToast(e.message, '#c0392b');
+        btn.disabled = false;
       }
     }
 
