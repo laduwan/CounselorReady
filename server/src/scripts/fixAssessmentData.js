@@ -11,6 +11,9 @@
  *   CR-302 — replace ONLY assessment.questions[0] and [1] (the two broken
  *            slots) with 2 verified replacement questions. The other 13
  *            questions are untouched.
+ *   CR-102 — replace ONLY assessment.questions[0]-[3] (the four broken
+ *            slots) with 4 verified replacement questions. The rest are
+ *            untouched.
  *   CR-105 — remove the one orphaned/broken inline block from the
  *            "Conclusion, Key Principles, and Final Examination" section.
  *            The real 15-question assessment.questions[] is already correct
@@ -18,6 +21,9 @@
  *
  * Nothing else on any course document is modified — no sections, no titles,
  * no other fields.
+ *
+ * Idempotent — CR-301 and CR-302 checks skip courses that are already fixed,
+ * so re-running after a partial apply is safe.
  *
  * DRY RUN by default — prints what it would change without writing.
  * Run from ~/project/src/server:
@@ -60,6 +66,17 @@ const CR302_REPLACEMENTS = {
   1: { question: "Cultural humility, as distinguished from cultural competence, is best characterized as:", type: "multipleChoice", options: [{text:"A one-time training certification validating the counselor's readiness for multicultural work",isCorrect:false},{text:"A lifelong commitment to critical self-reflection and client-as-expert positioning",isCorrect:true},{text:"Mastery of factual knowledge about major cultural groups in the counselor's practice area",isCorrect:false},{text:"The elimination of all personal cultural biases from clinical decision-making",isCorrect:false}], correctAnswer: 1, explanation: "Cultural humility is a lifelong process of self-reflection and self-critique in which the clinician positions the client as the expert on their own cultural experience, rather than a credential or fixed body of knowledge to be mastered." }
 };
 
+// CR-102 replacements, indices 0-3. Sourced directly from the course's own
+// dumped content — each broken question's trailing text revealed the
+// intended knowledge-check question, and the surrounding module text
+// (also dumped) supplied the correct clinical answer.
+const CR102_REPLACEMENTS = {
+  0: { question: "According to Thomas Joiner's Interpersonal-Psychological Theory, which two interpersonal states combine to create suicidal desire?", type: "multipleChoice", options: [{text:"Hopelessness and psychache",isCorrect:false},{text:"Thwarted belongingness and perceived burdensomeness",isCorrect:true},{text:"Entrapment and defeat",isCorrect:false},{text:"Emotional dysregulation and invalidation",isCorrect:false}], correctAnswer: 1, explanation: "Joiner's theory proposes that suicidal desire emerges from the combination of thwarted belongingness (social disconnection) and perceived burdensomeness (the belief that one's existence burdens others). When acquired capability is also present, risk for a lethal attempt increases." },
+  1: { question: "What is \"psychache,\" according to Edwin Shneidman's theoretical contribution to suicidology?", type: "multipleChoice", options: [{text:"A physical pain syndrome common in suicidal clients",isCorrect:false},{text:"Unbearable psychological pain arising from frustrated or thwarted psychological needs",isCorrect:true},{text:"A diagnostic term for major depressive disorder with suicidal features",isCorrect:false},{text:"The pain experienced by survivors of suicide loss",isCorrect:false}], correctAnswer: 1, explanation: "Shneidman, often called the father of suicidology, proposed that suicide is caused by psychache — unbearable psychological pain arising from frustrated or thwarted psychological needs. When psychache becomes intolerable, suicide can emerge as a means to stop the pain." },
+  2: { question: "Why are adolescents potentially at higher risk for impulsive suicidal behavior compared to adults?", type: "multipleChoice", options: [{text:"Adolescents have more suicide risk factors overall than adults",isCorrect:false},{text:"The prefrontal cortex, responsible for impulse control, is still developing while the reward system matures earlier",isCorrect:true},{text:"Adolescents are less likely to have a safety plan in place",isCorrect:false},{text:"Adolescents have less access to mental health treatment than adults",isCorrect:false}], correctAnswer: 1, explanation: "The prefrontal cortex, which governs impulse control and decision-making, continues developing into the mid-20s, while the limbic reward system matures earlier. This developmental mismatch contributes to heightened impulsivity, including in moments of acute suicidal crisis." },
+  3: { question: "What does \"culturally responsive\" suicide risk assessment require of the clinician?", type: "multipleChoice", options: [{text:"Applying identical assessment protocols to every client regardless of background",isCorrect:false},{text:"Self-awareness of one's own cultural background and biases, knowledge of the cultural groups served, and skill in adapting assessment to cultural context",isCorrect:true},{text:"Referring all clients from unfamiliar cultural backgrounds to a specialist",isCorrect:false},{text:"Avoiding direct questions about culture to prevent causing offense",isCorrect:false}], correctAnswer: 1, explanation: "Culturally responsive practice requires self-awareness of one's own cultural background and biases, knowledge of the cultural groups one serves, and skills in adapting assessment and intervention to cultural context — while remaining humble about the limits of one's cultural knowledge." }
+};
+
 async function main() {
   await mongoose.connect(MONGODB_URI);
   const db = mongoose.connection.db;
@@ -69,44 +86,91 @@ async function main() {
   console.log(APPLY ? 'APPLYING FIXES' : 'DRY RUN — no writes (pass --apply to commit)');
   console.log('═'.repeat(90));
 
-  // ── CR-301: full replace of assessment.questions ──
+  // ── CR-301: full replace of assessment.questions (idempotent — skips if already fixed) ──
   {
     const course = await col.findOne({ courseCode: 'CR-301' });
     if (!course) {
       console.log('CR-301: NOT FOUND — skipping');
     } else {
-      const before = (course.assessment?.questions || []).length;
-      console.log(`\nCR-301 (${course.title}): assessment.questions ${before} -> ${CR301_QUESTIONS.length}`);
-      if (APPLY) {
-        await col.updateOne(
-          { _id: course._id },
-          { $set: { 'assessment.questions': CR301_QUESTIONS } }
-        );
-        console.log('  -> written');
+      const existing = course.assessment?.questions || [];
+      const alreadyFixed = existing.length === CR301_QUESTIONS.length &&
+        existing.every(q => Array.isArray(q.options) && q.options.length > 0);
+      if (alreadyFixed) {
+        console.log(`\nCR-301 (${course.title}): already fixed (${existing.length} valid questions) — skipping`);
+      } else {
+        console.log(`\nCR-301 (${course.title}): assessment.questions ${existing.length} -> ${CR301_QUESTIONS.length}`);
+        if (APPLY) {
+          await col.updateOne(
+            { _id: course._id },
+            { $set: { 'assessment.questions': CR301_QUESTIONS } }
+          );
+          console.log('  -> written');
+        }
       }
     }
   }
 
-  // ── CR-302: replace only indices 0 and 1 ──
+  // ── CR-302: replace only indices 0 and 1, skipping any already fixed ──
   {
     const course = await col.findOne({ courseCode: 'CR-302' });
     if (!course) {
       console.log('CR-302: NOT FOUND — skipping');
     } else {
       const qs = course.assessment?.questions || [];
-      console.log(`\nCR-302 (${course.title}): replacing indices ${Object.keys(CR302_REPLACEMENTS).join(', ')} of ${qs.length} total`);
-      for (const [idxStr, replacement] of Object.entries(CR302_REPLACEMENTS)) {
+      const toFix = Object.entries(CR302_REPLACEMENTS).filter(([idxStr, replacement]) => {
         const idx = Number(idxStr);
-        console.log(`  [${idx}] old question started with: "${(qs[idx]?.question || '').slice(0, 60)}..."`);
-        console.log(`  [${idx}] new question: "${replacement.question}"`);
-        if (APPLY) {
-          await col.updateOne(
-            { _id: course._id },
-            { $set: { [`assessment.questions.${idx}`]: replacement } }
-          );
+        const cur = qs[idx];
+        return !(cur && cur.question === replacement.question && Array.isArray(cur.options) && cur.options.length > 0);
+      });
+      if (toFix.length === 0) {
+        console.log(`\nCR-302 (${course.title}): already fixed — skipping`);
+      } else {
+        console.log(`\nCR-302 (${course.title}): replacing indices ${toFix.map(([i]) => i).join(', ')} of ${qs.length} total`);
+        for (const [idxStr, replacement] of toFix) {
+          const idx = Number(idxStr);
+          console.log(`  [${idx}] old question started with: "${(qs[idx]?.question || '').slice(0, 60)}..."`);
+          console.log(`  [${idx}] new question: "${replacement.question}"`);
+          if (APPLY) {
+            await col.updateOne(
+              { _id: course._id },
+              { $set: { [`assessment.questions.${idx}`]: replacement } }
+            );
+          }
         }
+        if (APPLY) console.log('  -> written');
       }
-      if (APPLY) console.log('  -> written');
+    }
+  }
+
+  // ── CR-102: replace indices 0-3, skipping any already fixed ──
+  {
+    const course = await col.findOne({ courseCode: 'CR-102' });
+    if (!course) {
+      console.log('CR-102: NOT FOUND — skipping');
+    } else {
+      const qs = course.assessment?.questions || [];
+      const toFix = Object.entries(CR102_REPLACEMENTS).filter(([idxStr, replacement]) => {
+        const idx = Number(idxStr);
+        const cur = qs[idx];
+        return !(cur && cur.question === replacement.question && Array.isArray(cur.options) && cur.options.length > 0);
+      });
+      if (toFix.length === 0) {
+        console.log(`\nCR-102 (${course.title}): already fixed — skipping`);
+      } else {
+        console.log(`\nCR-102 (${course.title}): replacing indices ${toFix.map(([i]) => i).join(', ')} of ${qs.length} total`);
+        for (const [idxStr, replacement] of toFix) {
+          const idx = Number(idxStr);
+          console.log(`  [${idx}] old question started with: "${(qs[idx]?.question || '').slice(0, 60)}..."`);
+          console.log(`  [${idx}] new question: "${replacement.question}"`);
+          if (APPLY) {
+            await col.updateOne(
+              { _id: course._id },
+              { $set: { [`assessment.questions.${idx}`]: replacement } }
+            );
+          }
+        }
+        if (APPLY) console.log('  -> written');
+      }
     }
   }
 
