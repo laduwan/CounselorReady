@@ -5839,7 +5839,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
 function selectMC(id, idx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.querySelectorAll('.cr-kc-option').forEach(o => o.classList.remove('selected'));
+  el.querySelectorAll('.cr-kc-option').forEach(o => o.classList.remove('selected', 'incorrect'));
   const opt = el.querySelector(`[data-idx="${idx}"]`);
   if (opt) opt.classList.add('selected');
   el.dataset.selected = idx;
@@ -5847,25 +5847,38 @@ function selectMC(id, idx) {
   if (btn) btn.disabled = false;
 }
 
+// Knowledge checks are formative, not graded: a wrong pick does not reveal
+// the answer or lock the block — it clears back to a retry state so the
+// learner can keep trying until they select the correct option themselves.
+// Only a CORRECT answer locks the block and reveals the explanation.
 function submitMC(id, correctIdx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.dataset.answered = 'true';
   const selected = parseInt(el.dataset.selected);
-  const isWrong = selected !== correctIdx;
-  
-  el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
-    o.classList.add('answered');
-    if (i === correctIdx) o.classList.add('correct');
-    if (i === selected && i !== correctIdx) o.classList.add('incorrect');
-  });
-  
-  const explEl = el.querySelector('.cr-kc-explanation');
-  if (explEl) explEl.classList.add('show');
-  const submitBtn = el.querySelector('.cr-kc-submit');
-  if (submitBtn) submitBtn.style.display = 'none';
-  if (isWrong) revealRemediationButton(el);
-  srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
+  const isCorrect = selected === correctIdx;
+
+  if (isCorrect) {
+    el.dataset.answered = 'true';
+    el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
+      o.classList.add('answered');
+      if (i === correctIdx) o.classList.add('correct');
+    });
+    const explEl = el.querySelector('.cr-kc-explanation');
+    if (explEl) explEl.classList.add('show');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.style.display = 'none';
+    srAnnounce('Correct!');
+  } else {
+    const selEl = el.querySelector(`.cr-kc-option[data-idx="${selected}"]`);
+    if (selEl) selEl.classList.add('incorrect');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.disabled = true;
+    if (!el.dataset.everWrong) {
+      el.dataset.everWrong = 'true';
+      revealRemediationButton(el);
+    }
+    srAnnounce('Not quite — try again.');
+  }
 }
 
 // ─── TRANSCRIPT CODING ───
@@ -5950,36 +5963,46 @@ function toggleMS(id, idx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
   const opt = el.querySelector(`[data-idx="${idx}"]`);
-  if (opt) opt.classList.toggle('selected');
+  if (opt) { opt.classList.toggle('selected'); opt.classList.remove('incorrect'); }
   const anySelected = el.querySelectorAll('.cr-kc-option.selected').length > 0;
   const btn = el.querySelector('.cr-kc-submit');
   if (btn) btn.disabled = !anySelected;
 }
 
+// Same not-graded, retry-until-correct behavior as submitMC (see comment
+// above it): wrong picks clear back to a retry state instead of locking
+// and revealing the correct set.
 function submitMS(id) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.dataset.answered = 'true';
   const correctIdxs = el.dataset.correct.split(',').map(Number);
   const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')]
     .map(o => parseInt(o.dataset.idx));
   const hasAllCorrect = correctIdxs.every(i => selectedIdxs.includes(i));
   const hasOnlyCorrect = selectedIdxs.every(i => correctIdxs.includes(i));
-  const isWrong = !hasAllCorrect || !hasOnlyCorrect;
-  
-  el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
-    o.classList.add('answered');
-    const isCorrect = correctIdxs.includes(i);
-    const isSelected = o.classList.contains('selected');
-    if (isCorrect) o.classList.add('correct');
-    if (isSelected && !isCorrect) o.classList.add('incorrect');
-  });
-  
-  const explEl = el.querySelector('.cr-kc-explanation');
-  if (explEl) explEl.classList.add('show');
-  const submitBtn = el.querySelector('.cr-kc-submit');
-  if (submitBtn) submitBtn.style.display = 'none';
-  if (isWrong) revealRemediationButton(el);
+  const isCorrect = hasAllCorrect && hasOnlyCorrect;
+
+  if (isCorrect) {
+    el.dataset.answered = 'true';
+    el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
+      o.classList.add('answered');
+      if (correctIdxs.includes(i)) o.classList.add('correct');
+    });
+    const explEl = el.querySelector('.cr-kc-explanation');
+    if (explEl) explEl.classList.add('show');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.style.display = 'none';
+    srAnnounce('Correct!');
+  } else {
+    el.querySelectorAll('.cr-kc-option.selected').forEach(o => o.classList.add('incorrect'));
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.disabled = true;
+    if (!el.dataset.everWrong) {
+      el.dataset.everWrong = 'true';
+      revealRemediationButton(el);
+    }
+    srAnnounce('Not quite — try again.');
+  }
 }
 
 // ─── MATCHING ───
