@@ -994,6 +994,64 @@ router.get('/:id/attendance', protect, requireAdmin, async (req, res) => {
   }
 });
 
+// POST /api/live-sessions/:id/admin/registrants — manually seat a user
+// (by email) into a session, bypassing capacity, registration cutoff,
+// payment, and membership-allowance checks. Mirrors the manual course
+// enrollment pattern in adminCourses.js. Sets paid:false, matching the
+// existing free/membership registrant convention — no Stripe charge occurs.
+router.post('/:id/admin/registrants', protect, requireAdmin, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required.' });
+
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found.' });
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) return res.status(404).json({ error: `No user found with email ${email}.` });
+
+    if (session.isRegistered(user._id)) {
+      return res.json({ registered: true, message: 'User is already registered for this session.' });
+    }
+
+    session.registrants.push({ user: user._id, registeredAt: new Date(), paid: false });
+    await session.save();
+
+    res.json({
+      registered: true,
+      message: `${user.email} added as a registrant.`,
+      seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
+    });
+  } catch (err) {
+    console.error('[live] admin add registrant:', err.message);
+    res.status(500).json({ error: 'Failed to add registrant.' });
+  }
+});
+
+// DELETE /api/live-sessions/:id/admin/registrants/:userId — manually
+// remove a user's registration. Does not touch attendance records or
+// issued certificates — only the registrants list.
+router.delete('/:id/admin/registrants/:userId', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found.' });
+
+    const before = session.registrants.length;
+    session.registrants = session.registrants.filter(
+      r => r.user.toString() !== req.params.userId
+    );
+    if (session.registrants.length === before) {
+      return res.status(404).json({ error: 'That user is not registered for this session.' });
+    }
+    await session.save();
+
+    res.json({ removed: true, seatsRemaining: Math.max(0, session.capacity - session.registrants.length) });
+  } catch (err) {
+    console.error('[live] admin remove registrant:', err.message);
+    res.status(500).json({ error: 'Failed to remove registrant.' });
+  }
+});
+
 // GET /api/live-sessions/:id/host-state — host-only counterpart to toPublicJSON.
 // Returns the full facilitator payload (speaker notes, activity instructions,
 // per-segment + global cautions, polls, checklists, scratchpad) for the Host

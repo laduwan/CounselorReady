@@ -224,6 +224,13 @@
               <option value="6+">6+ hrs</option>
             </select>
           </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Sort</label>
+            <select id="sortOrder" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+              <option value="newest">Newest first</option>
+              <option value="registrants">Most registrants first</option>
+            </select>
+          </div>
           <div class="h-8 w-px bg-forest-200"></div>
           <div class="flex items-center gap-1.5">
             <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
@@ -419,10 +426,13 @@
             if (!r.ok) break;
             const d = await r.json();
             const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
-            // Prefer interactivecourses version (deduplicate by slug)
+            // Prefer interactivecourses version (deduplicate by slug), but preserve
+            // enrollmentCount from the admin endpoint — this endpoint's .select()
+            // doesn't include it, so a plain overwrite would silently drop it back
+            // to undefined and the "X enrolled" badge would never render.
             batch.forEach(ic => {
               const idx = courses.findIndex(c => c.slug === ic.slug);
-              if (idx >= 0) courses[idx] = ic;
+              if (idx >= 0) courses[idx] = { ...ic, enrollmentCount: courses[idx].enrollmentCount };
               else courses.push(ic);
             });
             if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
@@ -494,13 +504,24 @@
         return mQ && mS && mC && mH;
       });
 
-      // Sort: published first, then by health status priority, then title
-      const hOrder = { complete: 0, nearly: 1, progress: 2, needs: 3 };
-      filtered.sort((a, b) => {
-        if (a.status === 'published' && b.status !== 'published') return -1;
-        if (a.status !== 'published' && b.status === 'published') return 1;
-        return (hOrder[a._health] || 0) - (hOrder[b._health] || 0) || (a.title || '').localeCompare(b.title || '');
-      });
+      const sortOrder = document.getElementById('sortOrder').value;
+
+      if (sortOrder === 'registrants') {
+        // Most registrants first; ties broken by title. Draft/health status
+        // is not factored in here — this view is specifically for finding
+        // which live courses have people enrolled.
+        filtered.sort((a, b) =>
+          (b.enrollmentCount || 0) - (a.enrollmentCount || 0) || (a.title || '').localeCompare(b.title || '')
+        );
+      } else {
+        // Sort: published first, then by health status priority, then title
+        const hOrder = { complete: 0, nearly: 1, progress: 2, needs: 3 };
+        filtered.sort((a, b) => {
+          if (a.status === 'published' && b.status !== 'published') return -1;
+          if (a.status !== 'published' && b.status === 'published') return 1;
+          return (hOrder[a._health] || 0) - (hOrder[b._health] || 0) || (a.title || '').localeCompare(b.title || '');
+        });
+      }
 
       page = 1;
       renderPage();
