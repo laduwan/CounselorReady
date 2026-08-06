@@ -151,6 +151,45 @@
         <button onclick="loadSessions()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
       </div>
 
+      <!-- View toggle -->
+      <div id="viewToggle" class="hidden flex items-center gap-2 mb-4">
+        <button id="viewBtnCalendar" onclick="setView('calendar')"
+          class="px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors">
+          <i class="fas fa-calendar-days text-xs mr-1"></i> Calendar
+        </button>
+        <button id="viewBtnTable" onclick="setView('table')"
+          class="px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors">
+          <i class="fas fa-table text-xs mr-1"></i> Table
+        </button>
+      </div>
+
+      <!-- Calendar view: registrant counts per day, running monthly total -->
+      <div id="calendarView" class="hidden">
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+              <button onclick="changeCalMonth(-1)" class="w-8 h-8 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-700 flex items-center justify-center">
+                <i class="fas fa-chevron-left text-xs"></i>
+              </button>
+              <h2 id="calMonthLabel" class="font-display text-lg font-semibold text-burgundy-900 min-w-40 text-center"></h2>
+              <button onclick="changeCalMonth(1)" class="w-8 h-8 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-700 flex items-center justify-center">
+                <i class="fas fa-chevron-right text-xs"></i>
+              </button>
+              <button onclick="changeCalMonth(0,true)" class="px-2.5 py-1.5 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-600 text-xs">Today</button>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+              <span class="text-forest-600"><strong id="calMonthTotal" class="text-burgundy-800 text-base">0</strong> registrants this month</span>
+              <span class="text-forest-600"><strong id="calMonthSessions" class="text-burgundy-800 text-base">0</strong> sessions</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold text-forest-500 uppercase tracking-wide mb-1.5">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div id="calGrid" class="grid grid-cols-7 gap-1.5"></div>
+          <p class="text-xs text-forest-400 mt-3">The small number in the corner of each day is the running total of registrants across the month so far, through that day.</p>
+        </div>
+      </div>
+
       <!-- Sessions Table -->
       <div id="mainContent" class="hidden">
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
@@ -854,6 +893,10 @@
     const API = API_URL + '/api/live-sessions';
     const token = localStorage.getItem('token');
     let sessions = [];
+    let currentView = 'calendar';
+    const today = new Date();
+    let calYear = today.getFullYear();
+    let calMonth = today.getMonth(); // 0-indexed
     let editingSessionId = null; // null = creating new; set = editing this session
 
     /* Run-of-show working state */
@@ -883,6 +926,7 @@
     async function loadSessions() {
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('calendarView').classList.add('hidden');
       document.getElementById('errorState').classList.add('hidden');
       try {
         const controller = new AbortController();
@@ -893,13 +937,107 @@
         const d = await r.json();
         sessions = d.sessions || [];
         renderTable();
+        renderCalendar();
         document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('viewToggle').classList.remove('hidden');
+        setView(currentView);
       } catch {
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('errorState').classList.remove('hidden');
         document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
       }
+    }
+
+    /* ── View toggle ── */
+    function setView(view) {
+      currentView = view;
+      const isCal = view === 'calendar';
+      document.getElementById('calendarView').classList.toggle('hidden', !isCal);
+      document.getElementById('mainContent').classList.toggle('hidden', isCal);
+      const activeCls = ['bg-burgundy-800', 'text-white', 'border-burgundy-800'];
+      const inactiveCls = ['bg-white', 'text-forest-700', 'border-forest-200', 'hover:bg-stone-50'];
+      const calBtn = document.getElementById('viewBtnCalendar');
+      const tblBtn = document.getElementById('viewBtnTable');
+      calBtn.classList.remove(...activeCls, ...inactiveCls);
+      tblBtn.classList.remove(...activeCls, ...inactiveCls);
+      calBtn.classList.add(...(isCal ? activeCls : inactiveCls));
+      tblBtn.classList.add(...(isCal ? inactiveCls : activeCls));
+    }
+
+    /* ── Calendar view: per-day registrant counts + running monthly total ── */
+    function changeCalMonth(delta, jumpToToday) {
+      if (jumpToToday) {
+        calYear = today.getFullYear();
+        calMonth = today.getMonth();
+      } else {
+        calMonth += delta;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+      }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('calMonthLabel').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+      const firstDay = new Date(calYear, calMonth, 1);
+      const startWeekday = firstDay.getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      // Group this month's sessions by day-of-month
+      const byDay = {};
+      sessions.forEach(s => {
+        if (!s.scheduledStart) return;
+        const d = new Date(s.scheduledStart);
+        if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+          const day = d.getDate();
+          (byDay[day] = byDay[day] || []).push(s);
+        }
+      });
+
+      let running = 0;
+      let monthTotal = 0;
+      let sessionCount = 0;
+      Object.values(byDay).forEach(daySessions => {
+        sessionCount += daySessions.length;
+        monthTotal += daySessions.reduce((sum, s) => sum + (s.registrants || []).length, 0);
+      });
+      document.getElementById('calMonthTotal').textContent = monthTotal;
+      document.getElementById('calMonthSessions').textContent = sessionCount;
+
+      const isToday = (day) => calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
+      const statusDot = { scheduled: 'bg-blue-400', live: 'bg-green-500', completed: 'bg-gray-300', cancelled: 'bg-red-400' };
+
+      let cells = '';
+      for (let i = 0; i < startWeekday; i++) {
+        cells += '<div class="min-h-24 rounded-lg bg-stone-50/50"></div>';
+      }
+      for (let day = 1; day <= daysInMonth; day++) {
+        const daySessions = (byDay[day] || []).slice().sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart));
+        const dayCount = daySessions.reduce((sum, s) => sum + (s.registrants || []).length, 0);
+        running += dayCount;
+
+        const sessionChips = daySessions.map(s => `
+          <button onclick="openRegistrantsModal('${s._id}')"
+            class="w-full text-left px-1.5 py-1 rounded-md text-[11px] leading-tight bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-800 transition-colors mb-1 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full ${statusDot[s.status] || 'bg-gray-300'} shrink-0"></span>
+            <span class="truncate flex-1">${escHtml((s.title || '').slice(0, 22))}</span>
+            <span class="font-semibold shrink-0">${(s.registrants || []).length}</span>
+          </button>`
+        ).join('');
+
+        cells += `
+          <div class="min-h-24 rounded-lg border ${isToday(day) ? 'border-burgundy-400 bg-burgundy-50/30' : 'border-forest-100 bg-white'} p-1.5 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold ${isToday(day) ? 'text-burgundy-800' : 'text-forest-500'}">${day}</span>
+              ${dayCount > 0 ? `<span class="text-[10px] font-bold text-gold-700 bg-gold-50 border border-gold-200 rounded-full px-1.5 py-0.5" title="Running total through ${MONTH_NAMES[calMonth]} ${day}">Σ ${running}</span>` : ''}
+            </div>
+            ${sessionChips}
+          </div>`;
+      }
+
+      document.getElementById('calGrid').innerHTML = cells;
     }
 
     /* ── Render table ── */
