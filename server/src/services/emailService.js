@@ -514,6 +514,74 @@ export async function sendSuggestionNotification(suggestion) {
   }
 }
 
+/**
+ * Send the weekly auto-generated blog draft to Ke for one-click
+ * approve/reject via email — no login required. Links embed the post's
+ * one-time reviewToken; the /api/blog/:id/approve and /reject GET routes
+ * verify it and clear it after use.
+ */
+export async function sendBlogDraftForApproval(post, baseUrl) {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.warn('[EMAIL] ADMIN_EMAIL not set — skipping blog draft approval email');
+      return { success: false, error: 'ADMIN_EMAIL not set' };
+    }
+
+    const approveUrl = `${baseUrl}/api/blog/${post._id}/approve?token=${post.reviewToken}`;
+    const rejectUrl = `${baseUrl}/api/blog/${post._id}/reject?token=${post.reviewToken}`;
+
+    // Very light Markdown → HTML: just enough for a readable email body.
+    // This is not the site's renderer — the published post still goes
+    // through whatever the blog page normally uses.
+    const bodyHtml = post.content
+      .split('\n\n')
+      .map(block => {
+        const trimmed = block.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('## ')) {
+          return `<h3 style="margin:20px 0 8px;color:#6B1D34;">${trimmed.slice(3)}</h3>`;
+        }
+        return `<p style="margin:0 0 14px;line-height:1.6;">${trimmed}</p>`;
+      })
+      .join('\n');
+
+    const html = `
+      <div style="font-family:Georgia,serif;max-width:640px;margin:0 auto;">
+        <p style="color:#666;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;">New auto-generated draft — ${post.category}</p>
+        <h2 style="color:#6B1D34;margin:4px 0 4px;">${post.title}</h2>
+        <p style="color:#888;font-size:13px;margin:0 0 20px;">${post.wordCount} words · ${post.readingTime} min read</p>
+        ${bodyHtml}
+        <div style="margin-top:28px;padding-top:20px;border-top:1px solid #eee;">
+          <a href="${approveUrl}" style="display:inline-block;background:#4A7C59;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;margin-right:10px;">Approve & Publish</a>
+          <a href="${rejectUrl}" style="display:inline-block;background:#f5f5f5;color:#6B1D34;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:bold;">Reject & Discard</a>
+        </div>
+        <p style="color:#aaa;font-size:11px;margin-top:16px;">Or review it in the admin dashboard: ${baseUrl}/admin-blog.html</p>
+      </div>`;
+
+    const text =
+      `New auto-generated blog draft: "${post.title}"\n\n` +
+      `${post.wordCount} words · Category: ${post.category}\n\n` +
+      `${post.content}\n\n` +
+      `Approve & publish: ${approveUrl}\n` +
+      `Reject & discard: ${rejectUrl}\n`;
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: adminEmail,
+      subject: `[Blog Draft] ${post.title}`,
+      html,
+      text,
+    });
+
+    if (error) throw new Error(error.message || 'Resend error');
+    return { success: true, data };
+  } catch (err) {
+    console.error('[EMAIL] sendBlogDraftForApproval error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // Default export for the `import emailService from '...'; const { x } = emailService;`
 // pattern used by routes/rewards.js and routes/adminRewards.js.
 export default {
@@ -524,4 +592,5 @@ export default {
   sendLiveSessionRegistrationConfirmation,
   sendLiveSessionCancellationRefundEmail,
   sendSuggestionNotification,
+  sendBlogDraftForApproval,
 };
