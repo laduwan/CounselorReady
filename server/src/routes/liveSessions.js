@@ -406,10 +406,8 @@ router.post('/:id/register', protect, async (req, res) => {
           liveSessionId: session._id.toString(),
           userId: req.user._id.toString(),
           // Carries the cohort through to fulfillment so a paid registration
-          // can seat every member, not just the one purchased against.
-          // NOTE: the payments.js webhook does not yet read this field — it
-          // still seats only liveSessionId. Consuming cohortSessionIds there
-          // requires a follow-up change to that protected file.
+          // seats every member, not just the one purchased against — consumed
+          // by the payments.js webhook's live-session branch (PR #799).
           cohortSessionIds: cohortMembers.map(m => m._id.toString()).join(','),
           // Accessibility request, carried through to fulfillment in
           // payments.js. Stripe caps metadata values at 500 chars, so notes
