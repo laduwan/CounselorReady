@@ -181,7 +181,7 @@
                   <div style="font-size:11px;color:${blocked?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||blocked?'600':'400'};margin-bottom:2px;">${regClosed?'Registration closed':full?'Session full':s.seatsRemaining+' seats left'}</div>
                   <div>${priceHtml}</div>
                   ${regClosesTxt ? `<div style="font-size:10px;color:#78716c;margin-top:2px;">${regClosesTxt}</div>` : ''}
-                  ${s.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Members &amp; VIP: included</div>' : ''}
+                  ${s.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Annual &amp; VIP: included · Members save 15%</div>' : ''}
                 </div>
                 <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${blocked?'opacity:.5;cursor:not-allowed;':''}" ${blocked?'disabled':''} onclick="register('${s._id}')">${regClosed?'Closed':full?'Full':'Register'}</button>
               </div>

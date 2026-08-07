@@ -387,6 +387,20 @@ router.post('/:id/register', protect, async (req, res) => {
             nowSec + 24 * 3600
           )
         : undefined;
+      // ── Price resolution ──
+      // Early bird first (it is the list price while the window is open), then
+      // the paying-member discount ON TOP of it — a member discount is a
+      // discount regardless of which list price applies. Annual and VIP never
+      // arrive here; canAccessLiveSession() seats them free further up.
+      const nowMs = Date.now();
+      const earlyBirdActive = session.earlyBirdPrice != null &&
+        session.earlyBirdDeadline &&
+        nowMs <= new Date(session.earlyBirdDeadline).getTime();
+      const listPrice = earlyBirdActive ? session.earlyBirdPrice : session.price;
+      const memberDiscount = req.user.isPayingMember() ? User.MEMBER_DISCOUNT_RATE : 0;
+      // Round at the cent, not the dollar: 115 * 0.85 = 97.75 exactly.
+      const chargeCents = Math.round(listPrice * (1 - memberDiscount) * 100);
+
       const checkout = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
@@ -394,8 +408,11 @@ router.post('/:id/register', protect, async (req, res) => {
         line_items: [{
           price_data: {
             currency: 'usd',
-            unit_amount: Math.round(session.price * 100),
-            product_data: { name: `Live Session: ${session.title}` }
+            unit_amount: chargeCents,
+            product_data: {
+              name: `Live Session: ${session.title}` +
+                (memberDiscount ? ' (member rate)' : '')
+            }
           },
           quantity: 1
         }],

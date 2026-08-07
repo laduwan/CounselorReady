@@ -772,6 +772,26 @@ userSchema.methods.isMonthly = function() {
 userSchema.methods.isAnnual = function() {
   return this.subscription?.plan === 'annual' && this.subscription?.status === 'active';
 };
+/**
+ * Any paying subscriber — used for the member discount on priced live
+ * sessions. Deliberately broader than isMonthly(): legacy starter and
+ * professional subscribers are paying members too, and excluding them would
+ * quietly charge long-standing subscribers the walk-up rate.
+ *
+ * VIP and Annual appear here for completeness but never reach the price path
+ * — canAccessLiveSession() seats them free before pricing is evaluated.
+ * 'free' is not a paying plan no matter how many courses were bought à la carte.
+ */
+userSchema.methods.isPayingMember = function() {
+  const plan = this.subscription?.plan;
+  const status = this.subscription?.status;
+  if (!plan || plan === 'free') return false;
+  return ['active', 'lifetime'].includes(status);
+};
+
+/** Fraction of list price a paying member pays on a priced live session. */
+userSchema.statics.MEMBER_DISCOUNT_RATE = 0.15;
+
 userSchema.methods.isStarter = function() {
   return this.subscription?.plan === 'starter' && this.subscription?.status === 'active';
 };
