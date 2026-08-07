@@ -99,6 +99,12 @@
           <div id="gameOverlay" class="hidden"></div>
           <div id="nowCard" class="hidden">
             <h3>Now</h3>
+            <div id="nowProgress" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <div style="flex:1;height:5px;border-radius:3px;background:#EDE9E3;overflow:hidden;">
+                <div id="nowProgressFill" style="height:100%;background:#4A7C59;border-radius:3px;transition:width .3s ease;width:0%;"></div>
+              </div>
+              <span id="nowProgressText" style="font-size:11px;font-weight:700;color:#4A7C59;white-space:nowrap;"></span>
+            </div>
             <div id="breakoutBadge">Breakout</div>
             <div id="nowBreakBadge" style="display:none;background:#EDF2FF;color:#3B5FCC;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;margin-bottom:6px;">☕ On Break</div>
             <div id="nowSegTitle"></div>
@@ -546,7 +552,7 @@
         });
         if (!res.ok) return;
         const data = await res.json();
-        updateNowCard(data.currentSegment, data.liveState);
+        updateNowCard(data.currentSegment, data.liveState, data.agendaLength);
         updateActivePoll(data.activePoll);
         updateGameOverlay(data.game);
         updateWatchParty(data.liveState);
@@ -877,10 +883,21 @@
       } catch { /* next 3s poll will reconcile */ }
     }
 
-    function updateNowCard(seg, liveState) {
+    function updateNowCard(seg, liveState, agendaLength) {
       const card = document.getElementById('nowCard');
       if (!seg) { card.classList.add('hidden'); return; }
       card.classList.remove('hidden');
+
+      const progText = document.getElementById('nowProgressText');
+      const progFill = document.getElementById('nowProgressFill');
+      if (agendaLength && liveState && typeof liveState.currentSegment === 'number') {
+        const idx = liveState.currentSegment;
+        progText.textContent = `Segment ${idx + 1} of ${agendaLength}`;
+        progFill.style.width = `${Math.min(100, ((idx + 1) / agendaLength) * 100)}%`;
+      } else {
+        progText.textContent = '';
+        progFill.style.width = '0%';
+      }
 
       document.getElementById('nowSegTitle').textContent = seg.title || seg.type;
       const prompt = seg.prompt || '';
