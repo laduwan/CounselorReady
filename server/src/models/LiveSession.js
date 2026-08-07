@@ -188,6 +188,8 @@ const liveSessionSchema = new mongoose.Schema({
     required: { type: Boolean, default: true }
   },
 
+  cohortKey: { type: String, index: true },
+
   registrants: [registrantSchema],
   attendance: [attendanceSchema],
 
