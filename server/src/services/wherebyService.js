@@ -70,7 +70,13 @@ export async function createMeeting(session) {
               destination: null, // uses account-wide S3 destination configured in Whereby dashboard
               startTrigger: 'automatic-2nd-participant'
             }
-          : { type: 'none', destination: null })
+          : { type: 'none', destination: null }),
+    // Whereby Live Captions — startTrigger:'none' means captions only, not
+    // the separately-billed live transcription feature. Room-wide (can't be
+    // scoped to one attendee) and never on for supervision.
+    ...(session.captionsEnabled && !isSupervision
+      ? { liveTranscription: { startTrigger: 'none', liveCaptions: true } }
+      : {})
   };
 
   console.log('[whereby debug] outgoing body:', JSON.stringify(body, null, 2));

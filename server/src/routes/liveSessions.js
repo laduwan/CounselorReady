@@ -287,6 +287,18 @@ router.post('/:id/register', protect, async (req, res) => {
       return res.status(400).json({ error: 'This session is full.' });
     }
 
+    // Optional accessibility request captured at registration. Applies to
+    // every cohort member — a person needing captions for Part 1 needs them
+    // for Part 2. Does NOT auto-enable session.captionsEnabled; it only
+    // surfaces in the pre-session roster email for the host to decide.
+    const accommodationsInput = req.body.accommodations || {};
+    const accommodations = {
+      captionsNeeded: !!accommodationsInput.captionsNeeded,
+      notes: typeof accommodationsInput.notes === 'string'
+        ? accommodationsInput.notes.trim().slice(0, 500)
+        : ''
+    };
+
     const isAdmin = req.user.role === 'admin';
     // Same currency check as canBookConsultation(): VIP-tier plan AND subscription actually active.
     const isActiveVip = req.user.isVip() &&
@@ -313,7 +325,7 @@ router.post('/:id/register', protect, async (req, res) => {
         });
       }
       for (const member of cohortMembers) {
-        member.registrants.push({ user: req.user._id, paid: false });
+        member.registrants.push({ user: req.user._id, paid: false, accommodations });
         await member.save();
       }
       if (liveAccess.plan === 'monthly' || liveAccess.plan === 'starter' || liveAccess.plan === 'professional') {
@@ -398,14 +410,19 @@ router.post('/:id/register', protect, async (req, res) => {
           // NOTE: the payments.js webhook does not yet read this field — it
           // still seats only liveSessionId. Consuming cohortSessionIds there
           // requires a follow-up change to that protected file.
-          cohortSessionIds: cohortMembers.map(m => m._id.toString()).join(',')
+          cohortSessionIds: cohortMembers.map(m => m._id.toString()).join(','),
+          // Accessibility request, carried through to fulfillment in
+          // payments.js. Stripe caps metadata values at 500 chars, so notes
+          // are truncated to 400 to stay well under that.
+          accNeedsCaptions: accommodations.captionsNeeded ? '1' : '0',
+          accNotes: accommodations.notes.slice(0, 400)
         }
       });
       return res.json({ checkoutUrl: checkout.url });
     }
 
     for (const member of cohortMembers) {
-      member.registrants.push({ user: req.user._id, paid: false });
+      member.registrants.push({ user: req.user._id, paid: false, accommodations });
       await member.save();
     }
     // Fire-and-forget: registration confirmation + .ics calendar invite (learner)
