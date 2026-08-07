@@ -249,23 +249,41 @@ router.post('/:id/register', protect, async (req, res) => {
     if (!['scheduled', 'live'].includes(session.status)) {
       return res.status(400).json({ error: 'Registration is closed for this session.' });
     }
-    if (session.isRegistered(req.user._id)) {
+    // ── Cohort resolution ──
+    // A cohort is one complete CE offering: a standalone session, or every
+    // session sharing a cohortKey (e.g. a Part 1 + Part 2 pair). Registering
+    // for any member enrolls the learner in the whole cohort, and allowance
+    // is checked against the cohort's total CE hours, not one half. Sessions
+    // with no cohortKey are a cohort of one — behavior is unchanged.
+    const cohortMembers = session.cohortKey
+      ? await LiveSession.find({ cohortKey: session.cohortKey })
+      : [session];
+    const cohortHours = cohortMembers.reduce((sum, s) => sum + (s.ceuHours || 0), 0);
+
+    // Already-registered, cutoff, and capacity guards run across every cohort
+    // member, not just the one clicked — a partial cohort registration can't
+    // yield the certificate, so any failing member rejects the whole thing
+    // and seats nobody.
+    if (cohortMembers.some(m => m.isRegistered(req.user._id))) {
       return res.json({ registered: true, message: 'Already registered.' });
     }
     // Registration cutoff (default 72h before start; per-session override via
     // registrationCutoffHours, 0 = no cutoff). Admins bypass so Ke can seat a
     // late registrant manually.
-    if (req.user.role !== 'admin' && !session.isRegistrationOpen()) {
-      const closedAt = session.registrationDeadline();
-      return res.status(400).json({
-        error: closedAt
-          ? `Registration for this session closed on ${closedAt.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' })}.`
-          : 'Registration is closed for this session.',
-        reason: 'registration_closed',
-        registrationClosesAt: closedAt
-      });
+    if (req.user.role !== 'admin') {
+      const closedMember = cohortMembers.find(m => !m.isRegistrationOpen());
+      if (closedMember) {
+        const closedAt = closedMember.registrationDeadline();
+        return res.status(400).json({
+          error: closedAt
+            ? `Registration for this session closed on ${closedAt.toLocaleString('en-US', { timeZone: closedMember.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' })}.`
+            : 'Registration is closed for this session.',
+          reason: 'registration_closed',
+          registrationClosesAt: closedAt
+        });
+      }
     }
-    if (session.registrants.length >= session.capacity) {
+    if (cohortMembers.some(m => m.registrants.length >= m.capacity)) {
       return res.status(400).json({ error: 'This session is full.' });
     }
 
@@ -285,7 +303,7 @@ router.post('/:id/register', protect, async (req, res) => {
     // Members (Monthly / Annual / active VIP) are gated by their allowance here.
     // Non-members (plan:null) fall through to the existing per-session paid /
     // private-code / free flow below — unchanged.
-    const liveAccess = await req.user.canAccessLiveSession(session);
+    const liveAccess = await req.user.canAccessLiveSession({ ...session.toObject(), ceuHours: cohortHours });
     if (!isAdmin && liveAccess.plan) {
       if (!liveAccess.allowed) {
         return res.status(403).json({
@@ -294,8 +312,10 @@ router.post('/:id/register', protect, async (req, res) => {
           upgradeUrl: '/subscription.html'
         });
       }
-      session.registrants.push({ user: req.user._id, paid: false });
-      await session.save();
+      for (const member of cohortMembers) {
+        member.registrants.push({ user: req.user._id, paid: false });
+        await member.save();
+      }
       if (liveAccess.plan === 'monthly' || liveAccess.plan === 'starter' || liveAccess.plan === 'professional') {
         await User.findByIdAndUpdate(req.user._id, {
           liveSessionUsedThisMonth: true,
@@ -306,18 +326,21 @@ router.post('/:id/register', protect, async (req, res) => {
       } else if (liveAccess.plan === 'annual' || liveAccess.plan === 'vip') {
         if (liveAccess.windowElapsed) {
           await User.findByIdAndUpdate(req.user._id, {
-            liveHoursUsedThisYear: (session.ceuHours || 0),
+            liveHoursUsedThisYear: cohortHours,
             liveHoursYearResetAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
           });
         } else {
           await User.findByIdAndUpdate(req.user._id, {
-            $inc: { liveHoursUsedThisYear: session.ceuHours || 0 }
+            $inc: { liveHoursUsedThisYear: cohortHours }
           });
         }
       }
-      sendLiveSessionRegistrationConfirmation(req.user, session, {
-        seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
-      }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
+      // .ics is per-session, so the confirmation goes out once per cohort member.
+      for (const member of cohortMembers) {
+        sendLiveSessionRegistrationConfirmation(req.user, member, {
+          seatsRemaining: Math.max(0, member.capacity - member.registrants.length)
+        }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
+      }
       logLiveSessionRegistration(session, req.user);
       return res.json({ registered: true });
     }
@@ -369,19 +392,30 @@ router.post('/:id/register', protect, async (req, res) => {
         metadata: {
           type: 'live-session',
           liveSessionId: session._id.toString(),
-          userId: req.user._id.toString()
+          userId: req.user._id.toString(),
+          // Carries the cohort through to fulfillment so a paid registration
+          // can seat every member, not just the one purchased against.
+          // NOTE: the payments.js webhook does not yet read this field — it
+          // still seats only liveSessionId. Consuming cohortSessionIds there
+          // requires a follow-up change to that protected file.
+          cohortSessionIds: cohortMembers.map(m => m._id.toString()).join(',')
         }
       });
       return res.json({ checkoutUrl: checkout.url });
     }
 
-    session.registrants.push({ user: req.user._id, paid: false });
-    await session.save();
+    for (const member of cohortMembers) {
+      member.registrants.push({ user: req.user._id, paid: false });
+      await member.save();
+    }
     // Fire-and-forget: registration confirmation + .ics calendar invite (learner)
-    // and instructor copy. Email failures must never block/deny a registration.
-    sendLiveSessionRegistrationConfirmation(req.user, session, {
-      seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
-    }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
+    // and instructor copy, once per cohort member. Email failures must never
+    // block/deny a registration.
+    for (const member of cohortMembers) {
+      sendLiveSessionRegistrationConfirmation(req.user, member, {
+        seatsRemaining: Math.max(0, member.capacity - member.registrants.length)
+      }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
+    }
     logLiveSessionRegistration(session, req.user);
     res.json({ registered: true });
   } catch (err) {
