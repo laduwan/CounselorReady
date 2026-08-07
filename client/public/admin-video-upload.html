@@ -298,10 +298,11 @@
         async function loadCourses() {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`${API_URL}/api/courses`, {
+                const res = await fetch(`${API_URL}/api/interactive-courses?limit=500`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const courses = await res.json();
+                const data = await res.json();
+                const courses = data.courses || [];
 
                 const select = document.getElementById('course-select');
                 courses.forEach(course => {
