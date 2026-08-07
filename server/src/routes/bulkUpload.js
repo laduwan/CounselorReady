@@ -12,8 +12,8 @@ import express from 'express';
 import multer from 'multer';
 import AdmZip from 'adm-zip';
 import { protect } from '../middleware/auth.js';
-import Course from '../models/Course.js';
-import { parseCourseMarkdown, transformToCourseModel, parseMultipleCourses } from '../utils/courseParser.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
+import { parseDocumentToInteractiveCourse, buildValidationReport } from '../utils/bulkImportParser.js';
 
 const router = express.Router();
 
@@ -243,8 +243,26 @@ async function processUploadedFiles(files) {
 // ===========================================
 
 /**
+ * Default course metadata from the admin settings panel. accessType is
+ * validated against InteractiveCourse's real enum (free/subscription/purchase)
+ * — the legacy 'paid'/'accessTier' fields don't exist on this schema.
+ */
+function buildDefaultsFromBody(body) {
+  return {
+    accessType: body.accessType,
+    price: body.price ? parseFloat(body.price) : null,
+    pricingTier: body.pricingTier || 'standard',
+    category: body.category || 'Clinical Practice',
+    ceHours: body.ceHours ? parseFloat(body.ceHours) : 3,
+    approvalBody: body.approvingBody || body.approvalBody || 'NBCC',
+    acepNumber: body.approvalNumber || body.acepNumber || '7760',
+    instructor: body.instructor || 'GA Integrated Therapeutic Perspectives LLC'
+  };
+}
+
+/**
  * @route   POST /api/admin/courses/bulk-upload
- * @desc    Upload and parse multiple course documents
+ * @desc    Upload and import multiple course documents as InteractiveCourse drafts
  * @access  Admin only
  */
 router.post('/bulk-upload', protect, adminOnly, upload.array('files', 50), async (req, res) => {
@@ -252,108 +270,98 @@ router.post('/bulk-upload', protect, adminOnly, upload.array('files', 50), async
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
-    
-    // Parse default options from request body
-    const defaults = {
-      accessType: req.body.accessType || 'paid',
-      accessTier: req.body.accessTier || 'professional',
-      price: req.body.price ? parseFloat(req.body.price) : null,
-      pricingTier: req.body.pricingTier || 'standard',
-      approvingBody: req.body.approvingBody || 'NBCC',
-      approvalNumber: req.body.approvalNumber || '7760',
-      ceuApprovalNumber: req.body.ceuApprovalNumber || '7760',
-      instructor: req.body.instructor || 'GA Integrated Therapeutic Perspectives LLC'
-    };
-    
+
+    const defaults = buildDefaultsFromBody(req.body);
     const autoSave = req.body.autoSave === 'true' || req.body.autoSave === true;
-    
+
     console.log(`Processing ${req.files.length} uploaded file(s)...`);
-    
-    // Extract text from all files
+
+    // Extract text from all files (unchanged extraction pipeline)
     const documents = await processUploadedFiles(req.files);
-    
+
     // Filter out failed extractions
     const validDocuments = documents.filter(d => !d.error && d.text);
     const failedExtractions = documents.filter(d => d.error);
-    
+
     if (validDocuments.length === 0) {
       return res.status(400).json({
         error: 'No valid documents found',
         details: failedExtractions.map(d => ({ filename: d.filename, error: d.error }))
       });
     }
-    
-    console.log(`Parsing ${validDocuments.length} valid document(s)...`);
-    
-    // Parse courses using AI
-    const parseResults = await parseMultipleCourses(validDocuments, defaults);
-    
-    // Separate successes and failures
-    const successfulParses = parseResults.filter(r => r.success);
-    const failedParses = parseResults.filter(r => !r.success);
-    
-    // If autoSave is enabled, save courses to database
+
+    console.log(`Importing ${validDocuments.length} valid document(s) into InteractiveCourse drafts...`);
+
+    const parsed = [];
+    const parseErrors = [];
+    for (const doc of validDocuments) {
+      try {
+        const course = await parseDocumentToInteractiveCourse(doc.text, defaults);
+        parsed.push({ filename: doc.filename, course });
+      } catch (error) {
+        console.error(`Failed to parse ${doc.filename}:`, error);
+        parseErrors.push({ filename: doc.filename, error: error.message });
+      }
+    }
+
+    // autoSave still only means "save immediately vs. preview first" — content
+    // status is ALWAYS 'draft'/isPublished:false regardless, set inside the parser.
     const savedCourses = [];
     const saveErrors = [];
-    
-    if (autoSave && successfulParses.length > 0) {
-      for (const result of successfulParses) {
+
+    if (autoSave && parsed.length > 0) {
+      for (const { filename, course } of parsed) {
         try {
-          // Add createdBy
-          result.course.createdBy = req.user._id;
-          
-          // Check for duplicate slug
-          let slug = result.course.slug;
-          const existingCourse = await Course.findOne({ slug });
-          if (existingCourse) {
-            slug = slug + '-' + Date.now().toString(36);
-            result.course.slug = slug;
-          }
-          
-          const course = await Course.create(result.course);
+          course.createdBy = req.user._id;
+
+          // Duplicate-slug suffixing, now checked against interactivecourses.
+          const existing = await InteractiveCourse.findOne({ slug: course.slug });
+          if (existing) course.slug = course.slug + '-' + Date.now().toString(36);
+
+          const saved = await InteractiveCourse.create(course);
           savedCourses.push({
-            filename: result.filename,
-            courseId: course._id,
-            title: course.title,
-            slug: course.slug,
-            ceuHours: course.ceuHours,
-            moduleCount: course.modules.length
+            filename,
+            courseId: saved._id,
+            title: saved.title,
+            slug: saved.slug,
+            ceHours: saved.ceHours,
+            sectionCount: saved.sections.length,
+            status: saved.status,
+            validation: buildValidationReport(saved.toObject())
           });
         } catch (error) {
-          console.error(`Failed to save course from ${result.filename}:`, error);
-          saveErrors.push({
-            filename: result.filename,
-            error: error.message
-          });
+          console.error(`Failed to save course from ${filename}:`, error);
+          saveErrors.push({ filename, error: error.message });
         }
       }
     }
-    
+
     res.json({
       message: `Processed ${req.files.length} file(s)`,
       summary: {
         filesUploaded: req.files.length,
         documentsExtracted: documents.length,
-        successfullyParsed: successfulParses.length,
-        failedToParse: failedParses.length,
+        successfullyParsed: parsed.length,
+        failedToParse: parseErrors.length,
         saved: savedCourses.length,
         saveErrors: saveErrors.length
       },
-      // Return parsed courses (for preview or manual save)
-      courses: autoSave 
-        ? savedCourses 
-        : successfulParses.map(r => ({
-            filename: r.filename,
-            course: r.course
+      // Return parsed courses (for preview or manual save) — unsaved courses
+      // include a validation report too, computed against the in-memory object.
+      courses: autoSave
+        ? savedCourses
+        : parsed.map(p => ({
+            filename: p.filename,
+            course: p.course,
+            validation: buildValidationReport(p.course)
           })),
-      // Include errors for debugging
       errors: {
         extraction: failedExtractions.map(d => ({ filename: d.filename, error: d.error })),
-        parsing: failedParses.map(r => ({ filename: r.filename, error: r.error })),
+        parsing: parseErrors,
         saving: saveErrors
       }
     });
-    
+
   } catch (error) {
     console.error('Bulk upload error:', error);
     res.status(500).json({ error: 'Bulk upload failed: ' + error.message });
@@ -362,55 +370,55 @@ router.post('/bulk-upload', protect, adminOnly, upload.array('files', 50), async
 
 /**
  * @route   POST /api/admin/courses/bulk-save
- * @desc    Save previewed courses to database
+ * @desc    Save previewed InteractiveCourse drafts to the database
  * @access  Admin only
  */
 router.post('/bulk-save', protect, adminOnly, async (req, res) => {
   try {
     const { courses } = req.body;
-    
+
     if (!courses || !Array.isArray(courses) || courses.length === 0) {
       return res.status(400).json({ error: 'No courses provided' });
     }
-    
+
     const savedCourses = [];
     const errors = [];
-    
+
     for (const courseData of courses) {
       try {
-        // Add createdBy
         courseData.createdBy = req.user._id;
-        
-        // Check for duplicate slug
+        // Always draft on save, regardless of what the preview payload carried.
+        courseData.status = 'draft';
+        courseData.isPublished = false;
+
+        // Duplicate-slug suffixing, checked against interactivecourses.
         let slug = courseData.slug;
-        const existingCourse = await Course.findOne({ slug });
-        if (existingCourse) {
+        const existing = await InteractiveCourse.findOne({ slug });
+        if (existing) {
           slug = slug + '-' + Date.now().toString(36);
           courseData.slug = slug;
         }
-        
-        const course = await Course.create(courseData);
+
+        const saved = await InteractiveCourse.create(courseData);
         savedCourses.push({
-          courseId: course._id,
-          title: course.title,
-          slug: course.slug,
-          ceuHours: course.ceuHours
+          courseId: saved._id,
+          title: saved.title,
+          slug: saved.slug,
+          ceHours: saved.ceHours,
+          validation: buildValidationReport(saved.toObject())
         });
       } catch (error) {
         console.error(`Failed to save course "${courseData.title}":`, error);
-        errors.push({
-          title: courseData.title,
-          error: error.message
-        });
+        errors.push({ title: courseData.title, error: error.message });
       }
     }
-    
+
     res.json({
       message: `Saved ${savedCourses.length} of ${courses.length} courses`,
       saved: savedCourses,
       errors
     });
-    
+
   } catch (error) {
     console.error('Bulk save error:', error);
     res.status(500).json({ error: 'Bulk save failed: ' + error.message });
@@ -419,7 +427,7 @@ router.post('/bulk-save', protect, adminOnly, async (req, res) => {
 
 /**
  * @route   POST /api/admin/courses/parse-preview
- * @desc    Parse a single file and return preview without saving
+ * @desc    Parse a single file and return an InteractiveCourse-shaped preview without saving
  * @access  Admin only
  */
 router.post('/parse-preview', protect, adminOnly, upload.single('file'), async (req, res) => {
@@ -427,31 +435,18 @@ router.post('/parse-preview', protect, adminOnly, upload.single('file'), async (
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    
-    const defaults = {
-      accessType: req.body.accessType || 'paid',
-      accessTier: req.body.accessTier || 'professional',
-      price: req.body.price ? parseFloat(req.body.price) : null,
-      pricingTier: req.body.pricingTier || 'standard',
-      approvingBody: req.body.approvingBody || 'NBCC',
-      approvalNumber: req.body.approvalNumber || '7760',
-      ceuApprovalNumber: req.body.ceuApprovalNumber || '7760',
-      instructor: req.body.instructor || 'GA Integrated Therapeutic Perspectives LLC'
-    };
-    
-    // Extract text
+
+    const defaults = buildDefaultsFromBody(req.body);
     const text = await extractTextFromBuffer(req.file.buffer, req.file.originalname);
-    
-    // Parse with deterministic parser
-    const parsed = parseCourseMarkdown(text);
-    const course = transformToCourseModel(parsed, defaults);
-    
+    const course = await parseDocumentToInteractiveCourse(text, defaults);
+
     res.json({
       message: 'Course parsed successfully',
       filename: req.file.originalname,
-      course
+      course,
+      validation: buildValidationReport(course)
     });
-    
+
   } catch (error) {
     console.error('Parse preview error:', error);
     res.status(500).json({ error: 'Failed to parse file: ' + error.message });
