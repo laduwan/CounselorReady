@@ -824,7 +824,7 @@ async function main() {
   console.log('✔  Connected to MongoDB\n');
 
   // Dynamic import to avoid circular-model issues
-  const { default: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
 
   // Upsert
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
