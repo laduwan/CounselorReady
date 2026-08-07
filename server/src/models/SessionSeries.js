@@ -36,7 +36,8 @@ const SessionSeriesSchema = new mongoose.Schema({
   //  - 'manual'        → user picks which sessions individually (Stage 3 UI)
   autoEnroll: {
     type: String,
-    enum: ['all-required', 'all', 'manual'],
+    //  - 'select'        → buyer picks occurrences summing to totalCeuHours
+    enum: ['all-required', 'all', 'manual', 'select'],
     default: 'all-required'
   },
 
