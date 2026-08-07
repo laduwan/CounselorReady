@@ -888,20 +888,47 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           const { liveSessionId, userId: liveUserId } = session.metadata;
           const LiveSession = (await import('../models/LiveSession.js')).default;
           const live = await LiveSession.findById(liveSessionId);
-          if (live && !live.isRegistered(liveUserId)) {
-            live.registrants.push({
-              user: liveUserId,
-              paid: true,
-              stripeCheckoutSessionId: session.id
-            });
-            await live.save();
-            logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+          if (live) {
+            // Cohort-aware fulfillment — routes/liveSessions.js writes
+            // cohortSessionIds into checkout metadata when the purchased
+            // session is part of a Part 1/2 pair. Re-validated against the
+            // purchased session's own cohortKey rather than trusted outright,
+            // since metadata is only as good as the session that created it.
+            // Absent or empty metadata (checkouts created before this change)
+            // falls back to seating liveSessionId alone, unchanged.
+            const pickedIds = (session.metadata.cohortSessionIds || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
 
-            const buyer = await User.findById(liveUserId);
-            if (buyer) {
-              sendLiveSessionRegistrationConfirmation(buyer, live, {
-                seatsRemaining: Math.max(0, (live.capacity || 0) - live.registrants.length)
-              }).catch(err => logger.error({ err: err.message, liveSessionId, requestId: req.requestId }, 'Live session paid-registration email failed'));
+            let cohortMembers = [live];
+            if (pickedIds.length) {
+              const candidates = await LiveSession.find({ _id: { $in: pickedIds } });
+              const validMembers = candidates.filter(m => m.cohortKey === live.cohortKey);
+              if (validMembers.length) cohortMembers = validMembers;
+            }
+
+            const newlySeated = [];
+            for (const member of cohortMembers) {
+              if (member.isRegistered(liveUserId)) continue;
+              member.registrants.push({
+                user: liveUserId,
+                paid: true,
+                stripeCheckoutSessionId: session.id
+              });
+              await member.save();
+              newlySeated.push(member);
+            }
+
+            if (newlySeated.length) {
+              logger.info({ liveSessionId, userId: liveUserId, seatedCount: newlySeated.length, requestId: req.requestId }, 'Live session seat purchased');
+
+              const buyer = await User.findById(liveUserId);
+              if (buyer) {
+                for (const member of newlySeated) {
+                  sendLiveSessionRegistrationConfirmation(buyer, member, {
+                    seatsRemaining: Math.max(0, (member.capacity || 0) - member.registrants.length)
+                  }).catch(err => logger.error({ err: err.message, liveSessionId: member._id.toString(), requestId: req.requestId }, 'Live session paid-registration email failed'));
+                }
+              }
             }
           }
           break;
