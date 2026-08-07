@@ -215,6 +215,7 @@
       const html = courses.map(course => {
         const isEnrolled = course.enrollment?.enrolled;
         const isFree = course.accessType === 'free';
+        const isPremium = course.accessType === 'purchase' || course.accessTier === 'premium';
         const progress = course.enrollment?.percentComplete || 0;
         
         // Get primary CEU category
@@ -255,6 +256,7 @@
                     <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157">${ICON_CLOCK} ${minutes} min</span>
                     <span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34">${ICON_SEAL} ${body}</span>
                     ${isFree ? '<span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">FREE</span>' : ''}
+                    ${isPremium ? '<span class="bg-gold-100 text-gold-700 px-2 py-1 rounded-full text-xs font-medium">★ SOLD SEPARATELY</span>' : ''}
                   `;
                 })()}
               </div>
