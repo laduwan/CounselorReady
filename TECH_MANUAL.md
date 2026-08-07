@@ -284,3 +284,46 @@ changing what Vite emits or how the root is served, and touches build config.
 Three near-duplicate marketing files (`public/index.html`, `home.html`,
 `landing.html`) plus a dead redirect rule are the residue. Not to be attempted as
 a side effect of a content change.
+
+### 2026-08-07 — TECH_MANUAL.md is duplicated end-to-end (not fixed, flagging)
+This file's entire content (Tiers 1–3) appears twice back-to-back — every line
+in the first copy (through the 2026-07-25 entry) recurs verbatim in the second
+copy, which then continues with the 2026-08-02 entry the first copy lacks. This
+reads as mechanical duplication (a bad paste/merge), not two deliberately
+different versions, but per this file's own Tier 2/3 rules ("never rewrite,
+delete, or reorder") I'm not collapsing it myself — appending this entry at the
+true bottom of the file instead and leaving the dedup call to Ke.
+
+### 2026-08-07 — Legacy Course decommission, Phase 4 final inventory
+`grep -rln "models/Course.js" server/src --include="*.js" | sort` after Phases
+1–3 landed (recommendations.js ported, admin-video-upload.html repointed,
+do-not-touch list untouched) returns **33 files**, not the "certificates.js,
+payments.js, and inert scripts/seeds only" end state the plan anticipated.
+
+Breakdown:
+- **Matches plan exactly (2):** `routes/certificates.js`, `routes/payments.js`.
+- **Inert — scripts/data/seeds/test, unreachable unless explicitly run (17):**
+  `data/bulkCourseRepair.js`, `data/fixVideoLessons.js`, `data/seedCourses.js`,
+  `data/seedStandardCourses.js`, `scripts/bulkRegenerateBadCerts.js` (quarantined,
+  Phase 3), `scripts/checkVideoUrls.js`, `scripts/fixOrderAndPopulate.js`,
+  `scripts/listCourseHours.js`, `scripts/populate1CECoursesComplete.js` (Phase 3),
+  `scripts/restoreCourseContent.js`, `scripts/seedAndValidateCourses.js`,
+  `scripts/seedFadingVoices.js`, `scripts/seedNewCourses021826.js` (Phase 3),
+  `scripts/seedStandardCourses_batch2.js`, `scripts/unpublishIncompleteCourses.js`,
+  `utils/seed.js`, `__tests__/payments.test.js`.
+- **Dead code — file exists but is not imported/mounted anywhere in `index.js` (1):**
+  `routes/adminAI.js`. Effectively inert despite living in `routes/`, same as the
+  script bucket above, but worth a name check before anyone assumes it's live.
+- **NOT in the plan — live, mounted routes/services still on the legacy model (13):**
+  `routes/adminCourses.js`, `routes/adminUsers.js`, `routes/analytics.js`,
+  `routes/bulkUpload.js`, `routes/cebroker.js`, `routes/courses.js` (the legacy
+  `/api/courses` surface itself — still mounted, still serving from the empty
+  collection), `routes/lti.js`, `routes/migration.js`, `routes/scorm.js`,
+  `routes/users.js`, `routes/xapi.js`, `services/notificationScheduler.js`
+  (initialized at boot in `index.js`), `services/courseEmailService.js`
+  (reachable via `routes/researchReady.js`, which is mounted).
+
+No files were changed as part of this inventory — Phase 4 is documentation only.
+The 13-file "not in the plan" bucket is new information the original scoping
+(P0–Phase 3) didn't anticipate; it needs its own scoping pass before anyone
+schedules further decommission work.
