@@ -25,12 +25,24 @@ const router = express.Router();
 // @access  Public (but tracks user if logged in)
 router.post('/course/:id/view', async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
-    // Increment view count
+
+    if (!fromLegacy) {
+      // InteractiveCourse has no analytics.views field to persist into —
+      // that's a schema addition out of scope here (InteractiveCourse.js
+      // isn't named in this task). Acknowledge without claiming a tracked count.
+      return res.json({ success: true, tracked: false });
+    }
+
+    // Increment view count (legacy Course path — unchanged)
     course.analytics.views = (course.analytics.views || 0) + 1;
     
     // Track unique views via cookie
@@ -61,22 +73,35 @@ router.post('/course/:id/rate', protect, async (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
     
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+    if (!fromLegacy) {
+      // InteractiveCourse has no ratings/analytics fields to persist into —
+      // same schema gap as view tracking above, same scope boundary.
+      return res.status(501).json({
+        error: 'Ratings are not yet supported for this course.',
+        reason: 'unsupported_course_type'
+      });
+    }
+
     // Check if user completed the course
     const progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id,
       status: 'completed'
     });
-    
+
     if (!progress) {
       return res.status(400).json({ error: 'You must complete the course before rating' });
     }
-    
+
     // Check if already rated
     const existingRating = course.ratings.find(
       r => r.userId.toString() === req.user._id.toString()
@@ -129,17 +154,22 @@ router.get('/course/:id', protect, async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
     // Get completion time stats
     const completedProgress = await UserCourseProgress.find({
       courseId: req.params.id,
       status: 'completed'
     });
-    
+
     let avgTimeToComplete = 0;
     if (completedProgress.length > 0) {
       const totalHours = completedProgress.reduce((sum, p) => {
@@ -148,19 +178,20 @@ router.get('/course/:id', protect, async (req, res) => {
       }, 0);
       avgTimeToComplete = Math.round((totalHours / completedProgress.length) * 10) / 10;
     }
-    
-    // Get recent ratings with user info
-    const recentRatings = course.ratings
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 10);
-    
+
+    // Get recent ratings with user info — InteractiveCourse has no ratings
+    // field (same schema gap as the view/rate routes above), so this is
+    // always empty for that course type.
+    const recentRatings = fromLegacy
+      ? course.ratings.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10)
+      : [];
+
     res.json({
       courseId: course._id,
       title: course.title,
-      analytics: {
-        ...course.analytics,
-        avgTimeToComplete
-      },
+      analytics: fromLegacy
+        ? { ...course.analytics, avgTimeToComplete }
+        : { avgTimeToComplete },
       recentRatings,
       enrollmentTrend: await getEnrollmentTrend(req.params.id)
     });
@@ -202,19 +233,37 @@ router.get('/courses/popular', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const sortBy = req.query.sortBy || 'enrollments'; // enrollments, rating, completions
     
-    const sortField = {
-      enrollments: 'analytics.enrollments',
-      rating: 'analytics.avgRating',
-      completions: 'analytics.completions',
-      views: 'analytics.views'
-    }[sortBy] || 'analytics.enrollments';
-    
-    const courses = await Course.find({ status: 'published' })
-      .select('title slug thumbnail ceuHours analytics')
-      .sort({ [sortField]: -1 })
-      .limit(limit);
-    
-    res.json({ courses });
+    const metricKey = {
+      enrollments: 'enrollments',
+      rating: 'avgRating',
+      completions: 'completions',
+      views: 'views'
+    }[sortBy] || 'enrollments';
+
+    // InteractiveCourse has no analytics counters to sort by at the DB level
+    // (same schema gap as the routes above), so both sources are fetched and
+    // merged/sorted in application code. Interactive courses normalize to
+    // zero on every metric and so always sort last until that schema gap is
+    // closed — which is out of scope here (InteractiveCourse.js isn't named
+    // in this task).
+    const [legacyCourses, interactiveCourses] = await Promise.all([
+      Course.find({ status: 'published' }).select('title slug thumbnail ceuHours analytics').lean(),
+      InteractiveCourse.find({ status: 'published' }).select('title slug thumbnail ceHours').lean()
+    ]);
+
+    const merged = [
+      ...legacyCourses.map(c => ({
+        _id: c._id, title: c.title, slug: c.slug, thumbnail: c.thumbnail,
+        ceuHours: c.ceuHours, analytics: c.analytics || {}
+      })),
+      ...interactiveCourses.map(c => ({
+        _id: c._id, title: c.title, slug: c.slug, thumbnail: c.thumbnail,
+        ceuHours: c.ceHours, analytics: { enrollments: 0, avgRating: 0, completions: 0, views: 0 }
+      }))
+    ];
+    merged.sort((a, b) => (b.analytics?.[metricKey] || 0) - (a.analytics?.[metricKey] || 0));
+
+    res.json({ courses: merged.slice(0, limit) });
   } catch (error) {
     console.error('Get popular courses error:', error);
     res.status(500).json({ error: 'Failed to get popular courses' });

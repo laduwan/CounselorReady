@@ -327,3 +327,28 @@ No files were changed as part of this inventory — Phase 4 is documentation onl
 The 13-file "not in the plan" bucket is new information the original scoping
 (P0–Phase 3) didn't anticipate; it needs its own scoping pass before anyone
 schedules further decommission work.
+
+### 2026-08-07 — Legacy Course decommission, Phase 5.4: analytics.js was pricier than scoped, plus P3 reclassification
+Phase 5 scoping called `routes/analytics.js`'s four `Course.findById`/`.find`
+spots a "low risk" dual-lookup, same shape as `certificates.js`. Reality: three
+of the four (`POST /course/:id/view`, `POST /course/:id/rate`, `GET
+/course/:id`) read or write `course.analytics.*` / `course.ratings[]`, and
+**neither field exists anywhere on `InteractiveCourse`'s schema** — a naive
+dual-lookup would have crashed (`TypeError` on `undefined.views = ...`), not
+silently degraded. Fixed by branching on which model resolved the lookup:
+legacy `Course` keeps the exact original read/write behavior; `InteractiveCourse`
+gets an honest response instead of a crash or a silent no-op — view tracking
+returns `tracked:false`, rating POST returns `501 unsupported_course_type`,
+and the admin analytics GET omits ratings/counters it has nowhere to read from.
+The fourth spot (`GET /courses/popular`) now fetches both collections and
+merges/sorts in application code, since InteractiveCourse has no analytics
+counters to sort by at the DB level — interactive courses normalize to zero on
+every metric and always sort last. None of this required touching
+`InteractiveCourse.js` (not named in the task); giving interactive courses
+real view/rating tracking needs a schema decision from Ke, not a route patch.
+
+Also, per the same scoping doc's P3 list: `routes/adminCourses.js` and
+`routes/adminUsers.js` are reclassified into the Phase 3 do-not-touch/keep
+list — confirmed already dual-source (`Course` + `InteractiveCourse`) by
+design, matching the `certificates.js` pattern. No code change; this is the
+"RECLASSIFY... no action ever" P3 item, recorded for the record.
