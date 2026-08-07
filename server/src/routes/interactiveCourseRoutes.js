@@ -114,6 +114,8 @@ function freeTierDecision(user, course) {
 // (starter/professional/vip) are unlimited here; per-plan CE-hour caps
 // are enforced separately by User.canAccessAsyncCourse. free → false.
 function planCoversCourse(plan, course) {
+  // Purchase-only courses are never covered by any subscription plan.
+  if (course?.accessType === 'purchase') return false;
   if (plan === 'free') return false;
   return true;
 }
