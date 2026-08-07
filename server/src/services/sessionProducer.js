@@ -357,15 +357,27 @@ export async function sendRegistrationClosedRoster(session) {
           <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${email}</td>
           <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.paid ? 'Paid' : 'Unpaid'}</td>
           <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.phoneOptIn ? 'Yes' : 'No'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.accommodations?.captionsNeeded ? 'Yes' : '—'}</td>
         </tr>`;
       }).join('')
-    : `<tr><td colspan="4" style="padding:6px 10px;color:#78716c;">No registrants.</td></tr>`;
+    : `<tr><td colspan="5" style="padding:6px 10px;color:#78716c;">No registrants.</td></tr>`;
 
   const startStr = session.scheduledStart
     ? session.scheduledStart.toLocaleString('en-US', {
         dateStyle: 'full', timeStyle: 'short', timeZone: session.timezone || 'America/New_York'
       })
     : 'TBD';
+
+  // Captions request banner — only shown when at least one registrant asked.
+  // Captions are off by default and room-wide; the host decides before go-time.
+  const captionRequesters = regs.filter(r => r.accommodations?.captionsNeeded);
+  const captionsBanner = captionRequesters.length
+    ? `<div style="margin:12px 0;padding:12px;background:#FBF0F2;border:1px solid #E8C3CB;border-radius:8px;color:#6B1D34;font-size:13px;">
+        <strong>${captionRequesters.length} registrant${captionRequesters.length === 1 ? '' : 's'} requested live captions.</strong>
+        ${captionRequesters.filter(r => r.accommodations?.notes).map(r => `<div style="margin-top:6px;">"${esc(r.accommodations.notes)}"</div>`).join('')}
+        <p style="margin:8px 0 0;">Captions are off unless enabled on this session — Whereby bills per unmuted-participant-minute, room-wide.</p>
+      </div>`
+    : '';
 
   await sendEmail({
     to: ADMIN_EMAIL,
@@ -376,6 +388,7 @@ export async function sendRegistrationClosedRoster(session) {
         <strong>Session starts:</strong> ${esc(startStr)} (${esc(session.timezone || 'America/New_York')})<br>
         <strong>Total registered:</strong> ${regs.length}${session.capacity ? ` of ${session.capacity} seats` : ''}
       </p>
+      ${captionsBanner}
       <table style="width:100%;border-collapse:collapse;font-size:13px;color:#284157;">
         <thead>
           <tr style="text-align:left;">
@@ -383,6 +396,7 @@ export async function sendRegistrationClosedRoster(session) {
             <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Email</th>
             <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Payment</th>
             <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">SMS opt-in</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Captions</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>

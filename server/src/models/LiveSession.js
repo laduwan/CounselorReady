@@ -23,6 +23,12 @@ const registrantSchema = new mongoose.Schema({
   paid: { type: Boolean, default: false },
   stripeCheckoutSessionId: String,
   phoneOptIn: { type: Boolean, default: false },  // SMS consent for session logistics
+  // Optional accessibility request captured at registration. Surfaces in the
+  // pre-session roster email; does NOT auto-enable session.captionsEnabled.
+  accommodations: {
+    captionsNeeded: { type: Boolean, default: false },
+    notes: { type: String, trim: true, default: '', maxlength: 500 }
+  },
   // Set once the late-series-registration detector (sessionProducerTick.js)
   // has alerted the admin about this specific registrant landing after the
   // session's own registrationDeadline() — keeps the alert to a single email
@@ -247,6 +253,10 @@ const liveSessionSchema = new mongoose.Schema({
   // Recording — live-course only; hard-locked off for supervision
   recordingEnabled: { type: Boolean, default: false },
   recordings: [recordingSchema],
+
+  // Whereby Live Captions — billed per unmuted-participant-minute, room-wide.
+  // Off by default; the host enables per session after reviewing the roster.
+  captionsEnabled: { type: Boolean, default: false },
 
   // Host-only instructor dashboard settings
   alarmLeadSec: { type: Number, default: 60, min: 0, max: 600 }, // host-only: seconds before segment end to play the warning tone

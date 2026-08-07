@@ -165,6 +165,17 @@
                 ${s.recordingEnabled ? '<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.10);color:#4A7C59;">Replay included</span>' : ''}
                 ${seriesTitle ? `<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(212,168,85,0.15);color:#8B6914;">Part of: ${esc(seriesTitle)}</span>` : ''}
               </div>
+              <details style="margin-bottom:12px;">
+                <summary style="cursor:pointer;font-size:11px;font-weight:600;color:#284157;">Accessibility needs?</summary>
+                <div style="margin-top:8px;padding:10px;background:#FAF9F7;border-radius:8px;border:1px solid #EDE9E3;">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#284157;margin-bottom:6px;">
+                    <input type="checkbox" id="accCaptions-${s._id}">
+                    Request live captions
+                  </label>
+                  <textarea id="accNotes-${s._id}" placeholder="Notes (optional)" maxlength="500" rows="2" style="width:100%;font-size:12px;padding:6px;border:1px solid #EDE9E3;border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
+                  <p style="font-size:10px;color:#78716c;margin:6px 0 0;">Live captions carry an added per-minute cost. Please request them only if you need them to participate.</p>
+                </div>
+              </details>
               <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #EDE9E3;">
                 <div>
                   <div style="font-size:11px;color:${blocked?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||blocked?'600':'400'};margin-bottom:2px;">${regClosed?'Registration closed':full?'Session full':s.seatsRemaining+' seats left'}</div>
@@ -202,11 +213,21 @@
 
     async function register(id, code) {
       if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return false; }
+      // Optional accessibility request from the card's collapsed toggle.
+      // Absent when the card has no such fields (e.g. called from lookupSessionByCode).
+      const captionsEl = document.getElementById(`accCaptions-${id}`);
+      const notesEl = document.getElementById(`accNotes-${id}`);
+      const accommodations = (captionsEl && captionsEl.checked) || (notesEl && notesEl.value.trim())
+        ? { captionsNeeded: !!(captionsEl && captionsEl.checked), notes: notesEl ? notesEl.value.trim().slice(0, 500) : '' }
+        : null;
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${id}/register`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(code ? { code } : {})
+          body: JSON.stringify({
+            ...(code ? { code } : {}),
+            ...(accommodations ? { accommodations } : {})
+          })
         });
         const data = await res.json();
         if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return false; }

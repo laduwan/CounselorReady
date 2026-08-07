@@ -906,13 +906,22 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
               if (validMembers.length) cohortMembers = validMembers;
             }
 
+            // Accessibility request carried through from routes/liveSessions.js
+            // checkout metadata. Does NOT auto-enable session.captionsEnabled —
+            // it only surfaces in the pre-session roster email.
+            const accommodations = {
+              captionsNeeded: session.metadata.accNeedsCaptions === '1',
+              notes: session.metadata.accNotes || ''
+            };
+
             const newlySeated = [];
             for (const member of cohortMembers) {
               if (member.isRegistered(liveUserId)) continue;
               member.registrants.push({
                 user: liveUserId,
                 paid: true,
-                stripeCheckoutSessionId: session.id
+                stripeCheckoutSessionId: session.id,
+                accommodations
               });
               await member.save();
               newlySeated.push(member);
