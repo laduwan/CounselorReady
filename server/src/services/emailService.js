@@ -582,6 +582,68 @@ export async function sendBlogDraftForApproval(post, baseUrl) {
   }
 }
 
+/**
+ * Send a single digest email covering several pending blog drafts at once
+ * (e.g. clearing a backlog). Each post needs its own reviewToken already
+ * set. Shows excerpt only, not full content, to keep the digest readable —
+ * links to the admin dashboard for reading a full draft before deciding.
+ */
+export async function sendBlogDraftDigest(posts, baseUrl) {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.warn('[EMAIL] ADMIN_EMAIL not set — skipping blog digest email');
+      return { success: false, error: 'ADMIN_EMAIL not set' };
+    }
+    if (!posts.length) return { success: false, error: 'No posts provided' };
+
+    const itemsHtml = posts.map(post => {
+      const approveUrl = `${baseUrl}/api/blog/${post._id}/approve?token=${post.reviewToken}`;
+      const rejectUrl = `${baseUrl}/api/blog/${post._id}/reject?token=${post.reviewToken}`;
+      const readUrl = `${baseUrl}/admin-blog.html`;
+      return `
+        <div style="padding:18px 0;border-bottom:1px solid #eee;">
+          <p style="color:#666;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 4px;">${post.category}</p>
+          <h3 style="color:#6B1D34;margin:0 0 6px;">${post.title}</h3>
+          <p style="color:#555;font-size:14px;line-height:1.5;margin:0 0 4px;">${post.excerpt}</p>
+          <p style="color:#888;font-size:12px;margin:0 0 12px;">${post.wordCount} words · ${post.readingTime} min read</p>
+          <a href="${approveUrl}" style="display:inline-block;background:#4A7C59;color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-weight:bold;font-size:13px;margin-right:8px;">Approve & Publish</a>
+          <a href="${rejectUrl}" style="display:inline-block;background:#f5f5f5;color:#6B1D34;text-decoration:none;padding:8px 16px;border-radius:6px;font-weight:bold;font-size:13px;margin-right:8px;">Reject & Discard</a>
+          <a href="${readUrl}" style="display:inline-block;color:#888;text-decoration:underline;font-size:13px;">Read full draft</a>
+        </div>`;
+    }).join('\n');
+
+    const html = `
+      <div style="font-family:Georgia,serif;max-width:640px;margin:0 auto;">
+        <h2 style="color:#6B1D34;margin:0 0 4px;">Blog Drafts Awaiting Review</h2>
+        <p style="color:#888;font-size:13px;margin:0 0 20px;">${posts.length} draft${posts.length === 1 ? '' : 's'} pending — one click to approve or reject each.</p>
+        ${itemsHtml}
+      </div>`;
+
+    const text =
+      `${posts.length} blog draft(s) awaiting review:\n\n` +
+      posts.map(post => {
+        const approveUrl = `${baseUrl}/api/blog/${post._id}/approve?token=${post.reviewToken}`;
+        const rejectUrl = `${baseUrl}/api/blog/${post._id}/reject?token=${post.reviewToken}`;
+        return `"${post.title}" (${post.wordCount} words)\n${post.excerpt}\nApprove: ${approveUrl}\nReject: ${rejectUrl}\n`;
+      }).join('\n');
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: adminEmail,
+      subject: `[Blog Digest] ${posts.length} draft${posts.length === 1 ? '' : 's'} awaiting review`,
+      html,
+      text,
+    });
+
+    if (error) throw new Error(error.message || 'Resend error');
+    return { success: true, data };
+  } catch (err) {
+    console.error('[EMAIL] sendBlogDraftDigest error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 // Default export for the `import emailService from '...'; const { x } = emailService;`
 // pattern used by routes/rewards.js and routes/adminRewards.js.
 export default {
@@ -593,4 +655,5 @@ export default {
   sendLiveSessionCancellationRefundEmail,
   sendSuggestionNotification,
   sendBlogDraftForApproval,
+  sendBlogDraftDigest,
 };
