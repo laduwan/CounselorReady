@@ -921,12 +921,24 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             //  'all'          → every member session
             //  'all-required' → members where seriesMembership.required !== false
             //  'manual'       → never reaches Stripe (register returns 400)
-            const memberSessions = series.autoEnroll === 'all'
-              ? await LiveSession.find({ seriesId: series._id })
-              : await LiveSession.find({
-                  seriesId: series._id,
-                  'seriesMembership.required': { $ne: false }
-                });
+            // If the buyer picked specific occurrences (autoEnroll 'select'),
+            // seat exactly those. sessionIds rides in the checkout metadata
+            // from sessionSeries.js; it is re-validated against the series
+            // here rather than trusted, since metadata is only as good as the
+            // session that created it. Absent metadata keeps the original
+            // auto-enroll behavior so checkouts created before this change,
+            // and the two auto-enroll modes, are unaffected.
+            const pickedIds = (session.metadata.sessionIds || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
+
+            const allMembers = await LiveSession.find({ seriesId: series._id });
+            const memberSessions = pickedIds.length
+              ? allMembers.filter(m => pickedIds.includes(m._id.toString()))
+              : (series.autoEnroll === 'all'
+                  ? allMembers
+                  : allMembers.filter(
+                      m => !m.seriesMembership || m.seriesMembership.required !== false
+                    ));
 
             const newlyEnrolled = [];
             for (const sess of memberSessions) {
@@ -934,7 +946,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                 r => r.user && r.user.toString() === seriesUserId.toString()
               );
               if (already) continue;
-              sess.registrants.push({ user: seriesUserId, registeredAt: new Date(), paid: true });
+              // Stamp the checkout id so a seat can be traced back to its
+              // payment. Without it, series seats show paid:true with no
+              // Stripe reference, which is what made the six-seat incident
+              // impossible to diagnose from the data alone.
+              sess.registrants.push({
+                user: seriesUserId,
+                registeredAt: new Date(),
+                paid: true,
+                stripeCheckoutSessionId: session.id
+              });
               await sess.save();
               newlyEnrolled.push(sess);
             }

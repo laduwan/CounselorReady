@@ -137,6 +137,49 @@ router.post('/:id/register', protect, async (req, res) => {
         seriesId: series._id,
         'seriesMembership.required': { $ne: false }
       });
+    } else if (series.autoEnroll === 'select') {
+      // ── Selection mode ──
+      // The purchase buys a CE-hour obligation (series.totalCeuHours), not a
+      // fixed roster. The buyer names the occurrences they want and we seat
+      // exactly those. One 5hr session, or two 2.5hr halves, both satisfy a
+      // 5-hour obligation; what must never happen is seating them in every
+      // occurrence the series carries, which is what the two auto-enroll
+      // modes above do and why one purchase produced six seats.
+      const picked = Array.isArray(req.body.sessionIds) ? req.body.sessionIds : [];
+      if (picked.length === 0) {
+        return res.status(400).json({
+          error: 'Select the sessions you want to attend.',
+          reason: 'selection_required',
+          totalCeuHours: series.totalCeuHours
+        });
+      }
+
+      const members = await LiveSession.find({ seriesId: series._id });
+      const memberIds = members.map(m => m._id.toString());
+
+      // Every picked id must actually belong to this series. Silently dropping
+      // strangers would let a caller seat themselves anywhere.
+      const foreign = picked.filter(id => !memberIds.includes(String(id)));
+      if (foreign.length) {
+        return res.status(400).json({
+          error: 'One or more selected sessions do not belong to this series.',
+          reason: 'invalid_selection'
+        });
+      }
+
+      // De-dupe so the same session picked twice can't fake the hour total.
+      const uniquePicked = [...new Set(picked.map(String))];
+      candidateSessions = members.filter(m => uniquePicked.includes(m._id.toString()));
+
+      const selectedHours = candidateSessions.reduce((sum, s) => sum + (s.ceuHours || 0), 0);
+      if (selectedHours !== series.totalCeuHours) {
+        return res.status(400).json({
+          error: `Your selection totals ${selectedHours} CE hours; this series requires exactly ${series.totalCeuHours}.`,
+          reason: 'hours_mismatch',
+          selectedHours,
+          totalCeuHours: series.totalCeuHours
+        });
+      }
     } else {
       // 'manual' — attendees pick individually via the normal /live-sessions/:id/register
       return res.status(400).json({
@@ -184,7 +227,13 @@ router.post('/:id/register', protect, async (req, res) => {
         metadata: {
           type: 'session-series',
           seriesId: series._id.toString(),
-          userId: req.user._id.toString()
+          userId: req.user._id.toString(),
+          // Selection must survive into fulfillment — the webhook seats the
+          // buyer, not this route. Without it the webhook falls back to
+          // enrolling every member session. Stripe caps a metadata value at
+          // 500 chars; a 5-hour obligation is at most a handful of 24-char
+          // ObjectIds, so this has ample headroom.
+          sessionIds: candidateSessions.map(s => s._id.toString()).join(',')
         }
       });
       return res.json({ checkoutUrl: checkout.url });
