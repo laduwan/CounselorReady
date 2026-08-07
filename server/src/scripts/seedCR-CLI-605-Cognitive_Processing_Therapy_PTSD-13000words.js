@@ -22,7 +22,7 @@ const COURSE = {
   approvingBody: 'NBCC', approvalNumber: '7760', acepNumber: '7760',
   provider: { name: 'GA Integrated Therapeutic Perspectives LLC', shortName: 'GAITP LLC', acepNumber: '7760', approvalBody: 'NBCC' },
   approvals: [{ body: 'NBCC', number: '#7760', providerNumber: '7760', providerName: 'GA Integrated Therapeutic Perspectives LLC', status: 'approved', hourBreakdown: [{ label: 'core', hours: 2 }], deliveryFormat: 'asynchronous' }],
-  nbccContentAreas: ['Counseling Theory/Practice and the Counseling Relationship'],
+  nbccContentAreas: ['Counseling Theory/Practice'],
   presenter: { name: 'Kejuiana Johnson', credentials: 'MA, LPC, NCC, CPCS, BC-TMH', degree: 'MA', licenseNumber: 'LPC009587', licenseState: 'Georgia', licenseType: 'LPC', qualificationStatement: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH, is a licensed professional counselor and approved clinical supervisor in Georgia with expertise in trauma-informed clinical practice, cognitive behavioral approaches, and counselor education.' },
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
   author: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH',
