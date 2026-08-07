@@ -88,6 +88,11 @@ function hasCardOnFile(user) {
 
 // Free-tier eligibility for a PAID course. Read-only (does NOT consume a slot).
 function freeTierDecision(user, course) {
+  // Purchase-only courses are never covered by free-tier slots — must be bought.
+  if (course?.accessType === 'purchase') {
+    return { allowed: false, code: 'PURCHASE_REQUIRED',
+      message: 'This course is sold separately. Purchase it to enroll.' };
+  }
   const courseHours = course.ceHours || course.ceuHours || 1;
   if (courseHours > FREE_MAX_COURSE_HOURS) {
     return { allowed: false, code: 'OVER_FREE_HOUR_LIMIT',
@@ -586,7 +591,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
     if (!accessGranted) {
       return res.status(403).json({
         success: false,
-        error: freeDenial?.code === 'OVER_FREE_HOUR_LIMIT' ? 'Upgrade required' : 'Subscription required',
+        error: freeDenial?.code === 'PURCHASE_REQUIRED' ? 'Purchase required' : freeDenial?.code === 'OVER_FREE_HOUR_LIMIT' ? 'Upgrade required' : 'Subscription required',
         code: freeDenial?.code || 'SUBSCRIPTION_REQUIRED',
         message: freeDenial?.message || `Subscribe for unlimited access.`,
         freeCoursesUsedThisMonth: effectiveFreeCoursesUsed(user),
