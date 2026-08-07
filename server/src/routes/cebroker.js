@@ -6,6 +6,7 @@
 import express from 'express';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import User from '../models/User.js';
 import Certificate from '../models/Certificate.js';
 import {
@@ -17,6 +18,43 @@ import {
 } from '../utils/cebroker.js';
 
 const router = express.Router();
+
+// Dual-lookup — same pattern as certificates.js. The legacy `courses`
+// collection is empty in production, so this fallback is what makes
+// reporting work for real (interactive) courses at all.
+async function findCourseByEitherModel(courseId) {
+  const legacy = await Course.findById(courseId);
+  if (legacy) return { course: legacy, fromLegacy: true };
+  const interactive = await InteractiveCourse.findById(courseId);
+  if (interactive) return { course: interactive, fromLegacy: false };
+  return null;
+}
+
+// Legacy Course carries an explicit ceuEligible flag; InteractiveCourse has
+// no such field — every InteractiveCourse requires ceHours > 0, which is the
+// equivalent "this is CE content" signal.
+function resolveEligibility(course, fromLegacy) {
+  const ceuHours = fromLegacy ? (course.ceuHours || 0) : (course.ceuHours ?? course.ceHours ?? 0);
+  const eligible = fromLegacy ? !!course.ceuEligible : ceuHours > 0;
+  return { ceuHours, eligible };
+}
+
+// reportCECompletion (utils/cebroker.js) reads course.ceuHours, ceuCategories,
+// and ceuApprovalNumber — all legacy field names. Untouched here; instead this
+// builds a normalized shim so it gets correct data regardless of which model
+// the course actually came from.
+function toReportableCourse(course, fromLegacy, ceuHours) {
+  if (fromLegacy) return course;
+  return {
+    _id: course._id,
+    title: course.title,
+    ceuHours,
+    ceuCategories: course.categories?.length
+      ? [{ category: course.categories[0], hours: ceuHours }]
+      : [],
+    ceuApprovalNumber: course.acepNumber || '7760'
+  };
+}
 
 // @route   GET /api/cebroker/states
 // @desc    Get list of states that use CE Broker
@@ -47,16 +85,18 @@ router.get('/check/:state', (req, res) => {
 router.post('/report', protect, async (req, res) => {
   try {
     const { courseId, certificateId } = req.body;
-    
+
     const user = await User.findById(req.user._id);
-    const course = await Course.findById(courseId);
+    const resolved = await findCourseByEitherModel(courseId);
     const certificate = certificateId ? await Certificate.findById(certificateId) : null;
 
-    if (!course) {
+    if (!resolved) {
       return res.status(404).json({ error: 'Course not found' });
     }
+    const { course, fromLegacy } = resolved;
+    const { ceuHours, eligible } = resolveEligibility(course, fromLegacy);
 
-    if (!course.ceuEligible || !course.ceuHours) {
+    if (!eligible || !ceuHours) {
       return res.status(400).json({ error: 'Course is not CE eligible' });
     }
 
@@ -84,7 +124,7 @@ router.post('/report', protect, async (req, res) => {
     // Report to CE Broker
     const result = await reportCECompletion(
       user,
-      course,
+      toReportableCourse(course, fromLegacy, ceuHours),
       certificate?.issuedAt || new Date(),
       certNumber
     );
@@ -119,12 +159,22 @@ router.post('/batch-report', protect, async (req, res) => {
     for (const completion of completions) {
       try {
         const user = await User.findById(req.user._id);
-        const course = await Course.findById(completion.courseId);
-        const certificate = completion.certificateId 
-          ? await Certificate.findById(completion.certificateId) 
+        const resolved = await findCourseByEitherModel(completion.courseId);
+        const certificate = completion.certificateId
+          ? await Certificate.findById(completion.certificateId)
           : null;
 
-        if (!course || !course.ceuEligible) {
+        if (!resolved) {
+          results.push({
+            courseId: completion.courseId,
+            success: false,
+            error: 'Course not found or not CE eligible'
+          });
+          continue;
+        }
+        const { course, fromLegacy } = resolved;
+        const { ceuHours, eligible } = resolveEligibility(course, fromLegacy);
+        if (!eligible) {
           results.push({
             courseId: completion.courseId,
             success: false,
@@ -133,12 +183,12 @@ router.post('/batch-report', protect, async (req, res) => {
           continue;
         }
 
-        const certNumber = certificate?.certificateNumber || 
+        const certNumber = certificate?.certificateNumber ||
           `CR-${course._id.toString().slice(-6)}-${Date.now()}`;
 
         const result = await reportCECompletion(
           user,
-          course,
+          toReportableCourse(course, fromLegacy, ceuHours),
           certificate?.issuedAt || new Date(),
           certNumber
         );
