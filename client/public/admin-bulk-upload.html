@@ -128,20 +128,16 @@
           <label class="block text-sm font-medium text-forest-700 mb-1">Access Type</label>
           <select id="accessType" class="w-full border border-forest-200 rounded-lg px-3 py-2">
             <option value="free">Free</option>
-            <option value="paid" selected>Paid</option>
-            <option value="subscription">Subscription</option>
+            <option value="subscription" selected>Subscription (included in plans)</option>
+            <option value="purchase">Purchase (sold separately)</option>
           </select>
         </div>
-        
+
         <div>
-          <label class="block text-sm font-medium text-forest-700 mb-1">Access Tier</label>
-          <select id="accessTier" class="w-full border border-forest-200 rounded-lg px-3 py-2">
-            <option value="free">Free</option>
-            <option value="professional" selected>Professional</option>
-            <option value="vip">VIP</option>
-          </select>
+          <label class="block text-sm font-medium text-forest-700 mb-1">CE Hours</label>
+          <input type="number" id="ceHours" value="3" min="0.5" step="0.5" class="w-full border border-forest-200 rounded-lg px-3 py-2">
         </div>
-        
+
         <div>
           <label class="block text-sm font-medium text-forest-700 mb-1">Pricing Tier</label>
           <select id="pricingTier" class="w-full border border-forest-200 rounded-lg px-3 py-2">
@@ -357,7 +353,7 @@
       
       // Add settings
       formData.append('accessType', document.getElementById('accessType').value);
-      formData.append('accessTier', document.getElementById('accessTier').value);
+      formData.append('ceHours', document.getElementById('ceHours').value);
       formData.append('pricingTier', document.getElementById('pricingTier').value);
       formData.append('approvingBody', document.getElementById('approvingBody').value);
       formData.append('approvalNumber', document.getElementById('approvalNumber').value);
@@ -405,17 +401,20 @@
         savedCoursesDiv.classList.remove('hidden');
         
         document.getElementById('savedCoursesList').innerHTML = data.courses.map(course => `
-          <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-            <span class="font-medium text-forest-800">${course.title}</span>
-            <span class="text-forest-500 text-sm">(${course.ceuHours} CE hrs)</span>
-            <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+          <div class="p-2 bg-green-50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span class="font-medium text-forest-800">${course.title}</span>
+              <span class="text-forest-500 text-sm">(${course.ceHours} CE hrs, ${course.sectionCount} sections, ${course.status})</span>
+              <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+            </div>
+            ${renderValidationReport(course.validation)}
           </div>
         `).join('');
       }
-      
+
       // Show preview courses if not auto-saved
       if (data.courses && data.courses.length > 0 && !document.getElementById('autoSave').checked) {
         previewCourses = data.courses.map(c => ({ ...c, selected: true }));
@@ -453,20 +452,21 @@
       document.getElementById('previewCourses').innerHTML = previewCourses.map((item, index) => `
         <div class="border rounded-lg p-4 ${item.selected ? 'border-burgundy-300 bg-burgundy-50' : 'border-forest-200'}">
           <div class="flex items-start gap-3">
-            <input type="checkbox" ${item.selected ? 'checked' : ''} 
-                   onchange="toggleCourse(${index})" 
+            <input type="checkbox" ${item.selected ? 'checked' : ''}
+                   onchange="toggleCourse(${index})"
                    class="mt-1 w-4 h-4 text-burgundy-600 rounded">
             <div class="flex-1">
               <h4 class="font-medium text-forest-900">${item.course?.title || 'Untitled'}</h4>
               <p class="text-sm text-forest-600 mt-1">
-                ${item.course?.ceuHours || 0} CE Hours • 
-                ${item.course?.modules?.length || 0} Modules • 
-                ${item.course?.modules?.reduce((sum, m) => sum + (m.lessons?.length || 0), 0) || 0} Lessons
+                ${item.course?.ceHours || 0} CE Hours •
+                ${item.course?.sections?.length || 0} Sections •
+                ${item.course?.assessment?.questions?.length || 0} Assessment Questions
               </p>
               ${item.course?.objectives?.length > 0 ? `
                 <p class="text-sm text-forest-500 mt-1">${item.course.objectives.length} Learning Objectives</p>
               ` : ''}
               <p class="text-xs text-forest-400 mt-1">Source: ${item.filename}</p>
+              ${renderValidationReport(item.validation)}
             </div>
             <button onclick="removeCourse(${index})" class="text-forest-400 hover:text-red-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -476,6 +476,28 @@
           </div>
         </div>
       `).join('');
+    }
+
+    // Renders the per-file validation report (words vs target, section/
+    // assessment/reference counts, style issues). A failing check never
+    // blocks the import — it just tells Ke what CourseBuilder touch-up
+    // is still needed before publishing.
+    function renderValidationReport(v) {
+      if (!v) return '';
+      const row = (label, ok, detail) => `
+        <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin:2px 4px 2px 0;background:${ok ? 'rgba(74,124,89,0.12)' : 'rgba(212,168,85,0.20)'};color:${ok ? '#4A7C59' : '#876520'}">
+          ${ok ? '✓' : '⚠'} ${label}: ${detail}
+        </span>`;
+      const badges = [
+        row('Words', v.wordCountOk, `${v.wordCount.toLocaleString()} / ${v.requiredWords.toLocaleString()}`),
+        row('Sections', v.sectionDividerCoverageOk, `${v.sectionsWithDivider} / ${v.sectionCount} have a divider`),
+        row('Assessment', v.assessmentOk, `${v.assessmentQuestionCount} questions (target 15+)`),
+        row('References', v.referencesOk, `${v.referencesCount} found (target 15+)`)
+      ].join('');
+      const styleWarnings = (v.styleIssues || []).length
+        ? `<p style="font-size:11px;color:#876520;margin:4px 0 0;">${v.styleIssues.length} style issue(s): ${v.styleIssues.slice(0, 3).join('; ')}${v.styleIssues.length > 3 ? '…' : ''}</p>`
+        : '';
+      return `<div style="margin-top:6px;">${badges}${styleWarnings}</div>`;
     }
     
     function toggleCourse(index) {
@@ -529,13 +551,16 @@
         savedCoursesDiv.classList.remove('hidden');
         
         document.getElementById('savedCoursesList').innerHTML = data.saved.map(course => `
-          <div class="flex items-center gap-2 p-2 bg-green-50 rounded-lg">
-            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-            </svg>
-            <span class="font-medium text-forest-800">${course.title}</span>
-            <span class="text-forest-500 text-sm">(${course.ceuHours} CE hrs)</span>
-            <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+          <div class="p-2 bg-green-50 rounded-lg">
+            <div class="flex items-center gap-2">
+              <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span class="font-medium text-forest-800">${course.title}</span>
+              <span class="text-forest-500 text-sm">(${course.ceHours} CE hrs)</span>
+              <a href="/admin-courses.html" class="ml-auto text-burgundy-600 hover:underline text-sm">Edit →</a>
+            </div>
+            ${renderValidationReport(course.validation)}
           </div>
         `).join('');
         
