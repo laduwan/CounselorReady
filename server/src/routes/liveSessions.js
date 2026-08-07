@@ -315,6 +315,9 @@ router.post('/:id/register', protect, async (req, res) => {
           });
         }
       }
+      sendLiveSessionRegistrationConfirmation(req.user, session, {
+        seatsRemaining: Math.max(0, session.capacity - session.registrants.length)
+      }).catch(err => console.error('[live] registration confirmation email failed:', err.message));
       logLiveSessionRegistration(session, req.user);
       return res.json({ registered: true });
     }
