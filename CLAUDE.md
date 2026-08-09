@@ -14,40 +14,44 @@ Never add Co-Authored-By lines or "Generated with Claude Code" footers to commit
 After cloning this repo, run `bash tools/install-hooks.sh` before your first commit — it installs a
 commit-msg hook that strips these footers if they slip through.
 ---
-## Architecture: Two `index.html` files (READ BEFORE TOUCHING EITHER)
+## Architecture: `client/app.html` (React entry) vs `client/public/index.html` (marketing) — READ BEFORE TOUCHING EITHER
 CounselorReady is **static-HTML-first** (82 `.html` pages in `client/public/`), but a
-few routes are **React** — most importantly the **course-builder**. This creates a
-trap that has broken production **three times**, so it is documented here permanently.
+few routes are **React** — most importantly the **course-builder**. This used to be a
+trap because both files were named `index.html` and Vite's build entry collided with
+the marketing homepage; it has broken production **three times**, so it is documented
+here permanently. `client/index.html` was renamed to `client/app.html` specifically to
+end that collision — the two are no longer interchangeable filenames, and Vite's build
+entry no longer occupies `dist/index.html`.
 
-There are two different files both named `index.html`. They are NOT interchangeable:
-
-| File | What it is | Must contain |
-| --- | --- | --- |
-| `client/index.html` | **Vite's React entry.** Built and emitted as the deployed `/index.html`. | `<div id="root">` + `<script type="module" src="/src/main.jsx">` |
-| `client/public/index.html` | **The public marketing homepage** (Features/Pricing/Sign in). Copied verbatim to the build root. | marketing markup (no `#root`) |
+| File | What it is | Must contain | Deployed as |
+| --- | --- | --- | --- |
+| `client/app.html` | **Vite's React entry.** | `<div id="root">` + `<script type="module" src="/src/main.jsx">` | `/app.html` |
+| `client/public/index.html` | **The public marketing homepage** (Features/Pricing/Sign in). Copied verbatim to the build root. | marketing markup (no `#root`) | `/index.html` |
 
 `client/public/_redirects` maps the SPA routes to the React entry:
 ```
 
-/admin/course-builder /index.html 200 # the React shell (client/index.html, after build) /admin-course-builder /index.html 200
+/admin/course-builder /app.html 200 # the React shell (client/app.html, after build) /admin-course-builder /app.html 200
 
 ```
-**The trap:** Vite copies `public/` verbatim, so if `client/index.html` is ever
-overwritten with marketing HTML (no `#root`, no `main.jsx`), the build ships a
-marketing page as `/index.html`. Then `/admin/course-builder` serves the marketing
-homepage — with a "Sign in" button — instead of booting React, which looks exactly
-like the course-builder "logging you out." (`/auth/me` still returns 200; the React
-app simply never loads.)
+**The trap (historical):** Vite copies `public/` verbatim, so when the build entry was
+still named `client/index.html`, overwriting it with marketing HTML (no `#root`, no
+`main.jsx`) shipped a marketing page as `/index.html`. Then `/admin/course-builder`
+served the marketing homepage — with a "Sign in" button — instead of booting React,
+which looked exactly like the course-builder "logging you out." (`/auth/me` still
+returned 200; the React app simply never loaded.) Renaming the entry to `app.html`
+removes the filename collision that caused this, but the guard below stays in place.
 
 **Rules:**
-- Never paste marketing/static HTML into `client/index.html`. Edit the marketing
+- Never paste marketing/static HTML into `client/app.html`. Edit the marketing
   homepage in `client/public/index.html` only.
 - `client/vite.config.js` has a `verify-react-entry` build guard that FAILS the build
-  if `client/index.html` loses `#root` or `/src/main.jsx`. Do not remove it.
+  if `client/app.html` loses `#root` or `/src/main.jsx`. Do not remove it.
 - If a course-builder "can't load / logs me out" report comes in, check this first:
-  `grep 'id="root"' client/index.html` — if missing, the entry was clobbered again.
+  `grep 'id="root"' client/app.html` — if missing, the entry was clobbered again.
 
-History: broken/restored at commits `268e190`, `2875c7e`, then re-broken at `53797f2`.
+History: broken/restored at commits `268e190`, `2875c7e`, then re-broken at `53797f2`;
+`client/index.html` renamed to `client/app.html` to remove the collision.
 ---
 ## Seed & Course Authoring
 **Before creating or editing any interactive-course seed, read `docs/SEED_AUTHORING_AND_VIEWER_GUIDE.md`** — verified block-type shapes, the references/resources drawer mechanism, validation gates, and engagement rules. The code (`InteractiveCourse.js`, `interactive-course.html`) overrides any spec doc.

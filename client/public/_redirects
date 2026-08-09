@@ -2,9 +2,10 @@
 # CounselorReady _redirects
 # Static-HTML-first (most routes -> .html), PLUS a few React SPA routes
 # (see the "React SPA routes" block near the bottom) that rewrite to
-# /index.html — which is the Vite React entry (client/index.html), NOT the
-# marketing homepage (client/public/index.html). See CLAUDE.md
-# ("Two index.html files") before editing either index.html.
+# /app.html — which is the Vite React entry (client/app.html), NOT the
+# marketing homepage (client/public/index.html, deployed as /index.html).
+# See CLAUDE.md ("Two index.html files") before editing app.html or
+# client/public/index.html.
 # ═══════════════════════════════════════════════════════════════
 
 # ── Root ──
@@ -135,9 +136,9 @@
 /messages            /messages.html             200
 /welcome             /welcome.html              200
 
-# ── React SPA routes (served via Vite-built index.html) ──
-/admin/course-builder  /index.html  200
-/admin-course-builder  /index.html  200
+# ── React SPA routes (served via Vite-built app.html) ──
+/admin/course-builder  /app.html  200
+/admin-course-builder  /app.html  200
 
 # ── Catch-all: 404 (NOT SPA rewrite) ──
 /*                   /404.html                 404
