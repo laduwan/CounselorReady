@@ -178,41 +178,6 @@
           </button>
         </div>
 
-        <!-- VIP Plan -->
-        <div class="bg-gradient-to-b from-burgundy-50 to-white rounded-xl border-2 border-burgundy-400 shadow-lg p-6 relative">
-          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-burgundy-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-            ⭐ VIP
-          </div>
-          <h3 class="font-display text-xl font-semibold text-burgundy-800 mb-2">VIP</h3>
-          <div class="mb-4">
-            <span class="text-3xl font-bold text-burgundy-900">$49.99</span>
-            <span class="text-hunter-600">/month</span>
-          </div>
-          <ul class="space-y-2 mb-6 text-sm text-hunter-700">
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> Everything in Professional
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> <strong>Unlimited states</strong>
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> Renewal reminders (text/calendar)
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> <strong>1 hardship month/year</strong>
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> Quarterly 1:1 consult
-            </li>
-            <li class="flex items-center gap-2">
-              <span class="text-green-500">✓</span> Early access to new features
-            </li>
-          </ul>
-          <button onclick="selectPlan('vip')" class="w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold" id="vipBtn">
-            Go VIP
-          </button>
-        </div>
-
         <!-- Monthly Plan (new membership) -->
         <div class="bg-white rounded-xl border border-hunter-300 shadow-sm p-6">
           <h3 class="font-display text-xl font-semibold text-hunter-800 mb-2">Monthly</h3>
@@ -268,14 +233,17 @@
           </ul>
           <p class="text-xs font-semibold text-honey-700 mb-2">Annual perks</p>
           <ul class="space-y-1.5 mb-6 text-xs text-hunter-700">
-            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Early access to new course releases</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Early access to new courses & features</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 2x Self-Care Rewards points</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Priority live-session registration</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 1 KekeTheLPC ebook included</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Annual member worksheet toolkit</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Renewal rate lock — your price never increases</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 1 guest seat per year for a live session</li>
-            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 2nd license/state tracking included</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Unlimited license/state tracking</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Renewal reminders (text/calendar)</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 1 hardship month/year</li>
+            <li class="flex items-center gap-2"><span class="text-green-500">✓</span> Quarterly 1:1 consult</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> PassReady Prep discount — extends to friends & family</li>
             <li class="flex items-center gap-2"><span class="text-green-500">✓</span> 30-day lapse grace on renewal</li>
           </ul>
@@ -414,7 +382,6 @@
       free: { name: 'Free', price: 0, interval: 'month', priceId: null, maxCourseHours: 4, maxStates: 1, consultsPerQuarter: 0 },
       starter: { name: 'Starter', price: 19.99, interval: 'month', priceId: 'price_1TiMorBV8IIVTFOIosEIoMCn', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
       professional: { name: 'Professional', price: 29.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIoxYzFOcd', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 },
-      vip: { name: 'VIP', price: 49.99, interval: 'month', priceId: 'price_1TiMosBV8IIVTFOIxdJ5FQ0q', maxCourseHours: 999, maxStates: 999, consultsPerQuarter: 1, hardshipMonths: 1 },
       // New membership plans — price IDs live server-side (STRIPE_MONTHLY/ANNUAL_PRICE_ID),
       // so these route through hosted Checkout by plan name (see selectPlan).
       monthly: { name: 'Monthly', price: 35, interval: 'month', priceId: null, checkout: true },
@@ -562,7 +529,6 @@
       const freeBtn = document.getElementById('freeBtn');
       const starterBtn = document.getElementById('starterBtn');
       const proBtn = document.getElementById('proBtn');
-      const vipBtn = document.getElementById('vipBtn');
 
       // Helper to set button state
       const setButton = (btn, isCurrent, defaultText, defaultClasses) => {
@@ -586,12 +552,8 @@
         'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold');
       
       // Professional
-      setButton(proBtn, currentPlan === 'professional', 'Upgrade Now', 
+      setButton(proBtn, currentPlan === 'professional', 'Upgrade Now',
         'w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold');
-      
-      // VIP
-      setButton(vipBtn, currentPlan === 'vip', 'Go VIP', 
-        'w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold');
     }
 
     function displayPaymentMethod(pm) {
