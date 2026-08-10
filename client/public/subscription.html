@@ -386,6 +386,11 @@
       // so these route through hosted Checkout by plan name (see selectPlan).
       monthly: { name: 'Monthly', price: 35, interval: 'month', priceId: null, checkout: true },
       annual: { name: 'Annual', price: 249, interval: 'year', priceId: null, checkout: true },
+      // AI Tools plans — price IDs live server-side (STRIPE_TOOLS_NOTE/TXPLANNER_PLAN/TOOLS_BUNDLE_PRICE_ID),
+      // route through hosted Checkout by plan name same as monthly/annual.
+      tools_note: { name: 'Note Writer Unlimited', price: 7.95, interval: 'month', priceId: null, checkout: true },
+      tools_plan: { name: 'Treatment Planner Unlimited', price: 7.95, interval: 'month', priceId: null, checkout: true },
+      tools_bundle: { name: 'AI Tools Bundle', price: 15.00, interval: 'month', priceId: null, checkout: true },
       test1: { name: 'Test $1', price: 1, interval: 'month', priceId: 'price_1TiMotBV8IIVTFOIaDFi6ca6', maxCourseHours: 999, maxStates: 1, consultsPerQuarter: 0 }
     };
 

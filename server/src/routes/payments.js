@@ -46,6 +46,14 @@ const PRICE_IDS = {
   annual: process.env.STRIPE_ANNUAL_PRICE_ID
 };
 
+// AI Tools plans (additive). /create-checkout-session, checkout.session.completed,
+// and memberInitFields() are all already plan-agnostic / no-op for unknown plans,
+// so appending these three keys to PRICE_IDS is sufficient to wire hosted checkout
+// end to end — no other payments.js code path needs to change.
+PRICE_IDS.tools_note = process.env.STRIPE_TOOLS_NOTE_PRICE_ID;
+PRICE_IDS.tools_plan = process.env.STRIPE_TXPLANNER_PLAN_PRICE_ID;
+PRICE_IDS.tools_bundle = process.env.STRIPE_TOOLS_BUNDLE_PRICE_ID;
+
 const PLAN_DETAILS = {
   free: { name: 'Free', price: 0, maxCEHours: 4, maxStates: 1 },
   starter: { name: 'Starter', price: 1999, maxCEHours: 999, maxStates: 1 },
