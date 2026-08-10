@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Treatment Plan Builder — CounselorReady</title>
-<meta name="description" content="Free treatment plan builder for therapists. Generate evidence-based treatment plans with goals, objectives, and interventions.">
+<meta name="description" content="Treatment plan builder for therapists — 15 free plans per day, unlimited from $7.95/mo. Goals, objectives & interventions.">
 <meta property="og:title" content="Treatment Plan Builder — CounselorReady">
-<meta property="og:description" content="Generate evidence-based treatment plans with goals, objectives, and interventions. Free for clinicians.">
+<meta property="og:description" content="Generate evidence-based treatment plans with goals, objectives, and interventions — 15/day free, unlimited from $7.95/mo.">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--burgundy:#6B1D34;--burgundy-light:#8B3A54;--burgundy-deep:#4A1224;--rose:#D0768A;--green:#4A7C59;--green-light:#5A9469;--green-deep:#345640;--gold:#D4A855;--navy:#284157;--navy-deep:#1A2D3D;--stone:#EDEADF;--cream:#F9F6EF}
@@ -17,6 +17,12 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 .logo{font-family:'Cormorant Garamond',Georgia,serif;font-weight:700;font-size:22px}
 .hdr-title{color:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
 .hdr-sub{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+.tier-bar{background:var(--navy-deep);padding:8px 28px;display:flex;align-items:center;gap:20px;overflow-x:auto}
+.tier-item{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap}
+.tier-item strong{color:rgba(255,255,255,.9)}
+.tier-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.tier-item.active .tier-dot{background:var(--gold)}
+.tier-item:not(.active) .tier-dot{background:rgba(255,255,255,.2)}
 .main{max-width:840px;margin:0 auto;padding:24px 20px 60px}
 /* CARDS */
 .card{background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:20px}
@@ -136,6 +142,11 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 Treatment Plan Builder
 </div>
 <div class="hdr-sub">Evidence-based goals, measurable objectives, and modality-specific interventions — grounded in ACEP-approved clinical content.</div>
+</div>
+
+<div class="tier-bar">
+  <span class="tier-item active"><span class="tier-dot"></span><strong>15/day</strong> free (no login)</span>
+  <span class="tier-item"><span class="tier-dot"></span><strong>Unlimited</strong> $7.95/mo+</span>
 </div>
 
 <main class="main">
@@ -1147,8 +1158,10 @@ function generatePlan(){if(window.posthog)posthog.capture('tool_used',{tool:'tre
 
   planHTML+=`<div class="ce-pitch"><strong>Go deeper:</strong> The interventions and frameworks in this plan come from CounselorReady's NBCC-approved CE courses — including Evidence-Based Interventions for Anxiety & Depression, Trauma-Informed Care, Suicide Risk Assessment, and Ethics & Professional Boundaries. Earn CE credit while mastering these techniques. <a href="/courses" style="color:var(--burgundy);font-weight:700">Browse CE Courses</a></div>`;
 
-  planHTML+=`<div style="background:rgba(40,65,87,.04);border:1px solid rgba(40,65,87,.1);border-radius:10px;padding:14px 18px;margin-top:14px;font-size:12px;color:#666;line-height:1.7">
-    <strong style="color:var(--navy)">This is a clinical tool, not an EHR.</strong> CounselorReady Clinical Tools generate documentation — they do not store, manage, or secure your client records. You are responsible for saving this treatment plan in your own HIPAA-compliant record-keeping system (EHR, encrypted cloud folder, or secured local storage). Review your practice needs regularly and transition to a full EHR when your caseload, insurance paneling, or practice structure requires it. For record-keeping guidance, visit <a href="/tools/" style="color:var(--navy);font-weight:600">counselorready.com/tools</a>.
+  planHTML+=`<div style="background:rgba(107,29,52,.04);border-left:3px solid var(--burgundy);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:14px">
+    <div style="font-size:13px;font-weight:700;color:var(--burgundy);margin-bottom:4px">Getting this into your records</div>
+    <p style="font-size:13px;color:#444;line-height:1.6;margin:0">Copy or print your finished treatment plan, then file it in your own record-keeping system — CounselorReady never stores what you generate. Low-cost HIPAA-compliant storage: an encrypted cloud drive with a signed BAA (Google Workspace, Microsoft 365 Business, or Sync.com — about $6–12/mo), or encrypted local files backed up to an encrypted USB. Use client numbers, never names, in file names.</p>
+    <a href="/tools/#records-guide" style="display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--burgundy);text-decoration:none">Full record-keeping guide →</a>
   </div>`;
 
   el('planOutput').innerHTML=planHTML;
