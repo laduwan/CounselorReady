@@ -273,7 +273,9 @@ const userSchema = new mongoose.Schema({
     default: 'user'
   },
   lastLoginAt: { type: Date },
-  
+  lastActiveAt: { type: Date },
+  sessionStartAt: { type: Date },
+
   // Account status
   disabled: { type: Boolean, default: false },
   disabledAt: { type: Date },
