@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Clinical Note Writer — CounselorReady</title>
-<meta name="description" content="Free AI-powered clinical note writer for therapists. Generate SOAP, DAP, and BIRP notes in seconds. No signup required.">
-<meta property="og:title" content="Free Clinical Note Writer — CounselorReady">
+<meta name="description" content="AI clinical note writer — SOAP, DAP, BIRP. 15 free notes per day, no signup. Unlimited from $7.95/mo.">
+<meta property="og:title" content="AI clinical note writer — SOAP, DAP, BIRP. 15 free notes per day, no signup. Unlimited from $7.95/mo.">
 <meta property="og:description" content="AI-powered clinical note writer for therapists. Generate SOAP, DAP, and BIRP notes in seconds.">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Lato:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -108,6 +108,8 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 .btn-copy.copied{background:rgba(255,255,255,.35)}
 .btn-new{background:var(--gold);color:var(--burgundy-deep)}
 .btn-new:hover{background:#C49A40}
+.btn-print{background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.btn-print:hover{background:rgba(255,255,255,.3)}
 .output-body{padding:28px;font-size:14px;line-height:1.8;color:#2A2A2A;white-space:pre-wrap;font-family:'Lato',sans-serif}
 .output-section-head{font-family:'Cormorant Garamond',Georgia,serif;font-size:17px;font-weight:700;color:var(--burgundy);margin:0 0 6px;margin-top:18px}
 .output-section-head:first-child{margin-top:0}
@@ -210,9 +212,7 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
 
 <div class="tier-bar">
   <span class="tier-item active"><span class="tier-dot"></span><strong>15/day</strong> free (no login)</span>
-  <span class="tier-item"><span class="tier-dot"></span><strong>30/day</strong> $7.95/mo</span>
-  <span class="tier-item"><span class="tier-dot"></span><strong>60/day</strong> Professional plan</span>
-  <span class="tier-item"><span class="tier-dot"></span><strong>Unlimited</strong> VIP plan</span>
+  <span class="tier-item"><span class="tier-dot"></span><strong>Unlimited</strong> $7.95/mo+</span>
 </div>
 
 <div class="main">
@@ -587,10 +587,20 @@ body{font-family:'Lato',sans-serif;background:var(--stone);color:#2A2A2A;line-he
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
           Copy
         </button>
+        <button class="output-btn btn-print" onclick="window.print()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print
+        </button>
         <button class="output-btn btn-new" onclick="resetForm()">New Note</button>
       </div>
     </div>
     <div class="output-body" id="outputBody"></div>
+  </div>
+
+  <div style="background:rgba(107,29,52,.04);border-left:3px solid var(--burgundy);border-radius:0 8px 8px 0;padding:14px 16px;margin-top:16px">
+    <div style="font-size:13px;font-weight:700;color:var(--burgundy);margin-bottom:4px">Getting this into your records</div>
+    <p style="font-size:13px;color:#444;line-height:1.6;margin:0">Copy or print your finished note, then file it in your own record-keeping system — CounselorReady never stores what you generate. Low-cost HIPAA-compliant storage: an encrypted cloud drive with a signed BAA (Google Workspace, Microsoft 365 Business, or Sync.com — about $6–12/mo), or encrypted local files backed up to an encrypted USB. Use client numbers, never names, in file names.</p>
+    <a href="/tools/#records-guide" style="display:inline-block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--burgundy);text-decoration:none">Full record-keeping guide →</a>
   </div>
 
   <!-- RATE LIMIT -->
@@ -890,11 +900,11 @@ function copyNote() {
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copyBtn');
     btn.classList.add('copied');
-    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    btn.textContent = 'Copied ✓';
     setTimeout(() => {
       btn.classList.remove('copied');
       btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
-    }, 2500);
+    }, 2000);
   }).catch(() => {
     const range = document.createRange();
     range.selectNodeContents(document.getElementById('outputBody'));
