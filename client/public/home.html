@@ -584,6 +584,10 @@
             Go Professional
           </a>
         </div>
+      </div>
+
+      <!-- Membership: Monthly / Annual -->
+      <div class="grid md:grid-cols-2 gap-6 mt-8 max-w-3xl mx-auto items-start">
         <!-- Monthly -->
         <div class="bg-white rounded-2xl p-5 border border-hunter-100 shadow-sm card-hover hover:shadow-xl hover:border-hunter-200">
           <div class="text-hunter-600 font-medium uppercase text-sm tracking-wide mb-2">Monthly</div>
@@ -691,7 +695,7 @@
             </li>
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>Quarterly 1:1 consult</span>
+              <span>Quarterly member office hours (group)</span>
             </li>
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -769,50 +773,7 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="py-16 px-4 bg-hunter-900">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-            <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
-          </div>
-          <span class="font-display font-semibold text-2xl">
-            <span class="text-white">Counselor</span><span class="text-honey-300">Ready</span>
-          </span>
-        </div>
-        <nav class="flex items-center gap-8">
-          <a href="#features" class="text-hunter-300 hover:text-white text-sm transition-colors">Features</a>
-          <a href="#pricing" class="text-hunter-300 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/about.html" class="text-hunter-300 hover:text-white text-sm transition-colors">About</a>
-          <a href="/help.html" class="text-hunter-300 hover:text-white text-sm transition-colors">Help</a>
-          <a href="mailto:support@counselorready.com" class="text-hunter-300 hover:text-white text-sm transition-colors">Contact</a>
-        </nav>
-      </div>
-      
-      <!-- NBCC Badge and ACEP Disclosure -->
-      <div class="border-t border-hunter-700 py-8 mb-6">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
-          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
-          <div class="text-center md:text-left">
-            <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
-            <p class="text-burgundy-300 text-sm">ACEP #7760</p>
-          </div>
-        </div>
-        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
-          CounselorReady is operated by Ga Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE® is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
-        </p>
-      </div>
-      
-      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-burgundy-400 text-sm">© 2026 CounselorReady. All rights reserved.</p>
-        <div class="flex items-center gap-6">
-          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
-          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms of Service</a>
-          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refund Policy</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <div id="cr-footer"></div>
+  <script src="/shared/nav-footer.js"></script>
 </body>
 </html>
