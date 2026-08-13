@@ -68,6 +68,30 @@ const COURSE = {
         {
           type: 'reflection',
           question: 'Before we begin, take a moment to reflect on your current clinical practice. Think of a client with whom the therapeutic relationship has felt particularly difficult — perhaps characterized by excessive dependency, emotional distance, or unpredictable ruptures. Without yet using formal attachment language, what patterns do you notice? How does that client seek comfort or manage distress in sessions?'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'According to Bowlby, the human infant\'s tie to the caregiver is best understood as:',
+          options: [
+            { text: 'A byproduct of feeding and libidinal satisfaction, as classic drive theory proposed', isCorrect: false },
+            { text: 'A primary motivational system in its own right, shaped by evolutionary pressure toward survival and protection from threat', isCorrect: true },
+            { text: 'A learned behavior with no biological or evolutionary basis', isCorrect: false },
+            { text: 'A phenomenon limited to infancy that has no bearing on adult functioning', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'Bowlby\'s foundational departure from drive-theory psychoanalysis was to argue that attachment is a primary, biologically rooted motivational system — not a derivative of feeding or libidinal drives — and that it remains active across the lifespan rather than switching off at adolescence.'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Per this course\'s framing, why is attachment theory clinically relevant to adult psychotherapy specifically?',
+          options: [
+            { text: 'Because the attachment behavioral system deactivates in adulthood, so clinicians only need to address childhood history', isCorrect: false },
+            { text: 'Because the attachment system remains active across the lifespan, shaping how adults seek comfort, regulate distress, and relate to therapists', isCorrect: true },
+            { text: 'Because attachment theory applies only to clients with formally diagnosed personality disorders', isCorrect: false },
+            { text: 'Because attachment theory replaces the need for a case conceptualization in adult treatment', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'The course frames the adult attachment system as remaining fully active throughout life, continuing to influence comfort-seeking, distress regulation, intimate bonding, conflict navigation, and the therapeutic relationship itself — which is why attachment-informed practice has broad clinical application well beyond childhood-focused work.'
         }
       ]
     },

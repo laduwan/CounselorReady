@@ -896,7 +896,7 @@ async function main() {
   console.log('Connected.');
 
   // Dynamic import after env is loaded
-  const { default: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
 
   // Validate
   const errors = validate(course);

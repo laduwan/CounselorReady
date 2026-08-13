@@ -1045,7 +1045,7 @@ async function main() {
   try {
     InteractiveCourse = mongoose.model('InteractiveCourse');
   } catch {
-    const { default: model } = await import('../models/InteractiveCourse.js');
+    const { Course: model } = await import('../models/InteractiveCourse.js');
     InteractiveCourse = model;
   }
 

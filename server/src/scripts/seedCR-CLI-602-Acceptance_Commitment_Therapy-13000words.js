@@ -60,6 +60,30 @@ const COURSE = {
 <p>Throughout this course, we will emphasize that ACT is not a collection of techniques to be applied like a toolbox. It is a coherent therapeutic stance grounded in a specific theory of mind and language. Clinicians who understand the theory are far better positioned to work flexibly and creatively with individual clients than those who have memorized a set of exercises without grasping why those exercises work. The metaphors, the mindfulness practices, the values work — all of it flows from a single core insight about the nature of human suffering and the conditions under which people can choose to live differently.</p>
 
 <p>By the end of this two-hour course, participants will be able to articulate the six core ACT processes and their interrelationships, distinguish ACT's model of psychopathology from CBT's, apply core ACT techniques within their clinical work, and recognize and manage common clinician errors in ACT delivery. This course meets NBCC CE requirements and is appropriate for counselors at all licensure levels who are working with adult populations in outpatient, community mental health, integrated care, or private practice settings.</p>`
+        },
+        {
+          type: 'multipleChoice',
+          question: 'How does ACT\'s stance toward a client\'s thoughts differ from classic CBT?',
+          options: [
+            { text: 'ACT aims to replace distorted thoughts with more accurate ones, just like CBT', isCorrect: false },
+            { text: 'ACT is largely indifferent to whether a thought is accurate and instead asks whether relating to it in a given way is workable', isCorrect: true },
+            { text: 'ACT holds that all thoughts are false and should be disregarded entirely', isCorrect: false },
+            { text: 'ACT and CBT share an identical mechanism of change, differing only in terminology', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'CBT classically targets the content of cognition, working to modify distorted thoughts into more accurate ones. ACT, by contrast, is largely indifferent to a thought\'s truth value — the clinical question is whether relating to that thought in a particular way is workable and moves the client toward what matters to them.'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Per this course\'s framing, why is understanding ACT\'s underlying theory important for clinicians, rather than just learning its techniques?',
+          options: [
+            { text: 'Because ACT techniques are identical across all clients and require no theoretical grounding', isCorrect: false },
+            { text: 'Because clinicians who understand the theory can work flexibly and creatively with individual clients, rather than mechanically applying memorized exercises', isCorrect: true },
+            { text: 'Because ACT theory is only relevant to researchers, not practicing clinicians', isCorrect: false },
+            { text: 'Because the hexaflex model has no bearing on how techniques are selected in session', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'The course emphasizes that ACT is a coherent therapeutic stance grounded in a specific theory of mind and language, not a toolbox of unrelated techniques. Clinicians who grasp why the metaphors, mindfulness practices, and values work function as they do are better equipped to adapt ACT flexibly to individual clients.'
         }
       ]
     },
