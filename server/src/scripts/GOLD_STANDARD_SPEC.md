@@ -1,6 +1,14 @@
-[CounselorReady_Gold_Standard_Course_Spec.md](https://github.com/user-attachments/files/25776224/CounselorReady_Gold_Standard_Course_Spec.md)
 # CounselorReady Gold Standard Course Template Spec
-## Version 1.0 — March 5, 2026
+## Version 1.1 — August 13, 2026 (block shapes corrected)
+
+> ⚠️ **BLOCK SHAPES IN THIS FILE WERE CORRECTED Aug 13 2026.** Earlier versions taught
+> field names the viewer does not render (`cards` on flashcardDeck, `pairs` on matching,
+> flat-string `options`, `feedback` objects and node `options` on scenarioTree).
+> **Canonical block shapes live in `server/src/scripts/_seedTemplate.js` (header comment)
+> and the schema `server/src/models/InteractiveCourse.js`. On ANY conflict, the schema
+> wins — over this spec, over any doc, over any older seed script.**
+> This spec remains authoritative for PEDAGOGY ONLY: section rhythm, pacing, activity
+> distribution, word targets, and writing rules.
 
 **Target course:** Ethics and Professional Boundaries in Counseling Practice (3CE)
 **Purpose:** Define the exact layout, block placement, activity distribution, and visual treatment for every course on CounselorReady. Once this course is built, all others follow this pattern.
@@ -180,10 +188,10 @@ Section 7: (Conclusion — summary accordion + final reflection + resources)
   "type": "multipleChoice",
   "question": "According to the ACA Code of Ethics, which principle requires counselors to avoid actions that could cause harm?",
   "options": [
-    "Autonomy",
-    "Nonmaleficence",
-    "Beneficence",
-    "Fidelity"
+    { "text": "Autonomy", "isCorrect": false },
+    { "text": "Nonmaleficence", "isCorrect": true },
+    { "text": "Beneficence", "isCorrect": false },
+    { "text": "Fidelity", "isCorrect": false }
   ],
   "correctAnswer": 1,
   "explanation": "Nonmaleficence (Standard A.4.a) requires counselors to avoid actions that risk harming clients. While beneficence also involves client welfare, nonmaleficence specifically addresses the obligation to do no harm.",
@@ -208,11 +216,13 @@ Section 7: (Conclusion — summary accordion + final reflection + resources)
 {
   "type": "scenarioTree",
   "title": "The Rural Dual Relationship",
+  "scenarioTitle": "The Rural Dual Relationship",
+  "startNode": "start",
   "instructions": "You discover your new client is also a parent at your child's school. Navigate this ethical challenge.",
   "nodes": {
     "start": {
       "text": "During intake, you recognize your new client as the parent volunteer coordinator at your child's elementary school. She hasn't recognized you yet. What do you do?",
-      "options": [
+      "choices": [
         { "text": "Proceed with the session without mentioning the connection", "next": "no_disclose" },
         { "text": "Immediately disclose the potential dual relationship", "next": "disclose" },
         { "text": "End the session and refer to another counselor", "next": "refer" }
@@ -220,33 +230,36 @@ Section 7: (Conclusion — summary accordion + final reflection + resources)
     },
     "disclose": {
       "text": "You disclose the connection. The client says she's comfortable continuing and has been on a waitlist for 3 months. How do you proceed?",
-      "feedback": { "message": "Good clinical judgment. Transparency is essential when potential dual relationships are identified.", "type": "positive" },
-      "options": [
+      "feedback": "Good clinical judgment. Transparency is essential when potential dual relationships are identified.",
+      "choices": [
         { "text": "Agree to continue with documented boundaries", "next": "continue_boundaries" },
         { "text": "Insist on referring despite client preference", "next": "insist_refer" }
       ]
     },
     "no_disclose": {
       "text": "Two sessions later, she recognizes you at a school event. She feels betrayed that you didn't mention knowing her. The therapeutic alliance is damaged.",
-      "feedback": { "message": "Failing to disclose a known dual relationship violates the principle of honesty (ACA Code A.4.b) and can damage trust irreparably.", "type": "negative" }
+      "feedback": "Failing to disclose a known dual relationship violates the principle of honesty (ACA Code A.4.b) and can damage trust irreparably."
     },
     "refer": {
       "text": "You explain the ethical concern and offer a referral. She's frustrated — she waited months and finally found a counselor accepting her insurance.",
-      "feedback": { "message": "While referral protects boundaries, immediate termination without exploring alternatives may constitute abandonment, especially in areas with limited providers.", "type": "neutral" }
+      "feedback": "While referral protects boundaries, immediate termination without exploring alternatives may constitute abandonment, especially in areas with limited providers."
     },
     "continue_boundaries": {
       "text": "You document the dual relationship, establish clear boundaries about school interactions, and plan for ongoing consultation. The therapeutic relationship develops successfully.",
-      "feedback": { "message": "This approach follows ACA Standard A.6.b — when dual relationships are unavoidable, counselors take reasonable steps to manage them, including documentation, informed consent, and consultation.", "type": "positive" }
+      "feedback": "This approach follows ACA Standard A.6.b — when dual relationships are unavoidable, counselors take reasonable steps to manage them, including documentation, informed consent, and consultation."
     },
     "insist_refer": {
       "text": "The client reluctantly accepts the referral but is placed on another 2-month waitlist. Her presenting symptoms of anxiety worsen during the gap in care.",
-      "feedback": { "message": "Rigid application of boundary rules without considering client welfare can itself cause harm. Ethical decision-making requires balancing multiple principles.", "type": "neutral" }
+      "feedback": "Rigid application of boundary rules without considering client welfare can itself cause harm. Ethical decision-making requires balancing multiple principles."
     }
   }
 }
 ```
 
 ### 6.2 Rules
+- `nodes` is an OBJECT MAP keyed by node id — never an array. `startNode` names the entry node.
+- Per-node fields: `text`, `choices: [{text, next}]` (NOT options/nextId), `feedback` as a PLAIN STRING.
+- Terminal nodes have `feedback` and no `choices`.
 - Minimum 3 nodes, maximum 8
 - Every branch must end with feedback (positive, negative, or neutral)
 - Feedback must cite specific ethical standards or clinical evidence
@@ -302,10 +315,10 @@ Section 7: (Conclusion — summary accordion + final reflection + resources)
   "type": "flashcardDeck",
   "title": "Ethical Decision-Making Terminology",
   "instructions": "Review these key terms from this section. Flip each card to see the definition.",
-  "cards": [
-    { "front": "Ethical Dilemma", "back": "A situation where two or more ethical principles conflict, requiring the counselor to choose between competing obligations (e.g., client confidentiality vs. duty to warn)." },
-    { "front": "Boundary Crossing", "back": "A departure from standard clinical practice that may benefit the client and does not constitute exploitation. Context-dependent and should be documented." },
-    { "front": "Tarasoff Duty", "back": "The legal obligation to warn identifiable potential victims when a client makes a credible threat of violence. Established by Tarasoff v. Regents (1976)." }
+  "flashcards": [
+    { "id": "fc1", "front": "Ethical Dilemma", "back": "A situation where two or more ethical principles conflict, requiring the counselor to choose between competing obligations (e.g., client confidentiality vs. duty to warn)." },
+    { "id": "fc2", "front": "Boundary Crossing", "back": "A departure from standard clinical practice that may benefit the client and does not constitute exploitation. Context-dependent and should be documented." },
+    { "id": "fc3", "front": "Tarasoff Duty", "back": "The legal obligation to warn identifiable potential victims when a client makes a credible threat of violence. Established by Tarasoff v. Regents (1976)." }
   ]
 }
 ```
@@ -324,8 +337,8 @@ Section 7: (Conclusion — summary accordion + final reflection + resources)
 {
   "type": "matching",
   "title": "Match the Ethical Principle to Its Application",
-  "instructions": "Drag each principle to its corresponding clinical application.",
-  "pairs": [
+  "matchingInstructions": "Drag each principle to its corresponding clinical application.",
+  "matchingPairs": [
     { "term": "Autonomy", "definition": "Supporting a client's decision to discontinue medication against your clinical recommendation" },
     { "term": "Nonmaleficence", "definition": "Declining to provide a service outside your scope of competence" },
     { "term": "Beneficence", "definition": "Advocating for a client's access to community resources" },
@@ -386,9 +399,9 @@ Stored in `course.assessment`:
 
 ```json
 {
-  "questions": [ /* 15-20 questions */ ],
-  "passingScore": 80,
-  "maxAttempts": 3
+  "questions": [ /* 15-20 questions — options ALWAYS [{text, isCorrect}]; grading reads isCorrect */ ],
+  "passThreshold": 0.8,
+  "attemptsAllowed": 3
 }
 ```
 

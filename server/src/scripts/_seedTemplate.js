@@ -152,9 +152,25 @@ async function seed() {
   }
   await doc.save();   // ← pre-save hook computes wordCount; validation enforces enums/shapes
 
-  console.log(`✅ Saved ${doc.courseCode} — wordCount=${doc.wordCount} (target ${(doc.ceHours || 0) * 6000})`);
-  if (doc.wordCount < (doc.ceHours || 0) * 6000) {
-    console.warn('⚠ Saved but UNDER target — left as draft. Add content and re-run.');
+  // ── DB READ-BACK: verify the write actually landed with hook-computed fields.
+  // "validation passed" and "the write mechanism works" are NOT the same thing —
+  // this is the only check that proves the document in MongoDB has what the
+  // viewer and admin dashboard need. Any seed that skips this is unverified.
+  const saved = await Course.findOne({ slug: COURSE.slug }).lean();
+  if (!saved) {
+    console.error('❌ READ-BACK FAILED — course not found in DB after save().');
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+  if (!saved.wordCount || !saved.totalContentBlocks) {
+    console.error(`❌ READ-BACK FAILED — hook fields missing on the SAVED document: wordCount=${saved.wordCount}, totalContentBlocks=${saved.totalContentBlocks}`);
+    console.error('   The pre-save hook did not run. The write path must be doc.save() on the real model — never a raw collection write.');
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+  console.log(`✅ DB verified ${saved.courseCode || saved.slug} — wordCount=${saved.wordCount}, totalContentBlocks=${saved.totalContentBlocks}, sections=${(saved.sections || []).length} (word target ${(saved.ceHours || 0) * 6000})`);
+  if (saved.wordCount < (saved.ceHours || 0) * 6000) {
+    console.warn('⚠ Saved but UNDER word target — left as draft. Add content and re-run.');
   }
   await mongoose.disconnect();
 }
