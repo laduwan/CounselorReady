@@ -984,7 +984,7 @@ async function main() {
   console.log('Connected to MongoDB');
 
   // Dynamic import after connection
-  const { default: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
 
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
   if (existing) {

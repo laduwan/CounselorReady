@@ -73,6 +73,30 @@ const COURSE = {
           image: '',
           imageAlt: 'Clinician and client seated across from each other in a warm, collaborative intake conversation',
           imagePosition: 'right'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'According to this course, what most directly determines the quality of everything that follows an intake — treatment plan, diagnosis, and interventions?',
+          options: [
+            { text: 'The specific instruments and checklists used during the intake session', isCorrect: false },
+            { text: 'The quality of the assessment process itself, since a hastily conducted intake can send treatment in entirely the wrong direction', isCorrect: true },
+            { text: 'The length of the client\'s presenting complaint narrative', isCorrect: false },
+            { text: 'Whether the session was billed under a diagnostic or wellness code', isCorrect: false }
+          ],
+          correctAnswer: 1,
+          explanation: 'The course frames the quality of the assessment process — not any single instrument — as the determining factor for everything downstream, since a hastily conducted intake can mislabel a trauma response, miss a nascent psychosis, overlook a medical condition, or fail to identify safety risk.'
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Per Bordin (1979), what are the three components of the therapeutic alliance that shape how much information a client discloses during assessment?',
+          options: [
+            { text: 'Agreement on goals, agreement on tasks, and the affective bond', isCorrect: true },
+            { text: 'Diagnostic accuracy, billing compliance, and session length', isCorrect: false },
+            { text: 'Client insight, clinician credentials, and treatment modality', isCorrect: false },
+            { text: 'Symptom severity, risk level, and prior treatment history', isCorrect: false }
+          ],
+          correctAnswer: 0,
+          explanation: 'Bordin (1979) identified the therapeutic alliance as consisting of agreement on goals, agreement on tasks, and the affective bond. A client who does not feel understood, respected, or safe along these dimensions will manage information strategically rather than disclosing fully — which is why the relational container must be established before an assessment protocol can yield complete data.'
         }
       ]
     },
