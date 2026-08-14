@@ -8,7 +8,7 @@
  * Three forbidden patterns:
  *   (1) `strict: false`                                  — schemaless model trick
  *   (2) `db.collection(...).insertOne|insertMany(`       — native driver write
- *   (3) `mongoose.model('InteractiveCourse', new ... )`  — defines a shadow model
+ *   (3) `mongoose.model('InteractiveCourse', new ... )`  — defines shadow models
  *
  * One required pattern:
  *       must require/import the real `models/InteractiveCourse`
