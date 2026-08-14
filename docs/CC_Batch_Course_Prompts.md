@@ -46,6 +46,47 @@ Every content section (not intro/conclusion) MUST contain ALL of these:
 7. 1 reflection (prompt: clinically specific question)
 8. 1 keyTakeaway (title, takeaways:["item1","item2"...] — 3-5 items)
 
+═══ INTRO SECTION (sections[0]) — REQUIRED, EXEMPT FROM KC/ACTIVITY RULES ═══
+
+The intro section is NOT a throwaway welcome blurb — it sets up everything that
+follows and is often the only section a prospective learner previews before
+purchasing. It is exempt from the KC-block and interactive-activity requirements
+(the self-validator enforces this exemption — do not add quiz content here just
+to satisfy a block-count rule), but it MUST contain:
+1. sectionDivider (course title as title, one-line hook as subtitle)
+2. 1 text block (400-600 words) that: states why this topic matters clinically
+   right now, names the specific problem or gap the course addresses, and briefly
+   previews what each subsequent section covers (do not just restate the section
+   titles — give a sentence of substance per section)
+3. 1 videoEmbed (optional but preferred — overview video)
+4. learningObjectives are declared at the course level (see COURSE-LEVEL
+   STRUCTURE below) — the intro text should orient the reader toward them in
+   prose, not just repeat the bulleted list
+5. 1 reflection — a priming question that gets the learner thinking about their
+   own caseload/practice before the content starts
+
+═══ CONCLUSION SECTION (sections[last]) — REQUIRED, EXEMPT FROM KC/ACTIVITY RULES ═══
+
+The conclusion is NOT a one-paragraph sign-off. It is also exempt from the
+KC-block and interactive-activity requirements, but it MUST contain:
+1. sectionDivider (e.g. "Conclusion" / "Bringing It Together")
+2. 1 synthesis text block (400-600 words) that explicitly ties the course's
+   sections together — name each major concept/model covered and how they
+   relate to each other. This is NOT a new-content section; every claim here
+   should reference something already taught earlier in the course. Do not
+   introduce new clinical content in the conclusion.
+3. 1 keyTakeaway covering the WHOLE course (5-8 items, one per major concept —
+   broader in scope than a single section's keyTakeaway)
+4. 1 callout or text block on next steps / continued learning (related CE
+   courses, professional organizations, supervision considerations)
+5. 1 final reflection tying the material back to the learner's own practice
+   ("Identify one client on your current caseload where...")
+
+Note: the resources block (6-10 professional URLs) belongs in the LAST CONTENT
+section, before the conclusion — not inside the conclusion itself. See MEDIA
+REQUIREMENTS below.
+
+
 MEDIA REQUIREMENTS (per course, not per section):
 - At least 2 videoEmbed blocks across the course:
   { type: "videoEmbed", title: "...", videoUrl: "https://www.youtube.com/embed/VIDEO_ID",
@@ -138,8 +179,13 @@ Do NOT write your own wrapper, word counter, or DB write.
 
 Copy server/src/scripts/_seedTemplate.js VERBATIM as the file skeleton and paste
 the COURSE object into it. The template:
-  - imports the real model (server/src/models/InteractiveCourse.js) and upserts
-    via doc.save() — the ONLY write path that fires the pre-save hook
+  - imports the real model via the correct NAMED export —
+    `import { Course } from '../models/InteractiveCourse.js'`. (A
+    `{ default: InteractiveCourse }` destructure grabs a plain object, not the
+    model, and throws "InteractiveCourse.findOne is not a function" at
+    runtime — AFTER self-validation has already printed "passed". This has
+    broken 5+ seed scripts historically.)
+  - upserts via doc.save() — the ONLY write path that fires the pre-save hook
   - lets the hook compute wordCount and totalContentBlocks (never set them manually)
   - reads the saved document back from the DB and exits non-zero if the
     hook-computed fields did not persist
@@ -300,6 +346,30 @@ Fix any wrong type names:
 - quiz → move questions into course.assessment
 - knowledgeCheck (wrapper) → expand into individual multipleChoice blocks
 - Flat string options → [{text, isCorrect}] objects
+
+═══ MULTI-PASS / WORD-FLOOR EXPANSION WARNING ═══
+
+If this is a repeat pass on a section you (or an earlier session) already
+edited — including a prior word-count-floor expansion pass — do NOT just
+append another block to the end. Before adding anything:
+
+1. Read the ENTIRE section's current contentBlocks top to bottom, not just
+   the last block or the diff from the prior edit.
+2. Check whether the concept you're about to add already appears earlier in
+   the section (even reworded). If it does, expand or deepen the existing
+   passage instead of adding a near-duplicate block.
+3. Check that new text doesn't restate a point made by a text block, callout,
+   accordion item, AND keyTakeaway all in the same section — one clear
+   articulation plus one reinforcement (e.g. a callout highlighting it) is
+   enough; three is redundant padding, not depth.
+4. Read the section once more after your edit as if seeing it for the first
+   time, purely for flow — does it read like one coherent pass through the
+   topic, or like content bolted on in unrelated chunks? If a reader would
+   notice a seam, smooth the transition sentence into/out of the new block
+   rather than leaving it floating.
+
+This applies to every enrichment/expansion prompt in this doc (3, 4, and
+ad hoc "expand toward word floor" requests) — not just this one.
 
 Show me the enrichment plan section-by-section before writing the updated file.
 Run the self-validation checks at the end.
