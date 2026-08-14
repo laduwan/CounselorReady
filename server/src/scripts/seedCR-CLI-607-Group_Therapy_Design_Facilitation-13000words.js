@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI && !process.env.DRY_RUN) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -16,7 +17,7 @@ const COURSE = {
   approvingBody: 'NBCC', approvalNumber: '7760', acepNumber: '7760',
   provider: { name: 'GA Integrated Therapeutic Perspectives LLC', shortName: 'GAITP LLC', acepNumber: '7760', approvalBody: 'NBCC' },
   approvals: [{ body: 'NBCC', providerNumber: '7760', providerName: 'GA Integrated Therapeutic Perspectives LLC', status: 'approved', hourBreakdown: [{ label: 'core', hours: 2 }], deliveryFormat: 'asynchronous' }],
-  nbccContentAreas: ['Counseling Theory'],
+  nbccContentAreas: ['Group Dynamics'],
   presenter: { name: 'Kejuiana Johnson', credentials: 'MA, LPC, NCC, CPCS, BC-TMH', degree: 'MA', licenseNumber: 'LPC009587', licenseState: 'Georgia', licenseType: 'LPC', qualificationStatement: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH, is a licensed professional counselor and approved clinical supervisor in Georgia with extensive experience in group therapy facilitation, clinical training, and telebehavioral health.' },
   instructor: 'GA Integrated Therapeutic Perspectives LLC',
   author: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH',
@@ -649,6 +650,48 @@ const COURSE = {
         },
       ],
     },
+
+    // ───────────────────────────────────────────────────────────────
+    // CONCLUSION
+    // ───────────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: Design and Facilitation as a Single Clinical Skill Set',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From pre-group design decisions to in-the-room facilitation judgment',
+        },
+        {
+          type: 'text',
+          content: `<p>This course argued from the outset that group therapy demands its own clinical framework — it is not individual therapy performed in front of an audience. Section 1 built the design layer: the therapeutic factors that make group treatment effective in ways individual therapy cannot replicate, the pre-group decisions about composition, structure, and screening that determine whether a group can function at all, and the distinctions between group types that shape everything from member selection to session structure. Getting design right is not administrative housekeeping — it is the foundation that either supports or undermines everything a facilitator attempts once the group is running.</p>
+<p>Section 2 moved into the room itself: the stages of group development, the facilitation skills that keep a group therapeutically productive rather than chaotic or stagnant, and the specific pitfalls — scapegoating, subgrouping, a dominant member consuming session time, conflict avoidance that keeps a group permanently shallow — that derail even well-designed groups when a facilitator does not intervene skillfully. The throughline connecting design and facilitation is that neither compensates for failures in the other: a beautifully designed group can still be ruined by weak facilitation, and strong facilitation skill cannot fully rescue a group whose composition or structure was wrong from the start.</p>
+<p>What this course has aimed to build is a single integrated skill set: the judgment to design a group correctly before the first session, and the in-the-moment facilitation skill to guide that group productively through its predictable developmental stages and its less predictable ruptures. Group therapy offers therapeutic factors — universality, interpersonal learning, group cohesion — that no individual modality can replicate, and that potential is only realized when design and facilitation are both handled with the same clinical rigor you would bring to individual case conceptualization.</p>`,
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'Group therapy offers therapeutic factors — universality, interpersonal learning, group cohesion — that individual therapy structurally cannot replicate, which is why it requires its own clinical framework rather than being treated as individual therapy with an audience.',
+            'Pre-group decisions about composition, screening, and structure determine whether a group can function therapeutically at all — design failures are difficult to correct once a group is underway.',
+            'Groups move through predictable developmental stages, and facilitation technique must adapt to which stage the group is currently in.',
+            'Scapegoating, subgrouping, a dominant member monopolizing time, and conflict avoidance are common, predictable pitfalls that derail even well-designed groups without skilled facilitator intervention.',
+            'Design and facilitation are interdependent — strong facilitation cannot fully rescue a poorly composed group, and good design alone does not guarantee productive sessions without facilitation skill.',
+            'ACA Code of Ethics provisions specific to group work govern screening, informed consent, and confidentiality considerations unique to the group modality.',
+          ],
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your Group Facilitation Practice',
+          content: `<p>Group facilitation competency deepens with supervised practice and consultation. Consider seeking group-specific clinical supervision, reviewing the ACA's group work ethics resources referenced throughout this course, and observing or co-facilitating with an experienced group therapist before leading a group independently if you are new to the modality.</p>`,
+        },
+        {
+          type: 'reflection',
+          question: 'Think of a group you currently facilitate or have facilitated in the past where one of this course\'s pitfalls — scapegoating, subgrouping, a dominant member, or conflict avoidance — emerged. Looking back with this course\'s framework, what earlier design decision or facilitation intervention might have prevented or better addressed it?',
+        },
+      ],
+    },
   ],
 
   // ───────────────────────────────────────────────────────────────
@@ -1040,19 +1083,20 @@ async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log('Connected to MongoDB.');
 
-  // Dynamically load the model to avoid re-registration errors
-  let InteractiveCourse;
-  try {
-    InteractiveCourse = mongoose.model('InteractiveCourse');
-  } catch {
-    const { Course: model } = await import('../models/InteractiveCourse.js');
-    InteractiveCourse = model;
-  }
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
 
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
   if (existing) {
     console.log(`Found existing course with slug "${SLUG}" — updating...`);
-    await InteractiveCourse.findOneAndUpdate({ slug: SLUG }, COURSE, { new: true, runValidators: true });
+    existing.set(COURSE);
+    await existing.save();
     console.log('Course updated successfully.');
   } else {
     console.log(`No existing course found — creating new course...`);

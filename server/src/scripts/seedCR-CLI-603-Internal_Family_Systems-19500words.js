@@ -6,6 +6,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
@@ -88,7 +89,7 @@ const COURSE_DATA = {
   categories: ["Clinical", "Trauma", "Counseling Theory"],
   tags: ["IFS", "Internal Family Systems", "parts work", "trauma", "self-leadership", "multiplicity", "exiles", "protectors", "managers", "firefighters", "unburdening", "complex trauma"],
   price: 59,
-  accessType: "paid",
+  accessType: "subscription",
   pricingTier: "premium",
   isActive: true,
   isFeatured: false,
@@ -633,8 +634,24 @@ const COURSE_DATA = {
         },
         {
           type: "fillInBlank",
-          question: "Complete the following IFS clinical principle: 'Before any exile work can safely begin, the relevant ________ must have been befriended and must have given their ________ to the approach. Proceeding without this creates the risk of ________ flooding and potential retraumatization.'",
-          blanks: ["protectors", "permission", "exile"],
+          title: "IFS Clinical Safety Principle: Sequencing Exile Work",
+          blanks: [
+            {
+              prompt: "Before any exile work can safely begin, the relevant ________ must have been befriended and must have given their permission to the approach.",
+              answer: "protectors",
+              acceptAlternates: ["protector", "protector parts", "protective parts"]
+            },
+            {
+              prompt: "Before any exile work can safely begin, the relevant protectors must have been befriended and must have given their ________ to the approach.",
+              answer: "permission",
+              acceptAlternates: ["consent", "buy-in"]
+            },
+            {
+              prompt: "Proceeding without protector permission creates the risk of ________ flooding and potential retraumatization.",
+              answer: "exile",
+              acceptAlternates: ["exile-part", "exile part"]
+            }
+          ],
           explanation: "This principle—that protectors must be befriended and must consent before exile work begins—is the foundational safety principle of IFS trauma work. It reflects the model's systemic understanding that the protective system's strategies, however extreme, exist for reasons that must be honored rather than bypassed. Exile flooding without protector consent destabilizes the system and typically results in the protective system becoming more rigid and extreme, making subsequent therapeutic access more difficult."
         },
         {
@@ -701,6 +718,48 @@ const COURSE_DATA = {
           ]
         }
       ]
+    },
+
+    // ═══════════════════════════════════════════════════════════
+    // CONCLUSION
+    // ═══════════════════════════════════════════════════════════
+    {
+      title: "Conclusion: The Self-Led System as a Clinical Orientation",
+      contentBlocks: [
+        {
+          type: "sectionDivider",
+          title: "Conclusion",
+          subtitle: "From internal multiplicity to Self-led integration"
+        },
+        {
+          type: "text",
+          content: `<p>This course built its understanding of Internal Family Systems in a deliberate progression. The introduction and Section 1 established the model's foundational premise — that the mind is naturally multiple, organized into managers, firefighters, and exiles, all orbiting a core Self that is never damaged, only obscured. Section 2 shifted the clinical lens onto protectors specifically, teaching you to approach even the most extreme or seemingly maladaptive protective strategies with curiosity rather than confrontation, because every protector exists for a reason the system once needed.</p>
+<p>Section 3 carried that same stance into the most demanding territory IFS addresses: trauma and complex presentations. You learned the sequencing principle that anchors safe exile work — protectors must be befriended and must give permission before exile material is approached — and the scope-of-practice boundaries that distinguish IFS-informed language from full IFS as a primary trauma modality. Direct access, IFS-EMDR integration, and the contraindications around active psychosis and complex structural dissociation all extend from that same foundational premise: the system's protective logic must be honored, not bypassed, no matter how advanced the technique.</p>
+<p>What unifies all three sections is IFS's central clinical claim: healing does not come from eliminating parts or overriding their strategies. It comes from the client's own Self — curious, calm, compassionate, connected — building enough internal trust that the system's protectors no longer need to work so hard. Whether you are integrating IFS-informed language into an existing eclectic practice or pursuing formal Level 1 training, that stance of curiosity toward every part of the internal system is the throughline to carry forward.</p>`
+        },
+        {
+          type: "keyTakeaway",
+          title: "Course-Wide Key Takeaways",
+          takeaways: [
+            "IFS holds that the mind is naturally multiple — organized into managers, firefighters, and exiles — rather than pathologically fragmented, with a core Self that is never damaged, only obscured.",
+            "Protectors (managers and firefighters) must be approached with curiosity, not confrontation, because their strategies exist for reasons the internal system once needed.",
+            "The foundational safety principle of exile work is sequencing: protectors must be befriended and give permission before exile material is approached, to avoid destabilizing flooding.",
+            "IFS integrates with EMDR by addressing the systemic and relational conditions for trauma processing while EMDR provides an additional processing channel.",
+            "IFS is contraindicated as a primary modality during active psychosis and requires advanced specialized training for complex structural dissociation and DID.",
+            "The ethical principle of competence (ACA §C.2.a) governs scope of IFS practice — introduction-level training supports IFS-informed language and stabilization; full exile unburdening with complex trauma requires Level 1 training and ongoing supervision."
+          ]
+        },
+        {
+          type: "callout",
+          calloutType: "tip",
+          title: "Continuing Your IFS Practice",
+          content: `<p>IFS competency deepens with formal training and supervised practice. Consider pursuing Level 1 certification through the IFS Institute, reading Richard Schwartz's foundational and clinical texts referenced throughout this course, and seeking IFS-informed consultation as you begin integrating parts-language and unblending techniques into your existing practice.</p>`
+        },
+        {
+          type: "reflection",
+          question: "Think of a client whose presenting behavior you have previously understood primarily as resistance or dysfunction. Reframed through an IFS lens, what protective function might that behavior be serving — and what would it look like to approach that part with curiosity in your next session, rather than trying to eliminate it?"
+        }
+      ]
     }
   ],
 
@@ -711,197 +770,198 @@ const COURSE_DATA = {
     questions: [
       {
         question: "According to IFS theory, which of the following most accurately describes the fundamental nature of the human mind?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "The mind is a unified entity that becomes fragmented only as a result of trauma",
-          "The mind is naturally multiple, consisting of a system of sub-personalities (parts) alongside a core Self",
-          "The mind is organized into conscious and unconscious layers, with parts representing repressed material",
-          "The mind consists of two primary systems—a rational system and an emotional system—that compete for dominance"
+          { text: "The mind is a unified entity that becomes fragmented only as a result of trauma", isCorrect: false },
+          { text: "The mind is naturally multiple, consisting of a system of sub-personalities (parts) alongside a core Self", isCorrect: true },
+          { text: "The mind is organized into conscious and unconscious layers, with parts representing repressed material", isCorrect: false },
+          { text: "The mind consists of two primary systems—a rational system and an emotional system—that compete for dominance", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "IFS's foundational premise is that the mind is naturally multiple—not fragmented by pathology, but inherently constituted as a system of distinct sub-personalities or 'parts,' each with its own perspective, history, and intentions. This multiplicity is normal, not pathological. The Self is distinct from and not a product of the parts."
       },
       {
         question: "A client reports that when they are criticized at work, a part of them immediately 'shuts down all feelings' and they become detached and robotic until the situation passes. In IFS terms, this 'shut-down' part is most accurately categorized as:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "An exile carrying the burden of rejection",
-          "A manager using proactive detachment to prevent exile activation",
-          "A firefighter using dissociation to interrupt exile flooding that has already occurred",
-          "The Self using compartmentalization to maintain professional function"
+          { text: "An exile carrying the burden of rejection", isCorrect: false },
+          { text: "A manager using proactive detachment to prevent exile activation", isCorrect: false },
+          { text: "A firefighter using dissociation to interrupt exile flooding that has already occurred", isCorrect: true },
+          { text: "The Self using compartmentalization to maintain professional function", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "The triggering event (criticism) activates the exile's wound (rejection/humiliation). The 'shut-down' response arises reactively—after the trigger—to rapidly interrupt the exile's emotional flooding. This is classic firefighter behavior: fast-acting, reactive, effective at suppressing the exile's pain, but at the cost of the person's present-moment experience. A manager would prevent the triggering situation altogether; this part activates in response to it."
       },
       {
         question: "Which of the following best describes the concept of 'Self' in the IFS model?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "The most mature and functional part of the person's internal system, developed through healthy development",
-          "The observing ego, as described in psychoanalytic theory, that provides executive function",
-          "A core, inherent essence distinct from all parts, characterized by the eight Cs, that is the natural leader of the internal system",
-          "The integrated synthesis of all parts working in harmony, achieved at the end of successful IFS treatment"
+          { text: "The most mature and functional part of the person's internal system, developed through healthy development", isCorrect: false },
+          { text: "The observing ego, as described in psychoanalytic theory, that provides executive function", isCorrect: false },
+          { text: "A core, inherent essence distinct from all parts, characterized by the eight Cs, that is the natural leader of the internal system", isCorrect: true },
+          { text: "The integrated synthesis of all parts working in harmony, achieved at the end of successful IFS treatment", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "The Self in IFS is explicitly distinguished from all parts—it is not the most functional part, the observing ego, or a synthesis of parts. It is a pre-existing, inherent quality of human experience that is present at birth, characterized by the eight Cs (curiosity, calm, clarity, compassion, confidence, creativity, courage, connectedness), and not created or eliminated by experience—though its accessibility can be obscured by extreme part activity."
       },
       {
         question: "The no-bad-parts principle in IFS holds that:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Harmful behaviors should not be judged as bad because they are symptoms of underlying pathology",
-          "Every part, including the most destructive, carries a positive intention for the internal system",
-          "Clients should not view any of their parts negatively, as this produces counterproductive shame",
-          "Therapists should refrain from categorizing client behaviors as adaptive or maladaptive"
+          { text: "Harmful behaviors should not be judged as bad because they are symptoms of underlying pathology", isCorrect: false },
+          { text: "Every part, including the most destructive, carries a positive intention for the internal system", isCorrect: true },
+          { text: "Clients should not view any of their parts negatively, as this produces counterproductive shame", isCorrect: false },
+          { text: "Therapists should refrain from categorizing client behaviors as adaptive or maladaptive", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "The no-bad-parts principle is a specific theoretical claim: every part—regardless of how harmful its behavior may be—carries a positive intention for the internal system. This is not simply a therapeutic stance of non-judgment, and it is not a claim that harmful behaviors have no negative consequences. It is a description of parts' motivational structure: every part believes it is helping, even when its strategies cause significant damage."
       },
       {
         question: "A counselor has been working with a client for three months building relationships with protective parts. The client's critical manager has recently indicated willingness to 'let us take a look' at what it's been protecting. What is the most appropriate IFS-aligned next step?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Immediately guide the client toward the exile while the manager is open, before it changes its mind",
-          "Continue working only with the manager, as exile work is outside the scope of licensed counselors without IFS Level 1 training",
-          "Proceed carefully: ensure other relevant protectors also consent, verify the client has adequate Self-access, and approach the exile gradually with ongoing attention to the window of tolerance",
-          "Refer the client to an IFS-trained therapist at this stage, as the foundational IFS work is now complete"
+          { text: "Immediately guide the client toward the exile while the manager is open, before it changes its mind", isCorrect: false },
+          { text: "Continue working only with the manager, as exile work is outside the scope of licensed counselors without IFS Level 1 training", isCorrect: false },
+          { text: "Proceed carefully: ensure other relevant protectors also consent, verify the client has adequate Self-access, and approach the exile gradually with ongoing attention to the window of tolerance", isCorrect: true },
+          { text: "Refer the client to an IFS-trained therapist at this stage, as the foundational IFS work is now complete", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "One protector's openness does not automatically mean the system is ready for exile work. Multiple protectors may need to consent; the client's Self-access must be sufficient to remain an observing presence rather than flooding; and the approach should be gradual with close attention to arousal levels. Immediately rushing in wastes the relational work done and risks destabilization. Referral is not necessarily indicated unless the case complexity is beyond the counselor's competence."
       },
       {
         question: "Which of the following descriptions most accurately characterizes the relationship between managers and firefighters in the IFS model?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Managers and firefighters are in opposition—managers try to prevent the exile pain that firefighters attempt to indulge",
-          "Both are protectors serving the same function—preventing exile pain from surfacing—but differ in timing: managers operate proactively, firefighters reactively",
-          "Managers protect the system from external threats while firefighters protect the system from internal threats",
-          "Managers carry the exile's burdens while firefighters carry the system's learned coping strategies"
+          { text: "Managers and firefighters are in opposition—managers try to prevent the exile pain that firefighters attempt to indulge", isCorrect: false },
+          { text: "Both are protectors serving the same function—preventing exile pain from surfacing—but differ in timing: managers operate proactively, firefighters reactively", isCorrect: true },
+          { text: "Managers protect the system from external threats while firefighters protect the system from internal threats", isCorrect: false },
+          { text: "Managers carry the exile's burdens while firefighters carry the system's learned coping strategies", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "Managers and firefighters share the same ultimate goal—protecting the system from the exile's overwhelming pain—but operate on different timelines. Managers work proactively to prevent exile activation; firefighters respond reactively after an exile has already broken through. They are not in opposition; they are two different strategies serving the same protective function."
       },
       {
         question: "A counselor asks a client 'How do you feel toward that part?' and the client responds 'I'm scared of it.' From an IFS perspective, the most appropriate next step is:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Reassure the client that the part is not actually dangerous before proceeding",
-          "Acknowledge the fear, then invite the scared part to step back slightly so that the client's Self can emerge as a distinct observer of the target part",
-          "Move directly to exploring the target part, as the client's fear indicates it is an active exile that needs attention",
-          "Pause the IFS work and use a different modality, as the client's fear indicates readiness issues"
+          { text: "Reassure the client that the part is not actually dangerous before proceeding", isCorrect: false },
+          { text: "Acknowledge the fear, then invite the scared part to step back slightly so that the client's Self can emerge as a distinct observer of the target part", isCorrect: true },
+          { text: "Move directly to exploring the target part, as the client's fear indicates it is an active exile that needs attention", isCorrect: false },
+          { text: "Pause the IFS work and use a different modality, as the client's fear indicates readiness issues", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "Fear toward a target part indicates that another part (likely a protective manager) has entered the picture. The fear itself is not a barrier to work—it is material to work with. The counselor acknowledges it and invites the fearful part to step back, which may allow Self-energy to emerge. The 'feel toward' step in the 6 Fs is specifically designed to surface these protective reactions so they can be addressed before proceeding."
       },
       {
         question: "Blending in IFS refers to:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "The therapeutic integration of multiple parts into a unified experience of Self",
-          "A part becoming so dominant in the client's consciousness that the client loses the felt sense of having a separate Self from which to relate to the part",
-          "The transfer of the exile's burden to another part within the internal system",
-          "The counselor's empathic merging with the client's emotional experience during session"
+          { text: "The therapeutic integration of multiple parts into a unified experience of Self", isCorrect: false },
+          { text: "A part becoming so dominant in the client's consciousness that the client loses the felt sense of having a separate Self from which to relate to the part", isCorrect: true },
+          { text: "The transfer of the exile's burden to another part within the internal system", isCorrect: false },
+          { text: "The counselor's empathic merging with the client's emotional experience during session", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "Blending is specifically the loss of Self-differentiation—when a part becomes so activated and dominant that the person is operating entirely from inside the part's perspective, without any observing Self presence from which to have a relationship with the part. It is distinct from integration, burden transfer, or therapeutic empathy."
       },
       {
         question: "What is the primary clinical purpose of the 'Fear' step in the IFS 6 Fs sequence (Find, Focus, Flesh out, Feel toward, beFriend, Fear)?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "To assess whether the client's fear of the target part indicates a contraindication for IFS",
-          "To explore the client's fear of therapy and the therapeutic relationship",
-          "To identify and address the protector's specific fears about what would happen if the exile were accessed and healed, obtaining genuine consent before proceeding",
-          "To help the client understand that their fears about change are being managed by defensive parts"
+          { text: "To assess whether the client's fear of the target part indicates a contraindication for IFS", isCorrect: false },
+          { text: "To explore the client's fear of therapy and the therapeutic relationship", isCorrect: false },
+          { text: "To identify and address the protector's specific fears about what would happen if the exile were accessed and healed, obtaining genuine consent before proceeding", isCorrect: true },
+          { text: "To help the client understand that their fears about change are being managed by defensive parts", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "The 'Fear' step addresses the protector's own fears about what exile access might unleash or what would happen to the system if the protector were no longer needed. This is the consent step: understanding and addressing these fears is prerequisite to obtaining genuine protector permission for exile work. Without this step, permission obtained from a protector who hasn't had its fears addressed may not hold when the actual approach to the exile begins."
       },
       {
         question: "A legacy burden in IFS differs from a personal burden primarily in that:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Legacy burdens are carried by managers, while personal burdens are carried by exiles",
-          "Legacy burdens originate in the person's own developmental experiences, while personal burdens originate in family systems",
-          "Legacy burdens are absorbed from family and cultural systems rather than from the person's direct experience, and often feel like 'just the way I am' rather than something that happened to the person",
-          "Legacy burdens cannot be addressed through unburdening; they require systemic family therapy interventions"
+          { text: "Legacy burdens are carried by managers, while personal burdens are carried by exiles", isCorrect: false },
+          { text: "Legacy burdens originate in the person's own developmental experiences, while personal burdens originate in family systems", isCorrect: false },
+          { text: "Legacy burdens are absorbed from family and cultural systems rather than from the person's direct experience, and often feel like 'just the way I am' rather than something that happened to the person", isCorrect: true },
+          { text: "Legacy burdens cannot be addressed through unburdening; they require systemic family therapy interventions", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "Legacy burdens are beliefs, emotions, and energy patterns absorbed from family and cultural systems—transmitted intergenerationally rather than arising from the person's own direct traumatic experiences. Their absorption before the person had the developmental capacity to distinguish self from environment means they often feel ego-syntonic ('just who I am') rather than experiential ('something that happened to me'). They are fully addressable through unburdening, with the additional step of returning the burden to its origin."
       },
       {
         question: "Direct access technique in IFS is most appropriately used when:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "A client is in their first few sessions and has not yet learned IFS concepts",
-          "A client is so blended with a part that standard facilitation of Self-to-part dialogue is not possible and the therapist speaks directly to the blended part from the therapist's own Self",
-          "The counselor wants to assess the content of an exile without involving the client's conscious awareness",
-          "A client's manager parts are so strong that they are preventing any emotional engagement in session"
+          { text: "A client is in their first few sessions and has not yet learned IFS concepts", isCorrect: false },
+          { text: "A client is so blended with a part that standard facilitation of Self-to-part dialogue is not possible and the therapist speaks directly to the blended part from the therapist's own Self", isCorrect: true },
+          { text: "The counselor wants to assess the content of an exile without involving the client's conscious awareness", isCorrect: false },
+          { text: "A client's manager parts are so strong that they are preventing any emotional engagement in session", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "Direct access is used specifically when the client cannot access their own Self due to extreme blending—the therapist then speaks directly to the client's dominant part from the therapist's own Self, creating a temporary therapeutic relationship with the client's part that can open space for the client's Self to eventually emerge. It is an advanced technique requiring clear therapist Self-leadership."
       },
       {
         question: "IFS is explicitly contraindicated as a primary treatment modality during:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Active psychotic episodes, because the distinction between Self and parts may not be accessible and IFS concepts may amplify delusional material",
-          "The early phase of any trauma treatment, because the model is only appropriate for long-term therapy",
-          "Any presentation involving active substance use, because firefighter parts will block all therapeutic access",
-          "Work with adolescents, because the developmental capacity for internal observation is not available before age 18"
+          { text: "Active psychotic episodes, because the distinction between Self and parts may not be accessible and IFS concepts may amplify delusional material", isCorrect: true },
+          { text: "The early phase of any trauma treatment, because the model is only appropriate for long-term therapy", isCorrect: false },
+          { text: "Any presentation involving active substance use, because firefighter parts will block all therapeutic access", isCorrect: false },
+          { text: "Work with adolescents, because the developmental capacity for internal observation is not available before age 18", isCorrect: false },
         ],
         correctAnswer: 0,
         explanation: "IFS literature is explicit that active psychosis is a contraindication for IFS as a primary modality. The fundamental requirement of distinguishing between an observing Self and parts may not be accessible during active psychosis, and engagement with inner voices and figures may amplify rather than address psychotic symptoms. Stabilization and psychiatric management are indicated first. IFS can be reintroduced carefully after stabilization."
       },
       {
         question: "From an ethical standpoint, a licensed counselor who has completed a 3-CE introductory IFS course is ethically prepared to:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Use IFS as their primary treatment modality for clients with complex trauma and dissociation",
-          "Conduct full exile unburdening sequences with appropriate supervision",
-          "Integrate IFS-informed language, unblending techniques, and parts-aware case conceptualization into their existing competent practice, and refer for advanced IFS work as indicated",
-          "Offer IFS therapy without supervision since CE courses satisfy competency requirements"
+          { text: "Use IFS as their primary treatment modality for clients with complex trauma and dissociation", isCorrect: false },
+          { text: "Conduct full exile unburdening sequences with appropriate supervision", isCorrect: false },
+          { text: "Integrate IFS-informed language, unblending techniques, and parts-aware case conceptualization into their existing competent practice, and refer for advanced IFS work as indicated", isCorrect: true },
+          { text: "Offer IFS therapy without supervision since CE courses satisfy competency requirements", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "ACA Code of Ethics §C.2.a requires that counselors practice only within the boundaries of their competence. An introductory CE course provides foundational literacy but not the supervised experiential practice (typically from a Level 1 IFS training) required for primary IFS modality use with complex presentations. Introduction-level practice appropriately includes IFS framing, unblending, and conceptualization; it does not include independent full exile work or direct access with complex trauma or dissociative clients."
       },
       {
         question: "In IFS-EMDR integration, which function does the IFS component primarily serve relative to the EMDR component?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "IFS provides the bilateral stimulation mechanism while EMDR provides the relational framework",
-          "IFS addresses the systemic and relational conditions (protector trust, Self-access) that allow EMDR processing to occur safely and effectively",
-          "IFS and EMDR address entirely separate problems and are used with different presenting concerns in the same client",
-          "IFS is used after EMDR to process the material that EMDR surfaces"
+          { text: "IFS provides the bilateral stimulation mechanism while EMDR provides the relational framework", isCorrect: false },
+          { text: "IFS addresses the systemic and relational conditions (protector trust, Self-access) that allow EMDR processing to occur safely and effectively", isCorrect: true },
+          { text: "IFS and EMDR address entirely separate problems and are used with different presenting concerns in the same client", isCorrect: false },
+          { text: "IFS is used after EMDR to process the material that EMDR surfaces", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "In IFS-EMDR integration, IFS provides the systemic scaffolding—building protector relationships, establishing Self-access, ensuring consent—that creates the safety conditions for EMDR processing to occur without looping or destabilization. EMDR then provides a processing mechanism for exile material that complements IFS's witnessing-and-unburdening approach. The two models operate in partnership, with IFS typically addressing the system before and between EMDR sets."
       },
       {
         question: "A client whose childhood home was characterized by poverty, racial marginalization, and a cultural ethos of emotional self-sufficiency presents with a deep, bodyborne sense of shame about needing anything from others—but cannot identify any specific events that produced this feeling. The IFS concept most directly applicable to this presentation is:",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "Firefighter overload from years of managing multiple stressors",
-          "Manager polarization between self-sufficiency and dependency parts",
-          "Legacy burden: a burden absorbed from family and cultural systems rather than from direct personal experience",
-          "Exile blending resulting in a loss of Self-access"
+          { text: "Firefighter overload from years of managing multiple stressors", isCorrect: false },
+          { text: "Manager polarization between self-sufficiency and dependency parts", isCorrect: false },
+          { text: "Legacy burden: a burden absorbed from family and cultural systems rather than from direct personal experience", isCorrect: true },
+          { text: "Exile blending resulting in a loss of Self-access", isCorrect: false },
         ],
         correctAnswer: 2,
         explanation: "The ego-syntonic quality of the shame ('just the way I am'), its somatic character, its intergenerational and cultural context, and the absence of a specific triggering event all point toward a legacy burden—something absorbed from the family and cultural field rather than from a specific personal experience. Legacy burdens often feel like identity rather than wound, and their healing involves acknowledging their origin in systems beyond the individual and returning them to those systems."
       },
       {
         question: "Which of the following best describes the IFS concept of polarization within the internal system?",
-        type: "multiple_choice",
+        type: 'multipleChoice',
         options: [
-          "The experience of a part suddenly switching from a protective to an extreme firefighter role",
-          "A pattern in which two parts hold diametrically opposed positions, each becoming more extreme in response to the other, often without either achieving its protective goal",
-          "The isolation of an exile from the rest of the internal system as a protective measure",
-          "The merging of two similar parts into a single combined part through the unburdening process"
+          { text: "The experience of a part suddenly switching from a protective to an extreme firefighter role", isCorrect: false },
+          { text: "A pattern in which two parts hold diametrically opposed positions, each becoming more extreme in response to the other, often without either achieving its protective goal", isCorrect: true },
+          { text: "The isolation of an exile from the rest of the internal system as a protective measure", isCorrect: false },
+          { text: "The merging of two similar parts into a single combined part through the unburdening process", isCorrect: false },
         ],
         correctAnswer: 1,
         explanation: "Polarization is the dynamic of mutual escalation: two parts in opposing positions each become more extreme in reaction to the other, creating a self-reinforcing cycle. The classic example is the binge-restrict cycle, or the dynamic between an over-achieving manager and a self-sabotaging part. Neither part achieves its goal; both become more entrenched over time. Resolution requires the counselor to hold both sides with curiosity rather than siding with either."
       }
     ]
+
   },
 
   // ═══════════════════════════════════════════════════════════
@@ -1014,13 +1074,6 @@ const COURSE_DATA = {
 };
 
 // ═══════════════════════════════════════════════════════════
-// SCHEMA (minimal — relies on existing InteractiveCourse model)
-// ═══════════════════════════════════════════════════════════
-const interactiveCourseSchema = new mongoose.Schema({}, { strict: false, timestamps: true });
-const InteractiveCourse = mongoose.models.InteractiveCourse ||
-  mongoose.model('InteractiveCourse', interactiveCourseSchema, 'interactivecourses');
-
-// ═══════════════════════════════════════════════════════════
 // WORD COUNT UTILITY
 // ═══════════════════════════════════════════════════════════
 function countWords(obj) {
@@ -1070,6 +1123,15 @@ async function main() {
   try {
     await mongoose.connect(MONGODB_URI);
     console.log('✓ Connected to MongoDB');
+
+    // Normalize order on sections/contentBlocks — required by schema, and the
+    // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+    (COURSE_DATA.sections || []).forEach((sec, si) => {
+      if (sec.order === undefined || sec.order === null) sec.order = si;
+      (sec.contentBlocks || []).forEach((blk, bi) => {
+        if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+      });
+    });
 
     const { errors, wordCount } = validate(COURSE_DATA);
     if (errors.length > 0) {

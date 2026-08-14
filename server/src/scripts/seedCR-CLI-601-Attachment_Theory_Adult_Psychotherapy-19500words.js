@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -769,6 +770,46 @@ const COURSE = {
           ]
         }
       ]
+    },
+
+    // ─── CONCLUSION ─────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: Integrating Attachment Theory into Everyday Clinical Work',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From attachment classification to attachment-informed practice'
+        },
+        {
+          type: 'text',
+          content: `<p>This course moved through three linked layers of attachment theory: the foundational science of Section 1, the clinical presentations and assessment approaches of Section 2, and the intervention strategies of Section 3. Together they form a single, coherent way of understanding what happens between a therapist and a client. Section 1 established that attachment is not a childhood phenomenon that fades with age — the internal working models formed through Bowlby's safe haven and secure base dynamics, and mapped through Ainsworth's and Main's classification systems, continue to organize how adults regulate distress, seek closeness, and interpret ambiguous relational signals well into the consulting room.</p>
+<p>Section 2 showed you how those patterns actually surface clinically: hyperactivating and deactivating strategies shape how a client uses (or resists using) the therapeutic relationship itself, and the assessment tools you learned — from the Adult Attachment Interview's narrative-coherence approach to self-report measures like the ECR-R — give you a structured way of naming what you are observing rather than relying on impression alone. Section 3 then turned assessment into action: using the therapeutic relationship as a corrective attachment experience, applying mentalization-based and emotion-focused techniques, and approaching disorganized attachment — the most clinically demanding presentation — with the patience and structure it requires.</p>
+<p>The unifying clinical principle across all three sections is this: attachment-informed practice does not require you to abandon your existing theoretical orientation. It asks you to notice the relational patterns your clients bring into the room, understand where those patterns come from developmentally, and use the therapeutic relationship itself — consistently, predictably, and non-judgmentally offered — as one of the most powerful change mechanisms available to you, regardless of which techniques you layer on top of it.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'Attachment is a lifespan process, not a childhood-only phenomenon — the attachment behavioral system remains active in adulthood and organizes comfort-seeking, distress regulation, and relational expectations.',
+            'The four adult attachment patterns (secure, anxious-preoccupied, dismissing-avoidant, fearful-avoidant) map onto Ainsworth\'s infant classifications and can be assessed through the AAI or self-report measures like the ECR-R.',
+            'Earned security demonstrates that attachment history is not destiny — adults with adverse early histories can achieve autonomous/secure classification through coherent, integrated meaning-making, often in psychotherapy.',
+            'Hyperactivating and deactivating regulatory strategies show up directly in the therapeutic relationship — reassurance-seeking and rupture-sensitivity on one end, emotional distance and self-sufficiency on the other.',
+            'The therapeutic relationship itself functions as a corrective attachment experience when offered consistently, predictably, and non-judgmentally — this is a change mechanism independent of any specific technique.',
+            'Disorganized attachment is the most clinically demanding presentation and requires particular patience, structure, and awareness of the contradictory, apprehensive behaviors it produces in relationship.'
+          ]
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your Attachment-Informed Practice',
+          content: `<p>Attachment-informed practice deepens with focused study of specific intervention models. Consider pursuing further training in Emotionally Focused Therapy through ICEEFT, Mentalization-Based Treatment through the Anna Freud Centre, or the Circle of Security approach for clinicians working with parents and young children — all referenced in this course's resources.</p>`
+        },
+        {
+          type: 'reflection',
+          question: 'Return to the client you identified in Section 1\'s opening reflection — the one with whom the therapeutic relationship has felt particularly difficult. Having completed this course, what attachment pattern do you now suspect is organizing that difficulty, and what is one specific, attachment-informed adjustment you could make in your next session together?'
+        }
+      ]
     }
   ],
 
@@ -1097,15 +1138,23 @@ if((c.resources?.length||0)<3)e.push('CRITICAL:resources<3');
 return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
+  await mongoose.connect(MONGODB_URI);
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
+  const{wc,e}=validate(COURSE);
   console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs|${COURSE.resources?.length}res|${(COURSE.sections||[]).reduce((n,s)=>n+(s.contentBlocks||[]).filter(b=>b.type==='callout').length,0)}callouts`);
   const crit=e.filter(x=>x.startsWith('CRITICAL'));
   if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
   if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  const existing=await InteractiveCourse.findOne({slug:SLUG});
+  if(existing){existing.set(COURSE);await existing.save();console.log('✅ Updated');}
+  else{await new InteractiveCourse(COURSE).save();console.log('✅ Inserted');}
   await mongoose.disconnect();
 }
 main().catch(e=>{console.error(e);process.exit(1);});

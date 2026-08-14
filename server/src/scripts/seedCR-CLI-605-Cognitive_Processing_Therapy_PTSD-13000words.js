@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -490,6 +491,46 @@ const COURSE = {
         },
       ],
     },
+
+    // ─── CONCLUSION ─────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: From Stuck Points to Adaptive Beliefs, In Practice',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'Bringing the cognitive model, worksheets, and clinical fidelity together',
+        },
+        {
+          type: 'text',
+          content: `<p>This course built CPT from its theoretical foundation up to its clinical application. Section 1 established Resick's cognitive model of PTSD — the distinction between assimilation, which distorts the traumatic event to preserve prior schemas, and over-accommodation, which distorts prior schemas based on the trauma — and showed how stuck points, the durable interpretive beliefs that maintain PTSD symptoms, are identified and organized around the five stuck-point themes of safety, trust, power/control, esteem, and intimacy. That model gives CPT its structure: treatment is not generalized exposure or emotional ventilation, but the systematic identification and challenging of specific, nameable beliefs.</p>
+<p>Section 2 turned that model into a session-by-session protocol: the ABC worksheet and Challenging Questions worksheet as the mechanical tools of stuck-point work, Patterns of Problematic Thinking as a way of categorizing distortion, and the adaptations required for complex trauma, military and veteran populations, and group delivery. Throughout, the emphasis has been on treatment fidelity and scope of practice — CPT is a manualized, evidence-based protocol, and its effectiveness depends on following its structure rather than freelancing pieces of it in isolation from the full model.</p>
+<p>The principle that ties both sections together is the one at the heart of Resick's model: PTSD is maintained less by the traumatic event itself than by the beliefs a person has constructed to make sense of it. CPT does not ask clients to relive the trauma in detail — it asks them to examine, and ultimately revise, the assimilated or over-accommodated beliefs that trauma left behind. That focus on cognition over exposure is what distinguishes CPT from other evidence-based PTSD treatments, and it is the clinical skill this course has aimed to build.</p>`,
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'Resick\'s cognitive model distinguishes assimilation (distorting the trauma to preserve prior beliefs) from over-accommodation (distorting prior beliefs based on the trauma) as the two mechanisms maintaining PTSD.',
+            'Stuck points are durable, present-tense, first-person belief statements maintained by assimilation or over-accommodation — not general negative thoughts, and not necessarily related to self-blame.',
+            'The five stuck-point themes — safety, trust, power/control, esteem, and intimacy — organize the clinical territory CPT addresses across a course of treatment.',
+            'The ABC worksheet and Challenging Questions worksheet are the core mechanical tools for identifying and revising stuck points session by session.',
+            'CPT adapts to complex trauma, military and veteran populations, and group delivery formats, but treatment fidelity to the manualized protocol remains essential across all adaptations.',
+            'CPT\'s focus on cognition — examining and revising trauma-related beliefs — rather than repeated exposure narration is what distinguishes it from other evidence-based PTSD treatments.',
+          ],
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your CPT Practice',
+          content: `<p>CPT competency deepens with formal training and consultation. Consider pursuing CPT training and certification through the developers' training program, working through Resick, Monson, and Chard's primary treatment manual referenced throughout this course, and seeking case consultation as you begin applying the ABC and Challenging Questions worksheets with your own clients.</p>`,
+        },
+        {
+          type: 'reflection',
+          question: 'Think of a client whose PTSD presentation includes a belief that sounds like self-blame or mistrust stated as fact. Using this course\'s framework, is that belief more likely assimilated or over-accommodated — and what would be your first Challenging Question in your next session with them?',
+        },
+      ],
+    },
   ],
 
   assessment: {
@@ -823,14 +864,21 @@ async function main() {
   await mongoose.connect(MONGO_URI);
   console.log('✔  Connected to MongoDB\n');
 
-  // Dynamic import to avoid circular-model issues
-  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
 
   // Upsert
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
   if (existing) {
     console.log(`Found existing document (${existing._id}). Updating…`);
-    await InteractiveCourse.findOneAndUpdate({ slug: SLUG }, COURSE, { new: true, runValidators: true });
+    existing.set(COURSE);
+    await existing.save();
     console.log('✔  Updated successfully');
   } else {
     const doc = new InteractiveCourse(COURSE);

@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -9,6 +10,7 @@ const COURSE = {
   courseCode: 'CR-CLI-602',
   slug: SLUG,
   title: 'Acceptance and Commitment Therapy: Core Processes for Clinicians',
+  description: 'This course equips licensed mental health professionals with a rigorous, clinically operational understanding of Acceptance and Commitment Therapy (ACT). Participants will explore the hexaflex model of psychological flexibility, Relational Frame Theory\'s account of human language and cognition, and core ACT techniques including cognitive defusion, values clarification, and committed action, along with common clinician errors and implementation challenges across presenting problems.',
   ceHours: 2,
   category: 'clinical',
   difficulty: 'intermediate',
@@ -536,6 +538,48 @@ const COURSE = {
           ]
         }
       ]
+    },
+
+    // ─────────────────────────────────────────────────────────────
+    // CONCLUSION
+    // ─────────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: The Hexaflex as a Living Clinical Map',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From the six core processes to workable clinical practice'
+        },
+        {
+          type: 'text',
+          content: `<p>This course moved from theory to practice in a deliberate order. Section 1 built the hexaflex — the six interlocking processes of psychological flexibility — as a map of what ACT is actually trying to change: not the content of a client's thoughts or feelings, but their relationship to those thoughts and feelings. Cognitive defusion, acceptance, contact with the present moment, self-as-context, values, and committed action are not six separate techniques to rotate through; they are six facets of a single underlying capacity, and experiential avoidance is the common thread running through the psychopathology that ACT targets across presenting problems.</p>
+<p>Section 2 took that map into the room. You saw how the six processes translate into specific techniques — defusion exercises that create distance from a thought without arguing about its truth, values clarification that generates the "why" behind committed action, and willingness exercises that build tolerance for the discomfort acceptance requires. You also confronted the common clinician errors that undermine ACT delivery: treating acceptance as resignation, rushing values work before a client has developed enough psychological flexibility to sit with it, or applying techniques mechanically without grounding them in the client's own workability question — does this behavior move you toward or away from what matters to you?</p>
+<p>The through-line connecting both sections is ACT's central reframe of psychopathology itself: suffering is not a malfunction to be eliminated, but frequently an inevitable byproduct of having a mind that generates language, evaluation, and comparison. The clinical task is not to win an argument with a client's thoughts — it is to help them build a life oriented around what matters to them, thoughts and feelings included rather than fought. That reframe, more than any single technique in this course, is what clinicians take with them into every subsequent ACT session.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'The hexaflex\'s six processes — defusion, acceptance, present-moment contact, self-as-context, values, and committed action — function as one interlocking capacity, not six separate techniques.',
+            'ACT is largely indifferent to whether a thought is true; the clinical question is whether relating to that thought in a given way is workable and moves the client toward what matters to them.',
+            'Experiential avoidance is the common thread ACT identifies across diverse presenting problems, from anxiety and depression to chronic pain and substance use.',
+            'Cognitive defusion creates distance from a thought without disputing its content, distinguishing ACT\'s approach from classic CBT\'s cognitive restructuring.',
+            'Values work should follow enough psychological flexibility-building that the client can tolerate the vulnerability values clarification requires — rushing it is a common clinician error.',
+            'Acceptance is not resignation or passive endurance; it is the willingness to have an experience in service of moving toward a valued life direction.'
+          ]
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your ACT Practice',
+          content: `<p>ACT competency deepens with structured practice and supervision. Consider pursuing further training through the Association for Contextual Behavioral Science (ACBS), working through Russ Harris's "ACT Made Simple" workbook and its free worksheets, or seeking ACT-specific clinical supervision as you begin integrating hexaflex-based case conceptualization into your existing practice.</p>`
+        },
+        {
+          type: 'reflection',
+          question: 'Identify one client on your current caseload whose treatment has been organized primarily around reducing a symptom rather than clarifying a value. What might shift in your next session if you asked them directly what they want their life to be about — and built the treatment plan from that answer rather than from the symptom?'
+        }
+      ]
     }
   ],
 
@@ -952,15 +996,23 @@ if((c.resources?.length||0)<3)e.push('CRITICAL:resources<3');
 return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
+  await mongoose.connect(MONGODB_URI);
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
+  const{wc,e}=validate(COURSE);
   console.log(`${COURSE.courseCode}|${wc}w/${COURSE.ceHours*6000}req|${COURSE.sections.length}sec|${COURSE.assessment?.questions?.length}exam|${COURSE.references?.length}refs|${COURSE.resources?.length}res|${(COURSE.sections||[]).reduce((n,s)=>n+(s.contentBlocks||[]).filter(b=>b.type==='callout').length,0)}callouts`);
   const crit=e.filter(x=>x.startsWith('CRITICAL'));
   if(crit.length){console.error('❌',crit.join('; '));await mongoose.disconnect();process.exit(1);}
   if(e.length)e.forEach(x=>console.warn('⚠️',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('✅ Updated');}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('✅ Inserted');}
+  const existing=await InteractiveCourse.findOne({slug:SLUG});
+  if(existing){existing.set(COURSE);await existing.save();console.log('✅ Updated');}
+  else{await new InteractiveCourse(COURSE).save();console.log('✅ Inserted');}
   await mongoose.disconnect();
 }
 main().catch(e=>{console.error(e);process.exit(1);});
