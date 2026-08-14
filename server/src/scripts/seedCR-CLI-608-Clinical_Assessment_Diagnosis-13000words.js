@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -12,7 +13,7 @@ const COURSE = {
   description: 'This course equips licensed mental health professionals with evidence-based frameworks for clinical assessment and differential diagnosis. Participants will master the mental status examination, structured and semi-structured interviewing approaches, validated screening instruments (PHQ-9, GAD-7, PCL-5, AUDIT, Columbia Suicide Severity Rating Scale), the DSM-5-TR diagnostic process, and ethical dimensions of diagnosis including labeling effects, cultural formulation, and the limits of insurance-driven diagnostic practice.',
   ceHours: 2,
   nbccContentArea: 'appraisal',
-  deliveryFormat: 'online',
+  deliveryFormat: 'async',
   presenter: {
     name: 'Kejuiana Johnson',
     credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
@@ -431,6 +432,44 @@ const COURSE = {
           ]
         }
       ]
+    },
+    {
+      title: 'Conclusion: Assessment as Both Clinical Skill and Ethical Practice',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From the assessment relationship to structured, ethical diagnostic practice'
+        },
+        {
+          type: 'text',
+          content: `<p>This course opened by framing clinical assessment as a deceptively complex clinical art, not a bureaucratic checkpoint — and that framing has run through every section since. The introduction established that the quality of an assessment determines the quality of everything that follows, and that the therapeutic alliance itself, per Bordin's three components of goals, tasks, and affective bond, directly shapes how completely and honestly a client discloses. Section 2 then gave that art its technical architecture: the biopsychosocial model as an organizing structure that prevents single-domain tunnel vision, the mental status examination as a systematic observational tool, and the validated screening instruments that extend clinical observation into quantifiable, comparable data.</p>
+<p>Section 3 carried that structure into the diagnostic process itself — DSM-5-TR's systematic differential diagnosis sequence, the clinical weight specifiers actually carry for treatment planning and prognosis, and the cognitive errors (anchoring, premature closure, diagnostic overshadowing) that compromise diagnostic accuracy even for experienced clinicians. The Cultural Formulation Interview and the ethics of diagnosis closed the section by insisting that structural rigor alone is not enough — assessment must also be culturally responsive and ethically grounded, with honest communication about diagnostic uncertainty and real awareness of what a diagnostic label costs a client outside the therapy room.</p>
+<p>The principle unifying all three sections is that rigorous assessment and ethical assessment are not separate concerns — they are the same skill. A biopsychosocial formulation that ignores cultural context is incomplete. A diagnosis reached through premature closure is not just clinically inaccurate, it is an ethical failure with real consequences for the client who carries that label forward. The structured tools this course has given you — the MSE, validated screening instruments, the differential diagnosis sequence, the Cultural Formulation Interview — exist to make good assessment repeatable and defensible, not to replace the quality of attention and relational presence this course opened by naming as assessment's true foundation.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'The quality of the assessment process determines the quality of everything downstream — treatment plan, diagnosis, and interventions — more than any single instrument used.',
+            'Bordin\'s three components of the therapeutic alliance — agreement on goals, agreement on tasks, and the affective bond — directly shape how completely a client discloses during assessment.',
+            'The biopsychosocial model prevents single-domain tunnel vision by requiring attention to biological, psychological, and social factors together in every formulation.',
+            'The mental status examination is the clinician\'s systematic documentation of observation during the interview, not a questionnaire administered to the client.',
+            'Anchoring bias, premature closure, and diagnostic overshadowing are the most clinically consequential cognitive errors in diagnosis and require structural countermeasures, not just effort.',
+            'The Cultural Formulation Interview and the ethics of diagnosis are not optional add-ons — they are integral to accurate, defensible diagnostic practice, not separate from clinical rigor.'
+          ]
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your Assessment Practice',
+          content: `<p>Assessment competency deepens with structured practice and consultation. Consider incorporating the Cultural Formulation Interview into your standard intake protocol, reviewing current validated screening instruments relevant to your caseload, and seeking peer consultation on complex differential diagnosis cases to build in an external check against anchoring and premature closure.</p>`
+        },
+        {
+          type: 'reflection',
+          question: 'Think of a recent diagnostic impression you formed quickly, within the first session or two. Applying this course\'s framework, which cognitive error — if any — might have influenced that impression, and what would a structured second look, using the DSM-5-TR differential sequence, add or change?'
+        }
+      ]
     }
   ],
   assessment: {
@@ -714,15 +753,23 @@ if(lastSection&&!(lastSection.contentBlocks||[]).some(b=>b.type==='resources'))e
 return{wc,e};}
 
 async function main(){
-  await mongoose.connect(MONGODB_URI);const db=mongoose.connection.db;const col=db.collection('interactivecourses');
-  const{wc,e}=validate(COURSE);COURSE.wordCount=wc;
+  await mongoose.connect(MONGODB_URI);
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
+  const{wc,e}=validate(COURSE);
   console.log(`${COURSE.courseCode} | ${wc}w / ${COURSE.ceHours*6000} req | ${COURSE.sections.length} sec | ${COURSE.assessment?.questions?.length} exam Qs | ${COURSE.references?.length} refs`);
   const crit=e.filter(x=>x.startsWith('CRITICAL'));
   if(crit.length){console.error('FAIL',crit.join('; '));await mongoose.disconnect();process.exit(1);}
   if(e.length)e.forEach(x=>console.warn('WARN',x));
-  const ex=await col.findOne({slug:SLUG});
-  if(ex){await col.updateOne({slug:SLUG},{$set:{...COURSE,updatedAt:new Date()}});console.log('Updated',SLUG);}
-  else{await col.insertOne({...COURSE,createdAt:new Date(),updatedAt:new Date()});console.log('Inserted',SLUG);}
+  const existing=await InteractiveCourse.findOne({slug:SLUG});
+  if(existing){existing.set(COURSE);await existing.save();console.log('Updated',SLUG);}
+  else{await new InteractiveCourse(COURSE).save();console.log('Inserted',SLUG);}
   await mongoose.disconnect();
 }
 main().catch(e=>{console.error(e);process.exit(1);});

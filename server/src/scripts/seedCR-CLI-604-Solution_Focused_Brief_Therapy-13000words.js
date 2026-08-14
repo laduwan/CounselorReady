@@ -8,6 +8,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,7 +92,7 @@ const course = {
     {
       title: 'Introduction: A Different Kind of Listening',
       order: 0,
-      blocks: [
+      contentBlocks: [
         {
           type: 'text',
           content: `<p>Imagine sitting across from a client who has been in and out of community mental health services for the past seven years. She has a thick chart, multiple diagnoses, and a history of treatment that, by any objective measure, has not produced lasting change. She sits with her arms crossed, prepared to recount the same story she has told to twelve therapists before you. She is not difficult — she is exhausted. And if you begin the way most clinicians are trained to begin — by gathering a full problem history, mapping symptom timelines, and building a case conceptualization rooted in what is wrong — you will confirm, once again, that therapy is a place where problems live.</p>
@@ -125,7 +126,7 @@ const course = {
     {
       title: 'Section 1: Theoretical Foundations of Solution-Focused Brief Therapy',
       order: 1,
-      blocks: [
+      contentBlocks: [
         // 1. sectionDivider
         {
           type: 'sectionDivider',
@@ -337,7 +338,7 @@ const course = {
     {
       title: 'Section 2: Applying SFBT in Community Mental Health Settings',
       order: 2,
-      blocks: [
+      contentBlocks: [
         // 1. sectionDivider
         {
           type: 'sectionDivider',
@@ -604,7 +605,7 @@ const course = {
             {
               title: 'Solution-Focused Therapy Treatment Manual for Working with Individuals (SFBTA, 2nd ed.)',
               url: 'https://www.sfbta.org/resources',
-              type: 'document',
+              type: 'guide',
               description: 'The official SFBTA treatment manual providing session-by-session guidance, fidelity checklists, and clinical examples for SFBT with adult individual clients — highly recommended for community mental health practitioners seeking to standardize their practice.',
             },
             {
@@ -643,10 +644,57 @@ const course = {
         },
       ],
     },
+
+    // ── CONCLUSION ─────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: Solution-Focused Listening as a Sustainable Community Mental Health Practice',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From theoretical foundations to sustainable community mental health practice',
+        },
+        {
+          type: 'text',
+          content: `<p>This course opened by naming SFBT as "a different kind of listening" — and that framing has run through everything since. Section 1 grounded that different listening in its theoretical foundations: SFBT's inductive origins in de Shazer and Berg's observation of what actually worked in sessions, its social-constructionist premise that language shapes therapeutic reality, and its core epistemological claim that solutions do not require excavating a problem's history to be built. The techniques you learned there — exception questions, scaling questions, the miracle question, and the Formula First Session Task — are not gimmicks; they are structured ways of directing clinical attention toward existing client competence rather than problem analysis.</p>
+<p>Section 2 tested that theoretical foundation against the realities of community mental health: mandated clients who did not choose to be in the room, crisis presentations where safety assessment must take precedence, and the visitor-complainant-customer framework for calibrating intervention to a client's actual engagement level. You also confronted the ethical misapplications that give SFBT a bad name when done poorly — using "no problem focus" to justify skipping trauma or suicide screening, or weaponizing strength-based language against clients who need room to grieve. Genuine SFBT practice holds both: rigorous safety assessment where required, and a stance of curious, competence-focused listening within that structure.</p>
+<p>The thread connecting both sections is de Shazer's foundational claim that the solution is not the opposite of the problem. Community mental health clinicians carry heavy caseloads and structural session limits; SFBT's brief, competence-focused approach is not a compromise forced by those constraints but a clinically validated model in its own right, supported by outcome research showing brief delivery achieves outcomes comparable to longer treatment. Used with integrity — safety obligations intact, genuine curiosity toward the client's own resources — solution-focused listening offers a sustainable way to do meaningful work within real-world constraints.</p>`,
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'SFBT was built inductively from observing what worked in actual therapy sessions, not derived from prior theory and then tested — a social-constructionist model in which language shapes therapeutic reality.',
+            'De Shazer\'s core claim — the solution is not the opposite of the problem — means solutions can be built from existing client competence without requiring full problem-history analysis.',
+            'Exception questions, scaling questions, and the miracle question all function to locate and amplify evidence of a client\'s existing capacity to function differently.',
+            'The visitor-complainant-customer framework calibrates intervention to a client\'s actual engagement level, particularly important with mandated clients in community mental health.',
+            'SFBT does not prohibit or replace standard safety assessment, trauma screening, or mandated-reporter obligations — these proceed within the SFBT frame, not instead of it.',
+            'Outcome research, including Gingerich and Peterson\'s (2013) meta-analysis, supports brief SFBT delivery (four to six sessions) as comparable in effectiveness to longer treatment.',
+          ],
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your SFBT Practice',
+          content: `<p>SFBT competency deepens with structured practice and consultation. Consider pursuing further training through the Solution-Focused Brief Therapy Association (SFBTA), reviewing the SFBTA treatment manual for session-by-session fidelity guidance, and seeking peer consultation when working with mandated or crisis-level clients where the SFBT frame must be integrated with standard safety protocols.</p>`,
+        },
+        {
+          type: 'reflection',
+          question: 'Identify one client on your current caseload with whom you have defaulted to problem-focused questioning across multiple sessions. What is one exception question or scaling question you could introduce in your next session with them — and what would you need to let go of, theoretically, to ask it genuinely?',
+        },
+      ],
+    },
   ],
 
   // ── ASSESSMENT ─────────────────────────────────────────────────────────────
-  assessment: [
+  assessment: {
+    title: 'Final Assessment — CR-CLI-604: Solution-Focused Brief Therapy in Community Mental Health',
+    passingScore: 80,
+    passThreshold: 0.8,
+    attemptsAllowed: 3,
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    questions: [
     {
       question: 'Solution-Focused Brief Therapy was developed primarily through which of the following processes?',
       options: [
@@ -818,6 +866,7 @@ const course = {
       explanation: '"Solution-forced therapy" is Lipchik\'s critique of SFBT misapplication in which the techniques are used to avoid acknowledging client pain, rush to positivity prematurely, or bypass necessary clinical assessment — distorting the model\'s genuine strength-based orientation into a performance of optimism that fails clients.',
     },
   ],
+  },
 
   // ── REFERENCES ─────────────────────────────────────────────────────────────
   references: [
@@ -895,8 +944,14 @@ async function main() {
   await mongoose.connect(MONGO_URI);
   console.log('Connected.');
 
-  // Dynamic import after env is loaded
-  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (course.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
 
   // Validate
   const errors = validate(course);
@@ -911,7 +966,8 @@ async function main() {
   const existing = await InteractiveCourse.findOne({ slug: course.slug });
   if (existing) {
     console.log(`Course ${course.slug} already exists (id: ${existing._id}). Updating...`);
-    await InteractiveCourse.findByIdAndUpdate(existing._id, course, { new: true, runValidators: true });
+    existing.set(course);
+    await existing.save();
     console.log('Updated successfully.');
   } else {
     const doc = new InteractiveCourse(course);

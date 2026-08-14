@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) { console.error('MONGODB_URI not set'); process.exit(1); }
@@ -12,7 +13,7 @@ const COURSE = {
   description: 'This course equips licensed mental health counselors with a clinically grounded understanding of psychopharmacology — how psychiatric medications work, what clients commonly experience on them, and how counselors can ethically support medication adherence, recognize side effects, and collaborate with prescribers — all within the appropriate scope of non-prescriber practice.',
   ceHours: 3,
   nbccContentArea: 'counseling',
-  deliveryFormat: 'online',
+  deliveryFormat: 'async',
   presenter: {
     name: 'Kejuiana Johnson',
     credentials: 'MA, LPC, NCC, CPCS, BC-TMH',
@@ -558,6 +559,46 @@ const COURSE = {
           ]
         }
       ]
+    },
+
+    // ─── CONCLUSION ────────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: Psychopharmacology Literacy as a Counseling Competency',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'From neurotransmitters to the counselor\u2019s scope of practice'
+        },
+        {
+          type: 'text',
+          content: `<p>This course built psychopharmacology literacy in three deliberate steps. Section 1 established why this content belongs in counselor education at all — the majority of your clients on psychiatric medication will discuss that medication with you, not just their prescriber, and counselors without basic pharmacological literacy cannot adequately support adherence, recognize warning signs, or communicate effectively with prescribing colleagues. Section 2 then built the mechanistic foundation: how neurotransmitters, receptors, and pharmacokinetics determine why a medication takes weeks to show effect, why side effects often appear before therapeutic benefit, and how different drug classes act on different neurochemical targets.</p>
+<p>Section 3 took that foundation into clinical detail — the major drug classes counselors most often encounter, their characteristic side effects, the syndromes that represent genuine medical emergencies (serotonin syndrome, neuroleptic malignant syndrome, lithium toxicity), and the monitoring parameters that signal when a client needs an urgent referral back to their prescriber. Section 4 closed the loop by returning to the counselor's actual role: supporting adherence through psychoeducation, recognizing and reporting concerning side effects, and — critically — staying inside scope of practice at every step. Nothing in this course qualifies a counselor to prescribe, adjust, or discontinue medication; the entire value of this literacy is in supporting the prescribing relationship, not replacing it.</p>
+<p>The principle unifying all four sections is that psychopharmacology literacy makes counselors better collaborators, not junior prescribers. Recognizing an emerging syndrome, understanding why a client's irritability three days into a new SSRI does not necessarily mean the medication is failing, and knowing when a side effect warrants an urgent call versus routine follow-up — these are counseling skills that improve client safety and strengthen the counselor's working relationship with the prescribing team, squarely within the counselor's own scope of practice.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'Most clients on psychiatric medication discuss it with their counselor, not only their prescriber — making basic pharmacological literacy a practical counseling competency, not an optional extra.',
+            'Pharmacokinetics explains why psychiatric medications often take weeks to show therapeutic effect while side effects can appear immediately — this gap is a common reason clients discontinue medication prematurely.',
+            'Serotonin syndrome, neuroleptic malignant syndrome, and lithium toxicity are genuine medical emergencies counselors must be able to recognize and respond to urgently.',
+            'The counselor\'s role is adherence support, psychoeducation, and side-effect recognition — never prescribing, adjusting, or discontinuing medication, which remains strictly outside scope of practice.',
+            'Recognizing that early side effects without therapeutic benefit is expected, not necessarily treatment failure, helps counselors support clients through the adjustment period rather than encouraging premature discontinuation.',
+            'Strong psychopharmacology literacy strengthens the counselor\'s collaborative relationship with prescribing clinicians by enabling more precise, clinically useful communication about what the counselor is observing.'
+          ]
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your Psychopharmacology Literacy',
+          content: `<p>This literacy deepens with ongoing exposure to updated prescribing guidelines and drug interaction resources. Consider bookmarking a current drug-interaction checker for quick reference, reviewing FDA safety communications for medications common in your caseload, and establishing clear communication protocols with prescribers you frequently collaborate with.</p>`
+        },
+        {
+          type: 'reflection',
+          question: 'Think of a client currently on psychiatric medication whose side effects or adherence concerns you have not yet raised directly with them or documented for their prescriber. What is one specific question from this course\'s framework you could ask them in your next session to surface that information?'
+        }
+      ]
     }
   ],
 
@@ -876,7 +917,14 @@ async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log('✓ Connected to MongoDB');
 
-  const InteractiveCourse = mongoose.model('InteractiveCourse', new mongoose.Schema({}, { strict: false, collection: 'interactivecourses' }));
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
 
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
   if (existing) {

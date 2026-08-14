@@ -8,6 +8,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 dotenv.config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -705,6 +706,46 @@ const COURSE = {
           ]
         }
       ]
+    },
+
+    // ─── CONCLUSION ─────────────────────────────────────────────────────────
+    {
+      title: 'Conclusion: Harm Reduction as Clinical Practice, Not Compromise',
+      contentBlocks: [
+        {
+          type: 'sectionDivider',
+          title: 'Conclusion',
+          subtitle: 'Bringing harm reduction principles, evidence, and clinical skill together'
+        },
+        {
+          type: 'text',
+          content: `<p>This course began with a distinction that runs through everything that followed: harm reduction is not the absence of a treatment goal, and it is not a euphemism for permissiveness. It is a specific, evidence-based clinical stance that meets people who use drugs where they are, honors their autonomy, and treats any positive change — not just abstinence — as a legitimate and worthwhile outcome. Section 1 grounded that stance in its history and evidence base: the shift away from a purely disease-and-abstinence model, the documented reductions in overdose death, HIV and HCV transmission, and other harms associated with naloxone distribution, syringe service programs, and overdose prevention centers, and the recognition that punitive approaches to substance use have consistently failed to reduce use while increasing harm.</p>
+<p>Section 2 translated those principles into the room with a client — motivational interviewing adapted to a harm-reduction frame, collaborative goal-setting that does not presuppose abstinence as the only acceptable target, naloxone and overdose-prevention psychoeducation, and the ethical navigation required when a clinician's own values about drug use collide with a client's stated goals. Throughout, the throughline has been the same: harm reduction asks the clinician to relinquish the expert position on what recovery must look like, and to instead build a therapeutic relationship robust enough to stay present with a client through relapse, ambivalence, and incremental change, rather than conditioning the relationship on abstinence.</p>
+<p>None of this makes harm reduction easier than an abstinence-only model — if anything, it demands more of the clinician: more tolerance for ambiguity, more comfort documenting and supporting choices you might not make yourself, and more clarity about where your own scope of practice and safety obligations remain non-negotiable even within a harm-reduction frame. What it offers in return is a clinical stance that keeps people alive and in relationship with care long enough for change — on their own terms and timeline — to become possible.</p>`
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Wide Key Takeaways',
+          takeaways: [
+            'Harm reduction is a specific evidence-based clinical stance, not an absence of goals — any positive change counts as a legitimate outcome, not only abstinence.',
+            'The evidence base includes documented reductions in overdose death, HIV/HCV transmission, and other harms from naloxone distribution, syringe service programs, and overdose prevention centers.',
+            'Motivational interviewing adapts naturally to a harm-reduction frame by centering client-defined goals rather than clinician-imposed treatment targets.',
+            'Collaborative goal-setting must not presuppose abstinence as the only acceptable outcome — client autonomy over their own recovery definition is central to the model.',
+            'Standard safety obligations — risk assessment, mandated reporting, crisis protocols — remain fully in effect within a harm-reduction frame; the model changes the goal, not the clinician\'s professional obligations.',
+            'Clinicians must actively manage their own values about drug use to avoid imposing an abstinence framework on clients who have not chosen it.'
+          ]
+        },
+        {
+          type: 'callout',
+          calloutType: 'tip',
+          title: 'Continuing Your Harm Reduction Practice',
+          content: `<p>Harm reduction competency deepens with ongoing exposure to the field's evolving evidence base and practice standards. Consider pursuing further training through the National Harm Reduction Coalition, following updates on overdose prevention center outcomes as more U.S. jurisdictions consider authorization, and seeking clinical supervision or consultation when working with clients whose substance use goals differ substantially from your own treatment assumptions.</p>`
+        },
+        {
+          type: 'reflection',
+          question: 'Identify one client on your current caseload whose substance use goals you have implicitly treated as a waystation to abstinence rather than as a legitimate destination in their own right. What would it look like, in your next session, to ask them directly what success means to them — and to build your treatment plan around their answer rather than your assumption?'
+        }
+      ]
     }
   ],
 
@@ -983,8 +1024,14 @@ async function main() {
   await mongoose.connect(MONGODB_URI);
   console.log('Connected to MongoDB');
 
-  // Dynamic import after connection
-  const { Course: InteractiveCourse } = await import('../models/InteractiveCourse.js');
+  // Normalize order on sections/contentBlocks — required by schema, and the
+  // model's pre('save') autofill runs AFTER validation so it can't rescue this.
+  (COURSE.sections || []).forEach((sec, si) => {
+    if (sec.order === undefined || sec.order === null) sec.order = si;
+    (sec.contentBlocks || []).forEach((blk, bi) => {
+      if (blk && (blk.order === undefined || blk.order === null)) blk.order = bi;
+    });
+  });
 
   const existing = await InteractiveCourse.findOne({ slug: SLUG });
   if (existing) {
