@@ -214,6 +214,95 @@ function printReport(violations) {
   }
 }
 
+// ---------- doc cross-validation ----------
+//
+// The authoring doc and the Gold Standard spec drifted from this checker once
+// already (the doc taught raw db.collection() writes that this hook rejects,
+// and both taught block field names the viewer renders as EMPTY). These checks
+// scan the fenced code blocks in both files on every run so the docs, the
+// template, and this guard can never silently drift apart again.
+
+const DOC_TARGETS = [
+  { rel: 'docs/CC_Batch_Course_Prompts.md',
+    mustContain: ['_seedTemplate.js'],
+    mustContainMsg: 'Authoring doc must direct authors to copy server/src/scripts/_seedTemplate.js as the wrapper.' },
+  { rel: path.join('server', 'src', 'scripts', 'GOLD_STANDARD_SPEC.md'),
+    mustContain: ['_seedTemplate.js'],
+    mustContainMsg: 'Spec must carry the corrected-shapes banner pointing at _seedTemplate.js / the schema.' },
+];
+
+function extractFences(md) {
+  const fences = [];
+  const rx = /```[a-zA-Z]*\n([\s\S]*?)```/g;
+  let m, i = 0;
+  while ((m = rx.exec(md)) !== null) fences.push({ n: ++i, text: m[1] });
+  return fences;
+}
+
+const DOC_FENCE_RULES = [
+  {
+    id: 'doc-raw-write',
+    test: (f) =>
+      /(?:const|let|var)\s+[\w$]+\s*=\s*[\w$.]+\.collection\s*\(/.test(f) ||
+      /await\s+[\w$]+\.(?:insertOne|insertMany|bulkWrite|replaceOne|updateOne|updateMany)\s*\(/.test(f),
+    msg: 'Doc teaches a raw driver collection write. Seeds must copy _seedTemplate.js and write via doc.save() so the pre-save hook fires.',
+  },
+  {
+    id: 'doc-strict-false',
+    test: (f) => /strict\s*:\s*false/.test(f) && !/ContentBlockSchema/.test(f),
+    msg: 'Doc teaches `strict: false`. Seeds must import the real model.',
+  },
+  {
+    id: 'doc-flashcard-wrong-field',
+    test: (f) => f.includes('flashcardDeck') && /(?<![A-Za-z])cards["']?\s*:\s*\[[\s\S]{0,60}?["']?front["']?\s*:/.test(f),
+    msg: 'flashcardDeck example uses `cards:[{front,back}]`. The viewer renders ONLY `flashcards:[{id,front,back}]` — this shape displays "No flashcards available."',
+  },
+  {
+    id: 'doc-cardsort-wrong-field',
+    test: (f) => f.includes('cardSort') && /\bitems\s*:\s*\[/.test(f),
+    msg: 'cardSort example uses `items:[...]`. The viewer renders ONLY `cards:[{id,text,correctCategory}]` — `items` displays an empty activity.',
+  },
+  {
+    id: 'doc-matching-wrong-field',
+    test: (f) => /["']?pairs["']?\s*:\s*\[/.test(f),
+    msg: 'matching example uses `pairs`. The viewer and schema use `matchingPairs:[{term,definition}]` (+ matchingInstructions).',
+  },
+  {
+    id: 'doc-scenariotree-wrong-shape',
+    test: (f) => f.includes('scenarioTree') &&
+      (/nodes\s*:\s*\[/.test(f) || /["']?nextId["']?\s*:/.test(f) ||
+       /["']?feedback["']?\s*:\s*\{/.test(f)),
+    msg: 'scenarioTree example uses an array of nodes, `nextId`, or object `feedback`. The viewer needs nodes as an OBJECT MAP keyed by id, choices:[{text,next}], and STRING feedback.',
+  },
+  {
+    id: 'doc-flat-options',
+    test: (f) => /options["']?\s*:\s*\[\s*["'][^{]/.test(f),
+    msg: 'Example uses flat string options. Options are ALWAYS [{text, isCorrect}] — flat arrays cause Mongoose char-explosion and break grading.',
+  },
+];
+
+function scanDocs() {
+  const violations = [];
+  for (const t of DOC_TARGETS) {
+    const abs = path.join(REPO_ROOT, t.rel);
+    if (!fs.existsSync(abs)) continue;
+    const md = fs.readFileSync(abs, 'utf8');
+    for (const needle of (t.mustContain || [])) {
+      if (!md.includes(needle)) {
+        violations.push({ file: t.rel, line: 0, rule: 'doc-missing-reference', msg: t.mustContainMsg, code: null });
+      }
+    }
+    for (const fence of extractFences(md)) {
+      for (const rule of DOC_FENCE_RULES) {
+        if (rule.test(fence.text)) {
+          violations.push({ file: t.rel, line: 0, rule: rule.id, msg: `[code fence #${fence.n}] ${rule.msg}`, code: null });
+        }
+      }
+    }
+  }
+  return violations;
+}
+
 // ---------- main ----------
 
 function main() {
@@ -229,16 +318,25 @@ function main() {
   else                             files = listAllSeedFiles();
 
   if (!files.length) {
-    console.log('check-seed: no seed files to scan.');
+    const docViolations = scanDocs();
+    if (docViolations.length) {
+      console.log(`\ncheck-seed: FAIL — ${docViolations.length} doc violation(s):`);
+      printReport(docViolations);
+      process.exit(1);
+    }
+    console.log('check-seed: no seed files to scan; authoring docs clean.');
     process.exit(0);
   }
 
-  console.log(`check-seed: scanning ${files.length} seed file(s)...`);
+  console.log(`check-seed: scanning ${files.length} seed file(s) + authoring docs...`);
 
   let allViolations = [];
   for (const f of files) {
     allViolations = allViolations.concat(scanFile(f));
   }
+  // Doc cross-validation runs in every mode — cheap, and it is the only thing
+  // standing between the authoring docs and silent drift from this guard.
+  allViolations = allViolations.concat(scanDocs());
 
   if (!allViolations.length) {
     console.log(`check-seed: PASS — ${files.length} file(s) clean.`);

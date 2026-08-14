@@ -387,6 +387,7 @@ const CourseSchema = new mongoose.Schema({
     degree: String,
     licenseNumber: String,
     licenseState: String,
+    licenseType: String,
     qualificationStatement: String,
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
@@ -490,6 +491,17 @@ const CourseSchema = new mongoose.Schema({
   deliveryMethod: String,
   approvingBody: String,
   approvalNumber: String,
+  difficulty: String,
+  learningObjectives: [String],
+  // Provider identity block (GAITP LLC / NBCC ACEP #7760). Served to the course
+  // page; previously only raw collection inserts stored it — under strict mode
+  // the model silently dropped it on save.
+  provider: {
+    name: String,
+    shortName: String,
+    acepNumber: String,
+    approvalBody: String
+  },
 
   // --- Paid ACEP review / accreditation (partner courses) ---
   reviewStatus: {
