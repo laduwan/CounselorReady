@@ -4,8 +4,10 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 // server/src/routes/tools.js
-// Free clinical tools API — Note Writer with tiered rate limits
-// Tiers: Anonymous 15/day | Starter 30/day | Professional 60/day | VIP Unlimited
+// Free clinical tools API — Note Writer & Treatment Planner with per-tool tiered rate limits
+// Tiers: anonymous 15/tool/day | tools_note (note unlimited) | tools_plan (plan unlimited)
+//        | tools_bundle (both unlimited) | platform — any active CE membership (both unlimited)
+// "Unlimited" tiers still carry a silent FAIR_USE_CAP/tool/day as an abuse guard.
 
 import express from 'express';
 import jwt from 'jsonwebtoken';
@@ -15,30 +17,38 @@ import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService
 const router = express.Router();
 
 // ═══════════════════════════════════════════
-// IN-MEMORY RATE LIMITER
+// IN-MEMORY RATE LIMITER — per (identifier, tool, day)
 // (Swap to Redis if you scale beyond 1 dyno)
 // ═══════════════════════════════════════════
 const rateLimitStore = new Map(); // key → { count, resetAt }
 
-const TIER_LIMITS = {
-  anonymous: 15,
-  tools_subscriber: 30,  // $7.95/mo — Note Writer only
-  tools_plus: 30,        // $15.95/mo — Note Writer + Treatment Planner
-  starter: 30,
-  professional: 60,
-  vip: Infinity
+// Daily limit per (tier, tool). Infinity is capped at FAIR_USE_CAP below — a
+// guard against abuse/bugs, not a real ceiling for legitimate clinicians.
+const TIER_TOOL_LIMITS = {
+  anonymous:    { note: 15,       plan: 15       },
+  tools_note:   { note: Infinity, plan: 15       }, // $7.95/mo — Note Writer unlimited
+  tools_plan:   { note: 15,       plan: Infinity }, // $7.95/mo — Treatment Planner unlimited
+  tools_bundle: { note: Infinity, plan: Infinity }, // $15/mo — both unlimited
+  // Any active platform CE membership (current or legacy) — both tools unlimited.
+  platform:     { note: Infinity, plan: Infinity }
 };
 
-function getDailyKey(identifier) {
+// Silent fair-use cap applied to "unlimited" tiers. A real caseload never
+// comes close; this exists to catch bugs and bad actors, not to upsell.
+const FAIR_USE_CAP = 300;
+
+function getDailyKey(identifier, tool) {
   const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-  return `${identifier}:${today}`;
+  return `${identifier}:${tool}:${today}`;
 }
 
-function checkRateLimit(identifier, tier) {
-  const limit = TIER_LIMITS[tier] || TIER_LIMITS.anonymous;
-  if (limit === Infinity) return { allowed: true, remaining: Infinity, limit };
+function checkRateLimit(identifier, tier, tool) {
+  const toolLimits = TIER_TOOL_LIMITS[tier] || TIER_TOOL_LIMITS.anonymous;
+  const nominalLimit = toolLimits[tool] ?? TIER_TOOL_LIMITS.anonymous[tool];
+  const isUnlimited = nominalLimit === Infinity;
+  const effectiveLimit = isUnlimited ? FAIR_USE_CAP : nominalLimit;
 
-  const key = getDailyKey(identifier);
+  const key = getDailyKey(identifier, tool);
   const now = Date.now();
   const resetAt = new Date();
   resetAt.setHours(24, 0, 0, 0); // midnight tonight
@@ -56,13 +66,15 @@ function checkRateLimit(identifier, tier) {
     entry = { count: 0, resetAt: resetAt.getTime() };
   }
 
-  if (entry.count >= limit) {
+  if (entry.count >= effectiveLimit) {
     return {
       allowed: false,
       remaining: 0,
-      limit,
+      limit: isUnlimited ? 'unlimited' : nominalLimit,
+      fairUseCap: isUnlimited,
       resetAt: entry.resetAt,
-      tier
+      tier,
+      tool
     };
   }
 
@@ -71,9 +83,10 @@ function checkRateLimit(identifier, tier) {
 
   return {
     allowed: true,
-    remaining: limit - entry.count,
-    limit,
-    tier
+    remaining: isUnlimited ? 'unlimited' : nominalLimit - entry.count,
+    limit: isUnlimited ? 'unlimited' : nominalLimit,
+    tier,
+    tool
   };
 }
 
@@ -99,27 +112,27 @@ function optionalAuth(req, res, next) {
 
 function getUserTier(user) {
   if (!user) return 'anonymous';
-  const plan = user.subscriptionPlan || user.plan || 'free';
+  const plan = (user.subscriptionPlan || user.plan || 'free').toLowerCase();
   const status = user.subscriptionStatus || user.status || '';
 
-  // Active subscribers get their tier
+  // Active subscribers get their tier; free/inactive falls through to anonymous.
   if (status === 'active' || plan === 'free') {
-    switch (plan.toLowerCase()) {
+    switch (plan) {
+      case 'tools_note':
+        return 'tools_note';
+      case 'tools_plan':
+        return 'tools_plan';
+      case 'tools_bundle':
+        return 'tools_bundle';
+      // Any active platform CE membership — current plan names plus legacy
+      // vip/enterprise — gets full unlimited access to both tools.
+      case 'starter':
+      case 'professional':
+      case 'monthly':
+      case 'annual':
       case 'vip':
       case 'enterprise':
-        return 'vip';
-      case 'professional':
-      case 'pro':
-        return 'professional';
-      case 'starter':
-      case 'basic':
-        return 'starter';
-      case 'tools':
-      case 'tools_subscriber':
-        return 'tools_subscriber';
-      case 'tools_plus':
-      case 'tools_pro':
-        return 'tools_plus';
+        return 'platform';
       default:
         return 'anonymous';
     }
@@ -135,9 +148,10 @@ function getUserTier(user) {
 router.get('/note-limit', optionalAuth, (req, res) => {
   const tier = getUserTier(req.user);
   const identifier = req.user ? `user:${req.user.id}` : `ip:${req.ip}`;
-  const key = getDailyKey(identifier);
+  const key = getDailyKey(identifier, 'note');
   const entry = rateLimitStore.get(key);
-  const limit = TIER_LIMITS[tier];
+  const toolLimits = TIER_TOOL_LIMITS[tier] || TIER_TOOL_LIMITS.anonymous;
+  const limit = toolLimits.note;
   const used = entry ? entry.count : 0;
 
   res.json({
@@ -172,18 +186,25 @@ router.post('/generate-note', optionalAuth, async (req, res) => {
     // 1. Determine tier and rate limit
     const tier = getUserTier(req.user);
     const identifier = req.user ? `user:${req.user.id}` : `ip:${req.ip}`;
-    const rateCheck = checkRateLimit(identifier, tier);
+    const rateCheck = checkRateLimit(identifier, tier, 'note');
 
     if (!rateCheck.allowed) {
+      if (rateCheck.fairUseCap) {
+        // Already an unlimited tier — this is an abuse guard, not an upsell.
+        return res.status(429).json({
+          error: 'Fair-use cap reached',
+          message: `You've hit today's fair-use cap of ${FAIR_USE_CAP} notes. It resets at midnight.`,
+          tier,
+          limit: rateCheck.limit,
+          resetsAt: new Date(rateCheck.resetAt).toISOString()
+        });
+      }
+
       const upgradeMsg = tier === 'anonymous'
-        ? 'Subscribe to Clinical Tools for $7.95/mo for 30 notes/day — or add the Treatment Planner for $15.95/mo.'
-        : tier === 'tools_subscriber'
-          ? 'Upgrade to Clinical Tools Plus ($15.95/mo) to add the Treatment Planner, or go VIP for unlimited everything.'
-          : tier === 'tools_plus'
-            ? 'Upgrade to a full CounselorReady plan for CE courses, credential tracking, and more.'
-            : tier === 'starter'
-              ? 'Upgrade to Professional for 60 notes/day, or VIP for unlimited.'
-              : 'Upgrade to VIP for unlimited daily notes.';
+        ? 'Subscribe to Note Writer Unlimited for $7.95/mo — or get the AI Tools Bundle (Note Writer + Treatment Planner) for $15/mo.'
+        : tier === 'tools_plan'
+          ? 'Add Note Writer Unlimited for $7.95/mo, or upgrade to the AI Tools Bundle for $15/mo to unlock both tools.'
+          : 'Upgrade to a full CounselorReady membership for unlimited AI tools plus CE courses and credential tracking.';
 
       return res.status(429).json({
         error: 'Daily limit reached',

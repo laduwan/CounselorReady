@@ -51,6 +51,9 @@ const ContentBlockSchema = new mongoose.Schema({
       'matching',
       'multiSelect',
       'multipleChoice',
+      'preCommit',
+      'preCommitReveal',
+      'pulseCheck',
       'quiz',
       'references',
       'reflection',
@@ -60,6 +63,7 @@ const ContentBlockSchema = new mongoose.Schema({
       'sequencing',
       'text',
       'timeline',
+      'transcriptCoding',
       'video',
       'videoEmbed',
       'statCard',
@@ -119,7 +123,11 @@ const ContentBlockSchema = new mongoose.Schema({
   
   // Reflection
   minLength: { type: Number, default: 50 },
-  
+
+  // ── preCommit / preCommitReveal ──
+  preCommitId: String,   // shared key linking the pair within a section
+  modelResponse: String, // HTML — expert answer, shown only on reveal
+
   // Resources
   resources: [{
     title: String,
@@ -140,6 +148,9 @@ const ContentBlockSchema = new mongoose.Schema({
 
   // ── keyTakeaway ──
   takeaways: [String],
+
+  // ── pulseCheck — private self-check; never persisted or reported ──
+  pulsePrompt: String,
 
   // ── video / videoEmbed ──
   videoTitle: String,
@@ -232,7 +243,12 @@ const ContentBlockSchema = new mongoose.Schema({
   // ── tableBlock ──
   tableHeaders: [String],
   tableRows: [[String]],
-  tableCaption: String
+  tableCaption: String,
+
+  // ── transcriptCoding ── (scored like multipleChoice: reuses
+  // question/options/correctAnswer/explanation/remediation above)
+  transcript: [{ speaker: String, text: String }], // speaker: 'client' | 'counselor'
+  codingQuestion: String // e.g. "Which skill is the counselor using?"
 }, { _id: false, strict: false });
 
 const SectionSchema = new mongoose.Schema({
@@ -371,6 +387,7 @@ const CourseSchema = new mongoose.Schema({
     degree: String,
     licenseNumber: String,
     licenseState: String,
+    licenseType: String,
     qualificationStatement: String,
     category: { type: String, enum: ['category1', 'category2', 'category3'] } // ACEP categories
   },
@@ -385,12 +402,23 @@ const CourseSchema = new mongoose.Schema({
   author: String,
   publishedAt: Date,
   updatedAt: { type: Date, default: Date.now },
-  status: { 
-    type: String, 
-    enum: ['draft', 'published', 'archived'], 
-    default: 'draft' 
+  status: {
+    type: String,
+    enum: ['draft', 'published', 'archived'],
+    default: 'draft'
   },
-  
+
+  // ── Renewal-cycle content revision log ──
+  // Author-maintained. Powers the viewer's "Updated since your last
+  // completion" banner for retaking learners: if the learner completed
+  // the course before an entry's date, the viewer shows the banner and
+  // badges the affected sections (see sectionIndexes, 0-based).
+  changeLog: [{
+    date: Date,
+    summary: String,          // e.g. "FL telehealth rule amended — §3 revised"
+    sectionIndexes: [Number]  // affected sections, 0-based
+  }],
+
   // Delivery & compliance
   deliveryFormat: { 
     type: String, 
@@ -430,6 +458,11 @@ const CourseSchema = new mongoose.Schema({
     enum: ['free', 'subscription', 'purchase'],
     default: 'subscription'
   },
+  visibility: {
+    type: String,
+    enum: ['public', 'private'],
+    default: 'public'
+  },
   approvalBody: { type: String, default: 'NBCC' },
   price: Number,
 
@@ -458,6 +491,17 @@ const CourseSchema = new mongoose.Schema({
   deliveryMethod: String,
   approvingBody: String,
   approvalNumber: String,
+  difficulty: String,
+  learningObjectives: [String],
+  // Provider identity block (GAITP LLC / NBCC ACEP #7760). Served to the course
+  // page; previously only raw collection inserts stored it — under strict mode
+  // the model silently dropped it on save.
+  provider: {
+    name: String,
+    shortName: String,
+    acepNumber: String,
+    approvalBody: String
+  },
 
   // --- Paid ACEP review / accreditation (partner courses) ---
   reviewStatus: {

@@ -3,6 +3,22 @@
  * All rights reserved. Proprietary and confidential.
  * Unauthorized copying or distribution is strictly prohibited.
  */
+/**
+ * ⚠️  THIS IS NOT THE PLATFORM CERTIFICATE GENERATOR.
+ *
+ * The generator is utils/certificate.js. It is used by interactiveCourseRoutes.js,
+ * liveSessionCompletionService.js, certificateSelfHeal.js, certificates.js,
+ * admin.js, and the repair scripts. Certificates produced by that module carry
+ * the delivery-format designation (synchronous / asynchronous) required by
+ * GA Board Rule 135-9-.01(4)(c), plus approval blocks and learning objectives.
+ *
+ * generatePDF() in THIS file produces none of those. It is unreachable from the
+ * running application — its only remaining caller is scripts/bulkRegenerateBadCerts.js.
+ *
+ * This module survives solely for deletePDF(), used by routes/admin.js.
+ *
+ * Do not add certificate features here. Do not route new certificate issuance here.
+ */
 // Certificate PDF Generation Service for CounselorReady
 // Professional branded certificate with NBCC ACEP #7760 branding
 // ============================================================

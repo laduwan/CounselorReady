@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,18 +10,16 @@
   <meta name="description" content="Live, interactive NBCC-approved continuing education webinars for counselors. Earn synchronous CE hours from licensed presenters.">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <style>
     body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
     .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
-    .badge-live{background:#FDF5F7;color:#6B1D34;border:1px solid #F0D9DF;}
-    .badge-ce{background:#FBF6EC;color:#B8903A;border:1px solid #EFE0C2;}
-    .cta{background:#4A7C59;color:#fff;transition:background .15s;}
-    .cta:hover{background:#3D6A4A;}
-    .cta:disabled{background:#CBD5D0;cursor:not-allowed;}
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    @media(min-width:768px){#sessions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;}}
+    @media(min-width:1024px){#sessions{grid-template-columns:repeat(3,minmax(0,1fr));}}
   </style>
 </head>
 <body>
@@ -34,7 +33,16 @@
     </header>
 
     <div id="alert" class="hidden mb-6 rounded-lg px-4 py-3 text-sm"></div>
-    <div id="sessions" class="grid gap-5">
+
+    <div class="mb-8 bg-white rounded-xl border p-4 flex items-end gap-3 flex-wrap" style="border-color:#EDE9E3;">
+      <div class="flex-1 min-w-[220px]">
+        <label for="sessionCodeInput" class="block text-sm font-medium mb-2" style="color:#284157;">Have a private session code?</label>
+        <input type="text" id="sessionCodeInput" placeholder="Enter code" onkeydown="if(event.key==='Enter'){event.preventDefault();lookupSessionByCode(this.value);}" class="w-full px-4 py-3 border rounded-xl outline-none" style="border-color:#EDE9E3;">
+      </div>
+      <button type="button" onclick="lookupSessionByCode(document.getElementById('sessionCodeInput').value)" class="cta rounded-lg px-4 py-3 font-semibold text-sm">Go</button>
+    </div>
+
+    <div id="sessions" class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
       <div class="text-center py-16" style="color:#284157;" id="loading">Loading upcoming sessions…</div>
     </div>
   </main>
@@ -46,6 +54,11 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get('registered')) showAlert('You are registered! A confirmation is on its way to your inbox.', true);
     if (params.get('canceled')) showAlert('Checkout was canceled. Your seat was not reserved.', false);
+    if (params.get('code')) {
+      const codeInput = document.getElementById('sessionCodeInput');
+      if (codeInput) codeInput.value = params.get('code');
+      lookupSessionByCode(params.get('code'));
+    }
 
     function showAlert(msg, ok) {
       const el = document.getElementById('alert');
@@ -53,6 +66,7 @@
       el.className = 'mb-6 rounded-lg px-4 py-3 text-sm ' + (ok
         ? 'bg-green-50 text-green-800 border border-green-200'
         : 'bg-red-50 text-red-800 border border-red-200');
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function fmtDate(iso) {
@@ -64,36 +78,113 @@
 
     async function load() {
       try {
-        const res = await fetch(`${API_URL}/api/live-sessions/upcoming`);
+        // Fetch individual sessions AND published series in parallel. Series are
+        // rendered as their own cards above the individual session cards.
+        const [res, seriesRes] = await Promise.all([
+          fetch(`${API_URL}/api/live-sessions/upcoming`),
+          fetch(`${API_URL}/api/session-series/public/upcoming`).catch(() => null)
+        ]);
         const data = await res.json();
+        let seriesList = [];
+        try { if (seriesRes && seriesRes.ok) seriesList = (await seriesRes.json()).series || []; } catch {}
+
         const wrap = document.getElementById('sessions');
         wrap.innerHTML = '';
 
+        // Map each series-member session id → series title, for the "Part of" chip
+        // on the individual session cards below.
+        const memberToSeries = {};
+        for (const ser of seriesList) {
+          for (const m of (ser.members || [])) memberToSeries[m._id] = ser.title;
+        }
+
+        // Series bundle registration removed — every date registers
+        // individually via its own card below. memberToSeries above still
+        // drives the "Part of: [series]" badge so people can see which dates
+        // are related, without a bulk-enroll action.
+
         if (!data.sessions || data.sessions.length === 0) {
-          wrap.innerHTML = '<div class="text-center py-16 rounded-xl bg-white border" style="color:#284157;border-color:#EDE9E3;">No live sessions are scheduled right now. Check back soon — new webinars are added regularly.</div>';
+          if (!seriesList.length) {
+            wrap.innerHTML = '<div class="text-center py-16 rounded-xl bg-white border" style="color:#284157;border-color:#EDE9E3;">No live sessions are scheduled right now. Check back soon — new webinars are added regularly.</div>';
+          }
           return;
         }
 
         for (const s of data.sessions) {
+          // Individual dates now show alongside the series bundle card (below),
+          // not instead of it — clicking a specific date's Register button
+          // only registers for that date, via the per-session endpoint's own
+          // cutoff/capacity/price checks. The series card above remains for
+          // people who want the whole bundle (e.g. sequential Part 1/Part 2
+          // pairs that combine into one certificate).
           const full = s.seatsRemaining <= 0;
+          // Registration cutoff (default 72h before start; server is authoritative)
+          const regClosed = s.registrationOpen === false;
+          const blocked = full || regClosed;
+          const regClosesTxt = (!regClosed && s.registrationClosesAt)
+            ? `Registration closes ${new Date(s.registrationClosesAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}`
+            : '';
+          const seriesTitle = memberToSeries[s._id];
           const card = document.createElement('div');
-          card.className = 'bg-white rounded-xl border p-6 flex flex-col md:flex-row md:items-center gap-4';
-          card.style.borderColor = '#EDE9E3';
+          card.className = 'bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden hover:shadow-lg transition-shadow';
+          card.style.cssText = 'display:flex;flex-direction:column;';
+          const presenterName = s.presenter?.name || 'Kejuiana Johnson';
+          const seatsLow = s.seatsRemaining <= 10 && !full;
+          // First 3 objectives
+          const objs = (s.objectives || []).slice(0, 3);
+          const objsHtml = objs.length ? `
+            <div style="margin-bottom:10px;">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#284157;margin:0 0 5px;">You will be able to:</p>
+              <ul style="margin:0;padding:0;list-style:none;">
+                ${objs.map(o => `<li style="font-size:11.5px;color:#44403c;padding:2px 0;display:flex;gap:6px;align-items:flex-start;"><span style="color:#D4A855;font-weight:700;flex-shrink:0;">›</span>${esc(o)}</li>`).join('')}
+              </ul>
+            </div>` : '';
+          // Early bird pricing
+          const hasEarlyBird = s.earlyBirdPrice && s.earlyBirdDeadline && new Date(s.earlyBirdDeadline) > new Date();
+          const displayPrice = hasEarlyBird ? s.earlyBirdPrice : s.price;
+          const priceHtml = s.price > 0
+            ? hasEarlyBird
+              ? `<span style="font-size:16px;font-weight:700;color:#284157;">$${displayPrice}</span><span style="font-size:11px;color:#78716c;margin-left:4px;">until ${new Date(s.earlyBirdDeadline).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · <span style="text-decoration:line-through;">$${s.price}</span> after</span>`
+              : `<span style="font-size:16px;font-weight:700;color:#284157;">$${s.price.toFixed(2)}</span>`
+            : '<span style="font-size:16px;font-weight:700;color:#4A7C59;">Free</span>';
           card.innerHTML = `
-            <div class="flex-1">
-              <div class="flex flex-wrap items-center gap-2 mb-2">
-                <span class="badge-ce text-xs font-semibold rounded-full px-2.5 py-0.5">${s.ceuHours} CE Hour${s.ceuHours === 1 ? '' : 's'} · Live</span>
-                ${s.recordingEnabled ? '<span class="text-xs rounded-full px-2.5 py-0.5" style="background:#F2F7F4;color:#4A7C59;border:1px solid #DCE9E0;">Replay included</span>' : ''}
-              </div>
-              <h2 class="font-display text-2xl font-bold" style="color:#284157;">${esc(s.title)}</h2>
-              <p class="text-sm mt-1" style="color:#57534e;">${esc(s.description || '')}</p>
-              <p class="text-sm mt-2 font-medium" style="color:#6B1D34;">${fmtDate(s.scheduledStart)}</p>
-              <p class="text-xs mt-1" style="color:#57534e;">${full ? 'Session full' : s.seatsRemaining + ' seats remaining'} · Presented by ${esc(s.presenter?.name || 'CounselorReady')}</p>
+            <div style="height:160px;background:linear-gradient(135deg,#fdf1f4,#f0f4f0);display:flex;align-items:center;justify-content:center;">
+              <svg width="52" height="52" fill="none" stroke="#D0A0B0" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
             </div>
-            <div class="flex flex-col items-stretch gap-2 md:w-44">
-              <div class="text-center font-semibold" style="color:#284157;">${s.price > 0 ? '$' + s.price.toFixed(2) : 'Free'}</div>
-              <button class="cta rounded-lg px-4 py-2.5 font-semibold text-sm" ${full ? 'disabled' : ''} onclick="register('${s._id}')">${full ? 'Full' : 'Register'}</button>
-              <a class="text-center text-sm underline" style="color:#4A7C59;" href="/live-room.html?session=${esc(s.slug)}">Enter room</a>
+            <div style="padding:18px;flex:1;display:flex;flex-direction:column;">
+              <h3 class="font-display" style="font-size:19px;font-weight:700;color:#6B1D34;margin:0 0 6px;line-height:1.25;">${esc(s.title)}</h3>
+              ${s.description ? `<p style="font-size:12.5px;color:#57534e;margin:0 0 10px;line-height:1.5;">${esc(s.description)}</p>` : ''}
+              ${objsHtml}
+              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.12);color:#4A7C59;">${s.ceuHours} CE Hr${s.ceuHours===1?'':'s'}</span>
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157;">${fmtDate(s.scheduledStart)}</span>
+                <span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.10);color:#6B1D34;">NBCC</span>
+                ${seatsLow && !full ? '<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(107,29,52,0.12);color:#6B1D34;">Almost full</span>' : ''}
+                ${s.recordingEnabled ? '<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(74,124,89,0.10);color:#4A7C59;">Replay included</span>' : ''}
+                ${seriesTitle ? `<span style="padding:3px 9px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(212,168,85,0.15);color:#8B6914;">Part of: ${esc(seriesTitle)}</span>` : ''}
+              </div>
+              <details style="margin-bottom:12px;">
+                <summary style="cursor:pointer;font-size:11px;font-weight:600;color:#284157;">Accessibility needs?</summary>
+                <div style="margin-top:8px;padding:10px;background:#FAF9F7;border-radius:8px;border:1px solid #EDE9E3;">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#284157;margin-bottom:6px;">
+                    <input type="checkbox" id="accCaptions-${s._id}">
+                    Request live captions
+                  </label>
+                  <textarea id="accNotes-${s._id}" placeholder="Notes (optional)" maxlength="500" rows="2" style="width:100%;font-size:12px;padding:6px;border:1px solid #EDE9E3;border-radius:6px;resize:vertical;box-sizing:border-box;"></textarea>
+                  <p style="font-size:10px;color:#78716c;margin:6px 0 0;">Live captions carry an added per-minute cost. Please request them only if you need them to participate.</p>
+                </div>
+              </details>
+              <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid #EDE9E3;">
+                <div>
+                  <div style="font-size:11px;color:${blocked?'#6B1D34':seatsLow?'#6B1D34':'#78716c'};font-weight:${seatsLow||blocked?'600':'400'};margin-bottom:2px;">${regClosed?'Registration closed':full?'Session full':s.seatsRemaining+' seats left'}</div>
+                  <div>${priceHtml}</div>
+                  ${regClosesTxt ? `<div style="font-size:10px;color:#78716c;margin-top:2px;">${regClosesTxt}</div>` : ''}
+                  ${s.price > 0 ? '<div style="font-size:10px;color:#4A7C59;margin-top:2px;">Annual &amp; VIP: included · Members save 15%</div>' : ''}
+                </div>
+                <button style="background:#6B1D34;color:#fff;font-weight:600;padding:8px 16px;border-radius:10px;border:none;font-size:13px;cursor:pointer;${blocked?'opacity:.5;cursor:not-allowed;':''}" ${blocked?'disabled':''} onclick="register('${s._id}')">${regClosed?'Closed':full?'Full':'Register'}</button>
+              </div>
             </div>`;
           wrap.appendChild(card);
         }
@@ -102,19 +193,53 @@
       }
     }
 
-    async function register(id) {
+    // registerForSeries() removed — bulk-enroll-into-every-date is gone.
+    // Every date registers individually through register() below.
+
+
+    async function lookupSessionByCode(code) {
+      if (!code || !code.trim()) return;
       if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/code/${encodeURIComponent(code.trim())}`);
+        if (!res.ok) { showAlert('No session found for that code.', false); return; }
+        const { session } = await res.json();
+        const ok = await register(session._id, code.trim());
+        if (ok) window.location.href = `/live-room.html?session=${encodeURIComponent(session.slug)}`;
+      } catch (error) {
+        showAlert('Network error. Please try again.', false);
+      }
+    }
+
+    async function register(id, code) {
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return false; }
+      // Optional accessibility request from the card's collapsed toggle.
+      // Absent when the card has no such fields (e.g. called from lookupSessionByCode).
+      const captionsEl = document.getElementById(`accCaptions-${id}`);
+      const notesEl = document.getElementById(`accNotes-${id}`);
+      const accommodations = (captionsEl && captionsEl.checked) || (notesEl && notesEl.value.trim())
+        ? { captionsNeeded: !!(captionsEl && captionsEl.checked), notes: notesEl ? notesEl.value.trim().slice(0, 500) : '' }
+        : null;
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${id}/register`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ...(code ? { code } : {}),
+            ...(accommodations ? { accommodations } : {})
+          })
         });
         const data = await res.json();
-        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return; }
-        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); }
-        else showAlert(data.error || 'Registration failed.', false);
-      } catch { showAlert('Registration failed. Please try again.', false); }
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return false; }
+        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); return true; }
+        showAlert(data.error || 'Registration failed.', false);
+        return false;
+      } catch {
+        showAlert('Registration failed. Please try again.', false);
+        return false;
+      } finally {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}

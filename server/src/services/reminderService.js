@@ -43,7 +43,8 @@ export async function checkAndSendReminders() {
         if (!credential.userId || !credential.userId.email) continue;
         
         const user = credential.userId;
-        
+        if (!user.hasActiveSubscription()) continue;
+
         // Create in-app notification
         await createNotification(user._id, credential, daysOut);
         

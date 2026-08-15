@@ -80,9 +80,14 @@ import auditKitRoutes from './routes/auditKit.js';
 import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
+import adminOrgsRoutes from './routes/adminOrgs.js';
 import complianceRoutes from './routes/complianceRoutes.js';
 import liveSessionRoutes from './routes/liveSessions.js';
+import sessionSeriesRoutes from './routes/sessionSeries.js';
 import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
+import askPresenterRoutes from './routes/askPresenterRoutes.js';
+import booksRoutes from './routes/books.js';
+import adminBooksRoutes from './routes/adminBooks.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -110,6 +115,7 @@ export const ROUTE_MANIFEST = [
   ['/api/admin/courses',         bulkUploadRoutes,          'Admin Bulk Upload'],
   ['/api/admin/rewards',         adminRewardsRoutes,        'Admin Rewards'],
   ['/api/admin/course-presentation', adminCoursePresentationRoutes, 'Admin Course Presentation'],
+  ['/api/admin/books',           adminBooksRoutes,          'Admin Books'],
 
   // ── Admin catch-alls (stacked on '/api/admin') ──
   ['/api/admin',                 adminRoutes,               'Admin (core)'],
@@ -138,6 +144,7 @@ export const ROUTE_MANIFEST = [
   ['/api/remediation',           remediationRoutes,         'Remediation'],
   ['/api/tools',                 toolsRoutes,               'Clinical Tools'],
   ['/api/partners',              partnersRoutes,            'Partners'],
+  ['/api/books',                 booksRoutes,               'Books'],
 
   // ── Course Builder / AI ──
   ['/api/course-builder',        courseBuilderRoutes,        'Course Builder'],
@@ -164,8 +171,11 @@ export const ROUTE_MANIFEST = [
   ['/api/uploads',               uploadsRoutes,             'Uploads'],
   ['/api/admin/video-audit',      videoAuditRoutes,          'Video Link Audit'],
   ['/api/orgs',                  orgRoutes,                 'Practice Compliance — Orgs/Roster/Tracks/Assignments'],
+  ['/api/admin/orgs',            adminOrgsRoutes,           'Staff Troubleshooting — Org Roster (admin + support)'],
+  ['/api/ask-presenter',         askPresenterRoutes,        'Ask the Presenter (course-scoped Q&A)'],
   ['/api',                       complianceRoutes,          'Practice Compliance — Credentials/Policies/Supervision/Audit Binder'],
   ['/api/live-sessions',         liveSessionRoutes,         'Live Sessions (Whereby)'],
+  ['/api/session-series',        sessionSeriesRoutes,       'Session Series (grouped live sessions)'],
   ['/api/webhooks/whereby',      webhooksWherebyRoutes,     'Whereby attendance + recording webhook'],
 ];
 

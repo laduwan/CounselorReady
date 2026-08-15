@@ -6,6 +6,9 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 
+// Throttles the activity-heartbeat write in protect() to once per user per minute.
+const lastWrite = new Map();
+
 // Protect routes - require authentication
 export const protect = async (req, res, next) => {
   try {
@@ -36,6 +39,18 @@ export const protect = async (req, res, next) => {
       await user.save();
     }
     
+    // Fire-and-forget activity heartbeat, throttled to once per user per minute.
+    // Never awaited — must not affect auth latency or behavior on any path.
+    const now = Date.now();
+    if (now - (lastWrite.get(String(user._id)) || 0) > 60000) {
+      lastWrite.set(String(user._id), now);
+      const set = { lastActiveAt: new Date(now) };
+      if (!user.lastActiveAt || now - user.lastActiveAt.getTime() > 30 * 60000) {
+        set.sessionStartAt = new Date(now);
+      }
+      User.updateOne({ _id: user._id }, { $set: set }).catch(() => {});
+    }
+
     req.user = user;
     next();
   } catch (error) {

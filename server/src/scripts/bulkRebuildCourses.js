@@ -175,7 +175,7 @@ const VALID_BLOCK_TYPES = new Set([
   'keyTakeaway','knowledgeCheck','matching','multiSelect','multipleChoice',
   'quiz','references','reflection','resources','scenarioTree',
   'sectionDivider','sequencing','text','timeline','video','videoEmbed',
-  'statCard','caseStudy','pullQuote','tableBlock',
+  'statCard','caseStudy','pullQuote','tableBlock','preCommit','preCommitReveal','pulseCheck','transcriptCoding',
   // Legacy aliases — Tech Manual §10.2 documents these as forgiven by the
   // viewer. Kept here so the AI filter doesn't strip pre-existing data
   // that happens to use them.

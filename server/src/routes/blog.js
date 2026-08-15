@@ -58,6 +58,64 @@ router.get('/sitemap', async (req, res) => {
   }
 });
 
+// ============================================================
+// EMAIL APPROVAL ROUTES (token-gated, no login — clicked from the
+// weekly auto-gen draft email; see jobs/blogAutoGen.js and
+// services/emailService.js#sendBlogDraftForApproval)
+// ============================================================
+
+function reviewPage(title, message, color) {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head>
+    <body style="font-family:Georgia,serif;max-width:480px;margin:80px auto;text-align:center;color:#333;">
+      <h2 style="color:${color};">${title}</h2>
+      <p>${message}</p>
+      <a href="/admin-blog.html" style="color:#6B1D34;">Go to blog dashboard</a>
+    </body></html>`;
+}
+
+// GET /api/blog/:id/approve?token=... — publish the draft. Token is
+// single-use: cleared on success so the email link can't be replayed.
+router.get('/:id/approve', async (req, res) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) return res.status(404).send(reviewPage('Not found', 'This draft no longer exists.', '#c0392b'));
+    if (!post.reviewToken || post.reviewToken !== req.query.token) {
+      return res.status(403).send(reviewPage('Invalid link', 'This approval link is invalid or has already been used.', '#c0392b'));
+    }
+    if (post.status === 'published') {
+      return res.send(reviewPage('Already published', `"${post.title}" is already live.`, '#4A7C59'));
+    }
+
+    post.status = 'published';
+    post.reviewToken = undefined;
+    await post.save();
+
+    res.send(reviewPage('Published', `"${post.title}" is now live on the blog.`, '#4A7C59'));
+  } catch (err) {
+    console.error('Blog approve error:', err);
+    res.status(500).send(reviewPage('Error', 'Something went wrong approving this draft.', '#c0392b'));
+  }
+});
+
+// GET /api/blog/:id/reject?token=... — discard the draft entirely.
+router.get('/:id/reject', async (req, res) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) return res.status(404).send(reviewPage('Not found', 'This draft no longer exists.', '#c0392b'));
+    if (!post.reviewToken || post.reviewToken !== req.query.token) {
+      return res.status(403).send(reviewPage('Invalid link', 'This link is invalid or has already been used.', '#c0392b'));
+    }
+
+    const title = post.title;
+    await post.deleteOne();
+
+    res.send(reviewPage('Discarded', `"${title}" was deleted. It'll come back around in the topic rotation next cycle.`, '#6B1D34'));
+  } catch (err) {
+    console.error('Blog reject error:', err);
+    res.status(500).send(reviewPage('Error', 'Something went wrong discarding this draft.', '#c0392b'));
+  }
+});
+
 // NOTE: GET /:slug is defined LAST in this file so it cannot shadow
 // /admin/* routes. See bottom of file.
 

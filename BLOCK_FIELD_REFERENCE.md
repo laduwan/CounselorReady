@@ -1,6 +1,6 @@
 # BLOCK FIELD REFERENCE (Tier 1 — GENERATED, DO NOT HAND-EDIT)
 
-> Source hash `a0753da348c3` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
+> Source hash `00a010b503c2` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
 > **Source of truth:** the `renderX()` functions in `client/public/interactive-course.html`.
 > Field names below are extracted from `block.<field>` reads in those functions.
 > If a seed or the builder writes a field NOT listed here, the viewer ignores it
@@ -74,6 +74,15 @@ word count unaffected, but renders blank.
 | `explanation` | data |
 | `options` | data |
 | `question` | prose (word-counted) |
+
+### `transcriptCoding`  ·  renders via `renderTranscriptCoding()`
+| field | classification |
+|---|---|
+| `codingQuestion` | data |
+| `correctAnswer` | data |
+| `explanation` | data |
+| `options` | data |
+| `transcript` | data |
 
 ### `multiSelect`  ·  renders via `renderMultiSelect()`
 | field | classification |
@@ -160,6 +169,25 @@ word count unaffected, but renders blank.
 | `takeaways` | data |
 | `title` | prose (word-counted) |
 
+### `preCommit`  ·  renders via `renderPreCommit()`
+| field | classification |
+|---|---|
+| `preCommitId` | data |
+| `question` | prose (word-counted) |
+
+### `preCommitReveal`  ·  renders via `renderPreCommitReveal()`
+| field | classification |
+|---|---|
+| `modelResponse` | data |
+| `preCommitId` | data |
+
+### `pulseCheck`  ·  renders via `renderPulseCheck()`
+| field | classification |
+|---|---|
+| `content` | prose (word-counted) |
+| `pulsePrompt` | data |
+| `title` | prose (word-counted) |
+
 ### `statCard`  ·  renders via `renderStatCard()`
 | field | classification |
 |---|---|
@@ -208,7 +236,7 @@ word count unaffected, but renders blank.
 
 ## Viewer-supported block types
 
-`sectionDivider`, `text`, `imageText`, `image`, `accordion`, `multipleChoice`, `multiSelect`, `matching`, `flashcardDeck`, `scenarioTree`, `cardSort`, `sequencing`, `timeline`, `hotspot`, `reflection`, `callout`, `fillInBlank`, `keyTakeaway`, `statCard`, `caseStudy`, `pullQuote`, `table`, `resources`, `videoEmbed`
+`sectionDivider`, `text`, `imageText`, `image`, `accordion`, `multipleChoice`, `transcriptCoding`, `multiSelect`, `matching`, `flashcardDeck`, `scenarioTree`, `cardSort`, `sequencing`, `timeline`, `hotspot`, `reflection`, `callout`, `fillInBlank`, `keyTakeaway`, `preCommit`, `preCommitReveal`, `pulseCheck`, `statCard`, `caseStudy`, `pullQuote`, `table`, `resources`, `videoEmbed`
 
 > If the course builder's block picker offers fewer types than this list,
 > the missing ones are unexposed capability — they render fine if seeded, but
@@ -219,4 +247,4 @@ word count unaffected, but renders blank.
 
 _From InteractiveCourse.js. Strict mode silently drops undeclared fields on save._
 
-`accessType`, `acepNumber`, `action`, `approvalBody`, `approvalDate`, `assessment`, `assessmentPassed`, `attemptedAt`, `attemptsAllowed`, `attestationAgreed`, `attestationRequired`, `attestationText`, `blockId`, `blockIndex`, `blockType`, `body`, `calloutType`, `category`, `ceHours`, `ceProvider`, `certificateEnabled`, `certificateId`, `confidence`, `courseCode`, `courseId`, `currentSectionIndex`, `deliveryFormat`, `description`, `dripEnabled`, `dripIntervalMinutes`, `dripSectionsPerInterval`, `enforceSectionOrder`, `enrolledAt`, `estimatedTime`, `evaluationId`, `evaluationSubmitted`, `expirationDate`, `hasQuiz`, `highlight`, `hours`, `imageAlignment`, `imagePosition`, `imageSize`, `isActive`, `isPublished`, `label`, `lastAccessedAt`, `maxAttempts`, `message`, `minLength`, `minimumTimeMinutes`, `narrationEnabled`, `nodes`, `notes`, `order`, `overallProgress`, `partnerId`, `passThreshold`, `passingScore`, `presenter`, `previousSectionsReviewable`, `providerName`, `providerNumber`, `quizPassThreshold`, `quizPassed`, `sectionId`, `sectionIndex`, `shuffleOptions`, `shuffleQuestions`, `slug`, `source`, `startNode`, `status`, `timeLimit`, `timeSpent`, `timestamp`, `title`, `totalTimeSpent`, `type`, `updatedAt`, `userId`
+`accessType`, `accredited`, `acepNumber`, `action`, `approvalBody`, `approvalDate`, `assessment`, `assessmentPassed`, `attemptedAt`, `attemptsAllowed`, `attestationAgreed`, `attestationRequired`, `attestationText`, `blockId`, `blockIndex`, `blockType`, `body`, `calloutType`, `category`, `ceHours`, `ceProvider`, `certificateEnabled`, `certificateId`, `confidence`, `courseCode`, `courseId`, `currentSectionIndex`, `deliveryFormat`, `description`, `dripEnabled`, `dripIntervalMinutes`, `dripSectionsPerInterval`, `enforceSectionOrder`, `enrolledAt`, `estimatedTime`, `evaluationId`, `evaluationSubmitted`, `expirationDate`, `hasQuiz`, `highlight`, `hours`, `imageAlignment`, `imagePosition`, `imageSize`, `isActive`, `isPublished`, `label`, `lastAccessedAt`, `maxAttempts`, `message`, `minLength`, `minimumTimeMinutes`, `narrationEnabled`, `nodes`, `notes`, `order`, `overallProgress`, `partnerId`, `passThreshold`, `passingScore`, `presenter`, `previousSectionsReviewable`, `providerName`, `providerNumber`, `quizPassThreshold`, `quizPassed`, `reviewAudit`, `reviewFeeCents`, `reviewStatus`, `sectionId`, `sectionIndex`, `shuffleOptions`, `shuffleQuestions`, `slug`, `source`, `startNode`, `status`, `timeLimit`, `timeSpent`, `timestamp`, `title`, `totalTimeSpent`, `type`, `updatedAt`, `userId`, `visibility`

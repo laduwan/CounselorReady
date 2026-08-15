@@ -20,11 +20,16 @@ import User from '../models/User.js';
 import Certificate from '../models/Certificate.js';
 import UserCredential from '../models/UserCredential.js';
 import LiveSession from '../models/LiveSession.js';
+import SessionSeries from '../models/SessionSeries.js';
 import {
   generateCertificate,
   generateCertificateNumber,
   buildApprovalBlock
 } from '../utils/certificate.js';
+// NOTE: activityTrackingService is imported lazily inside the non-blocking log
+// block below (mirroring the Gamification dynamic import) — a top-level import
+// pulls in adminNotificationService, which constructs a Resend client at module
+// load and throws without RESEND_API_KEY (breaking test environments).
 
 const LOG = '[LiveCert]';
 
@@ -44,6 +49,11 @@ export async function issueLiveSessionCertificates(liveSessionId) {
   if (!['completed', 'live'].includes(session.status)) {
     throw new Error(`Session status is '${session.status}' — must be live or completed before issuing certificates.`);
   }
+  // Series-linked sessions issue via issueSeriesCertificates — never per-session,
+  // to prevent an attendee ending up with both a per-session cert AND a series cert.
+  if (session.seriesId) {
+    throw new Error(`Session belongs to series ${session.seriesId} — use issueSeriesCertificates for the series instead.`);
+  }
 
   const issued = [];
   const skipped = [];
@@ -60,6 +70,27 @@ export async function issueLiveSessionCertificates(liveSessionId) {
           requiredMin: Math.round(session.scheduledDurationMin() * session.attendanceThresholdPct / 100)
         });
         continue;
+      }
+
+      const attRecord = session.attendance.find(
+        a => a.user && a.user.toString() === userId.toString()
+      );
+      if (!attRecord?.evaluationCompleted) {
+        skipped.push({ userId, reason: 'evaluation-not-completed' });
+        continue;
+      }
+
+      // Assessment gate — ONLY when enabled. Requires a passing attempt on top of
+      // attendance + evaluation. When disabled, this block is skipped entirely and
+      // eligibility is attendance + evaluation exactly as before.
+      if (session.assessment?.enabled) {
+        const passedAttempt = (session.assessmentAttempts || []).some(
+          a => a.userId && a.userId.toString() === userId.toString() && a.passed
+        );
+        if (!passedAttempt) {
+          skipped.push({ userId, reason: 'assessment-not-passed' });
+          continue;
+        }
       }
 
       // Idempotency: title + user + platform source (no courseId for live sessions;
@@ -94,12 +125,14 @@ export async function issueLiveSessionCertificates(liveSessionId) {
         ceCategory:
           session.nbccContentAreas?.[0] ||
           'Counseling Theory/Practice and the Counseling Relationship',
-        objectives: [],
-        // NBCC fallback row, stamped as a live webinar so the certificate
-        // shows the synchronous delivery format (LPCA-GA taxonomy)
+        objectives: session.objectives || [],
+        instructorName: session.presenter?.name || undefined,
+        // NBCC fallback row, stamped 'synchronous' per GA Board Rule
+        // 135-9-.01(4)(c) — the certificate must say "Synchronous," not
+        // "Live Webinar" (LPCA-GA taxonomy)
         approvals: buildApprovalBlock(null, 'NBCC', session.ceuHours).map(a => ({
           ...a,
-          deliveryFormat: 'live-webinar'
+          deliveryFormat: 'synchronous'
         }))
       });
 
@@ -164,6 +197,63 @@ export async function issueLiveSessionCertificates(liveSessionId) {
 
       issued.push({ userId, certificateNumber, certificateId: certificate._id });
       console.log(`${LOG} issued ${certificateNumber} to ${user.email} for "${session.title}"`);
+
+      // Non-blocking activity log — must never affect certificate issuance.
+      (async () => {
+        try {
+          const { logActivity, ACTIVITY_TYPES } = await import('../services/activityTrackingService.js');
+          await logActivity(ACTIVITY_TYPES.LIVE_SESSION_CERT_ISSUED, {
+            sessionId: session._id,
+            sessionTitle: session.title,
+            certificateNumber,
+            ceHours: session.ceuHours
+          }, { userId: user._id, userName, userEmail: user.email, notifyAdmin: true });
+        } catch (logErr) {
+          console.error(`${LOG} activity log failed:`, logErr.message);
+        }
+      })();
+
+      // Non-blocking — gamification failure must never affect certificate issuance.
+      // Pattern replicated locally from interactiveCourseRoutes.js recordGamification
+      // (fire-and-forget; do NOT import from that route file).
+      (async () => {
+        try {
+          const Gamification = (await import('../models/Gamification.js')).default;
+          let profile = await Gamification.findOne({ userId: user._id });
+          if (!profile) profile = await Gamification.create({ userId: user._id });
+
+          profile.recordActivity();
+
+          // Fires for both live_session_complete (with ceHours) and certificate_earned
+          const XP = { live_session_complete: 100, certificate_earned: 75 };
+          profile.xp += XP.live_session_complete + XP.certificate_earned;
+          profile.level = profile.calculateLevel();
+
+          profile.totalLiveSessionsCompleted += 1;
+          const ceHours = session.ceuHours || 0;
+          if (ceHours) {
+            profile.totalCEHoursEarned += ceHours;
+            profile.weeklyHoursCompleted += ceHours;
+          }
+
+          const BADGES = {
+            first_live_session: { check: () => profile.totalLiveSessionsCompleted >= 1, name: 'Showed Up Live', description: 'Attended your first live session', icon: 'video' },
+            live_five: { check: () => profile.totalLiveSessionsCompleted >= 5, name: 'Live Regular', description: 'Attended 5 live sessions', icon: 'radio' },
+            first_cert: { check: () => true, name: 'Certified', description: 'Earned your first certificate', icon: 'award' },
+            ten_hours: { check: () => profile.totalCEHoursEarned >= 10, name: '10 Hour Club', description: 'Earned 10+ CE hours', icon: 'clock' },
+            fifty_hours: { check: () => profile.totalCEHoursEarned >= 50, name: 'Half Century', description: 'Earned 50+ CE hours', icon: 'zap' }
+          };
+          for (const [key, def] of Object.entries(BADGES)) {
+            if (def.check() && !profile.badges.some(b => b.key === key)) {
+              profile.badges.push({ key, name: def.name, description: def.description, icon: def.icon });
+            }
+          }
+
+          await profile.save();
+        } catch (err) {
+          console.error('[liveSession] gamification non-blocking error:', err.message);
+        }
+      })();
     } catch (err) {
       console.error(`${LOG} failed for user ${userId}:`, err.message);
       failed.push({ userId, error: err.message });
@@ -177,4 +267,203 @@ export async function issueLiveSessionCertificates(liveSessionId) {
   return { issued, skipped, failed };
 }
 
-export default { issueLiveSessionCertificates };
+/**
+ * Issue certificates for all qualifying series attendees.
+ * A user qualifies when they met the attendance threshold on every required
+ * session in the series AND completed evaluations on every required session.
+ * Idempotent: skips users who already hold a non-revoked series certificate.
+ *
+ * Returns immediately with `notReady` reason if any required session hasn't
+ * completed yet (rather than issuing partial certs).
+ *
+ * @param {string} seriesId
+ * @returns {{issued: Array, skipped: Array, failed: Array}}
+ */
+export async function issueSeriesCertificates(seriesId) {
+  const series = await SessionSeries.findById(seriesId);
+  if (!series) throw new Error('Session series not found');
+
+  const memberSessions = await LiveSession.find({ seriesId })
+    .sort({ 'seriesMembership.order': 1 });
+
+  if (!memberSessions.length) {
+    throw new Error(`Series ${seriesId} has no member sessions.`);
+  }
+
+  const required = memberSessions.filter(s => s.seriesMembership?.required !== false);
+  if (!required.length) {
+    throw new Error(`Series ${seriesId} has no required member sessions — nothing to certify.`);
+  }
+
+  // Refuse to issue until every required session is completed.
+  const notCompleted = required.filter(s => s.status !== 'completed');
+  if (notCompleted.length) {
+    return {
+      issued: [],
+      skipped: [],
+      failed: [],
+      notReady: true,
+      pendingSessions: notCompleted.map(s => ({ id: s._id, title: s.title, status: s.status }))
+    };
+  }
+
+  // Build the union of registrants across required sessions — a user needs to
+  // have registered for at least one to be considered; qualification checks
+  // ALL required sessions.
+  const registrantIds = new Set();
+  for (const s of required) {
+    for (const r of s.registrants) {
+      if (r.user) registrantIds.add(r.user.toString());
+    }
+  }
+
+  const issued = [];
+  const skipped = [];
+  const failed = [];
+
+  for (const userIdStr of registrantIds) {
+    try {
+      // Check every required session's threshold AND evaluation for this user.
+      let disqualified = null;
+      for (const s of required) {
+        if (!s.meetsAttendanceThreshold(userIdStr)) {
+          disqualified = { reason: 'attendance-below-threshold', sessionId: s._id, sessionTitle: s.title };
+          break;
+        }
+        const attRec = s.attendance.find(a => a.user && a.user.toString() === userIdStr);
+        if (!attRec?.evaluationCompleted) {
+          disqualified = { reason: 'evaluation-not-completed', sessionId: s._id, sessionTitle: s.title };
+          break;
+        }
+      }
+      if (disqualified) {
+        skipped.push({ userId: userIdStr, ...disqualified });
+        continue;
+      }
+
+      const existing = await Certificate.findOne({
+        userId: userIdStr,
+        sessionSeriesId: series._id,
+        isRevoked: { $ne: true }
+      });
+      if (existing) {
+        skipped.push({ userId: userIdStr, reason: 'already-issued', certificateNumber: existing.certificateNumber });
+        continue;
+      }
+
+      const user = await User.findById(userIdStr);
+      if (!user) { skipped.push({ userId: userIdStr, reason: 'user-not-found' }); continue; }
+
+      // Certificate number keyed off the series (not any single session).
+      const certificateNumber = await generateCertificateNumber(series._id, user._id);
+
+      const userName =
+        (user.profile?.certificateName?.trim()) ||
+        `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() ||
+        user.email;
+
+      // Latest required session's end date = the overall completion date.
+      const completionDate = required.reduce((latest, s) => {
+        return (!latest || s.scheduledEnd > latest) ? s.scheduledEnd : latest;
+      }, null);
+
+      const sessionDates = required.map(s => ({
+        title: s.title,
+        date: s.scheduledEnd
+      }));
+
+      const category =
+        required[0]?.nbccContentAreas?.[0] ||
+        series.category ||
+        'Counseling Theory/Practice and the Counseling Relationship';
+
+      const pdfBuffer = await generateCertificate({
+        holderName: userName,
+        courseName: series.title,
+        completionDate,
+        ceHours: series.totalCeuHours,
+        certificateNumber,
+        acepNumber: 'ACEP #7760',
+        ceCategory: category,
+        objectives: required.flatMap(s => s.objectives || []),
+        instructorName: series.presenter?.name || required[0]?.presenter?.name || undefined,
+        // Multi-session series lists every session date on the cert body.
+        // utils/certificate.js renders this when present.
+        sessionDates,
+        approvals: buildApprovalBlock(null, 'NBCC', series.totalCeuHours).map(a => ({
+          ...a,
+          deliveryFormat: 'synchronous'
+        }))
+      });
+
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            resource_type: 'raw',
+            folder: 'certificates',
+            public_id: `cert_${certificateNumber}_series_${Date.now()}`,
+            format: 'pdf'
+          },
+          (error, result) => (error ? reject(error) : resolve(result))
+        );
+        const readable = new Readable();
+        readable.push(pdfBuffer);
+        readable.push(null);
+        readable.pipe(uploadStream);
+      });
+
+      const certificate = new Certificate({
+        userId: user._id,
+        sessionSeriesId: series._id,
+        title: series.title,
+        provider: 'Ga Integrated Therapeutic Perspectives, LLC',
+        completionDate,
+        ceHours: series.totalCeuHours,
+        category: series.category || 'Other',
+        nbccApproved: true,
+        acepNumber: '7760',
+        approvingBody: 'NBCC',
+        approvalNumber: '#7760',
+        certificateNumber,
+        source: 'platform',
+        fileUrl: uploadResult.secure_url
+      });
+      await certificate.save();
+
+      // CE auto-apply to active credentials (mirrors the per-session path)
+      try {
+        const credentials = await UserCredential.find({
+          userId: userIdStr,
+          status: { $in: ['active', 'expiring_soon'] }
+        });
+        for (const credential of credentials) {
+          try {
+            await credential.addCEU({
+              certificateId: certificate._id,
+              hours: certificate.ceHours,
+              category: certificate.category || 'Other',
+              description: `${series.title} - CounselorReady Live Webinar Series`,
+              provider: 'CounselorReady',
+              date: certificate.completionDate,
+              source: 'internal'
+            });
+          } catch (credErr) {
+            console.error(`${LOG} addCEU failed for credential ${credential._id}:`, credErr.message);
+          }
+        }
+      } catch (credLookupErr) {
+        console.error(`${LOG} credential lookup failed:`, credLookupErr.message);
+      }
+
+      issued.push({ userId: userIdStr, certificateNumber, certificateId: certificate._id, fileUrl: uploadResult.secure_url });
+      console.log(`${LOG} issued series cert ${certificateNumber} to ${user.email} for "${series.title}"`);
+    } catch (err) {
+      console.error(`${LOG} Series cert failed for user ${userIdStr}:`, err.message);
+      failed.push({ userId: userIdStr, error: err.message });
+    }
+  }
+
+  return { issued, skipped, failed };
+}
+
+export default { issueLiveSessionCertificates, issueSeriesCertificates };

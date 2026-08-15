@@ -38,6 +38,7 @@ async function wherebyFetch(path, options = {}) {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
+    console.log('[whereby debug] error response body:', body);
     throw new Error(`Whereby API ${res.status} on ${path}: ${body}`);
   }
   // DELETE returns 204 No Content
@@ -62,18 +63,23 @@ export async function createMeeting(session) {
     endDate: session.scheduledEnd.toISOString(),
     fields: ['hostRoomUrl'],
     recording: isSupervision
-      ? { type: 'none' } // HIPAA hard-lock — supervision can never record
+      ? { type: 'none', destination: null } // HIPAA hard-lock — supervision can never record
       : (session.recordingEnabled
           ? {
               type: 'cloud',
-              // Destination (own S3 bucket) is configured account-wide in the
-              // Whereby dashboard. Verify against current Whereby docs if this
-              // request is rejected — destination may also be settable here.
+              destination: null, // uses account-wide S3 destination configured in Whereby dashboard
               startTrigger: 'automatic-2nd-participant'
             }
-          : { type: 'none' })
+          : { type: 'none', destination: null }),
+    // Whereby Live Captions — startTrigger:'none' means captions only, not
+    // the separately-billed live transcription feature. Room-wide (can't be
+    // scoped to one attendee) and never on for supervision.
+    ...(session.captionsEnabled && !isSupervision
+      ? { liveTranscription: { startTrigger: 'none', liveCaptions: true } }
+      : {})
   };
 
+  console.log('[whereby debug] outgoing body:', JSON.stringify(body, null, 2));
   const data = await wherebyFetch('/meetings', {
     method: 'POST',
     body: JSON.stringify(body)

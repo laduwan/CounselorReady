@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Purchase Complete - CounselorReady</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main style="max-width:640px;margin:0 auto;padding:56px 20px 72px;">
+    <div id="card" style="background:#fff;border:1px solid #eee7dd;border-radius:16px;padding:36px;text-align:center;box-shadow:0 6px 26px rgba(107,29,52,.08);">
+      <p style="color:#57534e;">Confirming your purchase…</p>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function param(k){ return new URLSearchParams(window.location.search).get(k); }
+
+    function fail(msg){
+      document.getElementById('card').innerHTML =
+        '<p class="font-display" style="font-size:26px;color:#6B1D34;margin:0;">We hit a snag</p>' +
+        '<p style="color:#57534e;margin:12px 0 0;line-height:1.6;">' + esc(msg) + '</p>' +
+        '<p style="color:#57534e;margin:12px 0 0;">If you were charged, email <a href="mailto:support@counselorready.com" style="color:#4A7C59;text-decoration:underline;">support@counselorready.com</a> and we\'ll sort it out right away.</p>' +
+        '<a href="/my-books.html" style="display:inline-block;margin-top:18px;color:#284157;text-decoration:underline;">Go to My Books</a>';
+    }
+
+    async function download(bookId, token, btn){
+      const orig = btn.textContent;
+      btn.disabled = true; btn.textContent = 'Preparing…';
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 30000);
+        const res = await fetch(API_URL + '/api/books/' + bookId + '/download', {
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        if (!res.ok){
+          let reason = 'Download failed';
+          try { reason = (await res.json()).error || reason; } catch(e){}
+          throw new Error(reason);
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'counselorready-book.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        btn.disabled = false; btn.textContent = orig;
+      } catch (err) {
+        btn.disabled = false; btn.textContent = orig;
+        alert(err.message || 'Download failed. Please try from My Books.');
+      }
+    }
+
+    async function verify(){
+      const sessionId = param('session_id');
+      const token = localStorage.getItem('token');
+      if (!token){
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = '/login.html?next=' + next;
+        return;
+      }
+      if (!sessionId){ fail('Missing checkout session.'); return; }
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 20000);
+        const res = await fetch(API_URL + '/api/books/verify/' + encodeURIComponent(sessionId), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          signal: ctrl.signal
+        });
+        clearTimeout(t);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Verification failed');
+
+        document.getElementById('card').innerHTML =
+          '<div style="font-size:44px;">✓</div>' +
+          '<p class="font-display" style="font-size:28px;color:#6B1D34;margin:8px 0 0;">Thank you for your purchase</p>' +
+          '<p style="color:#57534e;margin:10px 0 0;">Order <strong style="color:#284157;">' + esc(data.orderNumber || '') + '</strong></p>' +
+          '<button id="dlBtn" style="margin-top:22px;background:#4A7C59;color:#fff;border:none;border-radius:10px;padding:14px 28px;font-size:16px;font-weight:600;cursor:pointer;" ' +
+            'onmouseover="this.style.background=\'#3D6A4A\'" onmouseout="this.style.background=\'#4A7C59\'">Download your book</button>' +
+          '<p style="font-size:12px;color:#284157;margin:16px 0 0;">Your copy is watermarked with your name and order number.</p>' +
+          '<a href="/my-books.html" style="display:inline-block;margin-top:16px;color:#284157;text-decoration:underline;">View My Books</a>';
+
+        // Need the bookId to download — fetch it from the slug in the URL.
+        const slug = param('slug');
+        let bookId = null;
+        if (slug){
+          try {
+            const br = await fetch(API_URL + '/api/books/' + encodeURIComponent(slug));
+            if (br.ok){ bookId = (await br.json())._id; }
+          } catch(e){}
+        }
+        const dlBtn = document.getElementById('dlBtn');
+        if (bookId){
+          dlBtn.addEventListener('click', () => download(bookId, token, dlBtn));
+        } else {
+          dlBtn.addEventListener('click', () => { window.location.href = '/my-books.html'; });
+        }
+      } catch (err) {
+        fail(err.message || 'We could not verify your purchase.');
+      }
+    }
+
+    verify();
+  </script>
+</body>
+</html>

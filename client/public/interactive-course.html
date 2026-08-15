@@ -1967,13 +1967,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 /* Section/module title — burgundy to match the italic numeral.
    The section divider uses its own markup (not h2/h3), so it needs
    explicit selectors to inherit the H1 brand color. */
-.cr-block[data-block-type="sectionDivider"] h1,
-.cr-block[data-block-type="sectionDivider"] h2,
-.cr-block[data-block-type="sectionDivider"] .cr-section-title,
-.cr-block[data-block-type="sectionDivider"] [data-section-title],
-.cr-section-divider h1,
-.cr-section-divider h2,
-.cr-section-divider .cr-section-title,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) h1,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) h2,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) .cr-section-title,
+.cr-block[data-block-type="sectionDivider"] .cr-section-divider:not(.has-banner) [data-section-title],
+.cr-section-divider:not(.has-banner) h1,
+.cr-section-divider:not(.has-banner) h2,
+.cr-section-divider:not(.has-banner) .cr-section-title,
 .cr-divider-title {
   font-family: var(--cr-font-serif);
   font-size: 24px;
@@ -2522,43 +2522,68 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 .cr-callout {
   position: relative;
-  margin: 24px auto;
-  padding: 16px 20px;
-  border-left: 4px solid var(--cr-burgundy);
-  border-radius: var(--cr-radius);
-  background: var(--cr-tint-burg);
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin: 28px 0;
+  padding: 4px 0;
+  border-left: none;
+  border-radius: 0;
+  background: transparent;
   font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
   font-size: 16px;
   line-height: 1.65;
   max-width: 720px;
   break-inside: avoid;
-  box-shadow: 0 1px 0 var(--cr-border-subtle);
+  box-shadow: none;
+}
+
+.cr-callout-inner {
+  flex: 1;
+  padding-top: 2px;
 }
 
 .cr-callout-title,
 .cr-callout > h4:first-child {
-  font-family: var(--cr-font-display, 'Cormorant Garamond', 'Iowan Old Style', Georgia, serif);
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  margin: 0 0 8px;
-  padding: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: var(--cr-text-body);
+  gap: 10px;
+  margin: 0 0 8px;
+  padding: 0;
+  font-family: var(--cr-font-sans, 'Lato', sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cr-burgundy);
+  position: static;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
 }
 
 .cr-callout-icon {
-  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--cr-burgundy);
+  color: #fff;
+  font-size: 15px;
   line-height: 1;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
 .cr-callout-label {
   flex: 1;
   letter-spacing: 0.005em;
+}
+
+.cr-callout-body {
+  border-top: 1px solid rgba(107, 29, 52, 0.18);
+  padding-top: 8px;
 }
 
 .cr-callout-body,
@@ -2598,6 +2623,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(40, 65, 87, 0.04);
 }
 .cr-callout-info .cr-callout-title { color: var(--cr-navy, #284157); }
+.cr-callout-info .cr-callout-icon { background: var(--cr-navy, #284157); }
+.cr-callout-info .cr-callout-body { border-top-color: color-mix(in srgb, var(--cr-navy, #284157) 30%, transparent); }
 
 
 /* — Variant: WARNING — */
@@ -2605,7 +2632,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-left-color: #C97A1B;
   background: rgba(201, 122, 27, 0.05);
 }
-.cr-callout-warning .cr-callout-title { color: #8E5613; }
+.cr-callout-warning .cr-callout-title { color: #C97A1B; }
+.cr-callout-warning .cr-callout-icon { background: #C97A1B; }
+.cr-callout-warning .cr-callout-body { border-top-color: color-mix(in srgb, #C97A1B 30%, transparent); }
 
 
 /* — Variant: ETHICS — */
@@ -2614,7 +2643,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(212, 168, 85, 0.07);
   border-left-width: 4px;
 }
-.cr-callout-ethics .cr-callout-title { color: #8C6A1F; }
+.cr-callout-ethics .cr-callout-title { color: var(--cr-gold, #D4A855); }
+.cr-callout-ethics .cr-callout-icon { background: var(--cr-gold, #D4A855); }
+.cr-callout-ethics .cr-callout-body { border-top-color: color-mix(in srgb, var(--cr-gold, #D4A855) 30%, transparent); }
 
 
 /* — Variant: CLINICAL — */
@@ -2623,6 +2654,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(40, 65, 87, 0.05);
 }
 .cr-callout-clinical .cr-callout-title { color: var(--cr-navy, #284157); }
+.cr-callout-clinical .cr-callout-icon { background: var(--cr-navy, #284157); }
+.cr-callout-clinical .cr-callout-body { border-top-color: color-mix(in srgb, var(--cr-navy, #284157) 30%, transparent); }
 
 
 /* — Variant: TIP — */
@@ -2630,7 +2663,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-left-color: var(--cr-hunter, var(--cr-green, #4A7C59));
   background: rgba(74, 124, 89, 0.05);
 }
-.cr-callout-tip .cr-callout-title { color: var(--cr-hunter, #4A7C59); }
+.cr-callout-tip .cr-callout-title { color: var(--cr-hunter, var(--cr-green, #4A7C59)); }
+.cr-callout-tip .cr-callout-icon { background: var(--cr-hunter, var(--cr-green, #4A7C59)); }
+.cr-callout-tip .cr-callout-body { border-top-color: color-mix(in srgb, var(--cr-hunter, var(--cr-green, #4A7C59)) 30%, transparent); }
 
 
 /* — Variant: KEY — */
@@ -2639,6 +2674,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(107, 29, 52, 0.05);
 }
 .cr-callout-key .cr-callout-title { color: var(--cr-burgundy, #6B1D34); }
+.cr-callout-key .cr-callout-icon { background: var(--cr-burgundy, #6B1D34); }
+.cr-callout-key .cr-callout-body { border-top-color: color-mix(in srgb, var(--cr-burgundy, #6B1D34) 30%, transparent); }
 
 
 /* — Variant: DONOT — */
@@ -2647,6 +2684,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(185, 28, 28, 0.04);
 }
 .cr-callout-donot .cr-callout-title { color: #B91C1C; }
+.cr-callout-donot .cr-callout-icon { background: #B91C1C; }
+.cr-callout-donot .cr-callout-body { border-top-color: color-mix(in srgb, #B91C1C 30%, transparent); }
 
 
 /* — Variant: PROTOCOL — auto-numbered list */
@@ -2654,7 +2693,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-left-color: #C97A1B;
   background: rgba(201, 122, 27, 0.05);
 }
-.cr-callout-protocol .cr-callout-title { color: #8E5613; }
+.cr-callout-protocol .cr-callout-title { color: #C97A1B; }
+.cr-callout-protocol .cr-callout-icon { background: #C97A1B; }
+.cr-callout-protocol .cr-callout-body { border-top-color: color-mix(in srgb, #C97A1B 30%, transparent); }
 
 .cr-callout-protocol .cr-callout-list,
 .cr-callout-protocol ol {
@@ -3047,6 +3088,12 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   opacity: 0.55;
 }
 
+/* The outer knowledge-check card title is redundant once collapsible
+   reveal bars are enhanced in — each reveal bar already labels itself. */
+.cr-card:has(.cr-kc.cr-collapsible) > div:first-child {
+  display: none;
+}
+
 /* Question — editorial, body color, slight letterspacing */
 .cr-kc-question {
   font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
@@ -3227,8 +3274,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-kc-reveal {
   display: flex; align-items: center; gap: 10px; width: 100%;
   margin: 0; padding: 13px 18px;
-  background: var(--cr-surface, #fff);
-  border: 1.5px solid var(--cr-border, #E0DACE);
+  background: transparent;
+  border: none;
   border-radius: 999px;
   cursor: pointer; text-align: left;
   font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
@@ -3239,22 +3286,21 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: var(--cr-burgundy-faded, rgba(107, 29, 52, 0.04));
 }
 .cr-kc-reveal-icon {
-  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--cr-hunter, #4A7C59); color: #fff;
-  font-size: 13px; font-weight: 700; line-height: 1;
+  font-size: 15px; font-weight: 700; line-height: 1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 .cr-kc-reveal-label {
   font-size: 12.5px; font-weight: 700; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--cr-burgundy, #6B1D34);
 }
 .cr-kc-reveal-hint {
-  margin-left: auto; font-size: 12.5px; font-style: italic;
-  color: var(--cr-text-muted, #6B7280);
+  display: none;
 }
 .cr-kc-reveal-chevron {
-  flex-shrink: 0; margin-left: 10px; font-size: 18px; line-height: 1;
-  color: var(--cr-text-muted, #6B7280); transition: transform 0.18s ease;
+  display: none;
 }
 .cr-kc.cr-kc-open .cr-kc-reveal-chevron { transform: rotate(90deg); }
 .cr-kc.cr-kc-open .cr-kc-reveal-hint { display: none; }
@@ -3264,6 +3310,326 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 .cr-kc.cr-collapsible:not(.cr-kc-open) > :not(.cr-kc-reveal) { display: none !important; }
 
+/* ═══════════════════════════════════════════════════════════════
+   PRECOMMIT — v1
+   preCommit: respond-before-you-read prompt (minimal, borderless,
+   mirrors .cr-reflection conventions). preCommitReveal: two-column
+   self-comparison — the learner's own response beside the expert
+   model response. No scoring UI.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-precommit {
+  background: transparent;
+  border: none;
+  padding: 4px 0 8px;
+  margin: 0 0 32px;
+  max-width: 640px;
+}
+.cr-precommit-prompt {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 19px;
+  font-style: italic;
+  color: var(--cr-navy, #284157);
+  line-height: 1.5;
+  margin: 0 0 16px;
+}
+.cr-precommit textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--cr-border, #C4BCAB);
+  padding: 12px 4px;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body, #1F2937);
+  min-height: 90px;
+  width: 100%;
+  outline: none;
+  resize: vertical;
+  transition: border-bottom-color 0.18s ease;
+}
+.cr-precommit textarea:focus { border-bottom-color: var(--cr-burgundy, #6B1D34); border-bottom-width: 2px; }
+.cr-precommit textarea:disabled { opacity: 0.65; resize: none; }
+.cr-precommit-commit {
+  margin-top: 12px;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-burgundy, #6B1D34);
+  background: transparent;
+  border: 1.5px solid var(--cr-burgundy, #6B1D34);
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.cr-precommit-confirm {
+  margin-top: 12px;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--cr-text-muted, #6B7280);
+}
+
+.cr-precommit-reveal {
+  display: flex;
+  gap: 32px;
+  margin: 0 0 32px;
+}
+.cr-precommit-reveal-col { flex: 1 1 0; min-width: 0; }
+.cr-precommit-reveal-yours {
+  border-right: 1px solid rgba(40, 65, 87, 0.18);
+  padding-right: 32px;
+}
+.cr-precommit-reveal-label {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cr-burgundy, #6B1D34);
+  margin: 0 0 10px;
+}
+.cr-precommit-reveal-yours-text,
+.cr-precommit-reveal-expert .cr-prose {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body, #1F2937);
+}
+.cr-precommit-reveal-skipped {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--cr-text-muted, #6B7280);
+  margin: 0 0 10px;
+}
+@media (max-width: 640px) {
+  .cr-precommit-reveal { flex-direction: column; gap: 24px; }
+  .cr-precommit-reveal-yours {
+    border-right: none;
+    border-bottom: 1px solid rgba(40, 65, 87, 0.18);
+    padding-right: 0;
+    padding-bottom: 20px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRANSCRIPT CODING — v1
+   Styled like a typed session excerpt: hanging speaker labels, hairline
+   rules between turns, no chat bubbles. Client turns left-aligned plain;
+   counselor turns indented with a burgundy speaker tag.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-transcript {
+  margin: 0 0 20px;
+  max-width: 640px;
+}
+.cr-transcript-turn {
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(40, 65, 87, 0.14);
+}
+.cr-transcript-turn:first-child { padding-top: 0; }
+.cr-transcript-turn:last-child { border-bottom: none; }
+.cr-transcript-speaker {
+  display: block;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--cr-text-muted, #6B7280);
+  margin-bottom: 6px;
+}
+.cr-transcript-counselor { padding-left: 24px; }
+.cr-transcript-counselor .cr-transcript-speaker { color: var(--cr-burgundy, #6B1D34); }
+.cr-transcript-text {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--cr-text-body, #1F2937);
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PULSE CHECK — v1
+   Private, unlogged self-check card for emotionally heavy courses.
+   Quiet by design: hunter rule, no fill, serif body, secondary button.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-pulse {
+  border-left: 3px solid var(--cr-hunter, var(--cr-green, #4A7C59));
+  background: transparent;
+  padding: 20px 24px;
+  margin: 28px 0;
+  max-width: 720px;
+}
+.cr-pulse-eyebrow {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  margin: 0 0 10px;
+}
+.cr-pulse-body {
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--cr-text-body);
+  margin-bottom: 16px;
+}
+.cr-pulse-continue {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  background: transparent;
+  border: 1.5px solid var(--cr-hunter, var(--cr-green, #4A7C59));
+  border-radius: 999px;
+  padding: 10px 22px;
+  cursor: pointer;
+}
+.cr-pulse-done .cr-pulse-continue { display: none; }
+.cr-pulse-done .cr-pulse-eyebrow::after { content: ' ✓'; }
+
+/* ═══════════════════════════════════════════════════════════════
+   CHANGELOG — v1
+   "Updated since your last completion" banner (renewal-cycle retakes)
+   + gold section-nav pills for the sections a changeLog entry affects.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-changelog-banner {
+  border-left: 3px solid var(--cr-gold, #D4A855);
+  background: var(--cr-gold-faded, rgba(212, 168, 85, 0.08));
+  border-radius: var(--cr-radius, 8px);
+  padding: 16px 20px;
+  margin: 0 0 24px;
+  max-width: 720px;
+  position: relative;
+}
+.cr-changelog-banner-title {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--cr-navy, #284157);
+  margin: 0 0 8px;
+}
+.cr-changelog-banner-list {
+  margin: 0 0 12px;
+  padding-left: 18px;
+  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--cr-text-body, #1F2937);
+}
+.cr-changelog-banner-list li { margin-bottom: 4px; }
+.cr-changelog-banner-dismiss {
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--cr-navy, #284157);
+  background: transparent;
+  border: 1.5px solid var(--cr-navy, #284157);
+  border-radius: 999px;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.cr-updated-pill {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--cr-gold, #D4A855);
+  color: #fff;
+  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ASK PRESENTER — v1
+   Course-scoped Q&A panel — matches the glossary/references drawer
+   pattern exactly (floating circular tab + slide-in right panel).
+   ═══════════════════════════════════════════════════════════════ */
+.cr-presenter-btn {
+  position: fixed; bottom: 24px; right: 208px;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--cr-navy, #284157);
+  color: #fff; border: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  box-shadow: 0 4px 16px rgba(40,65,87,0.35);
+  z-index: 50; font-size: 20px;
+  transition: transform var(--cr-transition);
+}
+.cr-presenter-btn:hover { transform: scale(1.1); }
+.cr-presenter-btn.visible { display: flex; }
+
+.cr-presenter-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 380px; max-width: 92vw;
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-presenter-panel.open { transform: translateX(0); }
+.cr-presenter-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--cr-border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.cr-presenter-header h3 {
+  font-family: var(--cr-font-display); font-weight: 700; font-size: 1.2em; color: var(--cr-navy, #284157);
+  margin: 0; display: flex; align-items: center; gap: 8px;
+}
+.cr-presenter-body {
+  flex: 1; overflow-y: auto; padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.cr-presenter-passage {
+  font-size: 0.82em; font-style: italic; color: var(--cr-text-secondary);
+  background: var(--cr-navy-faded, rgba(40,65,87,0.06));
+  border-left: 3px solid var(--cr-navy, #284157);
+  padding: 8px 12px; border-radius: 4px;
+}
+.cr-presenter-input {
+  width: 100%; box-sizing: border-box;
+  padding: 10px 12px; border: 1.5px solid var(--cr-border); border-radius: 8px;
+  font-size: 0.9em; font-family: inherit; resize: vertical;
+}
+.cr-presenter-input:focus { outline: none; border-color: var(--cr-navy, #284157); }
+.cr-presenter-submit {
+  align-self: flex-start;
+  padding: 8px 20px; border: none; border-radius: 999px;
+  background: var(--cr-navy, #284157); color: #fff;
+  font-size: 0.85em; font-weight: 700; cursor: pointer;
+}
+.cr-presenter-submit:disabled { opacity: 0.6; cursor: default; }
+.cr-presenter-answer {
+  font-size: 0.9em; line-height: 1.55; color: var(--cr-text);
+  min-height: 0;
+}
+.cr-presenter-answer.loading { color: var(--cr-text-muted); font-style: italic; }
+.cr-presenter-answer.error { color: var(--cr-burgundy, #6B1D34); }
+.cr-presenter-answer-attribution {
+  display: block; margin-top: 10px;
+  font-family: var(--cr-font-sans, system-ui, sans-serif);
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--cr-navy, #284157);
+}
+.cr-presenter-remaining {
+  font-size: 0.78em; color: var(--cr-text-muted);
+}
+.cr-presenter-disclaimer {
+  font-size: 0.75em; color: var(--cr-text-muted); font-style: italic;
+  margin: 0; padding-top: 8px; border-top: 1px solid var(--cr-border);
+}
 
 /* ═══════════════════════════════════════════════════════════════
    CREADY VIEWER — PHASE 4 COSMETIC POLISH
@@ -3297,7 +3663,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider-banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(40, 65, 87, 0.06), rgba(40, 65, 87, 0.55));
+  background: linear-gradient(180deg, rgba(40, 65, 87, 0.02), rgba(40, 65, 87, 0.36));
 }
 
 .cr-section-divider.has-banner .cr-section-divider-inner {
@@ -3313,6 +3679,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider.has-banner h2,
 .cr-section-divider.has-banner p {
   color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 
 /* ---- Course-level hero (top of section 1, when course.headerImage is set) ---- */
@@ -3516,27 +3883,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   margin-top: 4px !important;
 }
 
-/* ---- Callouts: crisp card, hairline + colored left accent, sans micro-label ---- */
-.cr-callout {
-  border-top: 1px solid var(--cr-border, #E0DACE) !important;
-  border-right: 1px solid var(--cr-border, #E0DACE) !important;
-  border-bottom: 1px solid var(--cr-border, #E0DACE) !important;
-  border-left-width: 3px !important;
-  border-left-style: solid !important;
-  border-radius: 10px !important;
-  box-shadow: none !important;
-  padding: 14px 16px !important;
-}
-.cr-callout-icon { display: none !important; }
-.cr-callout-title,
-.cr-callout > h4:first-child {
-  font-family: var(--cr-font-sans, system-ui, -apple-system, sans-serif) !important;
-  font-size: 11px !important;
-  font-weight: 700 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  margin: 0 0 7px !important;
-}
+/* ---- Callouts: superseded by the icon-badge + thin-rule redesign
+   (see .cr-callout / .cr-callout-icon / .cr-callout-inner rules above).
+   Legacy boxed-card override intentionally removed — it was silently
+   forcing the old style via !important over the newer design. ---- */
 
 /* ---- Key takeaway: crisp white card, hunter top accent (override inline styles) ---- */
 .cr-block[data-block-type="keyTakeaway"] > div {
@@ -3920,11 +4270,29 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   <div class="cr-refs-list" id="crRefsList"></div>
 </div>
 
+<!-- ASK THE PRESENTER BUTTON + PANEL — course-scoped Q&A, follows the References/Glossary tab pattern -->
+<button class="cr-presenter-btn" id="crPresenterBtn" data-action="toggleAskPresenter" aria-label="Ask the Presenter" title="Ask the Presenter">🎤</button>
+<div class="cr-presenter-panel" id="crPresenterPanel">
+  <div class="cr-presenter-header">
+    <h3>🎤 Ask the Presenter</h3>
+    <button data-action="toggleAskPresenter" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close Ask the Presenter">✕</button>
+  </div>
+  <div class="cr-presenter-body">
+    <div class="cr-presenter-passage" id="crPresenterPassage" style="display:none"></div>
+    <textarea class="cr-presenter-input" id="crPresenterInput" placeholder="Ask a question about this course…" rows="3"></textarea>
+    <button class="cr-presenter-submit" id="crPresenterSubmit" data-action="submitPresenterQuestion">Ask</button>
+    <div class="cr-presenter-answer" id="crPresenterAnswer"></div>
+    <div class="cr-presenter-remaining" id="crPresenterRemaining"></div>
+    <p class="cr-presenter-disclaimer">Answers are drawn from this course's content only.</p>
+  </div>
+</div>
+
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
 <div class="cr-highlight-toolbar" id="crHighlightToolbar">
   <button data-action="highlightSelection" title="Highlight">🖍️</button>
   <button data-action="annotateSelection" title="Add note">📝</button>
   <button data-action="removeHighlight" title="Remove">✕</button>
+  <button data-action="askPresenterFromSelection" title="Ask the Presenter">🎤</button>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════
@@ -4396,6 +4764,7 @@ function loadCourse(data) {
   restoreProgress();
   buildGlossary();
   buildReferences();
+  showAskPresenterButton();
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
@@ -5183,6 +5552,7 @@ function renderBlock(block, index) {
     case 'image': return renderImage(wrap, block);
     case 'accordion': return renderAccordion(wrap, block, index);
     case 'multipleChoice': return renderMultipleChoice(wrap, block, index);
+    case 'transcriptCoding': return renderTranscriptCoding(wrap, block, index);
     case 'multiSelect': return renderMultiSelect(wrap, block, index);
     case 'matching': return renderMatching(wrap, block, index);
     case 'flashcardDeck': return renderFlashcardDeck(wrap, block, index);
@@ -5192,6 +5562,8 @@ function renderBlock(block, index) {
     case 'timeline': return renderTimeline(wrap, block, index);
     case 'hotspot': return renderHotspot(wrap, block, index);
     case 'reflection': return renderReflection(wrap, block, index);
+    case 'preCommit': return renderPreCommit(wrap, block, index);
+    case 'preCommitReveal': return renderPreCommitReveal(wrap, block, index);
     case 'resources':
     case 'deliverables': return renderResources(wrap, block);
     case 'videoEmbed': return renderVideoEmbed(wrap, block);
@@ -5201,6 +5573,7 @@ function renderBlock(block, index) {
     case 'callout': return renderCallout(wrap, block);
     case 'fillInBlank': return renderFillInBlank(wrap, block, index);
     case 'keyTakeaway': return renderKeyTakeaway(wrap, block);
+    case 'pulseCheck': return renderPulseCheck(wrap, block);
     default: {
       // Convention-based dispatch for newer block types whose renderers are
       // named render<Type> (e.g. a "statCard" block resolves to the matching
@@ -5466,7 +5839,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
 function selectMC(id, idx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.querySelectorAll('.cr-kc-option').forEach(o => o.classList.remove('selected'));
+  el.querySelectorAll('.cr-kc-option').forEach(o => o.classList.remove('selected', 'incorrect'));
   const opt = el.querySelector(`[data-idx="${idx}"]`);
   if (opt) opt.classList.add('selected');
   el.dataset.selected = idx;
@@ -5474,25 +5847,90 @@ function selectMC(id, idx) {
   if (btn) btn.disabled = false;
 }
 
+// Knowledge checks are formative, not graded: a wrong pick does not reveal
+// the answer or lock the block — it clears back to a retry state so the
+// learner can keep trying until they select the correct option themselves.
+// Only a CORRECT answer locks the block and reveals the explanation.
 function submitMC(id, correctIdx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.dataset.answered = 'true';
   const selected = parseInt(el.dataset.selected);
-  const isWrong = selected !== correctIdx;
-  
-  el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
-    o.classList.add('answered');
-    if (i === correctIdx) o.classList.add('correct');
-    if (i === selected && i !== correctIdx) o.classList.add('incorrect');
+  const isCorrect = selected === correctIdx;
+
+  if (isCorrect) {
+    el.dataset.answered = 'true';
+    el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
+      o.classList.add('answered');
+      if (i === correctIdx) o.classList.add('correct');
+    });
+    const explEl = el.querySelector('.cr-kc-explanation');
+    if (explEl) explEl.classList.add('show');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.style.display = 'none';
+    srAnnounce('Correct!');
+  } else {
+    const selEl = el.querySelector(`.cr-kc-option[data-idx="${selected}"]`);
+    if (selEl) selEl.classList.add('incorrect');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.disabled = true;
+    if (!el.dataset.everWrong) {
+      el.dataset.everWrong = 'true';
+      revealRemediationButton(el);
+    }
+    srAnnounce('Not quite — try again.');
+  }
+}
+
+// ─── TRANSCRIPT CODING ───
+// Session-transcript coding: renders a short client/counselor exchange as a
+// styled transcript above a multipleChoice-style question. Reuses the
+// selectMC/submitMC/buildRemediationButtonHTML/revealRemediationButton
+// wiring verbatim — same option/answer/explanation/remediation behavior as
+// renderMultipleChoice, just with a transcript prepended. The `cr-kc`
+// wrapper class means it also picks up the collapsible reveal-bar
+// enhancement automatically, same as any other knowledge check.
+function renderTranscriptCoding(wrap, block, blockIndex) {
+  const id = `tc-${currentSectionIndex}-${blockIndex}`;
+  let correctIdx = 0;
+  if (typeof block.correctAnswer === 'number') {
+    correctIdx = block.correctAnswer;
+  } else if (Array.isArray(block.options)) {
+    correctIdx = block.options.findIndex(o => typeof o === 'object' ? o.isCorrect : false);
+    if (correctIdx === -1) correctIdx = 0;
+  }
+
+  const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  const transcript = block.transcript || [];
+
+  let transcriptHtml = '<div class="cr-transcript">';
+  transcript.forEach(turn => {
+    const isCounselor = (turn.speaker || '').toString().toLowerCase() === 'counselor';
+    transcriptHtml += '<div class="cr-transcript-turn ' + (isCounselor ? 'cr-transcript-counselor' : 'cr-transcript-client') + '">'
+      + '<span class="cr-transcript-speaker">' + (isCounselor ? 'COUNSELOR' : 'CLIENT') + '</span>'
+      + '<p class="cr-transcript-text">' + esc(turn.text || '') + '</p>'
+      + '</div>';
   });
-  
-  const explEl = el.querySelector('.cr-kc-explanation');
-  if (explEl) explEl.classList.add('show');
-  const submitBtn = el.querySelector('.cr-kc-submit');
-  if (submitBtn) submitBtn.style.display = 'none';
-  if (isWrong) revealRemediationButton(el);
-  srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
+  transcriptHtml += '</div>';
+
+  let html = `<div class="cr-kc" id="${id}">`
+    + transcriptHtml
+    + `<div class="cr-kc-question">${esc(block.codingQuestion || '')}</div>
+    <div class="cr-kc-options">`;
+
+  options.forEach((opt, i) => {
+    html += `<div class="cr-kc-option" data-idx="${i}" data-action="selectMC" data-target="${id}" data-idx="${i}">
+      <span class="cr-kc-radio"></span>
+      <span>${esc(opt)}</span>
+    </div>`;
+  });
+
+  html += `</div>
+    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
+    <div class="cr-kc-explanation">${block.explanation || ''}</div>
+    ${buildRemediationButtonHTML(block)}
+  </div>`;
+  wrap.innerHTML = html;
+  return wrap;
 }
 
 // ─── MULTI SELECT ───
@@ -5525,36 +5963,46 @@ function toggleMS(id, idx) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
   const opt = el.querySelector(`[data-idx="${idx}"]`);
-  if (opt) opt.classList.toggle('selected');
+  if (opt) { opt.classList.toggle('selected'); opt.classList.remove('incorrect'); }
   const anySelected = el.querySelectorAll('.cr-kc-option.selected').length > 0;
   const btn = el.querySelector('.cr-kc-submit');
   if (btn) btn.disabled = !anySelected;
 }
 
+// Same not-graded, retry-until-correct behavior as submitMC (see comment
+// above it): wrong picks clear back to a retry state instead of locking
+// and revealing the correct set.
 function submitMS(id) {
   const el = document.getElementById(id);
   if (!el || el.dataset.answered) return;
-  el.dataset.answered = 'true';
   const correctIdxs = el.dataset.correct.split(',').map(Number);
   const selectedIdxs = [...el.querySelectorAll('.cr-kc-option.selected')]
     .map(o => parseInt(o.dataset.idx));
   const hasAllCorrect = correctIdxs.every(i => selectedIdxs.includes(i));
   const hasOnlyCorrect = selectedIdxs.every(i => correctIdxs.includes(i));
-  const isWrong = !hasAllCorrect || !hasOnlyCorrect;
-  
-  el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
-    o.classList.add('answered');
-    const isCorrect = correctIdxs.includes(i);
-    const isSelected = o.classList.contains('selected');
-    if (isCorrect) o.classList.add('correct');
-    if (isSelected && !isCorrect) o.classList.add('incorrect');
-  });
-  
-  const explEl = el.querySelector('.cr-kc-explanation');
-  if (explEl) explEl.classList.add('show');
-  const submitBtn = el.querySelector('.cr-kc-submit');
-  if (submitBtn) submitBtn.style.display = 'none';
-  if (isWrong) revealRemediationButton(el);
+  const isCorrect = hasAllCorrect && hasOnlyCorrect;
+
+  if (isCorrect) {
+    el.dataset.answered = 'true';
+    el.querySelectorAll('.cr-kc-option').forEach((o, i) => {
+      o.classList.add('answered');
+      if (correctIdxs.includes(i)) o.classList.add('correct');
+    });
+    const explEl = el.querySelector('.cr-kc-explanation');
+    if (explEl) explEl.classList.add('show');
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.style.display = 'none';
+    srAnnounce('Correct!');
+  } else {
+    el.querySelectorAll('.cr-kc-option.selected').forEach(o => o.classList.add('incorrect'));
+    const submitBtn = el.querySelector('.cr-kc-submit');
+    if (submitBtn) submitBtn.disabled = true;
+    if (!el.dataset.everWrong) {
+      el.dataset.everWrong = 'true';
+      revealRemediationButton(el);
+    }
+    srAnnounce('Not quite — try again.');
+  }
 }
 
 // ─── MATCHING ───
@@ -5995,6 +6443,69 @@ function crEarnReflection(blockDomId) {
   .catch(() => {}); // Fire-and-forget; never block the UI on network errors.
 }
 
+// ─── PRE-COMMIT (respond-before-you-read) ───
+// Client-side only in v1: the learner's response is kept in sessionStorage,
+// keyed by course slug/id + preCommitId, purely so the paired preCommitReveal
+// block later in the same section can show it beside the expert model
+// response. Nothing is graded or transmitted to the server.
+function crPreCommitKey(preCommitId) {
+  return 'crPreCommit:' + crSlugOrId() + ':' + (preCommitId || '');
+}
+
+function renderPreCommit(wrap, block, blockIndex) {
+  const id = `precommit-${currentSectionIndex}-${blockIndex}`;
+  const key = crPreCommitKey(block.preCommitId);
+  const saved = sessionStorage.getItem(key);
+  let html = '<div class="cr-precommit">'
+    + '<div class="cr-precommit-prompt">' + esc(block.question || 'Before reading on, what would you say?') + '</div>';
+  if (saved !== null) {
+    html += '<textarea id="' + id + '-textarea" disabled>' + esc(saved) + '</textarea>'
+      + "<div class=\"cr-precommit-confirm\">Saved — you'll revisit this at the end of the section.</div>";
+  } else {
+    html += '<textarea id="' + id + '-textarea" placeholder="Write your response here…"></textarea>'
+      + '<button class="cr-precommit-commit" data-action="preCommitCommit" data-target="' + id + '" data-key="' + esc(key) + '">Commit my response</button>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+function preCommitCommit(el) {
+  const targetId = el.dataset.target;
+  const key = el.dataset.key;
+  const textarea = document.getElementById(targetId + '-textarea');
+  if (!textarea) return;
+  sessionStorage.setItem(key, textarea.value);
+  textarea.disabled = true;
+  el.insertAdjacentHTML('afterend', "<div class=\"cr-precommit-confirm\">Saved — you'll revisit this at the end of the section.</div>");
+  el.remove();
+}
+
+function renderPreCommitReveal(wrap, block, blockIndex) {
+  const key = crPreCommitKey(block.preCommitId);
+  const saved = sessionStorage.getItem(key);
+  let yourResponseHtml;
+  if (saved !== null) {
+    yourResponseHtml = '<div class="cr-precommit-reveal-yours-text cr-prose"><p>' + esc(saved) + '</p></div>';
+  } else {
+    const id = `precommitreveal-${currentSectionIndex}-${blockIndex}`;
+    yourResponseHtml = '<p class="cr-precommit-reveal-skipped">You skipped the earlier prompt — jot your thinking now</p>'
+      + '<textarea id="' + id + '-textarea" placeholder="Write your response here…"></textarea>';
+  }
+  let html = '<div class="cr-precommit-reveal">'
+    + '<div class="cr-precommit-reveal-col cr-precommit-reveal-yours">'
+    +   '<p class="cr-precommit-reveal-label">Your response</p>'
+    +   yourResponseHtml
+    + '</div>'
+    + '<div class="cr-precommit-reveal-col cr-precommit-reveal-expert">'
+    +   '<p class="cr-precommit-reveal-label">Expert model</p>'
+    +   '<div class="cr-prose">' + (block.modelResponse || '') + '</div>'
+    + '</div>'
+    + '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
 // ─── RESOURCES ───
 function cloudinaryDownloadUrl(url) {
   if (!url) return '#';
@@ -6021,9 +6532,10 @@ function renderCallout(wrap, block) {
   const items = block.calloutItems || block.items || [];
 
   let html = '<div class="cr-callout cr-callout-' + type + '">';
+  html += '<span class="cr-callout-icon" aria-hidden="true">' + icon + '</span>';
+  html += '<div class="cr-callout-inner">';
   if (block.title) {
     html += '<h4 class="cr-callout-title">'
-         +   '<span class="cr-callout-icon" aria-hidden="true">' + icon + '</span>'
          +   '<span class="cr-callout-label">' + esc(block.title) + '</span>'
          + '</h4>';
   }
@@ -6035,7 +6547,8 @@ function renderCallout(wrap, block) {
     items.forEach(item => { html += '<li>' + esc(item) + '</li>'; });
     html += '</ul>';
   }
-  html += '</div>';
+  html += '</div>'; // .cr-callout-inner
+  html += '</div>'; // .cr-callout
   wrap.innerHTML = html;
   return wrap;
 }
@@ -6080,6 +6593,32 @@ function renderKeyTakeaway(wrap, block) {
   html += '</div>';
   wrap.innerHTML = html;
   return wrap;
+}
+
+// ─── PULSE CHECK — private, unlogged self-check. No storage, no analytics. ───
+function renderPulseCheck(wrap, block) {
+  let html = '<div class="cr-pulse">'
+    + '<p class="cr-pulse-eyebrow">' + esc(block.title || 'Check in with yourself') + '</p>'
+    + '<div class="cr-pulse-body cr-prose">' + (block.pulsePrompt ? '<p>' + esc(block.pulsePrompt) + '</p>' : (block.content || '')) + '</div>'
+    + '<button class="cr-pulse-continue" data-action="pulseContinue">Continue when ready</button>'
+    + '</div>';
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+// Delegated handler for the pulseCheck "Continue when ready" button.
+// Purely local DOM state — never writes to localStorage, a progress API,
+// or analytics, matching the block's private/unlogged design guarantee.
+function pulseContinue(el) {
+  const card = el.closest('.cr-pulse');
+  if (!card) return;
+  card.classList.add('cr-pulse-done');
+  const blockWrap = card.closest('.cr-block');
+  const next = blockWrap ? blockWrap.nextElementSibling : null;
+  if (next) {
+    if (!next.hasAttribute('tabindex')) next.setAttribute('tabindex', '-1');
+    next.focus();
+  }
 }
 
 // ─── STAT CARD ───
@@ -7980,6 +8519,106 @@ function toggleReferences() {
   document.getElementById('crRefsPanel').classList.toggle('open');
 }
 
+// ─── ASK THE PRESENTER — course-scoped Q&A (mirrors the glossary/references drawer) ───
+let crPresenterPassage = '';
+
+// Shown unconditionally once a course loads (unlike glossary/references,
+// which gate on content presence) — hidden reactively only if a request
+// 404s, meaning the backend endpoint isn't deployed on this environment.
+function showAskPresenterButton() {
+  const btn = document.getElementById('crPresenterBtn');
+  if (btn) btn.classList.add('visible');
+}
+
+function toggleAskPresenter() {
+  document.getElementById('crPresenterPanel').classList.toggle('open');
+}
+
+// Opens the panel pre-loaded with the current text selection as the passage.
+function askPresenterFromSelection() {
+  const sel = window.getSelection();
+  const text = sel && !sel.isCollapsed ? sel.toString().trim() : '';
+  crPresenterPassage = text;
+  const passageEl = document.getElementById('crPresenterPassage');
+  if (text) {
+    passageEl.textContent = '“' + (text.length > 200 ? text.slice(0, 200) + '…' : text) + '”';
+    passageEl.style.display = 'block';
+  } else {
+    passageEl.style.display = 'none';
+  }
+  hideHighlightToolbar();
+  document.getElementById('crPresenterPanel').classList.add('open');
+  document.getElementById('crPresenterInput').focus();
+}
+
+async function submitPresenterQuestion() {
+  const input = document.getElementById('crPresenterInput');
+  const submitBtn = document.getElementById('crPresenterSubmit');
+  const answerEl = document.getElementById('crPresenterAnswer');
+  const remainingEl = document.getElementById('crPresenterRemaining');
+  const question = (input.value || '').trim();
+  if (!question) return;
+
+  const headers = crAuthHeaders();
+  if (!headers) {
+    answerEl.className = 'cr-presenter-answer error';
+    answerEl.textContent = 'Please sign in to ask the presenter.';
+    return;
+  }
+
+  submitBtn.disabled = true;
+  answerEl.className = 'cr-presenter-answer loading';
+  answerEl.textContent = 'Asking the presenter…';
+
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 20000);
+
+  try {
+    const res = await fetch(crApiBase() + '/api/ask-presenter', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        slug: (course && course.slug) || crSlugOrId(),
+        question,
+        passage: crPresenterPassage || undefined,
+      }),
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+
+    if (res.status === 404) {
+      // Feature not deployed on this environment — hide gracefully, don't error-spam.
+      document.getElementById('crPresenterBtn').classList.remove('visible');
+      document.getElementById('crPresenterPanel').classList.remove('open');
+      return;
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.success) {
+      answerEl.className = 'cr-presenter-answer error';
+      answerEl.textContent = data.error || "Couldn't reach the presenter — try again";
+      return;
+    }
+
+    answerEl.className = 'cr-presenter-answer';
+    answerEl.innerHTML = esc(data.answer || '')
+      + (data.answeredFromSection ? '<span class="cr-presenter-answer-attribution">From ' + esc(data.answeredFromSection) + '</span>' : '');
+    remainingEl.textContent = typeof data.remaining === 'number'
+      ? data.remaining + ' question' + (data.remaining === 1 ? '' : 's') + ' remaining today'
+      : '';
+    input.value = '';
+    crPresenterPassage = '';
+    document.getElementById('crPresenterPassage').style.display = 'none';
+  } catch (e) {
+    clearTimeout(timer);
+    answerEl.className = 'cr-presenter-answer error';
+    answerEl.textContent = "Couldn't reach the presenter — try again";
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
 // Build the references drawer from course.references[] (APA 7th). Mirrors buildGlossary.
 function buildReferences() {
   const btn = document.getElementById('crRefsBtn');
@@ -8139,6 +8778,8 @@ function buildTitlePageOverview() {
 
   const ceHours = course.ceHours || course.ceuHours || 0;
   const mins = ceHours ? Math.round(ceHours * 60) : 0;
+  const description = course.description || '';
+  const targetAudience = Array.isArray(course.targetAudience) ? course.targetAudience : [];
   const objectives = Array.isArray(course.objectives) ? course.objectives : [];
   const areas = Array.isArray(course.nbccContentAreas) ? course.nbccContentAreas : [];
   const instructor = course.instructor || '';
@@ -8155,6 +8796,12 @@ function buildTitlePageOverview() {
     h += '<div style="display:inline-block;background:var(--cr-navy-faded);border-radius:8px;padding:8px 12px;margin-bottom:18px">'
        + '<span style="font-family:var(--cr-font-sans);font-size:12px;color:var(--cr-navy)"><strong>Estimated time:</strong> ~' + Math.round(mins / 60 * 10) / 10 + ' hr</span></div>';
   }
+  if (description) {
+    h += '<h2>About This Course</h2><p style="font-family:var(--cr-font-sans);font-size:14px;line-height:1.6;color:var(--cr-text-secondary);margin:0 0 18px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
+  }
+  if (targetAudience.length) {
+    h += '<p style="font-family:var(--cr-font-sans);font-size:13px;color:var(--cr-text-secondary);margin:0 0 18px"><strong style="color:var(--cr-navy)">Intended for:</strong> ' + esc(targetAudience.join(', ')) + '</p>';
+  }
   if (objectives.length) {
     h += '<h2>Learning Objectives</h2><ol style="padding-left:1.2em">';
     objectives.forEach(o => h += '<li style="margin-bottom:6px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(o) : esc(o)) + '</li>');
@@ -8168,11 +8815,20 @@ function buildTitlePageOverview() {
   h += '<div style="text-align:center;margin-top:30px">'
      + '<button class="cr-btn cr-btn-primary" style="font-size:1.1em;padding:14px 40px" data-action="goToSection" data-idx="1">Begin Course →</button></div>';
 
+  const firstSectionDivider = course.sections[0]?.contentBlocks?.find(b => b && b.type === 'sectionDivider');
+  const overviewBanner = firstSectionDivider && typeof firstSectionDivider.bannerImage === 'string' ? firstSectionDivider.bannerImage : null;
+
   course.sections.unshift({
     title: 'Course Overview',
     _isOverview: true,
     contentBlocks: [
-      { type: 'sectionDivider', title: course.title, sectionNumber: '', subtitle: 'Course Overview' },
+      {
+        type: 'sectionDivider',
+        title: course.title,
+        sectionNumber: '',
+        subtitle: 'Course Overview',
+        ...(overviewBanner ? { bannerImage: overviewBanner, bannerAlt: course.title } : {}),
+      },
       { type: 'text', content: h }
     ]
   });
@@ -8447,6 +9103,9 @@ document.addEventListener('click', function(e) {
     // ─── New Features ───
     case 'toggleGlossary': toggleGlossary(); break;
     case 'toggleReferences': toggleReferences(); break;
+    case 'toggleAskPresenter': toggleAskPresenter(); break;
+    case 'askPresenterFromSelection': askPresenterFromSelection(); break;
+    case 'submitPresenterQuestion': submitPresenterQuestion(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
@@ -8456,7 +9115,10 @@ document.addEventListener('click', function(e) {
     case 'ttsPause': ttsPause(); break;
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
-    
+    case 'preCommitCommit': preCommitCommit(el); break;
+    case 'pulseContinue': pulseContinue(el); break;
+    case 'dismissChangeLogBanner': dismissChangeLogBanner(el); break;
+
     // ─── Certificate Pipeline ───
     case 'startCertPipeline': renderEvaluation(); break;
     case 'retryAssessmentSave': retryAssessmentSave(); break;
@@ -8909,6 +9571,19 @@ function dismissNPS() {
   .cr-block[data-block-type="text"]:has(.cr-prose > p:only-child[style*="text-align: center"]) .cr-prose {
     padding: 0 !important;
   }
+
+  /* ── KC REVEAL FIX — Jul 20 2026: restore pill affordance, drop duplicate Phase-2 tag ── */
+  .cr-block[data-block-type="multipleChoice"]::before,
+  .cr-block[data-block-type="multiSelect"]::before {
+    display: none !important;
+  }
+  .cr-kc-reveal {
+    border: 1.5px solid var(--cr-burgundy, #6B1D34) !important;
+    background: #fff !important;
+  }
+  .cr-kc-reveal:hover {
+    background: var(--cr-burgundy-faded, rgba(107,29,52,0.05)) !important;
+  }
 </style>
 <script>
 /* Stage 5e-int — tappable alert popup + acknowledge (completes March 23 design) */
@@ -9023,6 +9698,106 @@ function dismissNPS() {
     });
     mo.observe(document.body, { childList: true, subtree: true });
   } catch (e) {}
+})();
+</script>
+<script>
+/* CHANGELOG — v1: "Updated since your last completion" banner + section-nav
+   pills for renewal-cycle retakes. Additive enhancement only — no render fns
+   touched. Driven entirely by course.changeLog (author-maintained) and
+   course.userCompletedAt (embedded by the /slug/:slug and /:id routes for
+   the current learner). A first-time learner has no userCompletedAt, so
+   nothing renders. */
+(function () {
+  function dismissKey(slug, newestDateStr) {
+    return 'crChangeLogDismissed:' + slug + ':' + newestDateStr;
+  }
+
+  // Entries whose date is after the learner's last completion of this
+  // course, newest first. Returns null if there's nothing to show.
+  function relevantChangeLog() {
+    if (typeof course === 'undefined' || !course) return null;
+    if (!Array.isArray(course.changeLog) || !course.changeLog.length) return null;
+    if (!course.userCompletedAt) return null; // first-time learner
+    const completedAtMs = new Date(course.userCompletedAt).getTime();
+    const relevant = course.changeLog
+      .filter(function (e) { return e && e.date && new Date(e.date).getTime() > completedAtMs; })
+      .sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+    return relevant.length ? relevant : null;
+  }
+
+  function syncBanner() {
+    const area = document.getElementById('crContentArea');
+    if (!area) return;
+    const updates = relevantChangeLog();
+    const existing = document.getElementById('crChangeLogBanner');
+    if (!updates) { if (existing) existing.remove(); return; }
+
+    const slug = (typeof course !== 'undefined' && course && course.slug) || (typeof crSlugOrId === 'function' ? crSlugOrId() : '');
+    const key = dismissKey(slug, updates[0].date);
+    if (localStorage.getItem(key)) { if (existing) existing.remove(); return; }
+    if (existing) return; // already showing this cycle's banner
+
+    const escFn = typeof esc === 'function' ? esc : function (s) { return String(s == null ? '' : s); };
+    const banner = document.createElement('div');
+    banner.id = 'crChangeLogBanner';
+    banner.className = 'cr-changelog-banner';
+    banner.innerHTML =
+      '<p class="cr-changelog-banner-title">Updated since you last completed this course</p>' +
+      '<ul class="cr-changelog-banner-list">' +
+        updates.map(function (e) { return '<li>' + escFn(e.summary || '') + '</li>'; }).join('') +
+      '</ul>' +
+      '<button type="button" class="cr-changelog-banner-dismiss" data-action="dismissChangeLogBanner" data-key="' + escFn(key) + '">Dismiss</button>';
+    area.prepend(banner);
+  }
+
+  function syncNavPills() {
+    const nav = document.getElementById('crSectionNav');
+    if (!nav) return;
+    const existingPills = nav.querySelectorAll('.cr-updated-pill');
+    for (let p = 0; p < existingPills.length; p++) existingPills[p].remove();
+
+    const updates = relevantChangeLog();
+    if (!updates) return;
+    const updatedSections = {};
+    updates.forEach(function (e) {
+      (e.sectionIndexes || []).forEach(function (i) { updatedSections[i] = true; });
+    });
+
+    // Nav items are appended in ascending, overview-excluded section order,
+    // so the Nth (0-based) .cr-nav-item corresponds to authored section N —
+    // the same indexing makeNavItem() uses for its display number.
+    const items = nav.querySelectorAll('.cr-nav-item');
+    items.forEach(function (item, j) {
+      if (!updatedSections[j]) return;
+      const pill = document.createElement('span');
+      pill.className = 'cr-updated-pill';
+      pill.textContent = 'Updated';
+      item.appendChild(pill);
+    });
+  }
+
+  window.dismissChangeLogBanner = function (el) {
+    const key = el && el.dataset ? el.dataset.key : null;
+    if (key) localStorage.setItem(key, '1');
+    const banner = document.getElementById('crChangeLogBanner');
+    if (banner) banner.remove();
+  };
+
+  // React to every section render (crContentArea is cleared/repopulated on
+  // each navigation) and every nav rebuild (buildSectionNav() does the same
+  // to #crSectionNav) — same MutationObserver pattern as the collapsible-KC
+  // enhancement above.
+  try {
+    const contentArea = document.getElementById('crContentArea');
+    if (contentArea) new MutationObserver(syncBanner).observe(contentArea, { childList: true });
+    const nav = document.getElementById('crSectionNav');
+    if (nav) new MutationObserver(syncNavPills).observe(nav, { childList: true });
+  } catch (e) {}
+
+  // Safety-net first pass in case content/nav already rendered before this
+  // script ran (course data loads asynchronously, so in practice it hasn't).
+  syncBanner();
+  syncNavPills();
 })();
 </script>
 </body>

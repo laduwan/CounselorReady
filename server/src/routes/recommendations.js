@@ -4,7 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
-import Course from '../models/Course.js';
+import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import UserCredential from '../models/UserCredential.js';
 import { protect } from '../middleware/auth.js';
@@ -21,7 +21,8 @@ router.get('/', protect, async (req, res) => {
     const [completedProgress, credentials, allCourses] = await Promise.all([
       UserCourseProgress.find({ userId, completed: true }).select('courseId'),
       UserCredential.find({ userId }).select('state code credentialType expirationDate totalRequired totalEarned'),
-      Course.find({ status: 'published' }).select('title slug ceHours category tags accessTier description')
+      InteractiveCourse.find({ status: 'published', visibility: 'public' })
+        .select('title slug ceHours categories tags accessType pricingTier description price status')
     ]);
 
     const completedIds = new Set(completedProgress.map(p => p.courseId.toString()));
@@ -65,18 +66,26 @@ router.get('/', protect, async (req, res) => {
       }
 
       // Ethics courses always valuable
-      if (course.category === 'ethics' || course.tags?.includes('ethics')) {
+      const hasEthics = (course.categories || []).some(c => c.toLowerCase() === 'ethics') ||
+        (course.tags || []).some(t => t.toLowerCase() === 'ethics');
+      if (hasEthics) {
         score += 8;
         reasons.push('Ethics CE (universally required)');
       }
 
-      // Accessible tier bonus
-      const tierLevel = { free: 0, starter: 1, professional: 2, vip: 3 };
-      const userTier = req.user.getSubscriptionTier();
-      const courseTier = tierLevel[course.accessTier] || 0;
-      if (courseTier <= userTier) {
-        score += 5;
-        reasons.push('Included in your plan');
+      // Sold-separately / included-in-plan reason — driven by accessType, the
+      // canonical sold-separately marker on InteractiveCourse. There is no
+      // accessTier/tierLevel ladder here; that only ever existed on the
+      // legacy Course model.
+      if (course.accessType === 'free') {
+        reasons.push('Free course');
+      } else if (course.accessType === 'subscription') {
+        if (req.user.isPayingMember()) {
+          score += 5;
+          reasons.push('Included in your plan');
+        }
+      } else if (course.accessType === 'purchase') {
+        reasons.push('Sold separately');
       }
 
       return { course, score, reasons };

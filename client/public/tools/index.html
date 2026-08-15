@@ -53,7 +53,7 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
 .tier-free{background:rgba(74,124,89,0.08);color:var(--green)}
 .tier-starter{background:rgba(40,65,87,0.06);color:var(--navy)}
 .tier-pro{background:rgba(107,29,52,0.06);color:var(--burgundy)}
-.tier-vip{background:rgba(212,168,85,0.1);color:#B8922E}
+.tier-unlimited{background:rgba(212,168,85,0.1);color:#B8922E}
 
 /* CARD FOOTER */
 .tool-card-footer{margin-top:auto;padding:14px 22px;background:var(--cream);border-top:1px solid #E8E4D8;display:flex;gap:10px}
@@ -159,9 +159,7 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
       </div>
       <div class="tool-tiers">
         <span class="tier-pill tier-free">15/day free</span>
-        <span class="tier-pill" style="background:rgba(40,65,87,0.06);color:var(--navy)">30/day $7.95/mo</span>
-        <span class="tier-pill tier-pro">60/day Pro</span>
-        <span class="tier-pill tier-vip">Unlimited VIP</span>
+        <span class="tier-pill tier-unlimited">Unlimited $7.95/mo+</span>
       </div>
       <div class="tool-card-footer">
         <a href="/tools/note-writer.html" class="tool-btn btn-primary">
@@ -333,7 +331,7 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
   <!-- PRICING -->
   <div style="margin-bottom:32px">
     <h2 style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;font-weight:700;color:var(--navy);text-align:center;margin-bottom:8px">Use More. Pay Less Than a Coffee.</h2>
-    <p style="text-align:center;font-size:14px;color:#888;margin-bottom:24px">15 free notes per day, no account needed. Need more? Subscribe.</p>
+    <p style="text-align:center;font-size:14px;color:#888;margin-bottom:24px">15 free generations per day — more than a full caseload needs. Your notes are never stored.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;max-width:880px;margin:0 auto">
 
       <!-- FREE -->
@@ -342,56 +340,57 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
         <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:var(--navy)">$0</div>
         <div style="font-size:11px;color:#999;margin-bottom:14px">No account needed</div>
         <div style="font-size:12.5px;color:#555;line-height:1.7;text-align:left;margin-bottom:14px">
-          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">15 AI notes / day</div>
-          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">All standalone tools</div>
+          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">Every tool on this page</div>
+          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">AI tools: 15 generations/day each</div>
           <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">Hold guide + wizard</div>
           <div style="padding:4px 0;color:#ccc">No login required</div>
         </div>
         <div style="padding:9px 14px;background:rgba(74,124,89,0.06);border-radius:8px;font-size:12px;font-weight:600;color:var(--green)">Current Plan</div>
       </div>
 
-      <!-- TOOLS — $7.95 -->
+      <!-- NOTE WRITER — $7.95 -->
       <div style="background:#fff;border-radius:12px;border:1.5px solid #D5CFC0;padding:22px 18px;text-align:center">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--navy);margin-bottom:6px">Note Writer</div>
         <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:var(--navy)">$7<span style="font-size:18px">.95</span></div>
         <div style="font-size:11px;color:#999;margin-bottom:14px">per month</div>
         <div style="font-size:12.5px;color:#555;line-height:1.7;text-align:left;margin-bottom:14px">
-          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--burgundy)">30</strong> AI notes / day</div>
+          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--burgundy)">Unlimited</strong> AI notes</div>
           <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">SOAP, DAP, BIRP, Narrative</div>
           <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">All standalone tools</div>
           <div style="padding:4px 0;color:#ccc;text-decoration:line-through">Treatment Planner</div>
         </div>
-        <a href="/subscription.html?plan=tools" style="display:block;padding:9px 14px;background:var(--navy);color:#D8E4EE;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Subscribe — $7.95/mo</a>
+        <a href="/subscription.html?plan=tools_note" style="display:block;padding:9px 14px;background:var(--navy);color:#D8E4EE;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none">Subscribe — $7.95/mo</a>
       </div>
 
-      <!-- TOOLS PLUS — $15.95 -->
+      <!-- AI TOOLS BUNDLE — $15 -->
       <div style="background:#fff;border-radius:12px;border:2px solid var(--gold);padding:22px 18px;text-align:center;position:relative;box-shadow:0 4px 16px rgba(212,168,85,0.15)">
-        <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--burgundy-deep);font-size:9px;font-weight:800;padding:3px 12px;border-radius:4px;letter-spacing:0.8px;white-space:nowrap">BEST VALUE</div>
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:6px">Clinical Tools Plus</div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:var(--navy)">$15<span style="font-size:18px">.95</span></div>
+        <div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--burgundy-deep);font-size:9px;font-weight:800;padding:3px 12px;border-radius:4px;letter-spacing:0.8px;white-space:nowrap">POPULAR</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:6px">AI Tools Bundle</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:var(--navy)">$15</div>
         <div style="font-size:11px;color:#999;margin-bottom:14px">per month</div>
         <div style="font-size:12.5px;color:#555;line-height:1.7;text-align:left;margin-bottom:14px">
-          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--burgundy)">30</strong> AI notes / day</div>
+          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--burgundy)">Unlimited</strong> AI notes</div>
           <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">SOAP, DAP, BIRP, Narrative</div>
-          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--green)">Treatment Plan Builder</strong></div>
+          <div style="padding:4px 0;border-bottom:1px solid #f0f0f0"><strong style="color:var(--green)">Treatment Plan Builder</strong> — unlimited</div>
           <div style="padding:4px 0">All standalone tools</div>
         </div>
-        <a href="/subscription.html?plan=tools_plus" style="display:block;padding:9px 14px;background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);border-radius:8px;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 2px 8px rgba(212,168,85,0.3)">Subscribe — $15.95/mo</a>
+        <a href="/subscription.html?plan=tools_bundle" style="display:block;padding:9px 14px;background:linear-gradient(135deg,var(--gold),#C49A40);color:var(--burgundy-deep);border-radius:8px;font-size:13px;font-weight:800;text-decoration:none;box-shadow:0 2px 8px rgba(212,168,85,0.3)">Subscribe — $15/mo</a>
+        <div style="font-size:10.5px;color:#aaa;margin-top:10px">Treatment Planner also available solo — <a href="/subscription.html?plan=tools_plan" style="color:var(--navy);font-weight:600;text-decoration:none">$7.95/mo</a></div>
       </div>
 
-      <!-- VIP -->
+      <!-- ANNUAL -->
       <div style="background:var(--navy-deep);border-radius:12px;border:1px solid #35546B;padding:22px 18px;text-align:center">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:6px">VIP — Full Platform</div>
-        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:#fff">$49<span style="font-size:18px">.99</span></div>
-        <div style="font-size:11px;color:#7A99AD;margin-bottom:14px">per month</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--gold);margin-bottom:6px">Annual — Full Membership</div>
+        <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:32px;font-weight:700;color:#fff">$249<span style="font-size:14px">/yr</span></div>
+        <div style="font-size:11px;color:#7A99AD;margin-bottom:14px">≈ $20.75/mo</div>
         <div style="font-size:12.5px;color:#8AABBE;line-height:1.7;text-align:left;margin-bottom:14px">
-          <div style="padding:4px 0;border-bottom:1px solid #2A4050"><strong style="color:var(--gold)">Unlimited</strong> AI notes</div>
-          <div style="padding:4px 0;border-bottom:1px solid #2A4050">All clinical tools</div>
-          <div style="padding:4px 0;border-bottom:1px solid #2A4050">All CE courses (200+ hrs)</div>
-          <div style="padding:4px 0;border-bottom:1px solid #2A4050">Multi-state credential tracking</div>
-          <div style="padding:4px 0">AI certificate scanner</div>
+          <div style="padding:4px 0;border-bottom:1px solid #2A4050"><strong style="color:var(--gold)">Unlimited</strong> Note Writer + Treatment Planner</div>
+          <div style="padding:4px 0;border-bottom:1px solid #2A4050">Full async CE catalog</div>
+          <div style="padding:4px 0;border-bottom:1px solid #2A4050">Up to 15 hrs synchronous CE</div>
+          <div style="padding:4px 0;border-bottom:1px solid #2A4050">1 premium course included</div>
+          <div style="padding:4px 0">15% off additional purchases</div>
         </div>
-        <a href="/subscription.html?plan=vip" style="display:block;padding:9px 14px;background:linear-gradient(135deg,var(--burgundy),var(--burgundy-light));color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(107,29,52,0.3)">Go VIP — $49.99/mo</a>
+        <a href="/subscription.html?plan=annual" style="display:block;padding:9px 14px;background:linear-gradient(135deg,var(--burgundy),var(--burgundy-light));color:#fff;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 2px 8px rgba(107,29,52,0.3)">Choose Annual — $249/yr</a>
       </div>
 
     </div>
@@ -399,7 +398,7 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
   </div>
 
   <!-- EHR GUIDANCE -->
-  <div style="background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:32px">
+  <div id="records-guide" style="background:#fff;border-radius:14px;border:1px solid #E0DBD0;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;margin-bottom:32px">
     <div style="background:linear-gradient(135deg,var(--navy-deep),var(--navy));padding:18px 24px;display:flex;align-items:center;gap:12px">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D4A855" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#fff">Important: These Are Clinical Tools, Not an EHR</span>
@@ -548,10 +547,10 @@ body{font-family:'Lato','Segoe UI',sans-serif;background:var(--stone);color:#2A2
 
         <div style="text-align:center">
           <div style="font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:12px">
-            Or included quarterly with VIP ($49.99/mo)
+            Or join quarterly member office hours — included with Annual
           </div>
-          <a href="/subscription.html?plan=vip" style="display:inline-block;padding:8px 18px;border:1.5px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.75);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s">
-            Learn about VIP →
+          <a href="/subscription.html?plan=annual" style="display:inline-block;padding:8px 18px;border:1.5px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.75);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s">
+            Learn about Annual →
           </a>
         </div>
 

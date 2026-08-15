@@ -258,7 +258,22 @@ function sendFile(res, fileBuffer, certificate, ext) {
       });
     }
   } catch (phErr) { logger.error({ err: phErr, certificateId: certificate._id }, 'PostHog certificate_downloaded failed'); }
-  return res.send(fileBuffer);
+  res.send(fileBuffer);
+
+  // Non-blocking download tracking. sendFile is the single funnel every successful
+  // serve strategy returns through, so this fires exactly once per download.
+  // certificate.userId === req.user._id here (route enforces ownership before serving).
+  try {
+    logActivity(ACTIVITY_TYPES.CERTIFICATE_DOWNLOADED, {
+      certificateId: certificate._id,
+      courseId: certificate.courseId,
+      courseName: certificate.courseName || certificate.title,
+      certificateNumber: certificate.certificateNumber
+    }, { userId: certificate.userId, notifyAdmin: false })
+      .catch(err => logger.error({ err, certificateId: certificate._id }, 'certificate_downloaded activity log failed'));
+  } catch (logErr) {
+    logger.error({ err: logErr, certificateId: certificate._id }, 'certificate_downloaded activity log failed');
+  }
 }
 
 // GET /api/certificates/my - Get current user's certificates (used by dashboard)

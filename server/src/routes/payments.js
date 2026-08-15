@@ -14,6 +14,7 @@ import { PREMIUM_ADDONS, PREMIUM_BUNDLE_PRICE_CENTS } from '../utils/planLimits.
 import { bustAddonCache } from '../middleware/partnerFeatureGate.js';
 import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
 import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import { sendLiveSessionRegistrationConfirmation } from '../services/emailService.js';
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
 import { constructStripeEvent } from '../utils/verifyStripeSignature.js';
@@ -28,16 +29,30 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID
 const router = express.Router();
 
 // Initialize Stripe
-const stripe = process.env.STRIPE_SECRET_KEY 
-  ? new Stripe(process.env.STRIPE_SECRET_KEY) 
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, process.env.STRIPE_API_VERSION
+      ? { apiVersion: process.env.STRIPE_API_VERSION } : {})
   : null;
 
 // Price IDs from Stripe Dashboard (set in environment)
 const PRICE_IDS = {
   starter: process.env.STRIPE_PRICE_STARTER || 'price_starter_monthly',
   professional: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_monthly',
-  vip: process.env.STRIPE_PRICE_VIP || 'price_vip_monthly'
+  vip: process.env.STRIPE_PRICE_VIP || 'price_vip_monthly',
+  // New membership plans (additive — legacy plans above are unchanged). Ke must
+  // create these two recurring prices in the Stripe Dashboard and set the env
+  // vars on Render: STRIPE_MONTHLY_PRICE_ID ($35/mo), STRIPE_ANNUAL_PRICE_ID ($249/yr).
+  monthly: process.env.STRIPE_MONTHLY_PRICE_ID,
+  annual: process.env.STRIPE_ANNUAL_PRICE_ID
 };
+
+// AI Tools plans (additive). /create-checkout-session, checkout.session.completed,
+// and memberInitFields() are all already plan-agnostic / no-op for unknown plans,
+// so appending these three keys to PRICE_IDS is sufficient to wire hosted checkout
+// end to end — no other payments.js code path needs to change.
+PRICE_IDS.tools_note = process.env.STRIPE_TOOLS_NOTE_PRICE_ID;
+PRICE_IDS.tools_plan = process.env.STRIPE_TXPLANNER_PLAN_PRICE_ID;
+PRICE_IDS.tools_bundle = process.env.STRIPE_TOOLS_BUNDLE_PRICE_ID;
 
 const PLAN_DETAILS = {
   free: { name: 'Free', price: 0, maxCEHours: 4, maxStates: 1 },
@@ -45,6 +60,39 @@ const PLAN_DETAILS = {
   professional: { name: 'Professional', price: 2999, maxCEHours: 999, maxStates: 1 },
   vip: { name: 'VIP', price: 4999, maxCEHours: 999, maxStates: 999 }
 };
+
+// New membership plan metadata (additive). Monthly: full async catalog up to
+// asyncMaxHours CE, plus 1 live session/month up to liveHoursPerSession CE.
+// Annual: full catalog (asyncMaxHours: null = no cap) + liveHoursPerYear live CE.
+const NEW_PLAN_DETAILS = {
+  monthly: { name: 'Monthly', price: 3500, interval: 'month',
+    liveHoursPerSession: 2, liveSessionsPerMonth: 1, asyncMaxHours: 4 },
+  annual:  { name: 'Annual',  price: 24900, interval: 'year',
+    liveHoursPerYear: 15, asyncMaxHours: null }
+};
+
+// The single legacy Starter subscriber we grandfather into the new async cap.
+// Env-driven — never hardcode an email address. Read here so it is documented
+// with the other billing config; the access rule itself lives in User.js.
+const GRANDFATHERED_STARTER_EMAIL = process.env.GRANDFATHERED_STARTER_EMAIL || null;
+
+// First day of next calendar month — when a Monthly member's live-session
+// allowance rolls over.
+function firstDayOfNextMonth(from = new Date()) {
+  return new Date(from.getFullYear(), from.getMonth() + 1, 1);
+}
+
+// Membership counters to (re)initialise when a monthly/annual subscription
+// activates. Returns {} for legacy plans so their updates are untouched.
+function memberInitFields(plan) {
+  if (plan === 'monthly') {
+    return { liveSessionUsedThisMonth: false, liveSessionMonthResetAt: firstDayOfNextMonth() };
+  }
+  if (plan === 'annual') {
+    return { liveHoursUsedThisYear: 0, liveHoursYearResetAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) };
+  }
+  return {};
+}
 
 // ============================================
 // SUBSCRIPTION ROUTES
@@ -296,7 +344,7 @@ router.post('/create-subscription', protect, async (req, res) => {
     const invoice = subscription.latest_invoice;
     const paymentIntent = invoice.payment_intent;
     
-    if (paymentIntent.status === 'requires_action') {
+    if (paymentIntent.status !== 'succeeded') {
       return res.json({
         requiresAction: true,
         clientSecret: paymentIntent.client_secret,
@@ -312,7 +360,9 @@ router.post('/create-subscription', protect, async (req, res) => {
         'subscription.status': 'active',
         'subscription.priceId': priceId,
         'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
-        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
+        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000),
+        // Initialise membership live-allowance counters for monthly/annual (no-op otherwise).
+        ...memberInitFields(plan)
       });
       
       return res.json({
@@ -846,14 +896,132 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           const { liveSessionId, userId: liveUserId } = session.metadata;
           const LiveSession = (await import('../models/LiveSession.js')).default;
           const live = await LiveSession.findById(liveSessionId);
-          if (live && !live.isRegistered(liveUserId)) {
-            live.registrants.push({
-              user: liveUserId,
-              paid: true,
-              stripeCheckoutSessionId: session.id
-            });
-            await live.save();
-            logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+          if (live) {
+            // Cohort-aware fulfillment — routes/liveSessions.js writes
+            // cohortSessionIds into checkout metadata when the purchased
+            // session is part of a Part 1/2 pair. Re-validated against the
+            // purchased session's own cohortKey rather than trusted outright,
+            // since metadata is only as good as the session that created it.
+            // Absent or empty metadata (checkouts created before this change)
+            // falls back to seating liveSessionId alone, unchanged.
+            const pickedIds = (session.metadata.cohortSessionIds || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
+
+            let cohortMembers = [live];
+            if (pickedIds.length) {
+              const candidates = await LiveSession.find({ _id: { $in: pickedIds } });
+              const validMembers = candidates.filter(m => m.cohortKey === live.cohortKey);
+              if (validMembers.length) cohortMembers = validMembers;
+            }
+
+            // Accessibility request carried through from routes/liveSessions.js
+            // checkout metadata. Does NOT auto-enable session.captionsEnabled —
+            // it only surfaces in the pre-session roster email.
+            const accommodations = {
+              captionsNeeded: session.metadata.accNeedsCaptions === '1',
+              notes: session.metadata.accNotes || ''
+            };
+
+            const newlySeated = [];
+            for (const member of cohortMembers) {
+              if (member.isRegistered(liveUserId)) continue;
+              member.registrants.push({
+                user: liveUserId,
+                paid: true,
+                stripeCheckoutSessionId: session.id,
+                accommodations
+              });
+              await member.save();
+              newlySeated.push(member);
+            }
+
+            if (newlySeated.length) {
+              logger.info({ liveSessionId, userId: liveUserId, seatedCount: newlySeated.length, requestId: req.requestId }, 'Live session seat purchased');
+
+              const buyer = await User.findById(liveUserId);
+              if (buyer) {
+                for (const member of newlySeated) {
+                  sendLiveSessionRegistrationConfirmation(buyer, member, {
+                    seatsRemaining: Math.max(0, (member.capacity || 0) - member.registrants.length)
+                  }).catch(err => logger.error({ err: err.message, liveSessionId: member._id.toString(), requestId: req.requestId }, 'Live session paid-registration email failed'));
+                }
+              }
+            }
+          }
+          break;
+        }
+
+        // Session series seat purchase — mirrors the live-session branch, but
+        // fulfills across every member session per the series' autoEnroll policy
+        // (set when the checkout was created in routes/sessionSeries.js). The
+        // already-registered guard makes this idempotent on Stripe retries.
+        if (session.metadata?.type === 'session-series') {
+          const { seriesId, userId: seriesUserId } = session.metadata;
+          const SessionSeries = (await import('../models/SessionSeries.js')).default;
+          const LiveSession = (await import('../models/LiveSession.js')).default;
+          const series = await SessionSeries.findById(seriesId);
+          if (series) {
+            // Same member resolution as sessionSeries.js register:
+            //  'all'          → every member session
+            //  'all-required' → members where seriesMembership.required !== false
+            //  'manual'       → never reaches Stripe (register returns 400)
+            // If the buyer picked specific occurrences (autoEnroll 'select'),
+            // seat exactly those. sessionIds rides in the checkout metadata
+            // from sessionSeries.js; it is re-validated against the series
+            // here rather than trusted, since metadata is only as good as the
+            // session that created it. Absent metadata keeps the original
+            // auto-enroll behavior so checkouts created before this change,
+            // and the two auto-enroll modes, are unaffected.
+            const pickedIds = (session.metadata.sessionIds || '')
+              .split(',').map(s => s.trim()).filter(Boolean);
+
+            const allMembers = await LiveSession.find({ seriesId: series._id });
+            const memberSessions = pickedIds.length
+              ? allMembers.filter(m => pickedIds.includes(m._id.toString()))
+              : (series.autoEnroll === 'all'
+                  ? allMembers
+                  : allMembers.filter(
+                      m => !m.seriesMembership || m.seriesMembership.required !== false
+                    ));
+
+            const newlyEnrolled = [];
+            for (const sess of memberSessions) {
+              const already = sess.registrants.some(
+                r => r.user && r.user.toString() === seriesUserId.toString()
+              );
+              if (already) continue;
+              // Stamp the checkout id so a seat can be traced back to its
+              // payment. Without it, series seats show paid:true with no
+              // Stripe reference, which is what made the six-seat incident
+              // impossible to diagnose from the data alone.
+              sess.registrants.push({
+                user: seriesUserId,
+                registeredAt: new Date(),
+                paid: true,
+                stripeCheckoutSessionId: session.id
+              });
+              await sess.save();
+              newlyEnrolled.push(sess);
+            }
+            logger.info({ seriesId, userId: seriesUserId, enrolledCount: newlyEnrolled.length, requestId: req.requestId }, 'Session series purchased — member sessions enrolled');
+
+            const seriesBuyer = await User.findById(seriesUserId).select('email profile.firstName profile.lastName');
+            if (seriesBuyer) {
+              for (const sess of newlyEnrolled) {
+                sendLiveSessionRegistrationConfirmation(seriesBuyer, sess, {
+                  seatsRemaining: Math.max(0, (sess.capacity || 0) - sess.registrants.length)
+                }).catch(err => logger.error({ err: err.message, seriesId, liveSessionId: sess._id, requestId: req.requestId }, 'Session series paid-registration email failed'));
+              }
+            }
+            logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+              seriesId,
+              amount: session.amount_total,
+              type: 'session-series'
+            }, {
+              userId: seriesUserId,
+              userName: seriesBuyer?.profile?.firstName || '',
+              userEmail: seriesBuyer?.email || ''
+            }).catch(() => {});
           }
           break;
         }
@@ -883,7 +1051,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': 'active',
             'subscription.currentPeriodStart': new Date(),
             'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            'subscription.monthlyAmountCents': session.amount_total || 0
+            'subscription.monthlyAmountCents': session.amount_total || 0,
+            // Monthly → open this month's live-session slot; Annual → open a fresh
+            // 12-month live-CE-hour window. {} for legacy plans (no-op).
+            ...memberInitFields(resolvedPlan)
           });
           const subscriber = await User.findById(userId).select('email profile.firstName');
           logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
@@ -993,6 +1164,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': subscription.status,
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
           };
+          if (subscription.status === 'active') {
+            if (subscription.metadata?.plan) userUpdate['subscription.plan'] = subscription.metadata.plan;
+            userUpdate['subscription.stripeSubscriptionId'] = subscription.id;
+            Object.assign(userUpdate, memberInitFields(subscription.metadata?.plan));
+          }
           if (Number.isFinite(rawStart)) {
             userUpdate['subscription.currentPeriodStart'] = new Date(rawStart * 1000);
           }

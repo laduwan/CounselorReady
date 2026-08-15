@@ -42,7 +42,8 @@ const DEFAULT_INSTRUCTOR = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
 // ── Delivery format label map (LPCA-GA taxonomy → human-readable) ──
 const DELIVERY_FORMAT_LABELS = {
   'asynchronous':         'Asynchronous',
-  'live-webinar':         'Live Webinar',
+  'synchronous':          'Synchronous',
+  'live-webinar':         'Live Webinar', // kept for any already-issued/legacy certs; new issuance should use 'synchronous'
   'multi-live-workshop':  'Multi-Session Live Workshop',
   'in-person-single':     'In-Person',
   'in-person-conference': 'In-Person Conference',
@@ -145,6 +146,10 @@ export async function generateCertificate(data) {
   const ceCategory        = String(data.ceCategory || '').trim();
   const objectives        = Array.isArray(data.objectives) ? data.objectives.slice(0, 5) : [];
   const completionDate    = data.completionDate ? new Date(data.completionDate) : new Date();
+  // Optional multi-session series dates. When present and non-empty, each
+  // member session's title + date renders as its own line below the completion
+  // date. Standalone certs omit this and are visually unchanged.
+  const sessionDates      = Array.isArray(data.sessionDates) ? data.sessionDates : null;
 
   // Approvals — data-driven multi-body block. Falls back to NBCC-only.
   // Callers should use buildApprovalBlock() to populate this from course.approvals[].
@@ -263,6 +268,26 @@ export async function generateCertificate(data) {
       doc.font('Helvetica').fontSize(11).fillColor(NAVY)
          .text(`Completed ${formattedDate}`, 0, cursor, { align: 'center', width: W });
       cursor += 28;
+      // Multi-session series: list each member session's title + date. Only
+      // renders when sessionDates is a non-empty array; standalone certs skip it.
+      if (Array.isArray(sessionDates) && sessionDates.length > 0) {
+        doc.font('Times-Italic').fontSize(9).fillColor(HUNTER_GREEN)
+           .text('Sessions', 0, cursor, { align: 'center', width: W });
+        cursor += 13;
+        doc.font('Helvetica').fontSize(8.5).fillColor(NAVY);
+        for (const s of sessionDates) {
+          if (cursor + 12 > H - 193) break; // never crowd the footer/approvals row
+          const label = String(s?.title || '').trim();
+          const when = s?.date
+            ? new Date(s.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+            : '';
+          doc.text(`${label} — ${when}`, 110, cursor, {
+            width: W - 220, align: 'center', lineBreak: false, ellipsis: true
+          });
+          cursor += 12;
+        }
+        cursor += 6;
+      }
       doc.font('Helvetica-Bold').fontSize(10).fillColor(NAVY)
          .text(`Instructor: ${instructorName}`, 0, cursor, { align: 'center', width: W });
       cursor += 14;

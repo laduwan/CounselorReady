@@ -7,8 +7,17 @@
 // Drop into server/src/services/ — import wherever activity is tracked
 
 import { Resend } from 'resend';
+import twilio from 'twilio';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
+
+if (!twilioClient || !process.env.ADMIN_PHONE) {
+  console.warn('[adminNotifications] SMS disabled — Twilio env vars not set');
+}
 
 const ADMIN_EMAIL  = process.env.ADMIN_ALERT_EMAIL || 'ke@counselorready.com';
 const FROM_EMAIL   = process.env.FROM_EMAIL        || 'CounselorReady <noreply@counselorready.com>';
@@ -30,6 +39,10 @@ const EVENT_CONFIG = {
   certificate_generated: { emoji: '📜', label: 'Certificate Generated',  color: GREEN,     adminLink: '/admin-analytics.html' },
   tool_used:             { emoji: '🛠️', label: 'Free Tool Used',         color: NAVY,      adminLink: '/admin-tool-analytics.html' },
 };
+
+// eventType keys from EVENT_CONFIG above that represent revenue events —
+// 'user_enrolled' is this file's course-purchase key (New Enrollment).
+const REVENUE_EVENTS = ['subscription_started', 'user_enrolled'];
 
 function buildEmailHtml({ emoji, label, color, rows, adminLink }) {
   const rowsHtml = rows
@@ -177,6 +190,14 @@ export async function sendAdminAlert(eventType, data = {}) {
   } catch (err) {
     // Never throw — a failed alert must not break the request
     console.error(`[adminNotifications] Failed (${eventType}):`, err.message);
+  }
+
+  if (REVENUE_EVENTS.includes(eventType) && twilioClient && process.env.ADMIN_PHONE) {
+    twilioClient.messages.create({
+      body: `CounselorReady: ${cfg.label} — ${subject}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: process.env.ADMIN_PHONE,
+    }).catch(err => console.error('[adminNotifications] SMS failed:', err.message));
   }
 }
 

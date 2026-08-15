@@ -8,8 +8,7 @@
   <meta name="robots" content="noindex,nofollow">
   <title>Settings | CounselorReady</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <style>
     :root {
       --burgundy: #6B1D34;
@@ -1374,6 +1373,18 @@
               <span id="acct-plan-badge" style="display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--success-bg);color:var(--success-text)"></span>
             </div>
           </div>
+
+          <!-- Live-session/CE allowance usage (new membership plans) -->
+          <div id="liveAllowanceCard" style="display:none;margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;font-size:0.82rem;color:var(--text-secondary);margin-bottom:4px">
+              <span id="liveAllowanceLabel">Live allowance</span>
+              <span id="liveAllowanceValue">0 / 0</span>
+            </div>
+            <div style="height:8px;background:var(--border,#E5E0D8);border-radius:5px;overflow:hidden">
+              <div id="liveAllowanceBar" style="height:100%;width:0%;background:var(--burgundy);border-radius:5px;transition:width .3s"></div>
+            </div>
+          </div>
+
           <a href="/subscription.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none">Manage Subscription →</a>
 
           <!-- VIP Hardship Pause (conditional, only for VIP plans) -->
@@ -1818,8 +1829,32 @@
         // Account
         const plan = user.subscription?.plan || 'free';
         const status = user.subscription?.status || 'free';
-        const planNames = { free: 'Free', starter: 'Starter', professional: 'Professional', vip: 'VIP', annual_vip: 'Annual VIP', lifetime: 'Lifetime' };
+        const planNames = {
+          free: 'Free', starter: 'Starter', professional: 'Professional',
+          vip: 'VIP', annual_vip: 'Annual VIP', lifetime: 'Lifetime',
+          monthly: 'Monthly — $35/mo', annual: 'Annual — $249/yr'
+        };
         document.getElementById('acct-plan-name').textContent = planNames[plan] || plan;
+
+        // Live allowance usage — Monthly shows this month's 1-session slot;
+        // Annual/VIP show live CE hours used of their 15/year.
+        const allowanceCard = document.getElementById('liveAllowanceCard');
+        if (allowanceCard) {
+          if (plan === 'monthly') {
+            const used = user.liveSessionUsedThisMonth ? 1 : 0;
+            document.getElementById('liveAllowanceLabel').textContent = 'Live session used this month';
+            document.getElementById('liveAllowanceValue').textContent = `${used} / 1`;
+            document.getElementById('liveAllowanceBar').style.width = (used * 100) + '%';
+            allowanceCard.style.display = '';
+          } else if (plan === 'annual' || plan === 'vip') {
+            const used = Math.max(0, Number(user.liveHoursUsedThisYear) || 0);
+            const pct = Math.min(100, Math.round((used / 15) * 100));
+            document.getElementById('liveAllowanceLabel').textContent = 'Live CE hours used this year';
+            document.getElementById('liveAllowanceValue').textContent = `${used} / 15`;
+            document.getElementById('liveAllowanceBar').style.width = pct + '%';
+            allowanceCard.style.display = '';
+          }
+        }
         const badge = document.getElementById('acct-plan-badge');
         badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
         if (status === 'active' || status === 'lifetime') {

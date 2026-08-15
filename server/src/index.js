@@ -55,6 +55,7 @@ import xapiRoutes from './routes/xapi.js';
 import interactiveCourseRoutes from './routes/interactiveCourseRoutes.js'; // MUST be interactiveCourseRoutes.js (NOT courseRoutes.js)
 import cebrokerRoutes from './routes/cebroker.js';
 import helpRoutes from './routes/help.js';
+import suggestionsRoutes from './routes/suggestions.js';
 import bulkUploadRoutes from './routes/bulkUpload.js';
 import courseBuilderRoutes from './routes/courseBuilder.js';
 import narrationRoutes from './routes/narration.js';
@@ -83,8 +84,11 @@ import remediationRoutes from './routes/remediation.js';
 import securityRoutes from './routes/security.js';
 import adminUsersRoutes from './routes/adminUsers.js';
 import adminRewardsRoutes from './routes/adminRewards.js';
+import adminOrgsRoutes from './routes/adminOrgs.js';
+import adminActivityRoutes from './routes/adminActivity.js';
 import supervisionRoutes from './routes/supervision.js';
 import liveSessionRoutes from './routes/liveSessions.js';
+import sessionSeriesRoutes from './routes/sessionSeries.js';
 import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
 import insuranceCredentialsRoutes from './routes/insuranceCredentials.js';
 import legacyVaultRoutes from './routes/legacyVault.js';
@@ -100,6 +104,9 @@ import uploadsRoutes from './routes/uploads.js';
 import videoAuditRoutes from './routes/videoAudit.js';
 import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
+import askPresenterRoutes from './routes/askPresenterRoutes.js';
+import booksRoutes from './routes/books.js';
+import adminBooksRoutes from './routes/adminBooks.js';
 import { runVideoLinkAudit } from './jobs/videoLinkAuditJob.js';
 
 // ═══════════════════════════════════════════════════════════════
@@ -241,8 +248,17 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later' }
 });
 
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many password reset requests, please try again later' }
+});
+
 app.use('/api/', globalLimiter);
-app.use('/api/auth', authLimiter);
+app.use('/api/auth', (req, res, next) => (req.path === '/me' || req.path === '/forgot-password' ? next() : authLimiter(req, res, next)));
+app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
@@ -250,6 +266,8 @@ app.use('/api/admin/stats', adminStatsRoutes);
 app.use('/api/admin/stripe', adminStripeRoutes);
 app.use('/api/admin/coupons', adminCouponsRoutes);
 app.use('/api/admin/course-presentation', adminCoursePresentationRoutes);
+app.use('/api/admin/books', adminBooksRoutes);
+app.use('/api/books', booksRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/audit', adminAuditRoutes);
 app.use('/api/admin/course-reviews', adminCourseReviewsRoutes);
@@ -268,6 +286,7 @@ app.use('/api/lti', ltiRoutes);
 app.use('/api/xapi', xapiRoutes);
 app.use('/api/cebroker', cebrokerRoutes);
 app.use('/api/help', helpRoutes);
+app.use('/api/suggestions', suggestionsRoutes);
 app.use('/api/admin', adminCoursesRoutes);
 app.use('/api/admin/courses', bulkUploadRoutes);
 app.use('/api/course-builder', courseBuilderRoutes);
@@ -295,8 +314,11 @@ app.use('/api/remediation', remediationRoutes);
 app.use('/api/security', securityRoutes);
 app.use('/api/admin', adminUsersRoutes);
 app.use('/api/admin/rewards', adminRewardsRoutes);
+app.use('/api/admin/orgs', adminOrgsRoutes);
+app.use('/api/admin/active-users', adminActivityRoutes);
 app.use('/api/supervision', supervisionRoutes);
 app.use('/api/live-sessions', liveSessionRoutes);
+app.use('/api/session-series', sessionSeriesRoutes);
 app.use('/api/webhooks/whereby', webhooksWherebyRoutes);
 app.use('/api/insurance-credentials', insuranceCredentialsRoutes);
 app.use('/api/legacy-vault', legacyVaultRoutes);
@@ -307,6 +329,7 @@ app.use('/api/audit-kit', auditKitRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/admin/video-audit', videoAuditRoutes);
 app.use('/api/orgs', orgRoutes);
+app.use('/api/ask-presenter', askPresenterRoutes);
 app.use('/api', complianceRoutes);
 
 app.use('/templates', express.static(path.join(__dirname, 'templates')));

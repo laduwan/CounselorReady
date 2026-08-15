@@ -10,14 +10,38 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; }
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     #createModal { display:none; }
     #createModal.open { display:flex; }
+    /* Print layout: strip the app chrome and per-row actions, leave a clean sessions table. */
+    @media print {
+      header, aside, #toast, .no-print { display: none !important; }
+      main { padding: 0 !important; }
+      body { background: #fff !important; }
+      #mainContent .shadow-sm, #mainContent .border { box-shadow: none !important; }
+      /* Hide the Actions column (last cell of each row + its header). */
+      #sessionsBody tr td:last-child, thead th:last-child { display: none !important; }
+
+      /* Run of Show run sheet: printRunOfShow() sets body.printing-ros so only
+         the open modal prints, flattened to a full-page document. */
+      body.printing-ros > *:not(#runOfShowModal) { display: none !important; }
+      body.printing-ros #runOfShowModal {
+        position: static !important; inset: auto !important; display: block !important;
+        background: none !important; padding: 0 !important;
+      }
+      body.printing-ros #runOfShowModal > div {
+        max-width: none !important; max-height: none !important; overflow: visible !important;
+        box-shadow: none !important; border: none !important; border-radius: 0 !important;
+      }
+      /* Drop interactive controls from the run sheet; keep the value-bearing
+         inputs/selects/textareas so the agenda content still prints. */
+      body.printing-ros #runOfShowModal button,
+      body.printing-ros #rosImportBar { display: none !important; }
+    }
   </style>
 <script src="/js/cr-gtag.js"></script>
 </head>
@@ -92,9 +116,23 @@
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
         <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
-        <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
-          <i class="fas fa-plus text-xs"></i> Create Live Session
-        </button>
+        <div class="flex items-center gap-2 flex-wrap no-print">
+          <button onclick="window.print()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-print text-xs"></i> Print
+          </button>
+          <button onclick="openSeriesListModal()" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-layer-group text-xs"></i> Manage Series
+          </button>
+          <button onclick="bulkPublish(true)" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-globe text-xs"></i> Publish All
+          </button>
+          <button onclick="bulkPublish(false)" class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-eye-slash text-xs"></i> Unpublish All
+          </button>
+          <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-plus text-xs"></i> Create Live Session
+          </button>
+        </div>
       </div>
 
       <!-- Toast -->
@@ -113,9 +151,48 @@
         <button onclick="loadSessions()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
       </div>
 
+      <!-- View toggle -->
+      <div id="viewToggle" class="hidden flex items-center gap-2 mb-4">
+        <button id="viewBtnCalendar" onclick="setView('calendar')"
+          class="px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors">
+          <i class="fas fa-calendar-days text-xs mr-1"></i> Calendar
+        </button>
+        <button id="viewBtnTable" onclick="setView('table')"
+          class="px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors">
+          <i class="fas fa-table text-xs mr-1"></i> Table
+        </button>
+      </div>
+
+      <!-- Calendar view: registrant counts per day, running monthly total -->
+      <div id="calendarView" class="hidden">
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div class="flex items-center gap-3">
+              <button onclick="changeCalMonth(-1)" class="w-8 h-8 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-700 flex items-center justify-center">
+                <i class="fas fa-chevron-left text-xs"></i>
+              </button>
+              <h2 id="calMonthLabel" class="font-display text-lg font-semibold text-burgundy-900 min-w-40 text-center"></h2>
+              <button onclick="changeCalMonth(1)" class="w-8 h-8 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-700 flex items-center justify-center">
+                <i class="fas fa-chevron-right text-xs"></i>
+              </button>
+              <button onclick="changeCalMonth(0,true)" class="px-2.5 py-1.5 rounded-lg border border-forest-200 hover:bg-stone-50 text-forest-600 text-xs">Today</button>
+            </div>
+            <div class="flex items-center gap-4 text-sm">
+              <span class="text-forest-600"><strong id="calMonthTotal" class="text-burgundy-800 text-base">0</strong> registrants this month</span>
+              <span class="text-forest-600"><strong id="calMonthSessions" class="text-burgundy-800 text-base">0</strong> sessions</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-7 gap-1.5 text-center text-xs font-semibold text-forest-500 uppercase tracking-wide mb-1.5">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          </div>
+          <div id="calGrid" class="grid grid-cols-7 gap-1.5"></div>
+          <p class="text-xs text-forest-400 mt-3">The small number in the corner of each day is the running total of registrants across the month so far, through that day.</p>
+        </div>
+      </div>
+
       <!-- Sessions Table -->
       <div id="mainContent" class="hidden">
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-x-auto">
           <table class="w-full text-sm">
             <thead class="bg-stone-50 border-b border-burgundy-100">
               <tr>
@@ -144,7 +221,7 @@
   <div id="createModal" class="fixed inset-0 z-[200] bg-black/50 items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
-        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
+        <h2 id="modalTitle" class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
         <button onclick="closeCreateModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
           <i class="fas fa-times text-lg"></i>
         </button>
@@ -155,7 +232,7 @@
         <!-- Title -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Title <span class="text-red-500">*</span></label>
-          <input type="text" name="title" required
+          <input type="text" name="title" id="f-title" required
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
             placeholder="e.g. Trauma-Informed Care: Live Workshop">
         </div>
@@ -163,10 +240,18 @@
         <!-- Slug -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug <span class="text-red-500">*</span></label>
-          <input type="text" name="slug" required pattern="[a-z0-9\-]+"
+          <input type="text" name="slug" id="f-slug" required pattern="[a-z0-9\-]+"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
             placeholder="trauma-informed-care-live">
-          <p class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+          <p id="slugHelp" class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Description</label>
+          <textarea name="description" id="f-description" rows="3"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
+            placeholder="Shown on the public live-sessions catalog and in the announcement email."></textarea>
         </div>
 
         <!-- Session Type -->
@@ -184,12 +269,12 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled Start <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledStart" required
+            <input type="datetime-local" name="scheduledStart" id="f-scheduledStart" required
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled End <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledEnd" required
+            <input type="datetime-local" name="scheduledEnd" id="f-scheduledEnd" required
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
         </div>
@@ -197,29 +282,157 @@
         <!-- CEU Hours (live-course only) -->
         <div id="ceuHoursRow">
           <label class="block text-sm font-medium text-burgundy-800 mb-1">CEU Hours</label>
-          <input type="number" name="ceuHours" min="0" max="20" step="0.5" value="1"
+          <input type="number" name="ceuHours" id="f-ceuHours" min="0" max="20" step="0.5" value="1"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+
+        <!-- NBCC Content Area & CE Category (live-course only) -->
+        <div id="ceMetaRow" class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">NBCC Content Area</label>
+            <select name="nbccContentArea" id="f-nbccArea"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+              <option value="Counseling Theory/Practice">Counseling Theory/Practice</option>
+              <option value="Human Growth and Development">Human Growth and Development</option>
+              <option value="Social and Cultural Foundations">Social and Cultural Foundations</option>
+              <option value="Group Dynamics">Group Dynamics</option>
+              <option value="Career Development">Career Development</option>
+              <option value="Assessment">Assessment</option>
+              <option value="Research/Program Evaluation">Research/Program Evaluation</option>
+              <option value="Professional Identity">Professional Identity</option>
+              <option value="Wellness and Prevention">Wellness and Prevention</option>
+            </select>
+            <p class="text-xs text-forest-500 mt-1">Printed on the certificate as the CE category.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">CE Category</label>
+            <input type="text" name="category" id="f-category" placeholder="e.g. Ethics" value="Other"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            <p class="text-xs text-forest-500 mt-1">Used for credential CE auto-apply (e.g. Ethics, Clinical).</p>
+          </div>
         </div>
 
         <!-- Capacity & Price -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Capacity</label>
-            <input type="number" name="capacity" min="1" max="200" value="50"
+            <input type="number" name="capacity" id="f-capacity" min="1" max="200" value="50"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           </div>
           <div>
             <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
-            <input type="number" name="price" min="0" step="0.01" value="0"
+            <input type="number" name="price" id="f-price" min="0" step="0.01" value="0"
               class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
             <p class="text-xs text-forest-500 mt-1">0 = free / subscription-included</p>
+          </div>
+        </div>
+
+        <!-- Registration cutoff -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Registration closes (hours before start)</label>
+          <input type="number" name="registrationCutoffHours" id="f-registrationCutoffHours" min="0" max="2160" value="72"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          <p class="text-xs text-forest-500 mt-1">Default 72. Set 0 to leave registration open until the session ends. Admins can always seat a late registrant.</p>
+        </div>
+
+        <!-- Visibility & Access Code -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Visibility</label>
+            <select name="visibility" id="f-visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+              <option value="public">Public (in catalog)</option>
+              <option value="private">Private (code only)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
+            <input type="text" name="accessCode" id="f-accessCode" placeholder="e.g. ETHICS2026"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+
+        <!-- Series membership (optional) -->
+        <div class="border border-gray-200 rounded-lg p-3">
+          <p class="text-xs font-bold text-burgundy-800 uppercase tracking-wide mb-2">Series Membership (optional)</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-1">
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Series</label>
+              <select id="f-seriesId" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+                <option value="">— Standalone —</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Order in Series</label>
+              <input type="number" id="f-seriesOrder" min="1" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div class="flex items-end pb-2">
+              <label class="inline-flex items-center gap-2">
+                <input type="checkbox" id="f-seriesRequired" checked>
+                <span class="text-sm text-burgundy-800">Required for cert</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Learning Objectives -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Learning Objectives</label>
+          <textarea id="f-objectives" rows="3" placeholder="One objective per line, e.g.&#10;Identify three evidence-based interventions for treating anxiety"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line.</p>
+        </div>
+
+        <!-- Target Audience -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Target Audience</label>
+          <textarea id="f-targetAudience" rows="2" placeholder="One line per audience, e.g.&#10;Licensed Professional Counselors&#10;Licensed Associate Professional Counselors"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line.</p>
+        </div>
+
+        <!-- References -->
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">References</label>
+          <textarea id="f-references" rows="3" placeholder="One citation per line"
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1">One per line. Optional but recommended for NBCC compliance.</p>
+        </div>
+
+        <!-- Presenter Details (ACEP compliance) -->
+        <div class="border border-gray-200 rounded-lg p-3">
+          <p class="text-xs font-bold text-burgundy-800 uppercase tracking-wide mb-2">Presenter Details</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">Degree</label>
+              <input type="text" id="f-presenterDegree" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">License Number</label>
+              <input type="text" id="f-presenterLicenseNumber" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">License State</label>
+              <input type="text" id="f-presenterLicenseState" maxlength="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">ACEP Category</label>
+              <select id="f-presenterCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+                <option value="category1">Category 1 (Master's + License)</option>
+                <option value="category2">Category 2 (Doctoral)</option>
+                <option value="category3">Category 3 (Other Qualified)</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3">
+            <label class="block text-xs font-medium text-burgundy-800 mb-1">Qualification Statement</label>
+            <textarea id="f-presenterQualification" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
           </div>
         </div>
 
         <!-- Attendance Threshold -->
         <div>
           <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
-          <input type="number" name="attendanceThresholdPct" min="50" max="100" value="90"
+          <input type="number" name="attendanceThresholdPct" id="f-attendanceThresholdPct" min="50" max="100" value="90"
             class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
           <p class="text-xs text-forest-500 mt-1">Minimum % of session duration to qualify for certificate (50–100).</p>
         </div>
@@ -233,6 +446,20 @@
           </label>
           <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
         </div>
+
+        <!-- Autopilot (live-course only; hidden for supervision — needs an agenda) -->
+        <div id="autopilotRow">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="autopilotEnabled" id="f-autopilotEnabled"
+              class="w-4 h-4 accent-burgundy-700">
+            <span class="text-sm font-medium text-burgundy-800">Autopilot (auto-start + timed segment advance)</span>
+          </label>
+          <p class="text-xs text-forest-500 mt-1 ml-6">Auto-starts the session at its scheduled time and advances agenda segments on the clock. Certificates auto-issue to eligible attendees after the session ends.</p>
+        </div>
+
+        <!-- Alarm lead time (host-only instructor dashboard) -->
+        <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Alarm lead time (seconds)</label>
+        <input type="number" id="f-alarmLeadSec" name="alarmLeadSec" min="0" max="600" placeholder="60" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"></div>
 
         <!-- Published -->
         <div>
@@ -306,19 +533,357 @@
     </div>
   </div>
 
+  <!-- ── Assessment Modal ── -->
+  <div id="assessmentModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Post-Session Assessment</h2>
+        <button onclick="closeAssessmentModal()" class="text-forest-400 hover:text-burgundy-700"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-6 space-y-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" id="asmt-enabled" class="w-4 h-4 accent-burgundy-700">
+          <span class="text-sm font-medium text-burgundy-800">Enable assessment (a passing score is required for the certificate)</span>
+        </label>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Passing score %</label>
+            <input type="number" id="asmt-threshold" min="1" max="100" value="80"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-burgundy-800 mb-1">Max attempts</label>
+            <input type="number" id="asmt-maxAttempts" min="1" value="3"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-display text-lg font-semibold text-burgundy-900">Questions</h3>
+            <button type="button" onclick="asmtAddQuestion()" class="px-3 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 flex items-center gap-1">
+              <i class="fas fa-plus text-xs"></i> Add question
+            </button>
+          </div>
+          <div id="asmtQuestions"></div>
+        </div>
+        <div id="asmtError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      </div>
+      <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100">
+        <button onclick="closeAssessmentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50">Cancel</button>
+        <button onclick="saveAssessment()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save assessment</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Run of Show Modal (clips + agenda) ── -->
   <div id="runOfShowModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
       <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
         <h2 id="rosTitle" class="font-display text-2xl font-semibold text-burgundy-900">Run of Show</h2>
-        <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
-          <i class="fas fa-times text-lg"></i>
-        </button>
+        <div class="flex items-center gap-3 no-print">
+          <button onclick="printRunOfShow()" title="Print run sheet"
+            class="bg-white border border-burgundy-800 text-burgundy-800 hover:bg-burgundy-50 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-print text-xs"></i> Print
+          </button>
+          <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
       </div>
       <div class="px-6 py-5 space-y-6">
+        <div id="rosImportBar" class="flex items-center justify-between bg-honey-50 border border-honey-200 rounded-lg px-4 py-3">
+          <div>
+            <p class="text-sm font-semibold text-burgundy-900">Import from Facilitator Guide</p>
+            <p class="text-xs text-forest-500">Paste markdown or upload a .docx — preview before it saves.</p>
+          </div>
+          <button onclick="openRosImportModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-3 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+            <i class="fas fa-file-import text-xs"></i> Import Guide
+          </button>
+        </div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosPreFlightSection"></div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosGlobalCautionsSection"></div>
+        <div class="border-t border-gray-100"></div>
         <div id="rosClipsSection"></div>
         <div class="border-t border-gray-100"></div>
         <div id="rosAgendaSection"></div>
+        <div class="border-t border-gray-100"></div>
+        <div id="rosChecklistSection" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Run of Show: Import Guide sub-modal ── -->
+  <div id="rosImportModal" class="fixed inset-0 z-[300] bg-black/60 items-center justify-center p-4" style="display:none;">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-y-auto border border-burgundy-100">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Import Facilitator Guide</h2>
+        <button onclick="closeRosImportModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Step 1: input -->
+      <div id="rosImportStep1" class="px-6 py-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Paste guide markdown</label>
+          <textarea id="rosImportMarkdown" rows="10" placeholder="# Hour 1&#10;## Opening (10 min)&#10;Welcome and objectives..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+        </div>
+        <div class="flex items-center gap-2 text-sm text-forest-500">
+          <span>— OR —</span>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Upload .docx</label>
+          <input type="file" id="rosImportDocx" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            class="block w-full text-sm">
+          <p class="text-xs text-forest-500 mt-1">Whichever you provide (paste OR file) will be used. Uploading a file wins if both are set.</p>
+        </div>
+        <div id="rosImportError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+        <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+          <button onclick="closeRosImportModal()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+          <button onclick="rosImportPreview()" id="rosImportPreviewBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+            <i class="fas fa-eye text-xs"></i> Preview
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: preview -->
+      <div id="rosImportStep2" class="px-6 py-5 space-y-4 hidden">
+        <div id="rosImportSummary" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+        <div id="rosImportWarnings"></div>
+        <div id="rosImportPreviewContent" class="border border-gray-200 rounded-lg divide-y divide-gray-100"></div>
+        <div class="flex justify-between gap-2 pt-2 border-t border-gray-100">
+          <button onclick="rosImportBackToStep1()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">← Back</button>
+          <div class="flex gap-2">
+            <button onclick="closeRosImportModal()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+            <button onclick="rosImportCommit()" id="rosImportCommitBtn" class="bg-forest-600 hover:bg-forest-700 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors flex items-center gap-1">
+              <i class="fas fa-check text-xs"></i> Save to Session (replaces current agenda)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Handouts Modal ── -->
+  <div id="hndModal" class="hidden fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+        <div>
+          <h2 class="font-display text-2xl font-semibold text-burgundy-900">Handouts</h2>
+          <p id="hndSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
+        </div>
+        <button onclick="hndCloseModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+      <div class="px-6 py-5">
+        <!-- Existing handouts -->
+        <div class="overflow-x-auto border border-gray-100 rounded-lg mb-3">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Title</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Type</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Size</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Availability</th>
+                <th class="px-3 py-2 w-8"></th>
+              </tr>
+            </thead>
+            <tbody id="hndTbody"></tbody>
+          </table>
+        </div>
+        <p id="hndEmpty" class="hidden text-center py-3 text-forest-500 text-sm">No handouts uploaded yet.</p>
+
+        <!-- Upload form -->
+        <div class="border-t border-gray-100 pt-4 mt-1">
+          <h3 class="text-sm font-semibold text-burgundy-800 mb-2">Upload a handout</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-medium text-burgundy-800 mb-1">File <span class="text-red-500">*</span></label>
+              <input id="hndFile" type="file" accept=".pdf,.docx,.pptx,.xlsx,.png,.jpg,.jpeg"
+                class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+              <p class="text-xs text-forest-500 mt-1">PDF, DOCX, PPTX, XLSX, PNG, or JPG. Max 25 MB.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium text-burgundy-800 mb-1">Title</label>
+                <input id="hndTitle" type="text" placeholder="Defaults to the file name"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-burgundy-800 mb-1">Availability</label>
+                <select id="hndAvailability"
+                  class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-burgundy-500">
+                  <option value="before">Before (always visible)</option>
+                  <option value="during" selected>During (from doors-open)</option>
+                  <option value="after">After (once session ends)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="hndErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mt-3"></div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 mt-3 border-t border-gray-100">
+          <button type="button" onclick="hndCloseModal()"
+            class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Close</button>
+          <button id="hndUploadBtn" type="button" onclick="hndUpload()"
+            class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold flex items-center gap-2 transition-colors">
+            <i class="fas fa-upload text-xs"></i> <span id="hndUploadLabel">Upload</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Bulk Content Loader Modal (one modal loads everything for a session) ── -->
+  <div id="loadContentModal" class="hidden fixed inset-0 z-[260] bg-black/50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto" style="border:1px solid #284157;">
+      <div class="flex items-center justify-between px-6 py-4" style="border-bottom:1px solid #284157;">
+        <div>
+          <h2 class="font-display text-2xl font-semibold" style="color:#284157;">Load Content</h2>
+          <p id="lcSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
+        </div>
+        <button onclick="closeLoadContentModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="flex gap-1 px-6 pt-3" style="background:#F8F7F4;border-bottom:1px solid #e5e7eb;">
+        <button id="lcTabBtn-manifest" type="button" onclick="lcSwitchTab('manifest')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">1 · Manifest</button>
+        <button id="lcTabBtn-droppaste" type="button" onclick="lcSwitchTab('droppaste')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">2 · Drop / Paste</button>
+        <button id="lcTabBtn-summary" type="button" onclick="lcSwitchTab('summary')"
+          class="px-4 py-2 text-sm font-semibold rounded-t-lg border border-b-0 border-transparent">3 · Summary</button>
+      </div>
+
+      <div class="px-6 py-5" style="background:#F8F7F4;">
+
+        <!-- ═══ TAB 1: MANIFEST ═══ -->
+        <div id="lcTab-manifest" class="space-y-4">
+          <p class="text-xs text-forest-600">
+            The <code class="text-burgundy-700">content-manifest.json</code> file is the single source of truth — edited in GitHub, verified at merge, never fumbled day-of. Load the entry matching this session's slug, confirm the AI segment matches, then load everything at once.
+          </p>
+          <button id="lcManifestLoadBtn" type="button" onclick="lcLoadManifest()"
+            class="px-4 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2" style="background:#284157;">
+            <i class="fas fa-file-code text-xs"></i> Load from manifest
+          </button>
+          <div id="lcManifestStatus" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
+          <div id="lcManifestPreview" class="hidden space-y-4"></div>
+          <div id="lcManifestActions" class="hidden flex items-center justify-end gap-3 pt-2" style="border-top:1px solid #e5e7eb;">
+            <button id="lcManifestLoadAllBtn" type="button" onclick="lcLoadAllFromManifest()"
+              class="px-5 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2" style="background:#284157;">
+              <i class="fas fa-bolt text-xs"></i> <span id="lcManifestLoadAllLabel">Load All from Manifest</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- ═══ TAB 2: DROP / PASTE ═══ -->
+        <div id="lcTab-droppaste" class="hidden space-y-6">
+
+        <!-- SECTION 1: GUIDE -->
+        <section>
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">1 · Facilitator Guide</h3>
+          <textarea id="lcGuide" rows="6" oninput="lcGuideCount()"
+            placeholder="# Hour 1&#10;## Opening (10 min)&#10;Welcome and objectives..."
+            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+          <p class="text-xs text-forest-500 mt-1"><span id="lcGuideChars">0</span> characters · commits automatically on Load All (replaces the current agenda). Leave blank to keep the existing agenda.</p>
+        </section>
+
+        <!-- SECTION 2 & 3: SLIDES + HANDOUTS -->
+        <section>
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">2 · Slides &amp; Handouts</h3>
+          <div id="lcDropZone" class="border-2 border-dashed rounded-xl px-4 py-8 text-center cursor-pointer transition-colors"
+            style="border-color:#284157;background:#fff;"
+            onclick="document.getElementById('lcFileInput').click()">
+            <i class="fas fa-cloud-arrow-up text-2xl mb-2" style="color:#284157;"></i>
+            <p class="text-sm text-forest-700">Drop files here or click to browse</p>
+            <p class="text-xs text-forest-500 mt-1">PNG/JPG sort to <strong>Slides</strong> · PDF/DOCX/PPTX/XLSX sort to <strong>Handouts</strong></p>
+            <input id="lcFileInput" type="file" multiple accept=".png,.jpg,.jpeg,.pdf,.docx,.pptx,.xlsx" style="display:none;" onchange="lcHandleFiles(this.files); this.value='';">
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+            <div>
+              <p class="text-xs font-semibold mb-1" style="color:#284157;"><i class="fas fa-image"></i> Slides (<span id="lcSlideCount">0</span>)</p>
+              <div id="lcSlideList" data-kind="slide"
+                ondragover="lcListDragOver(event)" ondragleave="lcListDragLeave(event)" ondrop="lcListDrop(event,'slide')"
+                class="min-h-[64px] border border-gray-200 rounded-lg p-2 space-y-1 bg-white"></div>
+            </div>
+            <div>
+              <p class="text-xs font-semibold mb-1" style="color:#284157;"><i class="fas fa-file"></i> Handouts (<span id="lcHandoutCount">0</span>)</p>
+              <div id="lcHandoutList" data-kind="handout"
+                ondragover="lcListDragOver(event)" ondragleave="lcListDragLeave(event)" ondrop="lcListDrop(event,'handout')"
+                class="min-h-[64px] border border-gray-200 rounded-lg p-2 space-y-1 bg-white"></div>
+            </div>
+          </div>
+          <p class="text-xs text-forest-500 mt-2">Drag a file between the two lists to correct its sort.</p>
+
+          <!-- URL INPUT -->
+          <div class="mt-4">
+            <label class="block text-xs font-semibold mb-1" style="color:#284157;">Or paste URLs (one per line)</label>
+            <textarea id="lcUrls" rows="3" placeholder="https://res.cloudinary.com/.../slide1.png&#10;https://drive.google.com/.../handout.pdf"
+              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:border-burgundy-500"></textarea>
+            <p class="text-xs text-forest-500 mt-1">Fetched server-side (Cloudinary/Drive/output links), classified and routed the same way — no downloading or re-uploading.</p>
+          </div>
+        </section>
+
+        <!-- AI ROUTING (slides only) -->
+        <section id="lcRoutingSection" class="hidden">
+          <h3 class="text-sm font-bold uppercase tracking-wide mb-2" style="color:#284157;">AI Slide Routing</h3>
+          <p class="text-xs text-forest-500 mb-2">High-confidence matches route automatically. Confirm the amber ones and pick a segment for any unmatched file, then Load All.</p>
+          <div id="lcRoutingList" class="space-y-2"></div>
+        </section>
+
+        <div class="flex items-center justify-end gap-3 pt-2" style="border-top:1px solid #e5e7eb;">
+          <button id="lcLoadAllBtn" type="button" onclick="lcLoadAll()" class="px-5 py-2 rounded-lg text-white text-sm font-semibold flex items-center gap-2 transition-colors" style="background:#284157;">
+            <i class="fas fa-bolt text-xs"></i> <span id="lcLoadAllLabel">Load All</span>
+          </button>
+        </div>
+        </div><!-- /Tab 2 -->
+
+        <!-- ═══ TAB 3: SUMMARY ═══ -->
+        <div id="lcTab-summary" class="hidden space-y-3">
+          <!-- PROGRESS -->
+          <section id="lcProgressSection" class="hidden space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Segments / Guide</span><span id="lcGuidePct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcGuideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Slides</span><span id="lcSlidePct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcSlideBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1" style="color:#284157;"><span>Handouts</span><span id="lcHandoutPct">—</span></div>
+              <div class="w-full rounded-full h-2" style="background:#e5e7eb;"><div id="lcHandoutBar" class="h-2 rounded-full" style="width:0%;background:#284157;"></div></div>
+            </div>
+          </section>
+
+          <div id="lcSummary" class="hidden text-sm rounded-lg px-3 py-2" style="background:#fff;border:1px solid #284157;color:#284157;"></div>
+          <div id="lcErrors" class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2 whitespace-pre-wrap"></div>
+          <div id="lcSnippetWrap" class="hidden">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold" style="color:#284157;">Manifest snippet (content-manifest.json)</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="lcCopySnippet()" class="text-xs px-2 py-1 rounded border border-gray-300 text-forest-700 hover:bg-white"><i class="fas fa-copy"></i> Copy</button>
+                <button type="button" id="lcSaveManifestBtn" onclick="lcSaveToManifest()" class="text-xs px-2 py-1 rounded text-white" style="background:#284157;"><i class="fas fa-floppy-disk"></i> Save to manifest</button>
+              </div>
+            </div>
+            <textarea id="lcSnippet" rows="6" readonly class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs font-mono bg-white"></textarea>
+          </div>
+          <p id="lcSummaryEmpty" class="text-sm text-forest-500">Run a load from the Manifest or Drop / Paste tab — results appear here.</p>
+        </div>
+
+        <!-- Shared footer -->
+        <div class="flex items-center justify-end gap-3 pt-4 mt-4" style="border-top:1px solid #e5e7eb;">
+          <button type="button" onclick="closeLoadContentModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-white transition-colors">Close</button>
+        </div>
       </div>
     </div>
   </div>
@@ -328,6 +893,11 @@
     const API = API_URL + '/api/live-sessions';
     const token = localStorage.getItem('token');
     let sessions = [];
+    let currentView = 'calendar';
+    const today = new Date();
+    let calYear = today.getFullYear();
+    let calMonth = today.getMonth(); // 0-indexed
+    let editingSessionId = null; // null = creating new; set = editing this session
 
     /* Run-of-show working state */
     let rosSession = null;
@@ -356,6 +926,7 @@
     async function loadSessions() {
       document.getElementById('loadingState').classList.remove('hidden');
       document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('calendarView').classList.add('hidden');
       document.getElementById('errorState').classList.add('hidden');
       try {
         const controller = new AbortController();
@@ -366,13 +937,107 @@
         const d = await r.json();
         sessions = d.sessions || [];
         renderTable();
+        renderCalendar();
         document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
+        document.getElementById('viewToggle').classList.remove('hidden');
+        setView(currentView);
       } catch {
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('errorState').classList.remove('hidden');
         document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
       }
+    }
+
+    /* ── View toggle ── */
+    function setView(view) {
+      currentView = view;
+      const isCal = view === 'calendar';
+      document.getElementById('calendarView').classList.toggle('hidden', !isCal);
+      document.getElementById('mainContent').classList.toggle('hidden', isCal);
+      const activeCls = ['bg-burgundy-800', 'text-white', 'border-burgundy-800'];
+      const inactiveCls = ['bg-white', 'text-forest-700', 'border-forest-200', 'hover:bg-stone-50'];
+      const calBtn = document.getElementById('viewBtnCalendar');
+      const tblBtn = document.getElementById('viewBtnTable');
+      calBtn.classList.remove(...activeCls, ...inactiveCls);
+      tblBtn.classList.remove(...activeCls, ...inactiveCls);
+      calBtn.classList.add(...(isCal ? activeCls : inactiveCls));
+      tblBtn.classList.add(...(isCal ? inactiveCls : activeCls));
+    }
+
+    /* ── Calendar view: per-day registrant counts + running monthly total ── */
+    function changeCalMonth(delta, jumpToToday) {
+      if (jumpToToday) {
+        calYear = today.getFullYear();
+        calMonth = today.getMonth();
+      } else {
+        calMonth += delta;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+      }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      document.getElementById('calMonthLabel').textContent = `${MONTH_NAMES[calMonth]} ${calYear}`;
+
+      const firstDay = new Date(calYear, calMonth, 1);
+      const startWeekday = firstDay.getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      // Group this month's sessions by day-of-month
+      const byDay = {};
+      sessions.forEach(s => {
+        if (!s.scheduledStart) return;
+        const d = new Date(s.scheduledStart);
+        if (d.getFullYear() === calYear && d.getMonth() === calMonth) {
+          const day = d.getDate();
+          (byDay[day] = byDay[day] || []).push(s);
+        }
+      });
+
+      let running = 0;
+      let monthTotal = 0;
+      let sessionCount = 0;
+      Object.values(byDay).forEach(daySessions => {
+        sessionCount += daySessions.length;
+        monthTotal += daySessions.reduce((sum, s) => sum + (s.registrants || []).length, 0);
+      });
+      document.getElementById('calMonthTotal').textContent = monthTotal;
+      document.getElementById('calMonthSessions').textContent = sessionCount;
+
+      const isToday = (day) => calYear === today.getFullYear() && calMonth === today.getMonth() && day === today.getDate();
+      const statusDot = { scheduled: 'bg-blue-400', live: 'bg-green-500', completed: 'bg-gray-300', cancelled: 'bg-red-400' };
+
+      let cells = '';
+      for (let i = 0; i < startWeekday; i++) {
+        cells += '<div class="min-h-24 rounded-lg bg-stone-50/50"></div>';
+      }
+      for (let day = 1; day <= daysInMonth; day++) {
+        const daySessions = (byDay[day] || []).slice().sort((a, b) => new Date(a.scheduledStart) - new Date(b.scheduledStart));
+        const dayCount = daySessions.reduce((sum, s) => sum + (s.registrants || []).length, 0);
+        running += dayCount;
+
+        const sessionChips = daySessions.map(s => `
+          <button onclick="openRegistrantsModal('${s._id}')"
+            class="w-full text-left px-1.5 py-1 rounded-md text-[11px] leading-tight bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-800 transition-colors mb-1 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full ${statusDot[s.status] || 'bg-gray-300'} shrink-0"></span>
+            <span class="truncate flex-1">${escHtml((s.title || '').slice(0, 22))}</span>
+            <span class="font-semibold shrink-0">${(s.registrants || []).length}</span>
+          </button>`
+        ).join('');
+
+        cells += `
+          <div class="min-h-24 rounded-lg border ${isToday(day) ? 'border-burgundy-400 bg-burgundy-50/30' : 'border-forest-100 bg-white'} p-1.5 relative">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-semibold ${isToday(day) ? 'text-burgundy-800' : 'text-forest-500'}">${day}</span>
+              ${dayCount > 0 ? `<span class="text-[10px] font-bold text-gold-700 bg-gold-50 border border-gold-200 rounded-full px-1.5 py-0.5" title="Running total through ${MONTH_NAMES[calMonth]} ${day}">Σ ${running}</span>` : ''}
+            </div>
+            ${sessionChips}
+          </div>`;
+      }
+
+      document.getElementById('calGrid').innerHTML = cells;
     }
 
     /* ── Render table ── */
@@ -421,28 +1086,157 @@
                 onclick="viewAttendance(event,'${s._id}')">
                 <i class="fas fa-chart-bar text-xs"></i> Attendance
               </a>
+              <button onclick="openRegistrantsModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-user-plus text-xs"></i> Registrants
+              </button>
               <button onclick="openBreaksModal('${s._id}')"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-mug-hot text-xs"></i> Breaks${(s.breaks && s.breaks.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.breaks.length}</span>` : ''}
               </button>
               ${s.sessionType === 'live-course' ? `
+              <button onclick="openLoadContentModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1" style="background:#284157;color:#fff;">
+                <i class="fas fa-cloud-arrow-up text-xs"></i> Load Content
+              </button>
               <button onclick="openRunOfShowModal('${s._id}')"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-list-ol text-xs"></i> Run of Show
+              </button>
+              <button onclick="hndOpenModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-file-arrow-up text-xs"></i> Handouts${(s.handouts && s.handouts.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.handouts.length}</span>` : ''}
+              </button>
+              <button onclick="openAssessmentModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-clipboard-check text-xs"></i> Assessment${(s.assessment && s.assessment.enabled) ? ` <span class="px-1.5 rounded-full" style="background:#DDE3FF;color:#3730A3;">on</span>` : ''}
               </button>` : ''}
               ${s.status === 'completed' ? `
               <button onclick="issueCerts('${s._id}', this)"
                 class="px-2.5 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
                 <i class="fas fa-certificate text-xs"></i> Issue Certs
               </button>` : ''}
+              <button onclick="openEditModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-pencil text-xs"></i> Edit
+              </button>
+              <button onclick="openDuplicateModal('${s._id}')"
+                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-copy text-xs"></i> Duplicate
+              </button>
               <button onclick="togglePublish('${s._id}', ${s.isPublished})"
                 class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs hover:bg-stone-50 transition-colors ${s.isPublished ? 'text-red-600' : 'text-green-700'}">
                 ${s.isPublished ? 'Unpublish' : 'Publish'}
+              </button>
+              <button onclick="deleteSession('${s._id}', '${escHtml(s.title).replace(/'/g, '\\\'')}')"
+                class="px-2.5 py-1.5 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1">
+                <i class="fas fa-trash text-xs"></i> Delete
               </button>
             </div>
           </td>
         </tr>`;
       }).join('');
+    }
+
+    /* ── Assessment builder modal ── */
+    let asmtSessionId = null;
+    let asmtQuestions = []; // [{ text, options: ['','','',''], correctAnswer: 0 }]
+
+    function openAssessmentModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      asmtSessionId = id;
+      const a = s.assessment || {};
+      document.getElementById('asmt-enabled').checked = !!a.enabled;
+      document.getElementById('asmt-threshold').value = a.passThresholdPct ?? 80;
+      document.getElementById('asmt-maxAttempts').value = a.maxAttempts ?? 3;
+      document.getElementById('asmtError').classList.add('hidden');
+      asmtQuestions = (a.questions || []).map(q => {
+        const opts = (q.options || []);
+        let correct = (typeof q.correctAnswer === 'number') ? q.correctAnswer : opts.findIndex(o => o.isCorrect);
+        if (correct < 0) correct = 0;
+        return { text: q.text || '', options: [0,1,2,3].map(i => opts[i] ? opts[i].text : ''), correctAnswer: correct };
+      });
+      renderAsmtQuestions();
+      document.getElementById('assessmentModal').style.display = 'flex';
+    }
+
+    function closeAssessmentModal() { document.getElementById('assessmentModal').style.display = 'none'; }
+
+    function renderAsmtQuestions() {
+      const box = document.getElementById('asmtQuestions');
+      box.innerHTML = asmtQuestions.map((q, qi) => `
+        <div class="border border-gray-200 rounded-lg p-3 mb-3 bg-stone-50">
+          <div class="flex items-start gap-2 mb-2">
+            <span class="text-xs font-bold text-forest-600 mt-2">Q${qi + 1}</span>
+            <input type="text" value="${escHtml(q.text)}" oninput="asmtSetText(${qi}, this.value)" placeholder="Question text"
+              class="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm">
+            <button type="button" onclick="asmtRemoveQuestion(${qi})" title="Delete question" class="text-forest-400 hover:text-red-600 px-1 mt-1"><i class="fas fa-times"></i></button>
+          </div>
+          ${[0,1,2,3].map(oi => `
+            <label class="flex items-center gap-2 mb-1">
+              <input type="radio" name="asmt_correct_${qi}" ${q.correctAnswer === oi ? 'checked' : ''} onchange="asmtSetCorrect(${qi}, ${oi})" style="accent-color:#6B1D34;">
+              <input type="text" value="${escHtml(q.options[oi] || '')}" oninput="asmtSetOption(${qi}, ${oi}, this.value)" placeholder="Option ${String.fromCharCode(65 + oi)}"
+                class="flex-1 border border-gray-300 rounded-lg px-2 py-1 text-sm">
+            </label>`).join('')}
+          <p class="text-forest-500" style="font-size:11px;margin-top:4px;">Select the radio next to the correct option.</p>
+        </div>`).join('') || '<p class="text-sm text-forest-500 mb-3">No questions yet — add one above.</p>';
+    }
+
+    function asmtSetText(qi, v) { if (asmtQuestions[qi]) asmtQuestions[qi].text = v; }
+    function asmtSetOption(qi, oi, v) { if (asmtQuestions[qi]) asmtQuestions[qi].options[oi] = v; }
+    function asmtSetCorrect(qi, oi) { if (asmtQuestions[qi]) asmtQuestions[qi].correctAnswer = oi; }
+    function asmtRemoveQuestion(qi) { asmtQuestions.splice(qi, 1); renderAsmtQuestions(); }
+    function asmtAddQuestion() { asmtQuestions.push({ text: '', options: ['', '', '', ''], correctAnswer: 0 }); renderAsmtQuestions(); }
+
+    async function saveAssessment() {
+      const errEl = document.getElementById('asmtError');
+      errEl.classList.add('hidden');
+      const enabled = document.getElementById('asmt-enabled').checked;
+
+      // Canonical shape: options [{text, isCorrect}] + correctAnswer index.
+      const questions = asmtQuestions
+        .filter(q => (q.text || '').trim())
+        .map(q => {
+          const opts = q.options
+            .map((t, i) => ({ text: (t || '').trim(), isCorrect: i === q.correctAnswer }))
+            .filter(o => o.text);
+          let correctAnswer = opts.findIndex(o => o.isCorrect);
+          if (correctAnswer < 0) correctAnswer = 0;
+          return { text: q.text.trim(), options: opts, correctAnswer };
+        })
+        .filter(q => q.options.length >= 2);
+
+      if (enabled && questions.length === 0) {
+        errEl.textContent = 'Add at least one question (with 2+ options) before enabling the assessment.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const payload = { assessment: {
+        enabled,
+        passThresholdPct: parseInt(document.getElementById('asmt-threshold').value, 10) || 80,
+        maxAttempts: parseInt(document.getElementById('asmt-maxAttempts').value, 10) || 3,
+        questions
+      }};
+
+      try {
+        const r = await fetch(`${API}/${asmtSessionId}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (!r.ok) { errEl.textContent = d.error || 'Save failed.'; errEl.classList.remove('hidden'); return; }
+        const s = sessions.find(x => x._id === asmtSessionId);
+        if (s) s.assessment = payload.assessment;
+        showToast('Assessment saved.', '#284157');
+        closeAssessmentModal();
+        renderTable();
+      } catch {
+        errEl.textContent = 'Network error. Please try again.';
+        errEl.classList.remove('hidden');
+      }
     }
 
     /* ── Attendance view (inline panel) ── */
@@ -484,6 +1278,116 @@
           </div>`);
       } catch (e) {
         showToast('Failed to load attendance: ' + e.message, '#c0392b');
+      }
+    }
+
+    /* ── Registrants: manual enroll/unenroll ── */
+    async function openRegistrantsModal(id) {
+      try {
+        await loadAndRenderRegistrants(id);
+      } catch (e) {
+        showToast('Failed to load registrants: ' + e.message, '#c0392b');
+      }
+    }
+
+    async function loadAndRenderRegistrants(id) {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 10000);
+      const r = await fetch(`${API}/${id}/attendance`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error('Forbidden or error');
+      const d = await r.json();
+
+      const rows = (d.report || []).map(reg => `
+        <tr class="border-b border-gray-100">
+          <td class="px-3 py-2">${escHtml(reg.user?.email || '—')}</td>
+          <td class="px-3 py-2 text-xs text-forest-500">${reg.registeredAt ? new Date(reg.registeredAt).toLocaleDateString() : '—'}</td>
+          <td class="px-3 py-2 text-xs">${reg.paid ? '<span class="text-green-600">paid</span>' : '<span class="text-forest-400">free/comp</span>'}</td>
+          <td class="px-3 py-2 text-right">
+            <button onclick="removeRegistrant('${id}','${reg.user?._id}', this)"
+              class="px-2 py-1 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors">
+              Remove
+            </button>
+          </td>
+        </tr>`
+      ).join('');
+
+      showModal(`
+        <div class="p-6">
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(d.session?.title || 'Registrants')}</h3>
+          <p class="text-xs text-forest-500 mb-4">Manually seat or remove a registrant. Manual adds bypass capacity, cutoff, and payment — no Stripe charge occurs.</p>
+          <div class="flex gap-2 mb-4">
+            <input id="regAddEmail" type="email" placeholder="user@email.com"
+              class="flex-1 px-3 py-2 border border-forest-200 rounded-lg text-sm">
+            <button id="regAddBtn" onclick="addRegistrant('${id}')"
+              class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium whitespace-nowrap">
+              Add Registrant
+            </button>
+          </div>
+          <div id="regAddError" class="text-xs text-red-600 mb-2 hidden"></div>
+          <div class="overflow-x-auto max-h-96 overflow-y-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50 sticky top-0"><tr>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email</th>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Registered</th>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Status</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800"></th>
+              </tr></thead>
+              <tbody id="regTableBody">${rows || '<tr><td colspan="4" class="text-center py-6 text-forest-500">No registrants yet.</td></tr>'}</tbody>
+            </table>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
+          </div>
+        </div>`);
+    }
+
+    async function addRegistrant(sessionId) {
+      const input = document.getElementById('regAddEmail');
+      const errBox = document.getElementById('regAddError');
+      const btn = document.getElementById('regAddBtn');
+      const email = (input.value || '').trim();
+      errBox.classList.add('hidden');
+      if (!email) return;
+
+      btn.disabled = true;
+      try {
+        const r = await fetch(`${API}/${sessionId}/admin/registrants`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to add registrant');
+        showToast(d.message || 'Registrant added', '#2e7d32');
+        input.value = '';
+        await loadAndRenderRegistrants(sessionId);
+        loadSessions(); // refresh registrant count in the background table
+      } catch (e) {
+        errBox.textContent = e.message;
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function removeRegistrant(sessionId, userId, btn) {
+      if (!userId) return;
+      if (!confirm('Remove this registrant? This does not affect attendance history or issued certificates.')) return;
+      btn.disabled = true;
+      try {
+        const r = await fetch(`${API}/${sessionId}/admin/registrants/${userId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to remove registrant');
+        showToast('Registrant removed', '#2e7d32');
+        await loadAndRenderRegistrants(sessionId);
+        loadSessions();
+      } catch (e) {
+        showToast(e.message, '#c0392b');
+        btn.disabled = false;
       }
     }
 
@@ -532,18 +1436,185 @@
       }
     }
 
+    async function bulkPublish(publish) {
+      const pending = sessions.filter(s => !!s.isPublished !== publish).length;
+      if (!pending) {
+        showToast(publish ? 'All sessions are already published.' : 'All sessions are already unpublished.', '#284157');
+        return;
+      }
+      const verb = publish ? 'Publish' : 'Unpublish';
+      if (!confirm(`${verb} all ${pending} draft${pending === 1 ? '' : 's'}?\n\n${publish ? 'Sessions are published without sending the new-session announcement email.' : 'Sessions will be hidden from the public catalog.'}`)) return;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 20000);
+        const r = await fetch(`${API}/admin/publish-all`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ publish }),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.error || 'Failed'); }
+        const d = await r.json();
+        showToast(`${verb}ed ${d.modified} session${d.modified === 1 ? '' : 's'}.`, '#284157');
+        loadSessions();
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    async function deleteSession(id, title) {
+      if (!confirm(`Delete session "${title}"?\n\nThis will also delete the Whereby room, agenda, attendance records, and evaluation responses. This can't be undone.`)) return;
+      try {
+        const r = await fetch(`${API}/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Delete failed');
+        showToast('Session deleted.', '#284157');
+        loadSessions();
+      } catch (e) {
+        showToast(e.message, '#c0392b');
+      }
+    }
+
     /* ── Create modal ── */
+    function toLocalDatetimeInputValue(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
     function openCreateModal() {
+      editingSessionId = null;
       document.getElementById('createForm').reset();
       document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Create Live Session';
       document.getElementById('submitLabel').textContent = 'Create Session';
       document.getElementById('submitBtn').disabled = false;
+      document.getElementById('f-slug').disabled = false;
+      document.getElementById('slugHelp').textContent = 'Lowercase letters, numbers, and hyphens only.';
+      document.getElementById('f-objectives').value = '';
+      document.getElementById('f-targetAudience').value = '';
+      document.getElementById('f-references').value = '';
+      document.getElementById('f-presenterDegree').value = 'MA';
+      document.getElementById('f-presenterLicenseNumber').value = 'LPC009587';
+      document.getElementById('f-presenterLicenseState').value = 'GA';
+      document.getElementById('f-presenterCategory').value = 'category1';
+      document.getElementById('f-presenterQualification').value = 'Kejuiana Johnson is a Licensed Professional Counselor (GA LPC009587) with clinical and supervisory experience relevant to this content area.';
+      // Series membership — reset to standalone defaults and populate the dropdown.
+      document.getElementById('f-seriesOrder').value = 1;
+      document.getElementById('f-seriesRequired').checked = true;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = ''; });
       handleSessionTypeChange('live-course');
+      document.getElementById('createModal').classList.add('open');
+    }
+
+    function openEditModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      editingSessionId = id;
+      document.getElementById('createForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Edit Live Session';
+      document.getElementById('submitLabel').textContent = 'Save Changes';
+      document.getElementById('submitBtn').disabled = false;
+
+      document.getElementById('f-title').value = s.title || '';
+      document.getElementById('f-description').value = s.description || '';
+      document.getElementById('f-nbccArea').value = s.nbccContentAreas?.[0] || 'Counseling Theory/Practice';
+      document.getElementById('f-category').value = s.category || 'Other';
+      document.getElementById('f-slug').value = s.slug || '';
+      document.getElementById('f-slug').disabled = true; // slug is already live in URLs/registrations — don't let it change
+      document.getElementById('slugHelp').textContent = 'Slug can\'t be changed after creation (it may already be shared or registered against).';
+      document.getElementById('sessionTypeSelect').value = s.sessionType || 'live-course';
+      document.getElementById('f-scheduledStart').value = toLocalDatetimeInputValue(s.scheduledStart);
+      document.getElementById('f-scheduledEnd').value = toLocalDatetimeInputValue(s.scheduledEnd);
+      document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
+      document.getElementById('f-capacity').value = s.capacity ?? 50;
+      document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-registrationCutoffHours').value = s.registrationCutoffHours ?? 72;
+      document.getElementById('f-visibility').value = s.visibility || 'public';
+      document.getElementById('f-accessCode').value = s.accessCode || '';
+      document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
+      document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-autopilotEnabled').checked = !!(s.autopilot && s.autopilot.enabled);
+      document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
+      document.getElementById('isPublished').checked = !!s.isPublished;
+      document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
+      document.getElementById('f-targetAudience').value = (s.targetAudience || []).join('\n');
+      document.getElementById('f-references').value = (s.references || []).join('\n');
+      document.getElementById('f-presenterDegree').value = s.presenter?.degree || '';
+      document.getElementById('f-presenterLicenseNumber').value = s.presenter?.licenseNumber || '';
+      document.getElementById('f-presenterLicenseState').value = s.presenter?.licenseState || '';
+      document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
+      document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
+
+      // Series membership — populate dropdown, then select this session's series.
+      document.getElementById('f-seriesOrder').value = s.seriesMembership?.order || 1;
+      document.getElementById('f-seriesRequired').checked = s.seriesMembership?.required !== false;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = s.seriesId || ''; });
+      handleSessionTypeChange(s.sessionType || 'live-course');
+      document.getElementById('createModal').classList.add('open');
+    }
+
+    function openDuplicateModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) return;
+      editingSessionId = null; // duplicating always creates a new session
+      document.getElementById('createForm').reset();
+      document.getElementById('formError').classList.add('hidden');
+      document.getElementById('modalTitle').textContent = 'Duplicate Live Session';
+      document.getElementById('submitLabel').textContent = 'Create Session';
+      document.getElementById('submitBtn').disabled = false;
+      document.getElementById('f-slug').disabled = false;
+      document.getElementById('slugHelp').textContent = 'Give this occurrence its own unique slug.';
+
+      const shiftedStart = s.scheduledStart ? new Date(new Date(s.scheduledStart).getTime() + 7 * 86400000) : null;
+      const shiftedEnd = s.scheduledEnd ? new Date(new Date(s.scheduledEnd).getTime() + 7 * 86400000) : null;
+
+      document.getElementById('f-title').value = s.title || '';
+      document.getElementById('f-description').value = s.description || '';
+      document.getElementById('f-nbccArea').value = s.nbccContentAreas?.[0] || 'Counseling Theory/Practice';
+      document.getElementById('f-category').value = s.category || 'Other';
+      document.getElementById('f-slug').value = ''; // force a fresh, unique slug
+      document.getElementById('sessionTypeSelect').value = s.sessionType || 'live-course';
+      document.getElementById('f-scheduledStart').value = toLocalDatetimeInputValue(shiftedStart);
+      document.getElementById('f-scheduledEnd').value = toLocalDatetimeInputValue(shiftedEnd);
+      document.getElementById('f-ceuHours').value = s.ceuHours ?? 1;
+      document.getElementById('f-capacity').value = s.capacity ?? 50;
+      document.getElementById('f-price').value = s.price ?? 0;
+      document.getElementById('f-registrationCutoffHours').value = s.registrationCutoffHours ?? 72;
+      document.getElementById('f-visibility').value = s.visibility || 'public';
+      document.getElementById('f-accessCode').value = ''; // force a new code — avoid colliding with the original
+      document.getElementById('f-attendanceThresholdPct').value = s.attendanceThresholdPct ?? 90;
+      document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+      document.getElementById('f-autopilotEnabled').checked = !!(s.autopilot && s.autopilot.enabled);
+      document.getElementById('f-alarmLeadSec').value = s.alarmLeadSec ?? 60;
+      document.getElementById('isPublished').checked = false; // never auto-publish a duplicate
+      document.getElementById('f-objectives').value = (s.objectives || []).join('\n');
+      document.getElementById('f-targetAudience').value = (s.targetAudience || []).join('\n');
+      document.getElementById('f-references').value = (s.references || []).join('\n');
+      document.getElementById('f-presenterDegree').value = s.presenter?.degree || '';
+      document.getElementById('f-presenterLicenseNumber').value = s.presenter?.licenseNumber || '';
+      document.getElementById('f-presenterLicenseState').value = s.presenter?.licenseState || '';
+      document.getElementById('f-presenterCategory').value = s.presenter?.category || 'category1';
+      document.getElementById('f-presenterQualification').value = s.presenter?.qualificationStatement || '';
+
+      // Series membership — a duplicate is a fresh occurrence; default to
+      // standalone and let the admin assign it to a series explicitly.
+      document.getElementById('f-seriesOrder').value = 1;
+      document.getElementById('f-seriesRequired').checked = true;
+      loadCachedSeries().then(() => { document.getElementById('f-seriesId').value = ''; });
+      handleSessionTypeChange(s.sessionType || 'live-course');
       document.getElementById('createModal').classList.add('open');
     }
 
     function closeCreateModal() {
       document.getElementById('createModal').classList.remove('open');
+      editingSessionId = null;
     }
 
     function handleSessionTypeChange(type) {
@@ -551,15 +1622,23 @@
       const recRow = document.getElementById('recordingRow');
       const recChk = document.getElementById('recordingEnabled');
       const ceuRow = document.getElementById('ceuHoursRow');
-      // supervision: hide recording row, force checkbox off, hide CEU hours
+      const ceMetaRow = document.getElementById('ceMetaRow');
+      const apRow = document.getElementById('autopilotRow');
+      const apChk = document.getElementById('f-autopilotEnabled');
+      // supervision: hide recording row, force checkbox off, hide CEU hours + CE metadata
       recRow.classList.toggle('hidden', isSupervision);
+      // Autopilot's timed advance needs an agenda, which supervision can't have.
+      if (apRow) apRow.classList.toggle('hidden', isSupervision);
       if (isSupervision) {
         recChk.checked = false;
         recChk.disabled = true;
+        if (apChk) apChk.checked = false;
         ceuRow.classList.add('hidden');
+        ceMetaRow.classList.add('hidden');
       } else {
         recChk.disabled = false;
         ceuRow.classList.remove('hidden');
+        ceMetaRow.classList.remove('hidden');
       }
     }
 
@@ -577,31 +1656,58 @@
       const payload = {
         title: fd.get('title'),
         slug: fd.get('slug'),
+        description: (fd.get('description') || '').trim(),
         sessionType: fd.get('sessionType'),
+        category: (fd.get('category') || 'Other').trim() || 'Other',
+        nbccContentAreas: fd.get('sessionType') === 'supervision' ? [] : [fd.get('nbccContentArea')].filter(Boolean),
         scheduledStart: new Date(fd.get('scheduledStart')).toISOString(),
         scheduledEnd: new Date(fd.get('scheduledEnd')).toISOString(),
         ceuHours: parseFloat(fd.get('ceuHours') || '0'),
         capacity: parseInt(fd.get('capacity') || '50', 10),
         price: parseFloat(fd.get('price') || '0'),
+        registrationCutoffHours: parseInt(fd.get('registrationCutoffHours') ?? '72', 10),
         attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
         recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
-        isPublished: !!fd.get('isPublished')
+        autopilot: { enabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('autopilotEnabled') },
+        alarmLeadSec: parseInt(document.getElementById('f-alarmLeadSec').value, 10) || 60,
+        isPublished: !!fd.get('isPublished'),
+        visibility: fd.get('visibility') || 'public',
+        accessCode: (fd.get('accessCode') || '').trim(),
+        objectives: document.getElementById('f-objectives').value.split('\n').map(s => s.trim()).filter(Boolean),
+        targetAudience: document.getElementById('f-targetAudience').value.split('\n').map(s => s.trim()).filter(Boolean),
+        references: document.getElementById('f-references').value.split('\n').map(s => s.trim()).filter(Boolean),
+        presenter: {
+          name: 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH',
+          degree: document.getElementById('f-presenterDegree').value.trim(),
+          licenseNumber: document.getElementById('f-presenterLicenseNumber').value.trim(),
+          licenseState: document.getElementById('f-presenterLicenseState').value.trim(),
+          category: document.getElementById('f-presenterCategory').value,
+          qualificationStatement: document.getElementById('f-presenterQualification').value.trim()
+        },
+        seriesId: document.getElementById('f-seriesId').value || null,
+        seriesMembership: {
+          order: parseInt(document.getElementById('f-seriesOrder').value, 10) || 1,
+          required: document.getElementById('f-seriesRequired').checked
+        }
       };
 
       try {
+        const isEditing = !!editingSessionId;
+        if (isEditing) delete payload.slug; // slug is never editable once created
+
         const controller = new AbortController();
         const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(API, {
-          method: 'POST',
+        const r = await fetch(isEditing ? `${API}/${editingSessionId}` : API, {
+          method: isEditing ? 'PATCH' : 'POST',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           signal: controller.signal
         });
         clearTimeout(tid);
         const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Creation failed');
+        if (!r.ok) throw new Error(d.error || (isEditing ? 'Save failed' : 'Creation failed'));
         closeCreateModal();
-        showToast('Session created and Whereby room provisioned!', '#284157');
+        showToast(isEditing ? 'Session updated.' : 'Session created and Whereby room provisioned!', '#284157');
         loadSessions();
       } catch (e) {
         errEl.textContent = e.message;
@@ -657,13 +1763,7 @@
         return;
       }
       rosSession = s;
-      rosAgenda = (s.agenda || []).map(a => ({
-        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
-        title: a.title || '',
-        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
-        prompt: a.prompt || '',
-        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
-      }));
+      rosAgenda = (s.agenda || []).map(rosAgendaRowFromSource);
       renderRunOfShow();
       document.getElementById('runOfShowModal').style.display = 'flex';
     }
@@ -674,10 +1774,136 @@
       rosAgenda = [];
     }
 
+    // Print the open Run of Show as a facilitator run sheet. Sync the agenda
+    // editor's DOM into memory first (so any unsaved edits print), flag the body
+    // so the print CSS shows only this modal, then clean up after the dialog.
+    function printRunOfShow() {
+      if (!rosSession) return;
+      try { syncAgendaFromDom(); } catch {}
+      document.body.classList.add('printing-ros');
+      const cleanup = () => {
+        document.body.classList.remove('printing-ros');
+        window.removeEventListener('afterprint', cleanup);
+      };
+      window.addEventListener('afterprint', cleanup);
+      window.print();
+      setTimeout(cleanup, 1000); // fallback if afterprint doesn't fire
+    }
+
+    // Build the agenda editor's working-copy row. Editable fields become form
+    // inputs; the rich facilitator-guide fields (pre-flight/cautions/polls/
+    // breakouts/exercise from the import flow) are carried through untouched so
+    // renderRosAgenda can show badges and a manual "Save agenda" preserves them.
+    function rosAgendaRowFromSource(a) {
+      const row = {
+        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
+        title: a.title || '',
+        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
+        prompt: a.prompt || '',
+        speakerNotes: a.speakerNotes || '',
+        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
+      };
+      if (a.activityInstructions) row.activityInstructions = a.activityInstructions;
+      if ((a.facilitatorCautions || []).length) row.facilitatorCautions = a.facilitatorCautions;
+      if ((a.polls || []).length) row.polls = a.polls;
+      if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
+      if (a.exercise) row.exercise = a.exercise;
+      if ((a.media || []).length) row.media = a.media;
+      return row;
+    }
+
     function renderRunOfShow() {
       document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
+      renderRosPreFlight();
+      renderRosGlobalCautions();
       renderRosClips();
       renderRosAgenda();
+      renderRosChecklist();
+    }
+
+    function renderRosPreFlight() {
+      const items = rosSession.preFlightChecklist || [];
+      const rows = items.length
+        ? items.map(c => `
+          <div class="flex items-start gap-2 px-3 py-2 border border-gray-200 rounded-lg">
+            <i class="fas ${c.critical ? 'fa-exclamation-triangle text-red-600' : 'fa-check text-forest-500'} text-sm mt-0.5"></i>
+            <span class="text-sm text-forest-700">${escHtml(c.text)}${c.critical ? ' <span class="text-xs text-red-600 font-semibold">(critical)</span>' : ''}</span>
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No pre-flight checklist items — import a guide or add manually via the Edit modal.</p>';
+      document.getElementById('rosPreFlightSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Pre-Flight Checklist</h3>
+        <div class="space-y-2">${rows}</div>`;
+    }
+
+    function renderRosGlobalCautions() {
+      const items = rosSession.globalFacilitatorCautions || [];
+      const rows = items.length
+        ? items.map(c => `
+          <div class="flex items-start gap-2 px-3 py-2 border border-honey-200 bg-honey-50 rounded-lg">
+            <i class="fas fa-exclamation-triangle text-honey-600 text-sm mt-0.5"></i>
+            <span class="text-sm text-forest-700">${escHtml(c.text)}</span>
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No session-wide cautions.</p>';
+      document.getElementById('rosGlobalCautionsSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Session-Wide Cautions</h3>
+        <div class="space-y-2">${rows}</div>`;
+    }
+
+    function renderRosChecklist() {
+      const items = rosSession.hostChecklist || [];
+      const ro = rosReadOnly();
+      const list = items.length
+        ? items.map((c, i) => `
+          <div class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg">
+            <span class="text-sm text-forest-700">${escHtml(c.text)}</span>
+            ${ro ? '' : `<button onclick="removeChecklistItem('${rosSession._id}', ${i})" title="Remove"
+              class="text-forest-400 hover:text-red-600 transition-colors"><i class="fas fa-times"></i></button>`}
+          </div>`).join('')
+        : '<p class="text-sm text-forest-500">No checklist items yet.</p>';
+
+      const addRow = ro ? '' : `
+        <div class="grid grid-cols-12 gap-2 mt-3">
+          <input id="rosChecklistText" type="text" placeholder="e.g. Confirm recording started"
+            class="col-span-10 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <button onclick="addChecklistItem('${rosSession._id}')"
+            class="col-span-2 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold transition-colors">Add</button>
+        </div>`;
+
+      document.getElementById('rosChecklistSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Host Checklist (private)</h3>
+        <div class="space-y-2">${list}</div>
+        ${addRow}`;
+    }
+
+    async function addChecklistItem(id) {
+      if (rosReadOnly()) return;
+      const text = document.getElementById('rosChecklistText').value.trim();
+      if (!text) return;
+      const items = (rosSession.hostChecklist || []).concat([{ text, done: false }]);
+      await saveChecklist(id, items);
+    }
+
+    async function removeChecklistItem(id, idx) {
+      if (rosReadOnly()) return;
+      const items = (rosSession.hostChecklist || []).filter((_, i) => i !== idx);
+      await saveChecklist(id, items);
+    }
+
+    async function saveChecklist(id, items) {
+      try {
+        const r = await fetch(`${API}/${id}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hostChecklist: items })
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Failed to save checklist');
+        rosSession.hostChecklist = d.session?.hostChecklist || items;
+        renderRosChecklist();
+        showToast('Checklist saved.', '#284157');
+      } catch (e) {
+        showToast('Error: ' + e.message, '#c0392b');
+      }
     }
 
     function renderRosClips() {
@@ -794,6 +2020,12 @@
             </div>`;
           }
         }
+        const cautionsBadge = (a.facilitatorCautions || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-red-50 text-red-700 rounded px-2 py-0.5"><i class="fas fa-exclamation-triangle"></i> ${a.facilitatorCautions.length}</span>` : '';
+        const pollsBadge = (a.polls || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-forest-50 text-forest-700 rounded px-2 py-0.5">🗳 ${a.polls.length}</span>` : '';
+        const breakoutBadge = (a.breakoutPrompts || []).length ? `<span class="inline-flex items-center gap-1 text-xs bg-blue-50 text-blue-700 rounded px-2 py-0.5">👥 ${a.breakoutPrompts.length}</span>` : '';
+        const exerciseBadge = a.exercise ? `<span class="inline-flex items-center gap-1 text-xs bg-honey-50 text-honey-700 rounded px-2 py-0.5">✏ Exercise</span>` : '';
+        const badges = [cautionsBadge, pollsBadge, breakoutBadge, exerciseBadge].filter(Boolean).join(' ');
+        const activityBlock = a.activityInstructions ? `<p class="text-xs text-forest-600 mt-1 whitespace-pre-wrap">${escHtml((a.activityInstructions || '').slice(0, 200))}${a.activityInstructions.length > 200 ? '…' : ''}</p>` : '';
         return `<div class="border border-burgundy-100 rounded-lg p-3 space-y-2 bg-stone-50">
           <div class="grid grid-cols-12 gap-2 items-center">
             <select id="ros_type_${i}" onchange="onAgendaTypeChange(${i}, this.value)" ${ro ? 'disabled' : ''}
@@ -809,9 +2041,14 @@
               <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
             </div>
           </div>
-          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional)" ${ro ? 'disabled' : ''}
+          ${badges ? `<div class="flex flex-wrap items-center gap-1">${badges}</div>` : ''}
+          ${activityBlock}
+          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional, shown to attendees)" ${ro ? 'disabled' : ''}
             class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <textarea id="ros_notes_${i}" placeholder="Speaker notes (private — only you see this in the room)" ${ro ? 'disabled' : ''}
+            rows="2" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.speakerNotes)}</textarea>
           ${clipCell}
+          ${slidesCell(a, i, ro)}
         </div>`;
       }).join('');
 
@@ -832,17 +2069,74 @@
         ${controls}`;
     }
 
+    // Per-segment slide (media) cell — thumbnails + PNG/JPG upload. Uploads go
+    // through POST /:id/agenda/:segIdx/media (reuses the handout Cloudinary machinery).
+    function slidesCell(a, i, ro) {
+      const thumbs = (a.media || []).map((m, mi) =>
+        `<div style="position:relative;display:inline-block;">
+          <img src="${escHtml(m.url)}" title="${escHtml(m.caption || '')}" style="width:64px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;">
+          ${ro ? '' : `<button type="button" onclick="deleteSlide(${i},${mi})" title="Remove slide" style="position:absolute;top:-6px;right:-6px;background:#8B2542;color:#fff;border:none;border-radius:999px;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;">×</button>`}
+        </div>`).join('');
+      return `<div>
+        <label class="block text-xs text-forest-600 mb-1">Slides (PNG/JPG — auto-shown to attendees when this segment is active)</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+          ${thumbs}
+          ${ro ? '' : `<label style="cursor:pointer;" class="text-xs text-burgundy-700 border border-burgundy-200 rounded-lg px-2 py-1 hover:bg-burgundy-50">
+            + Slide<input type="file" accept="image/png,image/jpeg" style="display:none;" onchange="uploadSlide(${i}, this)">
+          </label>`}
+        </div>
+      </div>`;
+    }
+
+    async function uploadSlide(i, input) {
+      const file = input.files && input.files[0];
+      if (!file || rosReadOnly()) { if (input) input.value = ''; return; }
+      // Persist the current agenda first so server segment indexes match the editor.
+      await saveAgenda(rosSession._id);
+      const fd = new FormData();
+      fd.append('file', file);
+      try {
+        const r = await fetch(`${API}/${rosSession._id}/agenda/${i}/media`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd
+        });
+        const d = await r.json();
+        if (!r.ok) { showToast(d.error || 'Slide upload failed.', '#8B2542'); return; }
+        rosAgenda[i].media = d.media || [];
+        renderRosAgenda();
+        showToast('Slide added.', '#284157');
+      } catch { showToast('Slide upload failed.', '#8B2542'); }
+      finally { if (input) input.value = ''; }
+    }
+
+    async function deleteSlide(i, mediaIdx) {
+      if (rosReadOnly()) return;
+      try {
+        const r = await fetch(`${API}/${rosSession._id}/agenda/${i}/media/${mediaIdx}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) { showToast(d.error || 'Could not remove slide.', '#8B2542'); return; }
+        rosAgenda[i].media = d.media || [];
+        renderRosAgenda();
+      } catch { showToast('Could not remove slide.', '#8B2542'); }
+    }
+
     function syncAgendaFromDom() {
       rosAgenda.forEach((a, i) => {
         const tEl = document.getElementById('ros_type_' + i);
         const tiEl = document.getElementById('ros_title_' + i);
         const dEl = document.getElementById('ros_dur_' + i);
         const pEl = document.getElementById('ros_prompt_' + i);
+        const nEl = document.getElementById('ros_notes_' + i);
         const cEl = document.getElementById('ros_clip_' + i);
         if (tEl) a.type = tEl.value;
         if (tiEl) a.title = tiEl.value;
         if (dEl) a.durationMin = dEl.value;
         if (pEl) a.prompt = pEl.value;
+        if (nEl) a.speakerNotes = nEl.value;
         if (cEl) a.clipIndex = cEl.value;
         else if (a.type !== 'clip') a.clipIndex = '';
       });
@@ -857,7 +2151,7 @@
 
     function addAgendaRow() {
       syncAgendaFromDom();
-      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', clipIndex: '' });
+      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', speakerNotes: '', clipIndex: '' });
       renderRosAgenda();
     }
 
@@ -886,10 +2180,19 @@
         const dur = parseInt(a.durationMin, 10);
         if (a.durationMin !== '' && Number.isFinite(dur) && dur >= 1) row.durationMin = dur;
         if ((a.prompt || '').trim()) row.prompt = a.prompt.trim();
+        if ((a.speakerNotes || '').trim()) row.speakerNotes = a.speakerNotes.trim();
         if (a.type === 'clip' && a.clipIndex !== '' && a.clipIndex != null) {
           const ci = parseInt(a.clipIndex, 10);
           if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
         }
+        // Preserve imported facilitator-guide fields the editor doesn't expose,
+        // so a manual "Save agenda" never wipes pre-flight/poll/breakout/etc. data.
+        if (a.activityInstructions) row.activityInstructions = a.activityInstructions;
+        if ((a.facilitatorCautions || []).length) row.facilitatorCautions = a.facilitatorCautions;
+        if ((a.polls || []).length) row.polls = a.polls;
+        if ((a.breakoutPrompts || []).length) row.breakoutPrompts = a.breakoutPrompts;
+        if (a.exercise) row.exercise = a.exercise;
+        if ((a.media || []).length) row.media = a.media;
         return row;
       });
       try {
@@ -910,6 +2213,172 @@
         showToast('Agenda saved.', '#284157');
       } catch (e) {
         showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    let rosImportParsed = null; // holds the /preview response between step 1 and step 2
+
+    function openRosImportModal() {
+      if (!rosSession) return;
+      rosImportParsed = null;
+      document.getElementById('rosImportMarkdown').value = '';
+      document.getElementById('rosImportDocx').value = '';
+      document.getElementById('rosImportError').classList.add('hidden');
+      document.getElementById('rosImportStep1').classList.remove('hidden');
+      document.getElementById('rosImportStep2').classList.add('hidden');
+      document.getElementById('rosImportModal').style.display = 'flex';
+    }
+
+    function closeRosImportModal() {
+      document.getElementById('rosImportModal').style.display = 'none';
+      rosImportParsed = null;
+    }
+
+    function rosImportBackToStep1() {
+      document.getElementById('rosImportStep1').classList.remove('hidden');
+      document.getElementById('rosImportStep2').classList.add('hidden');
+    }
+
+    function rosImportError(msg) {
+      const el = document.getElementById('rosImportError');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    async function rosImportPreview() {
+      const btn = document.getElementById('rosImportPreviewBtn');
+      btn.disabled = true;
+      document.getElementById('rosImportError').classList.add('hidden');
+
+      const fileInput = document.getElementById('rosImportDocx');
+      const markdown = document.getElementById('rosImportMarkdown').value.trim();
+      const file = fileInput.files?.[0];
+
+      if (!file && !markdown) {
+        rosImportError('Provide markdown text or upload a .docx file.');
+        btn.disabled = false;
+        return;
+      }
+
+      try {
+        let res;
+        if (file) {
+          const fd = new FormData();
+          fd.append('file', file);
+          res = await fetch(`${API}/${rosSession._id}/run-of-show/preview`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token },
+            body: fd
+          });
+        } else {
+          res = await fetch(`${API}/${rosSession._id}/run-of-show/preview`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ markdown })
+          });
+        }
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Preview failed');
+        rosImportParsed = d.parsed;
+        renderRosImportPreview(d);
+        document.getElementById('rosImportStep1').classList.add('hidden');
+        document.getElementById('rosImportStep2').classList.remove('hidden');
+      } catch (e) {
+        rosImportError(e.message);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderRosImportPreview(d) {
+      const s = d.summary;
+      const missingHighlight = s.segmentsMissingDuration > 0 ? 'text-red-700' : 'text-forest-700';
+      document.getElementById('rosImportSummary').innerHTML = `
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.segmentCount}</div>
+          <div class="text-xs text-forest-500">Segments</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.totalMin}m</div>
+          <div class="text-xs text-forest-500">Total duration</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.preFlightCount}</div>
+          <div class="text-xs text-forest-500">Pre-flight items</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold text-burgundy-900">${s.objectivesCount || 0}</div>
+          <div class="text-xs text-forest-500">Objectives</div>
+        </div>
+        <div class="bg-stone-50 rounded-lg p-3 text-center">
+          <div class="text-2xl font-bold ${missingHighlight}">${s.segmentsMissingDuration}</div>
+          <div class="text-xs text-forest-500">Missing duration</div>
+        </div>`;
+
+      const warnings = d.warnings || [];
+      document.getElementById('rosImportWarnings').innerHTML = warnings.length
+        ? `<div class="border border-honey-200 bg-honey-50 rounded-lg px-3 py-2">
+             <p class="text-xs font-semibold text-honey-800 mb-1">${warnings.length} warning${warnings.length === 1 ? '' : 's'}:</p>
+             <ul class="text-xs text-honey-800 list-disc list-inside space-y-0.5">
+               ${warnings.map(w => `<li>${escHtml(w)}</li>`).join('')}
+             </ul>
+           </div>`
+        : '';
+
+      const agenda = d.parsed.agenda || [];
+      const rows = agenda.length
+        ? agenda.map((a, i) => {
+            const badges = [
+              (a.facilitatorCautions || []).length ? `<span class="text-xs text-red-700">⚠ ${a.facilitatorCautions.length}</span>` : '',
+              (a.polls || []).length ? `<span class="text-xs text-forest-700">🗳 ${a.polls.length}</span>` : '',
+              (a.breakoutPrompts || []).length ? `<span class="text-xs text-blue-700">👥 ${a.breakoutPrompts.length}</span>` : '',
+              a.exercise ? `<span class="text-xs text-honey-700">✏</span>` : ''
+            ].filter(Boolean).join(' · ');
+            return `<div class="px-3 py-2">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-sm font-semibold text-burgundy-900">${i + 1}. ${escHtml(a.title || '(no title)')}</span>
+                <span class="text-xs text-forest-500">${a.durationMin ? a.durationMin + ' min' : '<span class="text-red-600">no duration</span>'} · ${escHtml(a.type)}</span>
+              </div>
+              ${badges ? `<div class="mt-1">${badges}</div>` : ''}
+            </div>`;
+          }).join('')
+        : '<div class="px-3 py-4 text-sm text-forest-500">Parser produced no segments. Check that the guide uses <code>## Segment</code> H2 headings.</div>';
+
+      document.getElementById('rosImportPreviewContent').innerHTML = rows;
+    }
+
+    async function rosImportCommit() {
+      if (!rosImportParsed || !rosSession) return;
+      const btn = document.getElementById('rosImportCommitBtn');
+      btn.disabled = true;
+      try {
+        const res = await fetch(`${API}/${rosSession._id}/run-of-show/commit`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            agenda: rosImportParsed.agenda,
+            preFlightChecklist: rosImportParsed.preFlightChecklist,
+            globalFacilitatorCautions: rosImportParsed.globalFacilitatorCautions,
+            objectives: rosImportParsed.objectives || []
+          })
+        });
+        const d = await res.json();
+        if (!res.ok) throw new Error(d.error || 'Save failed');
+        // Merge the just-committed content back into rosSession so the outer
+        // Run of Show display updates without a full reload, and rebuild the
+        // agenda editor's working copy from the imported agenda.
+        rosSession.agenda = rosImportParsed.agenda;
+        rosSession.preFlightChecklist = rosImportParsed.preFlightChecklist;
+        rosSession.globalFacilitatorCautions = rosImportParsed.globalFacilitatorCautions;
+        if (Array.isArray(rosImportParsed.objectives)) rosSession.objectives = rosImportParsed.objectives;
+        rosAgenda = (rosSession.agenda || []).map(rosAgendaRowFromSource);
+        closeRosImportModal();
+        renderRunOfShow();
+        showToast(`Imported ${d.segmentCount} segments (${d.totalMin} min total).`, '#284157');
+      } catch (e) {
+        rosImportError(e.message);
+      } finally {
+        btn.disabled = false;
       }
     }
 
@@ -1052,7 +2521,1101 @@
       if (e.target === document.getElementById('breaksModal')) closeBreaksModal();
     });
 
+    /* ── Handouts (LiveSession.handouts[] — admin upload + delete) ── */
+    let _hndSessionId = null;
+    const HND_AVAIL_LABEL = { before: 'Before', during: 'During', after: 'After' };
+
+    function hndOpenModal(id) {
+      const s = sessions.find(x => x._id === id);
+      // Compliance: handouts are live-course only (supervision is forbidden server-side).
+      if (s && s.sessionType === 'supervision') {
+        showToast('Handouts are not available on supervision sessions.', '#c0392b');
+        return;
+      }
+      _hndSessionId = id;
+      document.getElementById('hndSubtitle').textContent =
+        (s ? s.title + ' — ' : '') +
+        'attendees see each handout only inside its availability window.';
+      document.getElementById('hndErr').classList.add('hidden');
+      document.getElementById('hndFile').value = '';
+      document.getElementById('hndTitle').value = '';
+      document.getElementById('hndAvailability').value = 'during';
+      hndRenderList();
+      document.getElementById('hndModal').classList.remove('hidden');
+    }
+
+    function hndCloseModal() {
+      document.getElementById('hndModal').classList.add('hidden');
+      _hndSessionId = null;
+    }
+
+    function hndRenderList() {
+      const s = sessions.find(x => x._id === _hndSessionId);
+      const list = (s && s.handouts) || [];
+      const tbody = document.getElementById('hndTbody');
+      const empty = document.getElementById('hndEmpty');
+      tbody.innerHTML = list.map(h => `
+        <tr class="border-b border-gray-100">
+          <td class="px-3 py-2 text-forest-700">${escHtml(h.title)}</td>
+          <td class="px-3 py-2 text-center text-forest-600 uppercase">${escHtml(h.fileType || '')}</td>
+          <td class="px-3 py-2 text-center text-forest-600">${h.sizeKB ? h.sizeKB + ' KB' : '—'}</td>
+          <td class="px-3 py-2 text-center text-forest-600">${escHtml(HND_AVAIL_LABEL[h.availability] || h.availability || '')}</td>
+          <td class="px-3 py-2 text-right">
+            <button type="button" onclick="hndDelete('${h._id}')" class="text-red-500 hover:text-red-700 text-xs" title="Delete handout"><i class="fas fa-trash"></i></button>
+          </td>
+        </tr>`).join('');
+      empty.classList.toggle('hidden', list.length > 0);
+    }
+
+    async function hndUpload() {
+      const s = sessions.find(x => x._id === _hndSessionId);
+      const errEl = document.getElementById('hndErr');
+      const btn = document.getElementById('hndUploadBtn');
+      const lbl = document.getElementById('hndUploadLabel');
+      const fileEl = document.getElementById('hndFile');
+      errEl.classList.add('hidden');
+
+      const file = fileEl.files && fileEl.files[0];
+      if (!file) {
+        errEl.textContent = 'Choose a file to upload.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('title', document.getElementById('hndTitle').value.trim());
+      fd.append('availability', document.getElementById('hndAvailability').value);
+
+      btn.disabled = true;
+      lbl.textContent = 'Uploading…';
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 120000); // large files
+        const r = await fetch(`${API}/${_hndSessionId}/handouts`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd,
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Upload failed');
+        if (s) s.handouts = (s.handouts || []).concat([d.handout]);
+        document.getElementById('hndFile').value = '';
+        document.getElementById('hndTitle').value = '';
+        hndRenderList();
+        renderTable();
+        showToast('Handout uploaded.', '#284157');
+      } catch (e) {
+        errEl.textContent = 'Error: ' + e.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        lbl.textContent = 'Upload';
+      }
+    }
+
+    async function hndDelete(handoutId) {
+      if (!confirm('Delete this handout? Attendees will lose access immediately.')) return;
+      const s = sessions.find(x => x._id === _hndSessionId);
+      const errEl = document.getElementById('hndErr');
+      errEl.classList.add('hidden');
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API}/${_hndSessionId}/handouts/${handoutId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token },
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Delete failed');
+        if (s) s.handouts = (s.handouts || []).filter(h => h._id !== handoutId);
+        hndRenderList();
+        renderTable();
+        showToast('Handout deleted.', '#284157');
+      } catch (e) {
+        errEl.textContent = 'Error: ' + e.message;
+        errEl.classList.remove('hidden');
+      }
+    }
+
+    /* Close handouts modal on backdrop click */
+    document.getElementById('hndModal').addEventListener('click', function(e) {
+      if (e.target === document.getElementById('hndModal')) hndCloseModal();
+    });
+
+    /* ═════════════════ Session Series management ═════════════════ */
+    const SERIES_API = API.replace('/live-sessions', '/session-series');
+    let editingSeriesId = null;
+    let cachedSeries = [];
+
+    async function loadCachedSeries() {
+      try {
+        const r = await fetch(SERIES_API, { headers: { 'Authorization': 'Bearer ' + token } });
+        const d = await r.json();
+        cachedSeries = d.series || [];
+        populateSeriesDropdown();
+      } catch { cachedSeries = []; }
+    }
+
+    function populateSeriesDropdown() {
+      const sel = document.getElementById('f-seriesId');
+      if (!sel) return;
+      // Preserve current selection through refresh
+      const current = sel.value;
+      sel.innerHTML = '<option value="">— Standalone —</option>' +
+        cachedSeries.map(s => `<option value="${s._id}">${escHtml(s.title)}</option>`).join('');
+      sel.value = current;
+    }
+
+    function openSeriesListModal() {
+      document.getElementById('seriesListModal').style.display = 'flex';
+      renderSeriesList();
+    }
+    function closeSeriesListModal() {
+      document.getElementById('seriesListModal').style.display = 'none';
+    }
+
+    async function renderSeriesList() {
+      const content = document.getElementById('seriesListContent');
+      content.innerHTML = '<p class="text-sm text-forest-500">Loading…</p>';
+      await loadCachedSeries();
+      if (!cachedSeries.length) {
+        content.innerHTML = '<p class="text-sm text-forest-500">No series yet. Create one to get started.</p>';
+        return;
+      }
+      content.innerHTML = cachedSeries.map(s => `
+        <div class="border border-gray-200 rounded-lg p-3 mb-2 flex items-center justify-between">
+          <div>
+            <div class="text-sm font-semibold text-burgundy-900">${escHtml(s.title)} <span class="text-xs text-forest-500 font-normal ml-1">${s.totalCeuHours} CE · ${escHtml(s.autoEnroll || 'all-required')}</span></div>
+            <div class="text-xs text-forest-500">${s.isPublished ? '<span class="text-green-700">Published</span>' : '<span>Draft</span>'} · ${escHtml(s.visibility || 'public')}${s.accessCode ? ' · code ' + escHtml(s.accessCode) : ''}</div>
+          </div>
+          <div class="flex gap-2">
+            <button onclick="openSeriesEditor('${s._id}')" class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors">Edit</button>
+            <button onclick="deleteSeries('${s._id}', '${escHtml(s.title).replace(/'/g, '\\\'')}')" class="px-2.5 py-1.5 rounded-lg border border-red-200 text-xs text-red-600 hover:bg-red-50 transition-colors">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    async function openSeriesEditor(id) {
+      editingSeriesId = id || null;
+      document.getElementById('seriesEditorTitle').textContent = id ? 'Edit Series' : 'New Series';
+      document.getElementById('seriesEditorError').classList.add('hidden');
+      document.getElementById('se-title').value = '';
+      document.getElementById('se-slug').value = '';
+      document.getElementById('se-totalCeuHours').value = '';
+      document.getElementById('se-category').value = '';
+      document.getElementById('se-price').value = '0';
+      document.getElementById('se-earlyBirdPrice').value = '';
+      document.getElementById('se-earlyBirdDeadline').value = '';
+      document.getElementById('se-description').value = '';
+      document.getElementById('se-autoEnroll').value = 'all-required';
+      document.getElementById('se-visibility').value = 'public';
+      document.getElementById('se-accessCode').value = '';
+      document.getElementById('se-isPublished').checked = false;
+
+      if (id) {
+        try {
+          const r = await fetch(`${SERIES_API}/${id}`, { headers: { 'Authorization': 'Bearer ' + token } });
+          const d = await r.json();
+          const s = d.series;
+          document.getElementById('se-title').value = s.title || '';
+          document.getElementById('se-slug').value = s.slug || '';
+          document.getElementById('se-totalCeuHours').value = s.totalCeuHours ?? 0;
+          document.getElementById('se-category').value = s.category || '';
+          document.getElementById('se-price').value = s.price ?? 0;
+          document.getElementById('se-earlyBirdPrice').value = (s.earlyBirdPrice != null) ? s.earlyBirdPrice : '';
+          document.getElementById('se-earlyBirdDeadline').value = s.earlyBirdDeadline ? s.earlyBirdDeadline.slice(0, 10) : '';
+          document.getElementById('se-description').value = s.description || '';
+          document.getElementById('se-autoEnroll').value = s.autoEnroll || 'all-required';
+          document.getElementById('se-visibility').value = s.visibility || 'public';
+          document.getElementById('se-accessCode').value = s.accessCode || '';
+          document.getElementById('se-isPublished').checked = !!s.isPublished;
+        } catch (e) {
+          document.getElementById('seriesEditorError').textContent = 'Failed to load series.';
+          document.getElementById('seriesEditorError').classList.remove('hidden');
+        }
+      }
+      document.getElementById('seriesEditorModal').style.display = 'flex';
+    }
+    function closeSeriesEditor() {
+      document.getElementById('seriesEditorModal').style.display = 'none';
+      editingSeriesId = null;
+    }
+
+    async function saveSeries() {
+      const btn = document.getElementById('seriesSaveBtn');
+      const errEl = document.getElementById('seriesEditorError');
+      errEl.classList.add('hidden');
+      btn.disabled = true;
+
+      const payload = {
+        title: document.getElementById('se-title').value.trim(),
+        slug: document.getElementById('se-slug').value.trim().toLowerCase(),
+        totalCeuHours: parseFloat(document.getElementById('se-totalCeuHours').value) || 0,
+        category: document.getElementById('se-category').value.trim(),
+        price: parseFloat(document.getElementById('se-price').value) || 0,
+        earlyBirdPrice: document.getElementById('se-earlyBirdPrice').value !== ''
+          ? parseFloat(document.getElementById('se-earlyBirdPrice').value)
+          : null,
+        earlyBirdDeadline: document.getElementById('se-earlyBirdDeadline').value || null,
+        description: document.getElementById('se-description').value.trim(),
+        autoEnroll: document.getElementById('se-autoEnroll').value,
+        visibility: document.getElementById('se-visibility').value,
+        accessCode: document.getElementById('se-accessCode').value.trim(),
+        isPublished: document.getElementById('se-isPublished').checked
+      };
+
+      try {
+        const isEdit = !!editingSeriesId;
+        if (isEdit) delete payload.slug; // slug locked once created, mirror live-session pattern
+        const r = await fetch(isEdit ? `${SERIES_API}/${editingSeriesId}` : SERIES_API, {
+          method: isEdit ? 'PATCH' : 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Save failed');
+        closeSeriesEditor();
+        await renderSeriesList();
+        await loadCachedSeries();
+        showToast(isEdit ? 'Series updated.' : 'Series created.', '#284157');
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function deleteSeries(id, title) {
+      if (!confirm(`Delete series "${title}"?\n\nMember sessions will be unlinked (not deleted). This can't be undone.`)) return;
+      try {
+        const r = await fetch(`${SERIES_API}/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Delete failed');
+        showToast('Series deleted.', '#284157');
+        renderSeriesList();
+        loadCachedSeries();
+      } catch (e) {
+        showToast(e.message, '#c0392b');
+      }
+    }
+
+    /* ═════════════════ Bulk Content Loader ═════════════════ */
+    let lcSessionId = null;
+    let lcSession = null;
+    let lcFiles = [];       // [{ id, file, name, size, kind: 'slide'|'handout' }]
+    let lcFileSeq = 0;
+    let lcRouting = {};     // filename -> { segmentIndex, confidence, reason, chosen }
+    let lcPrepared = false; // AI routing prepared and awaiting confirm
+    let lcGuideAgenda = null; // parsed agenda from the pasted guide (segment titles for routing)
+    let lcActiveTab = 'manifest';
+    let lcManifestEntry = null;   // the manifest entry matching this session's slug
+    let lcManifestRouting = {};   // slide filename -> { segmentIndex, confidence, reason, chosen }
+    let lcSnippetText = '';       // last "save to manifest" snippet
+    let lcLastManifestEntry = null; // last confirmed { guide?, slides?, handouts? } for PATCH
+
+    const LC_TABS = ['manifest', 'droppaste', 'summary'];
+    function lcSwitchTab(tab) {
+      lcActiveTab = tab;
+      LC_TABS.forEach(t => {
+        const panel = document.getElementById('lcTab-' + t);
+        const btn = document.getElementById('lcTabBtn-' + t);
+        if (panel) panel.classList.toggle('hidden', t !== tab);
+        if (btn) {
+          const on = t === tab;
+          btn.style.background = on ? '#fff' : 'transparent';
+          btn.style.color = on ? '#284157' : '#6b7280';
+          btn.style.borderColor = on ? '#e5e7eb' : 'transparent';
+        }
+      });
+    }
+
+    // Extension → which list a dropped file self-sorts into.
+    const LC_SLIDE_EXT = { png: true, jpg: true, jpeg: true };
+    const LC_HANDOUT_EXT = { pdf: true, docx: true, pptx: true, xlsx: true };
+
+    function lcClassify(name) {
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      if (LC_SLIDE_EXT[ext]) return 'slide';
+      if (LC_HANDOUT_EXT[ext]) return 'handout';
+      return null;
+    }
+
+    function lcHumanSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + ' KB';
+      return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function openLoadContentModal(id) {
+      const s = sessions.find(x => x._id === id);
+      if (!s) { showToast('Session not found.', '#c0392b'); return; }
+      if (s.sessionType === 'supervision') {
+        showToast('Bulk content load is not available on supervision sessions.', '#c0392b');
+        return;
+      }
+      lcSessionId = id;
+      lcSession = s;
+      lcFiles = [];
+      lcRouting = {};
+      lcPrepared = false;
+      lcGuideAgenda = null;
+      lcManifestEntry = null;
+      lcManifestRouting = {};
+      lcSnippetText = '';
+      lcLastManifestEntry = null;
+      document.getElementById('lcSubtitle').textContent =
+        s.title + ' — load the guide, slides (AI-routed to segments) and handouts from a manifest, drop zone, or URLs.';
+      document.getElementById('lcGuide').value = '';
+      document.getElementById('lcUrls').value = '';
+      document.getElementById('lcGuideChars').textContent = '0';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      document.getElementById('lcProgressSection').classList.add('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcErrors').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
+      document.getElementById('lcSummaryEmpty').classList.remove('hidden');
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcLoadAllBtn').disabled = false;
+      // Manifest tab reset
+      document.getElementById('lcManifestStatus').classList.add('hidden');
+      document.getElementById('lcManifestPreview').classList.add('hidden');
+      document.getElementById('lcManifestActions').classList.add('hidden');
+      document.getElementById('lcManifestPreview').innerHTML = '';
+      lcResetBars();
+      lcRenderLists();
+      lcSwitchTab('manifest');
+      document.getElementById('loadContentModal').classList.remove('hidden');
+    }
+
+    function closeLoadContentModal() {
+      document.getElementById('loadContentModal').classList.add('hidden');
+      lcSessionId = null;
+      lcSession = null;
+      lcFiles = [];
+    }
+
+    function lcGuideCount() {
+      document.getElementById('lcGuideChars').textContent =
+        String(document.getElementById('lcGuide').value.length);
+    }
+
+    function lcHandleFiles(fileList) {
+      const rejected = [];
+      Array.from(fileList || []).forEach(file => {
+        const kind = lcClassify(file.name);
+        if (!kind) { rejected.push(file.name); return; }
+        lcFiles.push({ id: ++lcFileSeq, file, name: file.name, size: file.size, kind });
+      });
+      // Any change to the file set invalidates a prepared routing pass.
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+      if (rejected.length) showToast('Skipped unsupported file(s): ' + rejected.join(', '), '#c0392b');
+    }
+
+    function lcRenderLists() {
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      const handouts = lcFiles.filter(f => f.kind === 'handout');
+      document.getElementById('lcSlideCount').textContent = String(slides.length);
+      document.getElementById('lcHandoutCount').textContent = String(handouts.length);
+      document.getElementById('lcSlideList').innerHTML = lcRenderItems(slides, 'slide');
+      document.getElementById('lcHandoutList').innerHTML = lcRenderItems(handouts, 'handout');
+    }
+
+    function lcRenderItems(items, kind) {
+      if (!items.length) {
+        return `<p class="text-xs text-forest-400 px-1 py-2">Drop ${kind === 'slide' ? 'PNG/JPG' : 'PDF/DOCX/PPTX/XLSX'} here…</p>`;
+      }
+      const otherKind = kind === 'slide' ? 'handout' : 'slide';
+      const moveIcon = kind === 'slide' ? 'fa-arrow-right' : 'fa-arrow-left';
+      return items.map(f => `
+        <div draggable="true" ondragstart="lcItemDragStart(event, ${f.id})"
+          class="flex items-center justify-between gap-2 border border-gray-200 rounded-lg px-2 py-1.5 bg-stone-50 cursor-grab">
+          <span class="text-xs text-forest-700 truncate" title="${escHtml(f.name)}"><i class="fas fa-grip-vertical text-forest-300 mr-1"></i>${escHtml(f.name)}</span>
+          <span class="flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-forest-400">${lcHumanSize(f.size)}</span>
+            <button type="button" title="Move to ${otherKind}s" onclick="lcMoveFile(${f.id}, '${otherKind}')" class="text-forest-400 hover:text-burgundy-700"><i class="fas ${moveIcon} text-xs"></i></button>
+            <button type="button" title="Remove" onclick="lcRemoveFile(${f.id})" class="text-forest-400 hover:text-red-600"><i class="fas fa-times text-xs"></i></button>
+          </span>
+        </div>`).join('');
+    }
+
+    function lcMoveFile(id, targetKind) {
+      const f = lcFiles.find(x => x.id === id);
+      if (!f || f.kind === targetKind) return;
+      f.kind = targetKind;
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+    }
+
+    function lcRemoveFile(id) {
+      lcFiles = lcFiles.filter(x => x.id !== id);
+      lcPrepared = false;
+      document.getElementById('lcLoadAllLabel').textContent = 'Load All';
+      document.getElementById('lcRoutingSection').classList.add('hidden');
+      lcRenderLists();
+    }
+
+    /* drag a file between the Slides and Handouts lists */
+    function lcItemDragStart(e, id) { e.dataTransfer.setData('text/plain', String(id)); }
+    function lcListDragOver(e) { e.preventDefault(); e.currentTarget.style.background = '#eef2f5'; }
+    function lcListDragLeave(e) { e.currentTarget.style.background = '#fff'; }
+    function lcListDrop(e, targetKind) {
+      e.preventDefault();
+      e.currentTarget.style.background = '#fff';
+      const id = parseInt(e.dataTransfer.getData('text/plain'), 10);
+      if (Number.isFinite(id)) lcMoveFile(id, targetKind);
+    }
+
+    /* drop files onto the drop zone */
+    (function wireLcDropZone() {
+      const dz = document.getElementById('lcDropZone');
+      if (!dz) return;
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.background = '#eef2f5'; });
+      dz.addEventListener('dragleave', () => { dz.style.background = '#fff'; });
+      dz.addEventListener('drop', e => {
+        e.preventDefault();
+        dz.style.background = '#fff';
+        if (e.dataTransfer?.files?.length) lcHandleFiles(e.dataTransfer.files);
+      });
+    })();
+
+    function lcResetBars() {
+      ['Guide', 'Slide', 'Handout'].forEach(k => {
+        document.getElementById('lc' + k + 'Bar').style.width = '0%';
+        document.getElementById('lc' + k + 'Pct').textContent = '—';
+      });
+    }
+    function lcSetBar(kind, done, total) {
+      const pct = total ? Math.round((done / total) * 100) : 100;
+      document.getElementById('lc' + kind + 'Bar').style.width = pct + '%';
+      document.getElementById('lc' + kind + 'Pct').textContent = total ? `${done}/${total}` : 'n/a';
+    }
+
+    // Segment titles for AI routing: prefer the just-pasted guide's agenda,
+    // else the session's existing agenda (in memory from the session fetch).
+    function lcSegmentsForRouting() {
+      const agenda = lcGuideAgenda || lcSession?.agenda || [];
+      return agenda.map((s, i) => ({ segmentIndex: i, title: s.title || '' }));
+    }
+
+    // Set the chosen segment for a routing dropdown (filename carried on the
+    // element's data-fname, so filenames with quotes can't break a handler).
+    function lcSetRoute(sel) {
+      const name = sel.getAttribute('data-fname');
+      if (!lcRouting[name]) lcRouting[name] = {};
+      lcRouting[name].chosen = sel.value === '' ? null : parseInt(sel.value, 10);
+    }
+
+    function lcRenderRouting() {
+      const segments = lcSegmentsForRouting();
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      document.getElementById('lcRoutingList').innerHTML = slides.map(f => {
+        const r = lcRouting[f.name] || {};
+        const conf = Number(r.confidence);
+        const matched = Number.isInteger(Number(r.segmentIndex)) && conf >= 0;
+        let badge;
+        if (!matched) {
+          badge = '<span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700"><i class="fas fa-triangle-exclamation"></i> unmatched</span>';
+        } else if (conf >= 0.8) {
+          badge = `<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">auto · ${(conf * 100).toFixed(0)}%</span>`;
+        } else {
+          badge = `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">confirm · ${(conf * 100).toFixed(0)}%</span>`;
+        }
+        const chosen = r.chosen != null ? r.chosen : (matched ? Number(r.segmentIndex) : '');
+        const options = ['<option value=""' + (chosen === '' ? ' selected' : '') + '>— unassigned —</option>']
+          .concat(segments.map(s =>
+            `<option value="${s.segmentIndex}"${String(chosen) === String(s.segmentIndex) ? ' selected' : ''}>${s.segmentIndex}. ${escHtml(s.title || '(untitled)')}</option>`))
+          .join('');
+        return `<div class="border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs font-medium text-forest-800 truncate" title="${escHtml(f.name)}">${escHtml(f.name)}</span>
+            ${badge}
+          </div>
+          <select data-fname="${escHtml(f.name)}" onchange="lcSetRoute(this)"
+            class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:border-burgundy-500">${options}</select>
+          ${r.reason ? `<p class="text-xs text-forest-400 mt-1">${escHtml(r.reason)}</p>` : ''}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No slides to route.</p>';
+      document.getElementById('lcRoutingSection').classList.remove('hidden');
+    }
+
+    async function lcLoadAll() {
+      if (!lcSessionId) return;
+      const btn = document.getElementById('lcLoadAllBtn');
+      const label = document.getElementById('lcLoadAllLabel');
+      const errEl = document.getElementById('lcErrors');
+      const guideText = document.getElementById('lcGuide').value.trim();
+      const urls = document.getElementById('lcUrls').value.split('\n').map(u => u.trim()).filter(Boolean);
+      const slides = lcFiles.filter(f => f.kind === 'slide');
+      const handouts = lcFiles.filter(f => f.kind === 'handout');
+
+      if (!guideText && !slides.length && !handouts.length && !urls.length) {
+        showToast('Add a guide, files, or URLs first.', '#c0392b');
+        return;
+      }
+
+      errEl.classList.add('hidden');
+      const errors = [];
+
+      // ── Phase A: prepare AI routing for uploaded slides (one call), then pause
+      //    for host confirmation before uploading. Skipped when there are no
+      //    file-slides. URL slides are routed server-side in /fetch-and-load.
+      if (slides.length && !lcPrepared) {
+        btn.disabled = true;
+        label.textContent = 'Routing slides…';
+        try {
+          // Commit the guide first so routing (and later slide indexes) line up
+          // with the new agenda. Preview → commit, exactly like Import Guide.
+          if (guideText) { await lcCommitGuide(guideText); }
+          const r = await fetch(`${API}/ai-route`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ segments: lcSegmentsForRouting(), filenames: slides.map(s => s.name) })
+          });
+          const d = await r.json();
+          if (!r.ok) throw new Error(d.error || 'AI routing failed');
+          lcRouting = {};
+          (d.routing || []).forEach(x => { lcRouting[x.filename] = x; });
+        } catch (e) {
+          showToast('AI routing failed: ' + e.message + ' — assign segments manually.', '#c0392b');
+          lcRouting = {};
+        }
+        lcPrepared = true;
+        lcRenderRouting();
+        label.textContent = 'Confirm & Load All';
+        btn.disabled = false;
+        return; // wait for the host to confirm/adjust the segment assignments
+      }
+
+      // ── Phase B: everything runs. ──
+      btn.disabled = true;
+      label.textContent = 'Loading…';
+      lcSwitchTab('summary');
+      document.getElementById('lcSummaryEmpty').classList.add('hidden');
+      document.getElementById('lcProgressSection').classList.remove('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
+      lcResetBars();
+
+      let segCount = 0, slidesLoaded = 0, segmentsTouched = new Set(), handoutsLoaded = 0;
+      const uploadedSlides = [], uploadedHandouts = []; // for the "save to manifest" snippet
+
+      // 1) Guide (only if not already committed during Phase A).
+      if (guideText && !lcGuideAgenda) {
+        try {
+          const res = await lcCommitGuide(guideText);
+          segCount = res.segmentCount || 0;
+          lcSetBar('Guide', 1, 1);
+        } catch (e) { errors.push('Guide: ' + e.message); lcSetBar('Guide', 0, 1); }
+      } else if (guideText && lcGuideAgenda) {
+        segCount = lcGuideAgenda.length;
+        lcSetBar('Guide', 1, 1);
+      } else {
+        document.getElementById('lcGuidePct').textContent = 'skipped';
+      }
+
+      // 2) Slides — upload each to its chosen segment, in parallel.
+      if (slides.length) {
+        let done = 0;
+        lcSetBar('Slide', 0, slides.length);
+        await Promise.all(slides.map(async f => {
+          const r = lcRouting[f.name] || {};
+          const segIdx = r.chosen != null ? r.chosen : (Number.isInteger(r.segmentIndex) && Number(r.confidence) >= 0.8 ? r.segmentIndex : null);
+          if (segIdx == null) { errors.push(`${f.name}: no segment assigned — skipped.`); done++; lcSetBar('Slide', done, slides.length); return; }
+          try {
+            const fd = new FormData();
+            fd.append('file', f.file);
+            const resp = await fetch(`${API}/${lcSessionId}/agenda/${segIdx}/media`, {
+              method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+            });
+            const d = await resp.json();
+            if (!resp.ok) throw new Error(d.error || 'upload failed');
+            slidesLoaded++; segmentsTouched.add(segIdx);
+            const mu = (d.media || []).slice(-1)[0];
+            if (mu) uploadedSlides.push({ file: mu.url, segmentHint: (lcSession?.agenda || [])[segIdx]?.title || '' });
+          } catch (e) { errors.push(`${f.name}: ${e.message}`); }
+          done++; lcSetBar('Slide', done, slides.length);
+        }));
+      } else {
+        document.getElementById('lcSlidePct').textContent = 'skipped';
+      }
+
+      // 3) Handouts — upload each in parallel.
+      if (handouts.length) {
+        let done = 0;
+        lcSetBar('Handout', 0, handouts.length);
+        await Promise.all(handouts.map(async f => {
+          try {
+            const fd = new FormData();
+            fd.append('file', f.file);
+            fd.append('availability', 'during');
+            const resp = await fetch(`${API}/${lcSessionId}/handouts`, {
+              method: 'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd
+            });
+            const d = await resp.json();
+            if (!resp.ok) throw new Error(d.error || 'upload failed');
+            handoutsLoaded++;
+            if (d.handout) uploadedHandouts.push({ file: d.handout.fileUrl, label: d.handout.title });
+          } catch (e) { errors.push(`${f.name}: ${e.message}`); }
+          done++; lcSetBar('Handout', done, handouts.length);
+        }));
+      } else {
+        document.getElementById('lcHandoutPct').textContent = 'skipped';
+      }
+
+      // 4) URLs — server fetches, classifies, AI-routes slides and uploads.
+      if (urls.length) {
+        try {
+          const resp = await fetch(`${API}/${lcSessionId}/fetch-and-load`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ urls })
+          });
+          const d = await resp.json();
+          if (!resp.ok) throw new Error(d.error || 'URL load failed');
+          slidesLoaded += d.summary?.slidesLoaded || 0;
+          handoutsLoaded += d.summary?.handoutsLoaded || 0;
+          (d.summary?.segmentsTouched ? Array.from({ length: d.summary.segmentsTouched }, (_, i) => 'url' + i) : []).forEach(x => segmentsTouched.add(x));
+          (d.errors || []).forEach(e => errors.push('URL: ' + e));
+        } catch (e) { errors.push('URLs: ' + e.message); }
+      }
+
+      // Summary.
+      const segNames = Array.from(segmentsTouched)
+        .filter(x => typeof x === 'number')
+        .map(i => (lcGuideAgenda || lcSession?.agenda || [])[i]?.title || ('segment ' + i));
+      const summary = document.getElementById('lcSummary');
+      summary.innerHTML = `<strong>Done.</strong> ${segCount ? segCount + ' segments imported · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s)${segNames.length ? ' (' + escHtml(segNames.join(', ')) + ')' : ''} · ${handoutsLoaded} handout(s).`;
+      summary.classList.remove('hidden');
+      if (errors.length) {
+        errEl.textContent = errors.join('\n');
+        errEl.classList.remove('hidden');
+      }
+      lcShowSnippet(uploadedSlides, uploadedHandouts, guideText);
+
+      // Refresh the in-memory session so the table badges update.
+      showToast('Content loaded.', '#284157');
+      loadSessions();
+      btn.disabled = false;
+      label.textContent = 'Load All';
+      lcPrepared = false;
+    }
+
+    // Preview → commit the pasted guide (mirrors the Import Guide flow), caching
+    // the parsed agenda so slide routing/indexes match the new segments.
+    async function lcCommitGuide(markdown) {
+      const pr = await fetch(`${API}/${lcSessionId}/run-of-show/preview`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown })
+      });
+      const pd = await pr.json();
+      if (!pr.ok) throw new Error(pd.error || 'Guide preview failed');
+      const parsed = pd.parsed || {};
+      const cr = await fetch(`${API}/${lcSessionId}/run-of-show/commit`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          agenda: parsed.agenda,
+          preFlightChecklist: parsed.preFlightChecklist,
+          globalFacilitatorCautions: parsed.globalFacilitatorCautions,
+          objectives: parsed.objectives || []
+        })
+      });
+      const cd = await cr.json();
+      if (!cr.ok) throw new Error(cd.error || 'Guide commit failed');
+      lcGuideAgenda = parsed.agenda || [];
+      if (lcSession) lcSession.agenda = lcGuideAgenda;
+      return cd;
+    }
+
+    /* ── Tab 1: Content manifest ── */
+
+    // Resolve a manifest file reference to a fetchable URL. Absolute http(s)
+    // URLs (Cloudinary/Drive) pass through; relative paths resolve against
+    // baseUrl (default same origin). TODO placeholders resolve to null.
+    function lcResolveManifestRef(ref, baseUrl) {
+      const s = String(ref || '').trim();
+      if (!s || /todo/i.test(s)) return null;
+      if (/^https?:\/\//i.test(s)) return s;
+      const base = (baseUrl || '').replace(/\/$/, '');
+      return (base ? base + '/' : '/') + s.replace(/^\//, '');
+    }
+
+    async function lcLoadManifest() {
+      if (!lcSession) return;
+      const btn = document.getElementById('lcManifestLoadBtn');
+      const statusEl = document.getElementById('lcManifestStatus');
+      btn.disabled = true;
+      statusEl.classList.remove('hidden');
+      statusEl.textContent = 'Loading content-manifest.json…';
+      document.getElementById('lcManifestPreview').classList.add('hidden');
+      document.getElementById('lcManifestActions').classList.add('hidden');
+      lcManifestRouting = {};
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 10000);
+        const r = await fetch('/content-manifest.json', { signal: controller.signal, cache: 'no-store' });
+        clearTimeout(tid);
+        if (!r.ok) throw new Error('content-manifest.json not found (HTTP ' + r.status + ')');
+        const manifest = await r.json();
+        const entry = (manifest.sessions || {})[lcSession.slug];
+        if (!entry) throw new Error('No manifest entry for slug "' + lcSession.slug + '".');
+        lcManifestEntry = { ...entry, _baseUrl: manifest.baseUrl || '' };
+
+        // Populate the Drop/Paste guide textarea when the manifest guide is
+        // inline markdown (not a file path) — filenames are shown in the preview.
+        const gv = String(entry.guide || '').trim();
+        if (gv && !/\.(md|markdown|txt)$/i.test(gv) && /\n|#|\s/.test(gv)) {
+          document.getElementById('lcGuide').value = gv;
+          lcGuideCount();
+        }
+
+        // AI-route manifest slides against this session's agenda titles.
+        const slides = entry.slides || [];
+        if (slides.length && (lcSession.agenda || []).length) {
+          const segmentTitles = (lcSession.agenda || []).map((s, i) => ({ idx: i, title: s.title || '' }));
+          try {
+            const rr = await fetch(`${API}/ai-route`, {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+              body: JSON.stringify({ segmentTitles, items: slides.map(sl => ({ filename: sl.file, hint: sl.segmentHint || '' })) })
+            });
+            const rd = await rr.json();
+            if (rr.ok) (rd.routing || []).forEach(x => { lcManifestRouting[x.filename] = x; });
+          } catch { /* leave unrouted — host assigns manually */ }
+        }
+        statusEl.classList.add('hidden');
+        lcRenderManifestPreview();
+      } catch (e) {
+        statusEl.textContent = e.message;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function lcRenderManifestPreview() {
+      const entry = lcManifestEntry;
+      const agenda = lcSession?.agenda || [];
+      const segOptions = (chosen) =>
+        ['<option value="">— unassigned —</option>']
+          .concat(agenda.map((s, i) => `<option value="${i}"${String(chosen) === String(i) ? ' selected' : ''}>${i}. ${escHtml(s.title || '(untitled)')}</option>`))
+          .join('');
+
+      const guide = String(entry.guide || '').trim();
+      const guideIsPath = guide && !/\n/.test(guide) && /\.(md|markdown|txt)$/i.test(guide);
+      const guideFirstLine = guide ? guide.split('\n')[0].slice(0, 80) : '';
+      const guideCard = guide
+        ? `<div class="border border-gray-200 rounded-lg p-3 bg-white">
+            <p class="text-xs font-semibold mb-1" style="color:#284157;">Guide</p>
+            <p class="text-xs text-forest-600">${guideIsPath ? 'File: ' : (guide.length + ' chars · ')}${escHtml(guideFirstLine)}${guide.length > 80 && !guideIsPath ? '…' : ''}</p>
+          </div>`
+        : `<div class="border border-gray-200 rounded-lg p-3 bg-white"><p class="text-xs text-forest-500">No guide in manifest.</p></div>`;
+
+      const slides = entry.slides || [];
+      const slideRows = slides.map(sl => {
+        const r = lcManifestRouting[sl.file] || {};
+        const conf = Number(r.confidence);
+        const matched = Number.isInteger(Number(r.segmentIndex)) && conf >= 0;
+        const resolved = lcResolveManifestRef(sl.file, entry._baseUrl);
+        const chosen = r.chosen != null ? r.chosen : (matched ? Number(r.segmentIndex) : '');
+        let badge;
+        if (!resolved) badge = '<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">TODO URL</span>';
+        else if (!matched) badge = '<span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">unmatched</span>';
+        else if (conf >= 0.8) badge = `<span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">auto · ${(conf * 100).toFixed(0)}%</span>`;
+        else badge = `<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">confirm · ${(conf * 100).toFixed(0)}%</span>`;
+        return `<div class="border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="text-xs font-medium text-forest-800 truncate" title="${escHtml(sl.file)}">${escHtml(sl.file)}</span>
+            ${badge}
+          </div>
+          <select data-fname="${escHtml(sl.file)}" onchange="lcManifestSetRoute(this)" class="w-full border border-gray-300 rounded-lg px-2 py-1 text-xs bg-white focus:outline-none focus:border-burgundy-500">${segOptions(chosen)}</select>
+          ${sl.segmentHint ? `<p class="text-xs text-forest-400 mt-1">hint: ${escHtml(sl.segmentHint)}</p>` : ''}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No slides in manifest.</p>';
+
+      const handouts = entry.handouts || [];
+      const handoutRows = handouts.map(h => {
+        const resolved = lcResolveManifestRef(h.file, entry._baseUrl);
+        return `<div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 bg-white">
+          <span class="text-xs text-forest-700 truncate" title="${escHtml(h.file)}">${escHtml(h.label || h.file)}</span>
+          ${resolved ? '' : '<span class="text-xs px-2 py-0.5 rounded-full" style="background:#FDF3E0;color:#8B6914;">TODO URL</span>'}
+        </div>`;
+      }).join('') || '<p class="text-xs text-forest-500">No handouts in manifest.</p>';
+
+      document.getElementById('lcManifestPreview').innerHTML =
+        guideCard +
+        `<div><p class="text-xs font-semibold mb-1" style="color:#284157;">Slides (${slides.length}) — AI segment matches</p><div class="space-y-2">${slideRows}</div></div>` +
+        `<div><p class="text-xs font-semibold mb-1" style="color:#284157;">Handouts (${handouts.length})</p><div class="space-y-2">${handoutRows}</div></div>`;
+      document.getElementById('lcManifestPreview').classList.remove('hidden');
+      document.getElementById('lcManifestActions').classList.remove('hidden');
+    }
+
+    function lcManifestSetRoute(sel) {
+      const name = sel.getAttribute('data-fname');
+      if (!lcManifestRouting[name]) lcManifestRouting[name] = {};
+      lcManifestRouting[name].chosen = sel.value === '' ? null : parseInt(sel.value, 10);
+    }
+
+    async function lcLoadAllFromManifest() {
+      if (!lcManifestEntry) return;
+      const btn = document.getElementById('lcManifestLoadAllBtn');
+      const label = document.getElementById('lcManifestLoadAllLabel');
+      btn.disabled = true;
+      label.textContent = 'Loading…';
+      lcSwitchTab('summary');
+      document.getElementById('lcSummaryEmpty').classList.add('hidden');
+      document.getElementById('lcProgressSection').classList.remove('hidden');
+      document.getElementById('lcSummary').classList.add('hidden');
+      document.getElementById('lcErrors').classList.add('hidden');
+      document.getElementById('lcSnippetWrap').classList.add('hidden');
+      lcResetBars();
+
+      const entry = lcManifestEntry;
+      const errors = [];
+      let segCount = 0, slidesLoaded = 0, handoutsLoaded = 0;
+      const segmentsTouched = new Set();
+
+      // 1) Guide — path (fetch text) or inline; then preview + commit.
+      const guideRaw = String(entry.guide || '').trim();
+      if (guideRaw) {
+        try {
+          let markdown = guideRaw;
+          const guideIsPath = !/\n/.test(guideRaw) && /\.(md|markdown|txt)$/i.test(guideRaw);
+          if (guideIsPath) {
+            const gu = lcResolveManifestRef(guideRaw, entry._baseUrl);
+            if (!gu) throw new Error('guide path unresolved (TODO)');
+            const gr = await fetch(gu);
+            if (!gr.ok) throw new Error('guide fetch HTTP ' + gr.status);
+            markdown = await gr.text();
+          }
+          const res = await lcCommitGuide(markdown);
+          segCount = res.segmentCount || (lcGuideAgenda || []).length;
+          lcSetBar('Guide', 1, 1);
+        } catch (e) { errors.push('Guide: ' + e.message); lcSetBar('Guide', 0, 1); }
+      } else { document.getElementById('lcGuidePct').textContent = 'skipped'; }
+
+      // 2/3) Slides + handouts → server fetch-and-load with explicit items.
+      const slideItems = [];
+      (entry.slides || []).forEach(sl => {
+        const url = lcResolveManifestRef(sl.file, entry._baseUrl);
+        const r = lcManifestRouting[sl.file] || {};
+        const segIdx = r.chosen != null ? r.chosen : (Number.isInteger(Number(r.segmentIndex)) && Number(r.confidence) >= 0.8 ? Number(r.segmentIndex) : null);
+        if (!url) { errors.push(`${sl.file}: TODO URL — fill in the manifest after first upload.`); return; }
+        if (segIdx == null) { errors.push(`${sl.file}: no segment assigned — skipped.`); return; }
+        slideItems.push({ url, type: 'slide', segmentIndex: segIdx });
+      });
+      const handoutItems = [];
+      (entry.handouts || []).forEach(h => {
+        const url = lcResolveManifestRef(h.file, entry._baseUrl);
+        if (!url) { errors.push(`${h.label || h.file}: TODO URL — fill in the manifest.`); return; }
+        handoutItems.push({ url, type: 'handout', label: h.label || '' });
+      });
+
+      lcSetBar('Slide', 0, slideItems.length);
+      lcSetBar('Handout', 0, handoutItems.length);
+      const items = slideItems.concat(handoutItems);
+      if (items.length) {
+        try {
+          const resp = await fetch(`${API}/${lcSessionId}/fetch-and-load`, {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ items })
+          });
+          const d = await resp.json();
+          if (!resp.ok) throw new Error(d.error || 'Load failed');
+          (d.loaded || []).forEach(l => {
+            if (l.type === 'slide') { slidesLoaded++; segmentsTouched.add(l.segmentIndex); }
+            else handoutsLoaded++;
+          });
+          (d.errors || []).forEach(e => errors.push(`${e.url || ''}: ${e.error}`));
+        } catch (e) { errors.push('Load: ' + e.message); }
+      }
+      lcSetBar('Slide', slideItems.length, slideItems.length);
+      lcSetBar('Handout', handoutItems.length, handoutItems.length);
+      if (!slideItems.length) document.getElementById('lcSlidePct').textContent = 'skipped';
+      if (!handoutItems.length) document.getElementById('lcHandoutPct').textContent = 'skipped';
+
+      const segNames = Array.from(segmentsTouched).map(i => (lcSession?.agenda || [])[i]?.title || ('segment ' + i));
+      const summary = document.getElementById('lcSummary');
+      summary.innerHTML = `<strong>Done (manifest).</strong> ${segCount ? segCount + ' segments imported · ' : ''}${slidesLoaded} slide(s) to ${segmentsTouched.size} segment(s)${segNames.length ? ' (' + escHtml(segNames.join(', ')) + ')' : ''} · ${handoutsLoaded} handout(s).`;
+      summary.classList.remove('hidden');
+      if (errors.length) {
+        const errEl = document.getElementById('lcErrors');
+        errEl.textContent = errors.join('\n');
+        errEl.classList.remove('hidden');
+      }
+      showToast('Manifest content loaded.', '#284157');
+      loadSessions();
+      btn.disabled = false;
+      label.textContent = 'Load All from Manifest';
+    }
+
+    // "Save to manifest": after a load, surface a JSON snippet of the freshly-
+    // minted Cloudinary URLs (and any inline guide) and stash the entry so the
+    // "Save to manifest" button can PATCH it into content-manifest.json.
+    function lcShowSnippet(slides, handouts, guide) {
+      if (!slides.length && !handouts.length && !guide) return;
+      const entry = {};
+      if (guide) entry.guide = guide;
+      if (slides.length) entry.slides = slides;
+      if (handouts.length) entry.handouts = handouts;
+      lcLastManifestEntry = entry;
+      lcSnippetText = JSON.stringify({ [lcSession?.slug || 'SESSION_SLUG']: entry }, null, 2);
+      document.getElementById('lcSnippet').value = lcSnippetText;
+      document.getElementById('lcSnippetWrap').classList.remove('hidden');
+    }
+
+    function lcCopySnippet() {
+      const ta = document.getElementById('lcSnippet');
+      ta.select();
+      try { document.execCommand('copy'); showToast('Snippet copied.', '#284157'); }
+      catch { showToast('Select and copy manually.', '#c0392b'); }
+    }
+
+    // Persist the confirmed entry server-side via PATCH — writes content-manifest.json.
+    async function lcSaveToManifest() {
+      if (!lcSession || !lcLastManifestEntry) { showToast('Nothing to save yet — run a load first.', '#c0392b'); return; }
+      const btn = document.getElementById('lcSaveManifestBtn');
+      btn.disabled = true;
+      try {
+        const controller = new AbortController();
+        const tid = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API_URL}/api/admin/content-manifest`, {
+          method: 'PATCH',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: lcSession.slug, entry: lcLastManifestEntry }),
+          signal: controller.signal
+        });
+        clearTimeout(tid);
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error || 'Save failed');
+        showToast('Saved to content-manifest.json.', '#284157');
+      } catch (e) {
+        showToast('Save failed: ' + e.message, '#c0392b');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    /* Close bulk-content modal on backdrop click */
+    document.getElementById('loadContentModal').addEventListener('click', function(e) {
+      if (e.target === document.getElementById('loadContentModal')) closeLoadContentModal();
+    });
+
     checkAuth();
   </script>
+
+<!-- Series list + editor modal -->
+<div id="seriesListModal" class="fixed inset-0 z-[240] bg-black/50 items-center justify-center p-4" style="display:none;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 class="font-display text-2xl font-semibold text-burgundy-900">Session Series</h2>
+      <div class="flex items-center gap-2">
+        <button onclick="openSeriesEditor(null)" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-3 py-2 text-sm font-semibold transition-colors">
+          <i class="fas fa-plus text-xs mr-1"></i> New Series
+        </button>
+        <button onclick="closeSeriesListModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+          <i class="fas fa-times text-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div id="seriesListContent" class="px-6 py-5"></div>
+  </div>
+</div>
+
+<!-- Series editor modal (create/edit one series) -->
+<div id="seriesEditorModal" class="fixed inset-0 z-[250] bg-black/60 items-center justify-center p-4" style="display:none;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto border border-burgundy-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 id="seriesEditorTitle" class="font-display text-2xl font-semibold text-burgundy-900">New Series</h2>
+      <button onclick="closeSeriesEditor()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
+        <i class="fas fa-times text-lg"></i>
+      </button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Title *</label>
+        <input type="text" id="se-title" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug * <span class="text-xs text-forest-500 font-normal">(lowercase, hyphens)</span></label>
+        <input type="text" id="se-slug" pattern="[a-z0-9\-]+" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Total CE Hours *</label>
+        <input type="number" id="se-totalCeuHours" min="0" step="0.5" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Category</label>
+        <input type="text" id="se-category" placeholder="Ethics, Telehealth, etc." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
+          <input type="number" id="se-price" min="0" step="0.01" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Early-Bird Price</label>
+          <input type="number" id="se-earlyBirdPrice" min="0" step="0.01" placeholder="optional" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Early-Bird Deadline</label>
+          <input type="date" id="se-earlyBirdDeadline" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Description</label>
+        <textarea id="se-description" rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"></textarea>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Auto-Enroll Mode</label>
+        <select id="se-autoEnroll" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+          <option value="all-required">All required sessions (default)</option>
+          <option value="all">All sessions (required + optional)</option>
+          <option value="manual">Manual — attendee picks individually</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Visibility</label>
+          <select id="se-visibility" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Access Code</label>
+          <input type="text" id="se-accessCode" placeholder="e.g. TMHSERIES" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+      </div>
+      <div>
+        <label class="inline-flex items-center gap-2">
+          <input type="checkbox" id="se-isPublished">
+          <span class="text-sm text-burgundy-800">Published</span>
+        </label>
+      </div>
+      <div id="seriesEditorError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+        <button onclick="closeSeriesEditor()" class="px-4 py-2 rounded-lg border border-gray-200 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+        <button onclick="saveSeries()" id="seriesSaveBtn" class="bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg px-4 py-2 text-sm font-semibold transition-colors">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

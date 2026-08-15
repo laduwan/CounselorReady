@@ -28,6 +28,9 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 const FROM = 'CounselorReady <noreply@counselorready.com>';
 const SITE = process.env.SITE_URL || 'https://counselorready.com';
+// Admin alert recipient — mirrors adminNotificationService's ADMIN_ALERT_EMAIL
+// default so autopilot summaries land in the same inbox as other admin alerts.
+const ADMIN_EMAIL = process.env.ADMIN_ALERT_EMAIL || 'ke@counselorready.com';
 
 // Only send SMS if the env flag is explicitly enabled; default false (Phase 2 decision pending)
 const SMS_ENABLED = process.env.SMS_SESSION_LOGISTICS_ENABLED === 'true';
@@ -224,12 +227,21 @@ function wrapUpHtml(session, user, gaps, handouts, replayUrl) {
     ? `<p>The <strong>replay</strong> is available — <a href="${replayDeepLink(session)}" style="color:#4A7C59;">watch it here</a>.</p>`
     : `<p>The replay is being processed and will be available shortly. We'll send you a follow-up email when it's ready.</p>`;
 
+  // Assessment CTA — ONLY when the session has an enabled graded assessment.
+  const assessmentHtml = session.assessment?.enabled
+    ? `<div style="background:#F8F7F4;border:1px solid #EDE9E3;border-radius:8px;padding:16px;margin:16px 0;">
+        <p style="margin:0 0 8px;"><strong>One more step for your certificate:</strong> this session requires a short assessment (passing score ${session.assessment.passThresholdPct ?? 80}%).</p>
+        <a class="btn" href="${SITE}/live-assessment.html?session=${esc(session.slug)}">Take the Assessment</a>
+      </div>`
+    : '';
+
   return emailShell(`
     <p>Hi ${esc(firstName)},</p>
     <p>Thank you for attending <strong>${esc(session.title)}</strong>! We're glad you joined us.</p>
     ${gapBlock}
     ${handoutsHtml}
     ${replayHtml}
+    ${assessmentHtml}
     <p>Your CE certificate (${session.ceuHours} hours) will be issued within 24 hours to eligible participants. You'll receive a separate email when it's ready.</p>
     <p style="font-size:13px;color:#57534e;">CE credit is based on verified live attendance minutes and cannot be earned through replay or catch-up content.</p>
   `);
@@ -257,6 +269,189 @@ function replayReadyHtml(session, user) {
 
 function esc(s) {
   return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ─── Autopilot: registrant reminders (T-24h / T-1h) ─────────────────────────────
+
+function reminderHtml(session, firstName, kind) {
+  const startStr = session.scheduledStart.toLocaleString('en-US', {
+    dateStyle: 'full', timeStyle: 'short', timeZone: session.timezone || 'America/New_York'
+  });
+  const lead = kind === '1h'
+    ? 'starts in about an hour'
+    : 'is coming up in 24 hours';
+  return emailShell(`
+    <p>Hi ${esc(firstName)},</p>
+    <p>This is a friendly reminder that <strong>${esc(session.title)}</strong> ${lead}.</p>
+    <p style="margin:12px 0;">
+      <strong>When:</strong> ${esc(startStr)} (${esc(session.timezone || 'America/New_York')})<br>
+      <strong>CE hours:</strong> ${session.ceuHours || 0}
+    </p>
+    <a class="btn" href="${gatedRoomUrl(session)}">Go to the Session Room</a>
+    <p style="font-size:13px;color:#57534e;">The room opens 15 minutes before the scheduled start. CE credit is based on verified live attendance minutes.</p>
+  `);
+}
+
+/**
+ * Email every registrant a T-24h or T-1h reminder for a live-course session.
+ * @param {object} session  LiveSession document
+ * @param {'24h'|'1h'} kind
+ */
+export async function sendLiveSessionReminders(session, kind) {
+  const registrantIds = session.registrants.map(r => r.user);
+  if (!registrantIds.length) return;
+  const users = await User.find({ _id: { $in: registrantIds } }).select('email profile');
+  const subject = kind === '1h'
+    ? `Starting soon: ${session.title}`
+    : `Tomorrow: ${session.title}`;
+  for (const user of users) {
+    await sendEmail({
+      to: user.email,
+      subject,
+      html: reminderHtml(session, user.profile?.firstName || 'there', kind)
+    });
+  }
+}
+
+// ─── Autopilot: admin summaries ─────────────────────────────────────────────────
+
+/**
+ * Admin summary email after autopilot auto-issues certificates for a session.
+ * Uses the platform email look via emailShell, sent to the admin inbox.
+ */
+export async function sendAutopilotCertAdminSummary(session, result) {
+  const issued = result?.issued?.length || 0;
+  const skipped = result?.skipped?.length || 0;
+  const failed = result?.failed?.length || 0;
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `Autopilot issued ${issued} certificate${issued === 1 ? '' : 's'} — ${session.title}`,
+    html: emailShell(`
+      <p><strong>Autopilot auto-issued certificates</strong> for the completed live session <strong>${esc(session.title)}</strong>.</p>
+      <ul style="padding-left:18px;color:#284157;">
+        <li>Issued: <strong>${issued}</strong></li>
+        <li>Skipped: ${skipped}</li>
+        <li>Failed: ${failed}</li>
+      </ul>
+      <p style="font-size:13px;color:#57534e;">Skips are typically registrants below the ${session.attendanceThresholdPct}% attendance threshold or with an incomplete evaluation. Review the roster in the Host Console if a count looks off.</p>
+    `)
+  });
+}
+
+/**
+ * Admin roster email fired the moment a session's registration window
+ * closes (session.registrationDeadline()). Lists every registrant with
+ * name, email, paid status, and SMS opt-in so Ke has a final headcount
+ * without opening the Host Console. `session.registrants[].user` must be
+ * populated (with profile.firstName/lastName + email) before calling.
+ */
+export async function sendRegistrationClosedRoster(session) {
+  const regs = session.registrants || [];
+  const rows = regs.length
+    ? regs.map(r => {
+        const u = r.user;
+        const name = u ? esc(`${u.profile?.firstName || ''} ${u.profile?.lastName || ''}`.trim()) : '(user not found)';
+        const email = u ? esc(u.email) : '';
+        return `<tr>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${name}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${email}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.paid ? 'Paid' : 'Unpaid'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.phoneOptIn ? 'Yes' : 'No'}</td>
+          <td style="padding:6px 10px;border-bottom:1px solid #EDE9E3;">${r.accommodations?.captionsNeeded ? 'Yes' : '—'}</td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="5" style="padding:6px 10px;color:#78716c;">No registrants.</td></tr>`;
+
+  const startStr = session.scheduledStart
+    ? session.scheduledStart.toLocaleString('en-US', {
+        dateStyle: 'full', timeStyle: 'short', timeZone: session.timezone || 'America/New_York'
+      })
+    : 'TBD';
+
+  // Captions request banner — only shown when at least one registrant asked.
+  // Captions are off by default and room-wide; the host decides before go-time.
+  const captionRequesters = regs.filter(r => r.accommodations?.captionsNeeded);
+  const captionsBanner = captionRequesters.length
+    ? `<div style="margin:12px 0;padding:12px;background:#FBF0F2;border:1px solid #E8C3CB;border-radius:8px;color:#6B1D34;font-size:13px;">
+        <strong>${captionRequesters.length} registrant${captionRequesters.length === 1 ? '' : 's'} requested live captions.</strong>
+        ${captionRequesters.filter(r => r.accommodations?.notes).map(r => `<div style="margin-top:6px;">"${esc(r.accommodations.notes)}"</div>`).join('')}
+        <p style="margin:8px 0 0;">Captions are off unless enabled on this session — Whereby bills per unmuted-participant-minute, room-wide.</p>
+      </div>`
+    : '';
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `Registration closed — ${session.title} (${regs.length} registered)`,
+    html: emailShell(`
+      <p><strong>Registration just closed</strong> for <strong>${esc(session.title)}</strong>.</p>
+      <p style="margin:12px 0;">
+        <strong>Session starts:</strong> ${esc(startStr)} (${esc(session.timezone || 'America/New_York')})<br>
+        <strong>Total registered:</strong> ${regs.length}${session.capacity ? ` of ${session.capacity} seats` : ''}
+      </p>
+      ${captionsBanner}
+      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#284157;">
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Name</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Email</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Payment</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">SMS opt-in</th>
+            <th style="padding:6px 10px;border-bottom:2px solid #6B1D34;">Captions</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <p style="font-size:13px;color:#57534e;margin-top:16px;">This is the full roster as of the registration cutoff. Late admin-added seats after this point won't appear here — check the Host Console for the live count.</p>
+    `)
+  });
+}
+
+/**
+ * Admin alert fired the moment the detector in sessionProducerTick.js
+ * (processLateSeriesRegistrationAlerts) catches a registrant who was seated
+ * in a session AFTER that session's own registrationDeadline() — the
+ * signature left by the session-series purchase webhook in payments.js,
+ * which enrolls a buyer into every member session without re-checking each
+ * occurrence's individual cutoff. payments.js is protected (no direct
+ * edits), so this is the downstream catch: Ke gets notified immediately
+ * instead of finding out by accident, and can run
+ * refundLateSeriesRegistrant.js if the seat needs to be unwound.
+ */
+export async function sendLateSeriesRegistrationAlert(session, registrantUser, deadline, registeredAt) {
+  const name = registrantUser
+    ? `${registrantUser.profile?.firstName || ''} ${registrantUser.profile?.lastName || ''}`.trim() || registrantUser.email
+    : '(user not found)';
+  const email = registrantUser?.email || '(unknown)';
+  const lateByMin = Math.round((registeredAt.getTime() - deadline.getTime()) / 60000);
+
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `⚠️ Late series registration — ${esc(session.title)}`,
+    html: emailShell(`
+      <p><strong>${esc(name)}</strong> (${esc(email)}) was registered for <strong>${esc(session.title)}</strong> ${lateByMin} minute${lateByMin === 1 ? '' : 's'} after registration had already closed for this occurrence.</p>
+      <p style="margin:12px 0;">
+        <strong>Registered at:</strong> ${esc(registeredAt.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }))}<br>
+        <strong>Registration closed:</strong> ${esc(deadline.toLocaleString('en-US', { timeZone: session.timezone || 'America/New_York', dateStyle: 'medium', timeStyle: 'short' }))}
+      </p>
+      <p style="font-size:13px;color:#57534e;">This is almost always a session-series purchase enrolling someone into every member session, including ones whose individual cutoff already passed. If this seat needs to be removed and refunded, run <code>refundLateSeriesRegistrant.js</code>.</p>
+    `)
+  });
+}
+
+/**
+ * Admin warning email when a completed autopilot session has an EMPTY
+ * attendance array. Autopilot never auto-issues in this case — it warns
+ * the admin so a human can investigate the attendance sync.
+ */
+export async function sendAutopilotEmptyAttendanceWarning(session) {
+  await sendEmail({
+    to: ADMIN_EMAIL,
+    subject: `⚠️ Autopilot did NOT issue certificates (no attendance) — ${session.title}`,
+    html: emailShell(`
+      <p><strong>Autopilot skipped certificate issuance</strong> for <strong>${esc(session.title)}</strong> because its attendance record is empty.</p>
+      <p>No certificates were auto-issued. If this session did have live attendees, check the Whereby attendance webhook/sync, then issue certificates manually from the Host Console once the roster is correct.</p>
+    `)
+  });
 }
 
 // ─── Event handlers (called from webhooksWhereby.js) ──────────────────────────
@@ -498,7 +693,80 @@ async function populateCatchupSummaries(session, userId, gaps) {
   await session.save();
 }
 
+// ─── Shared attendance close-out (webhook + failsafe) ─────────────────────────
+
+/**
+ * Close any still-open attendance segments at `endedAt`, computing durationMin
+ * exactly the way the room.session.ended webhook handler does. Mutates the
+ * session in place and returns true if any segment was closed; the CALLER is
+ * responsible for saving. Extracted so the runaway-session failsafe in the cron
+ * tick can reuse it rather than duplicating the loop.
+ */
+export function closeDanglingSegments(session, endedAt) {
+  let dirty = false;
+  for (const a of session.attendance) {
+    if (!a.leftAt) {
+      a.leftAt = endedAt;
+      a.durationMin = Math.max(0, Math.round((endedAt - a.joinedAt) / 60000));
+      dirty = true;
+    }
+  }
+  return dirty;
+}
+
 // ─── Cron tick actions (called from sessionProducerTick.js) ───────────────────
+
+/**
+ * Break-segment transitions for the autopilot clock.
+ *
+ * Break segments in the agenda participate in the autopilot clock like any
+ * other segment. Their windows are computed off scheduledStart + the cumulative
+ * durations of every preceding segment (breaks included). When the clock has
+ * advanced INTO a break window, we append that window to session.breaks[] so the
+ * NBCC attendance denominator (attendedMinutesAdjusted / instructionalMinutes)
+ * stays correct. Advancing OUT of a break needs no action.
+ *
+ * Idempotent across ticks: a break is only appended if no overlapping entry
+ * already exists, so re-running the tick never double-records the same break.
+ */
+export async function processBreakTransitions(session) {
+  const agenda = session.agenda || [];
+  if (agenda.length === 0 || !session.scheduledStart) return false;
+
+  const now = Date.now();
+  const sorted = [...agenda].sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  let cursor = session.scheduledStart.getTime();
+  let dirty = false;
+
+  for (const seg of sorted) {
+    const durMin = seg.durationMin || 0;
+    const segStart = cursor;
+    const segEnd = cursor + durMin * 60000;
+    cursor = segEnd;
+
+    if (seg.type !== 'break' || durMin <= 0) continue;
+    if (now < segStart) continue; // autopilot clock hasn't reached this break yet
+
+    // Idempotent: skip if an existing break entry overlaps this window
+    const overlaps = (session.breaks || []).some(b => {
+      const bStart = b.startsAt.getTime();
+      const bEnd = bStart + b.durationMin * 60000;
+      return bStart < segEnd && bEnd > segStart;
+    });
+    if (overlaps) continue;
+
+    session.breaks.push({
+      label: seg.title || 'Break',
+      startsAt: new Date(segStart),
+      durationMin: durMin
+    });
+    dirty = true;
+  }
+
+  if (dirty) await session.save();
+  return dirty;
+}
 
 /**
  * Drop detection for a single live session.
@@ -638,6 +906,67 @@ export async function processBreakageDetection(session) {
   await session.save();
 }
 
+const CHECKIN_WINDOW_MIN = 3;
+const CHECKIN_MIN_GAP_MIN = 15;
+const CHECKIN_MAX_GAP_MIN = 20;
+
+function randomNextCheckinDueAt(from) {
+  const gapMin = CHECKIN_MIN_GAP_MIN + Math.random() * (CHECKIN_MAX_GAP_MIN - CHECKIN_MIN_GAP_MIN);
+  return new Date(from.getTime() + gapMin * 60000);
+}
+
+/**
+ * Random presence check-ins for camera-off attendees on live-course sessions.
+ * Fires a challenge every 15–20 min; a missed 3-min window is a strike,
+ * second consecutive strike removes the attendee (client redirect on poll).
+ */
+export async function processCheckins(session) {
+  if (session.sessionType !== 'live-course') return; // no camera-off mechanic on supervision
+  const now = new Date();
+  let changed = false;
+
+  for (const att of session.attendance) {
+    if (att.leftAt || !att.cameraOptOut || att.removedForMissedCheckins) continue;
+
+    const lastCheckin = att.checkins[att.checkins.length - 1];
+    const hasPendingUnanswered = lastCheckin && !lastCheckin.respondedAt && !lastCheckin.missed;
+
+    if (hasPendingUnanswered) {
+      if (now > lastCheckin.deadline) {
+        lastCheckin.missed = true;
+        att.consecutiveMissedCheckins = (att.consecutiveMissedCheckins || 0) + 1;
+        changed = true;
+        if (att.consecutiveMissedCheckins >= 2) {
+          att.removedForMissedCheckins = true;
+        } else {
+          att.nextCheckinDueAt = randomNextCheckinDueAt(now);
+        }
+      }
+      continue;
+    }
+
+    // No pending challenge — is it time for a new one?
+    if (!att.nextCheckinDueAt) {
+      att.nextCheckinDueAt = randomNextCheckinDueAt(now);
+      changed = true;
+      continue;
+    }
+    if (now >= att.nextCheckinDueAt) {
+      att.checkins.push({
+        promptedAt: now,
+        deadline: new Date(now.getTime() + CHECKIN_WINDOW_MIN * 60000)
+      });
+      att.nextCheckinDueAt = undefined;
+      changed = true;
+    }
+  }
+
+  if (changed) {
+    session.markModified('attendance');
+    await session.save();
+  }
+}
+
 export default {
   onClientLeft,
   onSessionEnded,
@@ -647,5 +976,8 @@ export default {
   processDropDetection,
   processBreakReminders,
   processBreakageDetection,
+  processBreakTransitions,
+  processCheckins,
+  closeDanglingSegments,
   computeGaps
 };

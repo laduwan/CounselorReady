@@ -20,6 +20,7 @@
   const tabs = [
     { label: 'Dashboard', href: '/dashboard.html' },
     { label: 'Courses', href: '/courses.html' },
+    { label: 'Books', href: '/books.html' },
     { label: 'Live Sessions', href: '/live-sessions.html' },
     { label: 'Credentials', href: '/credentials.html' },
     { label: 'CE Certificates', href: '/credentials.html#certifications' },
@@ -137,6 +138,7 @@
             <a href="/team-compliance.html" id="menuTeamCompLink" style="display:none;color:#6B1D34"><svg width="16" height="16" class="w-4 h-4" style="color:#6B1D34" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Team Compliance</a>
             <a href="/settings.html"><svg width="16" height="16" class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg> Settings</a>
             <a href="/messages.html"><svg width="16" height="16" class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Messages</a>
+            <a href="/my-books.html"><svg width="16" height="16" class="w-4 h-4" style="color:#7A98AE" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg> My Books</a>
             <div style="border-top:1px solid #F1EFE9;margin-top:4px;padding-top:4px"><a href="#" onclick="crLogout();return false" style="color:#DC2626"><svg width="16" height="16" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg> Sign out</a></div>
           </div>
         </div>
@@ -180,6 +182,7 @@
           <div>
             <h4 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D4A855;margin:0 0 10px">Platform</h4>
             <a href="/courses.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Browse courses</a>
+            <a href="/books.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Books</a>
             <a href="/research-ready.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Researched-N-Ready</a>
             <a href="/credentials.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Credentials</a>
             <a href="/credentials.html#certifications" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">CE certificates</a>
@@ -378,6 +381,218 @@
     window.gtag('js', new Date());
     window.gtag('config', 'AW-16681104079');
   }
+
+
+  // ── PARTNER PORTAL CORNER POPUP ──────────────────────────────
+  (function injectPartnerPopup() {
+    const DISMISS_KEY = 'cr_partner_popup_dismissed';
+    const path = window.location.pathname;
+    if (!path.includes('live-room') && !path.includes('live-evaluation')) return;
+    const dismissed = localStorage.getItem(DISMISS_KEY);
+    if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+
+    const el = document.createElement('div');
+    el.id = 'cr-partner-popup';
+    el.innerHTML = `
+      <button id="cr-pp-close" aria-label="Dismiss">✕</button>
+      <div class="cr-pp-eyebrow">Are you an educator?</div>
+      <div class="cr-pp-body">Did you enjoy the flow of today's webinar? Join the CounselorReady Partner Portal and let us host your CE content.</div>
+      <a href="/partner-onboarding.html" class="cr-pp-cta">Learn about partnering →</a>
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #cr-partner-popup {
+        position: fixed; bottom: 24px; right: 24px; z-index: 9000;
+        width: 300px; background: linear-gradient(135deg, #3D1120 0%, #6B1D34 55%, #284157 100%);
+        border-radius: 14px; padding: 22px 22px 18px;
+        box-shadow: 0 8px 32px rgba(0,0,0,.28), 0 0 0 1px rgba(212,168,85,.25);
+        font-family: 'Lato', system-ui, sans-serif;
+        animation: cr-pp-slide 0.35s cubic-bezier(.16,1,.3,1);
+      }
+      @keyframes cr-pp-slide {
+        from { opacity:0; transform: translateY(20px) scale(.96); }
+        to   { opacity:1; transform: translateY(0) scale(1); }
+      }
+      #cr-pp-close {
+        position: absolute; top: 10px; right: 12px;
+        background: none; border: none; color: rgba(255,255,255,.45);
+        font-size: 14px; cursor: pointer; line-height: 1; padding: 2px 4px;
+      }
+      #cr-pp-close:hover { color: #fff; }
+      .cr-pp-eyebrow {
+        font-size: 10.5px; letter-spacing: .2em; text-transform: uppercase;
+        color: #D4A855; font-weight: 700; margin-bottom: 7px;
+      }
+      .cr-pp-body {
+        font-size: 13.5px; line-height: 1.5; color: rgba(255,255,255,.88);
+        margin-bottom: 14px;
+      }
+      .cr-pp-cta {
+        display: inline-block; background: #D4A855; color: #3D1120;
+        font-size: 12.5px; font-weight: 700; padding: 8px 16px;
+        border-radius: 7px; text-decoration: none; letter-spacing: .04em;
+        transition: background .15s;
+      }
+      .cr-pp-cta:hover { background: #c49840; }
+    `;
+    document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      document.body.appendChild(el);
+      document.getElementById('cr-pp-close').addEventListener('click', function() {
+        el.style.opacity = '0';
+        el.style.transform = 'translateY(10px)';
+        el.style.transition = 'opacity .2s, transform .2s';
+        setTimeout(() => el.remove(), 220);
+        localStorage.setItem(DISMISS_KEY, String(Date.now()));
+      });
+    });
+  })();
+
+  // ── SUGGESTION BOX (persistent floating tab, bottom-right) ──
+  (function injectSuggestionBox() {
+    // Skip on admin/course-player/login pages — keep it out of the way
+    const path = window.location.pathname;
+    if (path.startsWith('/admin') || path.includes('interactive-course') ||
+        path.includes('login') || path.includes('register')) return;
+
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('user') || 'null'); } catch (e) {}
+
+    const wrap = document.createElement('div');
+    wrap.id = 'cr-suggest-wrap';
+    wrap.innerHTML = `
+      <button id="cr-suggest-tab" aria-label="Send a suggestion">
+        <span class="cr-suggest-tab-icon">💬</span>
+        <span class="cr-suggest-tab-label">Suggestion</span>
+      </button>
+      <div id="cr-suggest-panel" class="hidden" role="dialog" aria-label="Send a suggestion">
+        <div class="cr-suggest-head">
+          <span>Got an idea or found a bug?</span>
+          <button id="cr-suggest-close" aria-label="Close">✕</button>
+        </div>
+        <select id="cr-suggest-category">
+          <option value="feature-request">Feature idea</option>
+          <option value="bug">Something's broken</option>
+          <option value="content">Course/content feedback</option>
+          <option value="billing">Billing question</option>
+          <option value="other">Other</option>
+        </select>
+        <textarea id="cr-suggest-message" maxlength="4000" placeholder="Tell us what's on your mind..."></textarea>
+        ${!user ? `
+        <input id="cr-suggest-email" type="email" placeholder="Your email (optional)" />
+        ` : ''}
+        <button id="cr-suggest-submit">Send</button>
+        <div id="cr-suggest-status"></div>
+      </div>
+    `;
+
+    const style = document.createElement('style');
+    style.textContent = `
+      #cr-suggest-tab {
+        position: fixed; bottom: 28px; right: 0; z-index: 8900;
+        display: flex; align-items: center; gap: 6px;
+        background: #6B1D34; color: #fff; border: none;
+        padding: 10px 14px 10px 12px; border-radius: 8px 0 0 8px;
+        font-family: 'Lato', system-ui, sans-serif; font-size: 12.5px; font-weight: 700;
+        letter-spacing: .02em; cursor: pointer; box-shadow: -2px 2px 10px rgba(0,0,0,.18);
+        transition: padding-right .15s, background .15s;
+      }
+      #cr-suggest-tab:hover { background: #7E5966; padding-right: 18px; }
+      .cr-suggest-tab-icon { font-size: 15px; }
+      #cr-suggest-panel {
+        position: fixed; bottom: 76px; right: 20px; z-index: 8900;
+        width: min(320px, calc(100vw - 40px));
+        background: #fff; border-radius: 12px;
+        box-shadow: 0 10px 36px rgba(0,0,0,.22), 0 0 0 1px rgba(0,0,0,.05);
+        font-family: 'Lato', system-ui, sans-serif;
+        padding: 16px; animation: cr-sg-slide .25s cubic-bezier(.16,1,.3,1);
+      }
+      #cr-suggest-panel.hidden { display: none; }
+      @keyframes cr-sg-slide { from { opacity:0; transform: translateY(12px);} to { opacity:1; transform: translateY(0);} }
+      .cr-suggest-head {
+        display: flex; align-items: flex-start; justify-content: space-between;
+        font-size: 13.5px; font-weight: 700; color: #3D1120; margin-bottom: 10px;
+      }
+      #cr-suggest-close { background:none; border:none; color:#999; font-size:13px; cursor:pointer; line-height:1; }
+      #cr-suggest-panel select, #cr-suggest-panel textarea, #cr-suggest-panel input {
+        width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px;
+        border: 1px solid #E3DED3; border-radius: 7px; padding: 8px 10px; margin-bottom: 8px;
+        color: #333;
+      }
+      #cr-suggest-panel textarea { min-height: 84px; resize: vertical; }
+      #cr-suggest-submit {
+        width: 100%; background: #6B1D34; color: #fff; border: none; border-radius: 7px;
+        padding: 9px 0; font-size: 13px; font-weight: 700; cursor: pointer;
+      }
+      #cr-suggest-submit:disabled { opacity: .6; cursor: default; }
+      #cr-suggest-submit:hover:not(:disabled) { background: #7E5966; }
+      #cr-suggest-status { font-size: 12px; margin-top: 8px; text-align: center; min-height: 16px; }
+      #cr-suggest-status.ok { color: #1E7E48; }
+      #cr-suggest-status.err { color: #b02a37; }
+      @media (max-width: 480px) {
+        .cr-suggest-tab-label { display: none; }
+        #cr-suggest-tab { padding: 12px; border-radius: 50% 0 0 50%; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function () {
+      document.body.appendChild(wrap);
+
+      const panel = document.getElementById('cr-suggest-panel');
+      const tab = document.getElementById('cr-suggest-tab');
+      const submitBtn = document.getElementById('cr-suggest-submit');
+      const statusEl = document.getElementById('cr-suggest-status');
+
+      tab.addEventListener('click', () => panel.classList.toggle('hidden'));
+      document.getElementById('cr-suggest-close').addEventListener('click', () => panel.classList.add('hidden'));
+
+      submitBtn.addEventListener('click', function () {
+        const message = document.getElementById('cr-suggest-message').value.trim();
+        const category = document.getElementById('cr-suggest-category').value;
+        const emailField = document.getElementById('cr-suggest-email');
+
+        if (!message) {
+          statusEl.textContent = 'Please enter a message.';
+          statusEl.className = 'err';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        statusEl.textContent = '';
+        statusEl.className = '';
+
+        const headers = { 'Content-Type': 'application/json' };
+        if (T) headers['Authorization'] = `Bearer ${T}`;
+
+        fetch(`${API}/api/suggestions`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            message,
+            category,
+            platform: 'counselorready',
+            email: emailField ? emailField.value.trim() : undefined,
+            pageUrl: window.location.href,
+          }),
+        })
+          .then(r => { if (!r.ok) throw 0; return r.json(); })
+          .then(() => {
+            statusEl.textContent = 'Thanks — got it!';
+            statusEl.className = 'ok';
+            document.getElementById('cr-suggest-message').value = '';
+            setTimeout(() => panel.classList.add('hidden'), 1600);
+          })
+          .catch(() => {
+            statusEl.textContent = 'Something went wrong. Please try again.';
+            statusEl.className = 'err';
+          })
+          .finally(() => { submitBtn.disabled = false; });
+      });
+    });
+  })();
 
   window.gtag_report_conversion = function (transactionId, value) {
     window.gtag('event', 'conversion', {

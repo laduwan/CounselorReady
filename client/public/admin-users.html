@@ -10,8 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
 
   <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
   <style>
@@ -599,6 +598,22 @@
                     <p class="text-xs font-normal">View the platform from this user's perspective</p>
                   </div>
                 </button>
+
+                <button onclick="toggleUserRole()" id="toggleRoleBtn" class="w-full bg-white border border-yellow-300 hover:bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-medium text-left flex items-center gap-3">
+                  <i class="fas fa-user-shield w-5"></i>
+                  <div>
+                    <p id="toggleRoleText">Make Admin</p>
+                    <p class="text-xs font-normal">Grant this user full platform admin dashboard access</p>
+                  </div>
+                </button>
+
+                <button onclick="toggleSupportRole()" id="toggleSupportBtn" class="w-full bg-white border border-yellow-300 hover:bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-medium text-left flex items-center gap-3">
+                  <i class="fas fa-headset w-5"></i>
+                  <div>
+                    <p id="toggleSupportText">Make Support Staff</p>
+                    <p class="text-xs font-normal">Grant access to the org troubleshooting page only (admin-orgs.html)</p>
+                  </div>
+                </button>
               </div>
             </div>
             
@@ -917,6 +932,12 @@
       // Actions tab
       const isDisabled = user.disabled;
       document.getElementById('toggleStatusText').textContent = isDisabled ? 'Enable Account' : 'Disable Account';
+
+      const isAdmin = user.role === 'admin';
+      document.getElementById('toggleRoleText').textContent = isAdmin ? 'Remove Admin' : 'Make Admin';
+
+      const isSupport = user.role === 'support';
+      document.getElementById('toggleSupportText').textContent = isSupport ? 'Remove Support Staff' : 'Make Support Staff';
     }
     
     function renderUserCourses(courses) {
@@ -1427,6 +1448,68 @@
       }
     }
     
+    async function toggleUserRole() {
+      const isCurrentlyAdmin = currentUserData?.user?.role === 'admin';
+      const newRole = isCurrentlyAdmin ? 'user' : 'admin';
+      const verb = isCurrentlyAdmin ? 'remove admin access from' : 'grant admin access to';
+
+      if (!confirm(`Are you sure you want to ${verb} this user? ${newRole === 'admin' ? 'They will get full access to this admin dashboard.' : ''}`)) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/role`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ role: newRole })
+        });
+
+        if (response.ok) {
+          alert(newRole === 'admin' ? 'Admin access granted' : 'Admin access removed');
+          viewUser(currentUserId);
+          loadUsers();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to update role');
+        }
+      } catch (error) {
+        console.error('Toggle role error:', error);
+        alert('Failed to update role');
+      }
+    }
+
+    async function toggleSupportRole() {
+      const isCurrentlySupport = currentUserData?.user?.role === 'support';
+      const newRole = isCurrentlySupport ? 'user' : 'support';
+      const verb = isCurrentlySupport ? 'remove support staff access from' : 'grant support staff access to';
+
+      if (!confirm(`Are you sure you want to ${verb} this user? ${newRole === 'support' ? 'They will be able to view and fix any customer organization\'s roster.' : ''}`)) return;
+
+      try {
+        const response = await fetch(`${API_URL}/api/admin/users/${currentUserId}/role`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ role: newRole })
+        });
+
+        if (response.ok) {
+          alert(newRole === 'support' ? 'Support staff access granted' : 'Support staff access removed');
+          viewUser(currentUserId);
+          loadUsers();
+        } else {
+          const data = await response.json();
+          alert(data.error || 'Failed to update role');
+        }
+      } catch (error) {
+        console.error('Toggle support role error:', error);
+        alert('Failed to update role');
+      }
+    }
+
     async function impersonateUser() {
       if (!confirm('Login as this user? You will be logged out of your admin account.')) return;
       

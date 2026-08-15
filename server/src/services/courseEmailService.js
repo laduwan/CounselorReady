@@ -76,14 +76,21 @@ const emailWrapper = (content, preheader = '') => `
 export async function sendCourseCompletionEmail(userId, courseId, certificateId) {
   try {
     const user = await User.findById(userId);
-    const course = await Course.findById(courseId);
+    // courseId is null for RNR CE completions (article-based, no Course doc) —
+    // the certificate record (already required for every completion) always
+    // carries title/ceHours/category, so it's a reliable fallback source.
+    const course = courseId ? await Course.findById(courseId) : null;
     const certificate = await Certificate.findById(certificateId);
-    
-    if (!user || !course) {
-      console.error('Course completion email: User or course not found');
+
+    if (!user || (!course && !certificate)) {
+      console.error('Course completion email: User or course/certificate not found');
       return;
     }
-    
+
+    const title = course?.title || certificate?.title || 'your course';
+    const ceHours = course?.ceuHours ?? certificate?.ceHours ?? 0;
+    const category = course?.ceuCategories?.[0]?.category || certificate?.category || 'General';
+
     const firstName = user.profile?.firstName || 'Counselor';
     const verificationCode = certificate?.verificationCode || 'N/A';
     const verificationUrl = certificate?.verificationUrl || 'https://counselorready.com/verify';
@@ -103,21 +110,21 @@ export async function sendCourseCompletionEmail(userId, courseId, certificateId)
       
       <div style="background-color: ${COLORS.stone}; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
         <h3 style="margin: 0 0 4px 0; color: ${COLORS.burgundy}; font-size: 18px;">
-          ${course.title}
+          ${title}
         </h3>
         <p style="margin: 0 0 16px 0; color: ${COLORS.forest}; font-size: 14px;">
           Completed on ${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
-        
+
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
           <tr>
             <td style="padding: 8px 0; border-top: 1px solid #e5e5e5;">
               <span style="color: #666; font-size: 13px;">CE Hours Earned</span><br>
-              <strong style="color: ${COLORS.forest}; font-size: 16px;">${course.ceuHours || 0} Hours</strong>
+              <strong style="color: ${COLORS.forest}; font-size: 16px;">${ceHours} Hours</strong>
             </td>
             <td style="padding: 8px 0; border-top: 1px solid #e5e5e5; text-align: right;">
               <span style="color: #666; font-size: 13px;">Category</span><br>
-              <strong style="color: ${COLORS.forest}; font-size: 16px;">${course.ceuCategories?.[0]?.category || 'General'}</strong>
+              <strong style="color: ${COLORS.forest}; font-size: 16px;">${category}</strong>
             </td>
           </tr>
         </table>
@@ -182,10 +189,10 @@ export async function sendCourseCompletionEmail(userId, courseId, certificateId)
     await resend.emails.send({
       from: FROM_EMAIL,
       to: user.email,
-      subject: `🎉 Congratulations! You've completed "${course.title}"`,
-      html: emailWrapper(content, `You've earned ${course.ceuHours || 0} CE hours!`)
+      subject: `🎉 Congratulations! You've completed "${title}"`,
+      html: emailWrapper(content, `You've earned ${ceHours} CE hours!`)
     });
-    
+
     console.log(`Course completion email sent to ${user.email}`);
     return true;
   } catch (error) {

@@ -5,12 +5,11 @@
  * Blog Auto-Generation Job
  *
  * Picks the next topic from BLOG_TOPICS that has not yet been generated,
- * calls the Claude API to draft a 700–900 word Markdown post, and saves it
- * as a draft BlogPost for admin review before publishing.
- *
- * DRAFT ONLY — never auto-publishes. The post must be reviewed and manually
- * published via /admin-blog.html. This protects clinical accuracy and keeps
- * Ke's voice consistent.
+ * calls the Claude API to draft a 700–900 word Markdown post, saves it as a
+ * draft BlogPost, and emails Ke the full draft with one-click Approve/Reject
+ * links (no login required) so review doesn't require opening the admin
+ * dashboard. This protects clinical accuracy and keeps Ke's voice consistent
+ * while keeping review to a single email action.
  *
  * Topic tracking: each generated post is tagged `autogen-<topicId>`. The job
  * skips any topic whose ID appears in an existing post's tags array.
@@ -22,10 +21,14 @@
  * Environment variables:
  *   ANTHROPIC_API_KEY   — required
  *   BLOG_GEN_MODEL      — optional, defaults to claude-haiku-4-5-20251001
+ *   ADMIN_EMAIL         — required for the approval email to send
+ *   CLIENT_URL          — base URL used to build approve/reject links
  */
 
+import crypto from 'crypto';
 import BlogPost from '../models/BlogPost.js';
 import { BLOG_TOPICS } from '../data/blogTopicQueue.js';
+import { sendBlogDraftForApproval } from '../services/emailService.js';
 
 const LOG = '[BlogAutoGen]';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -182,7 +185,8 @@ export async function runBlogAutoGen() {
       metaTitle,
       metaDescription,
       targetKeywords: topic.targetKeywords,
-      status: 'draft'
+      status: 'draft',
+      reviewToken: crypto.randomBytes(24).toString('hex')
     });
 
     await post.save();
@@ -191,6 +195,13 @@ export async function runBlogAutoGen() {
     console.log(
       `${LOG} Draft saved: "${topic.title}" (${post.wordCount} words, slug: ${post.slug})`
     );
+
+    const baseUrl = (process.env.CLIENT_URL || 'https://counselorready.com').replace(/\/$/, '');
+    const emailResult = await sendBlogDraftForApproval(post, baseUrl);
+    stats.emailed = emailResult.success;
+    if (!emailResult.success) {
+      console.warn(`${LOG} Draft saved but approval email failed: ${emailResult.error}`);
+    }
   } catch (err) {
     stats.error = err.message;
     console.error(`${LOG} Error:`, err.message);

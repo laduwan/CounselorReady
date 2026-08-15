@@ -85,75 +85,8 @@
     ]
   }
   </script>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            burgundy: {
-              50: '#fdf5f6',
-              100: '#fae8eb',
-              200: '#f5d0d6',
-              300: '#eba9b5',
-              400: '#dd768a',
-              500: '#c94d65',
-              600: '#a83350',
-              700: '#8b2542',
-              800: '#6b1d34',
-              900: '#4a1524',
-              950: '#2d0a14'
-            },
-            hunter: {
-              50: '#f5f8f5',
-              100: '#eaf0eb',
-              200: '#d5e1d7',
-              300: '#b5ccb9',
-              400: '#8fb096',
-              500: '#6a9472',
-              600: '#4A7C59',
-              700: '#355E3B',
-              800: '#2D4F33',
-              900: '#1F3825',
-              950: '#121f15'
-            },
-            honey: {
-              50: '#fdf9f0',
-              100: '#f9f0db',
-              200: '#f3e0b5',
-              300: '#eacd86',
-              400: '#D4A855',
-              500: '#c49545',
-              600: '#a67936',
-              700: '#865e2c',
-              800: '#6b4a25',
-              900: '#4d351b'
-            },
-            azure: {
-              50: '#f0f7ff',
-              100: '#e0effe',
-              200: '#bae0fd',
-              300: '#7dc8fb',
-              400: '#38aaf6',
-              500: '#0e8fe7',
-              600: '#0270c5',
-              700: '#0359a0',
-              800: '#074b84',
-              900: '#0c406e'
-            },
-            navy: {
-              700: '#284157',
-            }
-          },
-          fontFamily: {
-            'display': ['Cormorant Garamond', 'Georgia', 'serif'],
-            'body': ['Lato', 'system-ui', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -263,7 +196,13 @@
           Learn more
         </a>
       </div>
-      
+      <div class="mt-6 flex justify-center">
+        <a href="/tools/" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-full border-2 border-hunter-600 text-hunter-700 hover:bg-hunter-50 transition-all" style="background: rgba(74,124,89,0.07);">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          Free Clinical Tools — No account needed
+        </a>
+      </div>
+
       <p class="mt-6 text-sm text-hunter-600/70">No credit card required • Cancel anytime</p>
     </div>
   </section>
@@ -344,6 +283,112 @@
           <div class="font-display text-5xl font-semibold text-honey-300 mb-2">Free</div>
           <div class="text-burgundy-200 text-sm tracking-wide uppercase">7-Day Trial</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Free Clinical Tools -->
+  <section id="free-tools" class="py-24 px-4" style="background:#FBF6EA">
+    <style>
+      #free-tools .free-tool-card {
+        transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+      }
+      #free-tools .free-tool-card:hover {
+        border-color: #6B1D34;
+        box-shadow: 0 6px 18px rgba(107,29,52,0.14);
+        transform: translateY(-3px);
+      }
+    </style>
+    <div class="max-w-6xl mx-auto">
+      <div class="text-center mb-16">
+        <span class="inline-block bg-hunter-600 text-white text-xs font-bold tracking-wide rounded-full px-4 py-1.5 mb-4">100% FREE · NO ACCOUNT NEEDED</span>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold text-burgundy-900 mb-4">
+          Free Clinical Tools
+        </h2>
+        <p class="text-hunter-700/80 text-lg font-light">
+          Built for working clinicians. Every tool is free — the AI tools include 15 free generations a day.
+        </p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="/tools/note-writer.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-burgundy-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">AI Note Writer</h3>
+          <p class="text-sm text-hunter-700">Generate SOAP, DAP, BIRP &amp; narrative notes from session bullet points.</p>
+        </a>
+
+        <a href="/tools/superbill.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-hunter-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 3h12a1 1 0 011 1v16l-2-1-2 1-2-1-2 1-2-1-2 1-2-1V4a1 1 0 011-1z M9 8h6M9 12h6M9 16h3"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Superbill Generator</h3>
+          <p class="text-sm text-hunter-700">Create insurance-ready superbills with CPT codes, NPI &amp; diagnosis fields.</p>
+        </a>
+
+        <a href="/tools/safety-plan.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-honey-500 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Crisis Safety Plan Builder</h3>
+          <p class="text-sm text-hunter-700">Interactive Stanley-Brown safety plan — complete with clients on-screen.</p>
+        </a>
+
+        <a href="/tools/treatment-plan.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-navy-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Treatment Plan Builder</h3>
+          <p class="text-sm text-hunter-700">Goals, objectives &amp; interventions auto-populated by presenting problem.</p>
+        </a>
+
+        <a href="/tools/consent-generator.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-burgundy-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75l1.5 1.5 3-3.75M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Informed Consent Generator</h3>
+          <p class="text-sm text-hunter-700">Customized consent packets with HIPAA, No Surprises Act &amp; telehealth addenda.</p>
+        </a>
+
+        <a href="/tools/sliding-scale.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-hunter-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Sliding Scale Calculator</h3>
+          <p class="text-sm text-hunter-700">Generate a tiered fee schedule based on federal poverty guidelines.</p>
+        </a>
+
+        <a href="/tools/diagnostic-helper.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-honey-500 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Diagnosis Quick Reference</h3>
+          <p class="text-sm text-hunter-700">DSM-5-TR lookup with differential prompts and ICD-10 code mapping.</p>
+        </a>
+
+        <a href="/tools/hold-guide.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-navy-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Involuntary Hold Guide</h3>
+          <p class="text-sm text-hunter-700">State-by-state 1013 / Baker Act / 5150 criteria, forms &amp; time limits.</p>
+        </a>
+
+        <a href="/tools/startup-checklist.html" class="free-tool-card bg-white rounded-xl p-6 block" style="border:1px solid #EAE3D2;box-shadow:0 1px 4px rgba(0,0,0,0.05)">
+          <div class="w-12 h-12 bg-burgundy-600 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9h6m-6-4h6"/></svg>
+          </div>
+          <h3 class="font-semibold text-burgundy-900 mb-1">Practice Startup Checklist</h3>
+          <p class="text-sm text-hunter-700">Everything a new independent clinician needs to open their doors.</p>
+        </a>
+      </div>
+
+      <div class="text-center mt-10">
+        <a href="/tools/" class="inline-flex items-center gap-2 bg-burgundy-600 hover:bg-burgundy-700 text-white font-semibold px-6 py-3 rounded-full transition-colors">
+          View all free tools
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </a>
       </div>
     </div>
   </section>
@@ -555,7 +600,7 @@
         </p>
       </div>
       
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Free -->
         <div class="bg-white rounded-2xl p-6 border border-hunter-100 shadow-sm card-hover hover:shadow-xl hover:border-hunter-200">
           <div class="text-hunter-600 font-medium uppercase text-sm tracking-wide mb-3">Free</div>
@@ -589,23 +634,24 @@
             <span class="font-display text-4xl font-semibold text-burgundy-900">$19.99</span>
             <span class="text-hunter-500 font-light">/mo</span>
           </div>
+          <p class="text-xs text-hunter-500 mb-1">Premium courses not included</p>
           <p class="text-xs text-hunter-500 mb-4">Everything in Free, plus:</p>
           <ul class="space-y-3 mb-8 text-sm">
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>Unlimited CE hours</span>
+              <span>Unlimited async CE hours</span>
             </li>
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>CE tracking</span>
+              <span>CE tracking, reminders & recommendations</span>
             </li>
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>AI credential scanning</span>
+              <span>1 license</span>
             </li>
             <li class="flex items-start gap-2 text-hunter-700">
               <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>Audit-ready reports</span>
+              <span>15% off additional purchases</span>
             </li>
           </ul>
           <a href="/register.html?plan=starter" class="block text-center w-full py-3 bg-hunter-600 text-white font-semibold rounded-xl hover:bg-hunter-700 transition-all text-sm">
@@ -633,56 +679,153 @@
               <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               <span>Access to certification courses (Grief, Anger Mgmt, Business Coaching)</span>
             </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Unlimited async CE hours</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 synchronous CE hr earned quarterly</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>15% off additional purchases</span>
+            </li>
           </ul>
           <a href="/register.html?plan=professional" class="block text-center w-full py-3 bg-honey-500 text-burgundy-900 font-semibold rounded-xl hover:bg-honey-400 transition-all text-sm">
             Go Professional
           </a>
         </div>
-        
-        <!-- VIP -->
-        <div class="relative bg-gradient-to-br from-burgundy-800 via-burgundy-700 to-hunter-800 rounded-2xl p-6 text-white shadow-2xl card-hover overflow-hidden">
-          <div class="absolute inset-0 bg-texture opacity-5"></div>
-          <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-honey-400 to-hunter-400"></div>
-          
-          <div class="relative z-10">
-            <div class="text-honey-300 font-medium uppercase text-sm tracking-wide mb-3">VIP</div>
-            <div class="flex items-baseline gap-1 mb-6">
-              <span class="font-display text-4xl font-semibold">$49.99</span>
-              <span class="text-burgundy-200 font-light">/mo</span>
-            </div>
-            <p class="text-xs text-burgundy-200 mb-4">Everything in Professional, plus:</p>
-            <ul class="space-y-3 mb-8 text-sm">
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Multi-state license tracking</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Renewal reminders (text & calendar)</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>1 hardship month/year (rolls over)</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Quarterly 1:1 strategy session</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <svg class="w-4 h-4 text-honey-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                <span>Early access to live webinars</span>
-              </li>
-            </ul>
-            <a href="/register.html?plan=vip" class="block text-center w-full py-3 bg-honey-400 text-burgundy-900 font-bold rounded-xl hover:bg-honey-300 transition-all text-sm">
-              Go VIP
-            </a>
+      </div>
+
+      <!-- Membership: Monthly / Annual -->
+      <div class="grid md:grid-cols-2 gap-6 mt-8 max-w-3xl mx-auto items-start">
+        <!-- Monthly -->
+        <div class="bg-white rounded-2xl p-5 border border-hunter-100 shadow-sm card-hover hover:shadow-xl hover:border-hunter-200">
+          <div class="text-hunter-600 font-medium uppercase text-sm tracking-wide mb-2">Monthly</div>
+          <div class="flex items-baseline gap-1 mb-4">
+            <span class="font-display text-3xl font-semibold text-burgundy-900">$35</span>
+            <span class="text-hunter-500 font-light text-sm">/mo</span>
           </div>
+          <ul class="space-y-2 mb-5 text-sm">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Full async catalog</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 synchronous CE hr/month — starts immediately, unused hrs carry over</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>After 90 days continuous: 1 premium course + 15% off additional purchases</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Annual core benefits — unlocked as you go</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-hunter-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Cancel anytime</span>
+            </li>
+          </ul>
+          <a href="/register.html?plan=monthly" class="block text-center w-full py-2.5 bg-hunter-600 text-white font-semibold rounded-xl hover:bg-hunter-700 transition-all text-sm">
+            Choose Monthly
+          </a>
+        </div>
+
+        <!-- Annual -->
+        <div class="bg-white rounded-2xl p-5 border-2 border-honey-400 shadow-lg card-hover hover:shadow-xl relative">
+          <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-honey-400 text-burgundy-900 text-xs font-bold px-3 py-1 rounded-full">
+            BEST VALUE
+          </div>
+          <div class="text-honey-600 font-medium uppercase text-sm tracking-wide mb-2">Annual</div>
+          <div class="flex items-baseline gap-1 mb-1">
+            <span class="font-display text-3xl font-semibold text-burgundy-900">$249</span>
+            <span class="text-hunter-500 font-light text-sm">/yr</span>
+          </div>
+          <p class="text-xs font-semibold text-honey-700 mb-3">Pays for itself with one day-long workshop</p>
+          <ul class="space-y-2 mb-5 text-sm">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Full async catalog</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Up to 15 hrs synchronous CE</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 premium course included</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>15% off additional purchases</span>
+            </li>
+          </ul>
+          <p class="text-xs font-semibold text-honey-700 mt-4 mb-2">Annual perks</p>
+          <ul class="space-y-2 mb-5 text-xs">
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Early access to new courses & features</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>2x Self-Care Rewards points</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Priority live-session registration</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 KekeTheLPC ebook included</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Annual member worksheet toolkit</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Renewal rate lock — your price never increases</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 guest seat per year for a live session</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Unlimited license/state tracking</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Renewal reminders (text/calendar)</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>1 hardship month/year</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Quarterly member office hours (group)</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>PassReady Prep discount — extends to friends & family</span>
+            </li>
+            <li class="flex items-start gap-2 text-hunter-700">
+              <svg class="w-4 h-4 text-honey-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>30-day lapse grace on renewal</span>
+            </li>
+          </ul>
+          <a href="/register.html?plan=annual" class="block text-center w-full py-2.5 bg-honey-500 text-burgundy-900 font-bold rounded-xl hover:bg-honey-400 transition-all text-sm">
+            Choose Annual
+          </a>
         </div>
       </div>
     </div>
   </section>
   
-
 
   <!-- Testimonial / Trust -->
   <section class="py-20 px-4 bg-white border-t border-hunter-100">
@@ -741,50 +884,7 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="py-16 px-4 bg-hunter-900">
-    <div class="max-w-6xl mx-auto">
-      <div class="flex flex-col md:flex-row justify-between items-center gap-8 mb-8">
-        <div class="flex items-center gap-3">
-          <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-lg" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
-            <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;"><span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span><span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span></span>
-          </div>
-          <span class="font-display font-semibold text-2xl">
-            <span class="text-white">Counselor</span><span class="text-honey-300">Ready</span>
-          </span>
-        </div>
-        <nav class="flex items-center gap-8">
-          <a href="#features" class="text-hunter-300 hover:text-white text-sm transition-colors">Features</a>
-          <a href="#pricing" class="text-hunter-300 hover:text-white text-sm transition-colors">Pricing</a>
-          <a href="/about.html" class="text-hunter-300 hover:text-white text-sm transition-colors">About</a>
-          <a href="/help.html" class="text-hunter-300 hover:text-white text-sm transition-colors">Help</a>
-          <a href="mailto:support@counselorready.com" class="text-hunter-300 hover:text-white text-sm transition-colors">Contact</a>
-        </nav>
-      </div>
-      
-      <!-- NBCC Badge and ACEP Disclosure -->
-      <div class="border-t border-hunter-700 py-8 mb-6">
-        <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
-          <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" class="h-20 w-auto">
-          <div class="text-center md:text-left">
-            <p class="text-white font-semibold text-sm">NBCC Approved Provider</p>
-            <p class="text-burgundy-300 text-sm">ACEP #7760</p>
-          </div>
-        </div>
-        <p class="text-burgundy-400 text-xs leading-relaxed text-center max-w-4xl mx-auto">
-          CounselorReady is operated by Ga Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. Ga Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE® is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
-        </p>
-      </div>
-      
-      <div class="border-t border-burgundy-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-burgundy-400 text-sm">© 2026 CounselorReady. All rights reserved.</p>
-        <div class="flex items-center gap-6">
-          <a href="/privacy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Privacy Policy</a>
-          <a href="/terms.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Terms of Service</a>
-          <a href="/refund-policy.html" class="text-burgundy-400 hover:text-white text-sm transition-colors">Refund Policy</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+  <div id="cr-footer"></div>
+  <script src="/shared/nav-footer.js"></script>
 </body>
 </html>

@@ -9,6 +9,10 @@ import request from 'supertest';
 
 // Ensure Stripe initializes inside the route module (otherwise every route 503s).
 process.env.STRIPE_SECRET_KEY = 'sk_test_fake';
+// constructStripeEvent (utils/verifyStripeSignature.js) throws BEFORE calling
+// stripe.webhooks.constructEvent when no webhook secret is configured — the
+// webhook tests need one set to reach the mocked verifier.
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 
 // Shared Stripe instance mock — hoisted so vi.mock('stripe') can reference it.
 const h = vi.hoisted(() => {
@@ -47,6 +51,9 @@ vi.mock('../middleware/auth.js', () => ({
     req.user = { _id: 'user123', email: 'test@example.com', role: 'user' };
     next();
   },
+  // Pass-through: payments.js imports this for /addon-checkout; the suite tests
+  // payment logic, not auth gating. Without it the whole module fails to load.
+  requirePartnerAdmin: (req, res, next) => next(),
 }));
 
 vi.mock('../services/activityTrackingService.js', () => ({

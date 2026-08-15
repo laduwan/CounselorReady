@@ -10,8 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
 
   <style>
     body { font-family: 'Lato', system-ui, sans-serif; }
@@ -69,6 +68,19 @@
   </header>
 
   <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Tabs -->
+    <div class="flex gap-2 mb-6 border-b border-gray-200">
+      <button id="tab-courses" onclick="switchTab('courses')" class="px-4 py-2 text-sm font-semibold border-b-2 border-burgundy-700 text-burgundy-800 -mb-px">
+        <i class="fas fa-book"></i> Courses
+      </button>
+      <button id="tab-live" onclick="switchTab('live')" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-burgundy-700 -mb-px">
+        <i class="fas fa-video"></i> Live Sessions
+      </button>
+    </div>
+
+    <!-- ===== Courses Section ===== -->
+    <div id="section-courses">
 
     <!-- Stats Row -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -140,6 +152,29 @@
       <i class="fas fa-inbox text-gray-300 text-5xl mb-4"></i>
       <p class="text-gray-500">No courses match your search</p>
     </div>
+
+    </div><!-- /#section-courses -->
+
+    <!-- ===== Live Sessions Section ===== -->
+    <div id="section-live" class="hidden">
+
+      <!-- Loading -->
+      <div id="liveLoading" class="text-center py-16">
+        <div class="inline-block w-8 h-8 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin"></div>
+        <p class="text-gray-500 mt-2">Loading live sessions...</p>
+      </div>
+
+      <!-- Live Sessions Grid -->
+      <div id="liveGrid" class="hidden space-y-3"></div>
+
+      <!-- Empty State -->
+      <div id="liveEmpty" class="hidden text-center py-16">
+        <i class="fas fa-video text-gray-300 text-5xl mb-4"></i>
+        <p class="text-gray-500">No live sessions yet</p>
+      </div>
+
+    </div><!-- /#section-live -->
+
   </main>
 
   <!-- Toast Notification -->
@@ -412,6 +447,135 @@
       document.getElementById('toastMsg').textContent = msg;
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    // ========== Live Sessions Tab ==========
+
+    const TAB_ACTIVE = 'px-4 py-2 text-sm font-semibold border-b-2 border-burgundy-700 text-burgundy-800 -mb-px';
+    const TAB_INACTIVE = 'px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-burgundy-700 -mb-px';
+    let liveLoaded = false;
+    let allLive = [];
+
+    function switchTab(tab) {
+      const isLive = tab === 'live';
+      document.getElementById('section-courses').classList.toggle('hidden', isLive);
+      document.getElementById('section-live').classList.toggle('hidden', !isLive);
+      document.getElementById('tab-courses').className = isLive ? TAB_INACTIVE : TAB_ACTIVE;
+      document.getElementById('tab-live').className = isLive ? TAB_ACTIVE : TAB_INACTIVE;
+      if (isLive && !liveLoaded) loadLiveSessions();
+    }
+
+    async function loadLiveSessions() {
+      liveLoaded = true;
+      const loading = document.getElementById('liveLoading');
+      const grid = document.getElementById('liveGrid');
+      const empty = document.getElementById('liveEmpty');
+      loading.classList.remove('hidden');
+      grid.classList.add('hidden');
+      empty.classList.add('hidden');
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        const r = await fetch(`${API_URL}/api/live-sessions/admin/all`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        const sessions = d.data || d.sessions || (Array.isArray(d) ? d : []);
+        allLive = Array.isArray(sessions) ? sessions : [];
+        loading.classList.add('hidden');
+        renderLiveSessions(allLive);
+      } catch (err) {
+        console.error('Live sessions load error:', err);
+        loading.innerHTML = '<p class="text-red-600">Failed to load live sessions</p>';
+      }
+    }
+
+    function renderLiveSessions(sessions) {
+      const grid = document.getElementById('liveGrid');
+      const empty = document.getElementById('liveEmpty');
+
+      if (!sessions.length) {
+        grid.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+
+      empty.classList.add('hidden');
+      grid.classList.remove('hidden');
+
+      grid.innerHTML = sessions.map((s, i) => {
+        const sid = 10000 + i;
+        const isPublished = s.isPublished || s.status === 'published';
+        const hours = s.ceHours || s.ceuHours || 0;
+        const regLink = `${SITE_URL}/live-sessions.html`;
+        const hostLink = `${SITE_URL}/live-host.html?session=${s.slug || ''}`;
+        const registered = s.registrants?.length || 0;
+        const rawDate = s.sessionDate || s.date || s.startTime || s.scheduledAt;
+        const dateStr = rawDate ? new Date(rawDate).toLocaleDateString() : '';
+        const statusClass = isPublished
+          ? 'bg-hunter-100 text-hunter-800'
+          : 'bg-amber-100 text-amber-800';
+        const statusLabel = isPublished ? 'Published' : 'Draft';
+
+        return `
+          <div class="bg-white rounded-xl border border-gray-100 hover:border-hunter-200 transition-colors p-4" id="live-row-${i}">
+            <div class="flex items-start gap-4">
+
+              <!-- Session Info -->
+              <div class="flex-grow min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-xs px-2 py-0.5 rounded-full font-medium ${statusClass}">${statusLabel}</span>
+                  ${hours ? `<span class="text-xs text-gray-500">${hours} CE</span>` : ''}
+                  ${dateStr ? `<span class="text-xs text-gray-500"><i class="fas fa-calendar-day"></i> ${dateStr}</span>` : ''}
+                </div>
+                <h3 class="font-semibold text-gray-900 truncate">${s.title || 'Untitled'}</h3>
+                <p class="text-xs text-gray-400 font-mono mt-1 truncate">${regLink}</p>
+              </div>
+
+              <!-- Registered Count -->
+              <div class="text-center px-4 flex-shrink-0">
+                <p class="text-lg font-bold text-burgundy-800">${registered}</p>
+                <p class="text-xs text-gray-500">registered</p>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button onclick="copyLink('${regLink}', 'Registration link')" title="Copy registration link"
+                  class="px-3 py-2 bg-hunter-50 hover:bg-hunter-100 text-hunter-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                  <i class="fas fa-link"></i> Reg Link
+                </button>
+                <button onclick="copyLink('${hostLink}', 'Host link')" title="Copy host link"
+                  class="px-3 py-2 bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                  <i class="fas fa-video"></i> Host
+                </button>
+                <div class="relative">
+                  <button onclick="toggleShareMenu(${sid})" title="Share options"
+                    class="px-3 py-2 bg-honey-50 hover:bg-honey-100 text-honey-700 rounded-lg text-sm font-medium transition-colors">
+                    <i class="fas fa-share-alt"></i>
+                  </button>
+                  <div id="share-${sid}" class="share-menu bg-white rounded-xl shadow-lg border border-gray-200 py-2 mt-1">
+                    <button onclick="shareEmail('${encodeURIComponent(s.title || '')}', '${regLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                      <i class="fas fa-envelope text-gray-400"></i> Email link
+                    </button>
+                    <button onclick="shareLinkedIn('${regLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                      <i class="fab fa-linkedin text-blue-600"></i> LinkedIn
+                    </button>
+                    <button onclick="shareFacebook('${regLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                      <i class="fab fa-facebook text-blue-700"></i> Facebook
+                    </button>
+                    <button onclick="shareTwitter('${encodeURIComponent(s.title || '')}', '${regLink}')" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm flex items-center gap-3">
+                      <i class="fab fa-x-twitter text-gray-800"></i> X / Twitter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
   </script>
 <script src="/js/cr-icons.js"></script>

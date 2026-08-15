@@ -9,10 +9,9 @@
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <style>
-    body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif;}
+    body{background:#F5F1E8 url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='30' cy='30' r='1.5' fill='%23D4A855' opacity='.15'/%3E%3C/svg%3E") repeat;font-family:'Lato',system-ui,sans-serif;}
     .font-display{font-family:'Cormorant Garamond',Georgia,serif;}
     .seg-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid #EDE9E3;background:#fff;margin-bottom:6px;cursor:pointer;transition:background .1s;}
     .seg-row.active{background:#F2F7F4;border-color:#4A7C59;}
@@ -29,6 +28,99 @@
     .btn-pause{background:#8B2542;color:#fff;}
     .btn-pause:hover{background:#7a1d38;}
     #seekBar{width:100%;accent-color:#284157;}
+    /* ── Host controls panel ── */
+    .host-tab{padding:7px 14px;border:none;background:transparent;border-radius:8px 8px 0 0;font-weight:700;font-size:13px;cursor:pointer;color:#57534e;}
+    .host-tab.active{background:#fff;color:#6B1D34;box-shadow:inset 0 -2px 0 #6B1D34;}
+    .host-tabpane{padding-top:14px;}
+    .crit-caution{background:#6B1D34;color:#fff;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;font-weight:600;}
+    .caution{background:#FDF5F6;color:#6B1D34;padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:13px;border:1px solid #F5D0D6;}
+    .roster-live{display:inline-block;color:#4A7C59;font-weight:700;}
+    .saved-ind{font-size:12px;color:#4A7C59;font-weight:700;opacity:0;transition:opacity .2s;}
+    .saved-ind.show{opacity:1;}
+    .seg-timer{font-size:13px;font-family:ui-monospace,monospace;font-weight:700;color:#284157;padding:2px 8px;border-radius:6px;}
+    .seg-timer.flash{background:#6B1D34;color:#fff;animation:segflash .5s steps(2) infinite;}
+    @keyframes segflash{50%{opacity:.45;}}
+    .cert-btn{padding:8px 16px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;background:#D4A855;color:#4A1524;}
+    .cert-btn:disabled{background:#EDE9E3;color:#8a8580;cursor:default;}
+    .host-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#284157;color:#fff;padding:12px 22px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 6px 24px rgba(0,0,0,.2);z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;}
+    .host-toast.show{opacity:1;}
+    .rtable{width:100%;border-collapse:collapse;}
+    .rtable th{text-align:left;font-weight:700;color:#284157;padding:6px 8px;border-bottom:1px solid #EDE9E3;font-size:12px;text-transform:uppercase;letter-spacing:.03em;}
+    .rtable td{padding:6px 8px;border-bottom:1px solid #F4F1EC;color:#44403c;font-size:14px;}
+    /* ── Autopilot control ── */
+    .ap-pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em;}
+    .ap-on{background:#F0FDF4;color:#166534;border:1px solid #BBF7D0;}
+    .ap-paused{background:#FFF7ED;color:#c2410c;border:1px solid #FED7AA;}
+    .ap-off{background:#EDE9E3;color:#57534e;border:1px solid #E0DBD3;}
+    .ap-dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+    .ap-on .ap-dot{animation:apPulse 1.4s ease-in-out infinite;}
+    @keyframes apPulse{50%{opacity:.35;}}
+    .ap-btn{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;border:none;cursor:pointer;background:#284157;color:#fff;}
+    .ap-btn:hover{background:#1f3444;}
+    .ap-btn.ap-btn-off{background:#8B2542;}
+    .ap-btn.ap-btn-off:hover{background:#7a1d38;}
+    /* ── Poll controls ── */
+    .pbtn{font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;border:none;cursor:pointer;background:#284157;color:#fff;}
+    .pbtn:hover{background:#1f3444;}
+    .pbtn.rev{background:#4A7C59;}
+    .pbtn.rev:hover{background:#3d6b4b;}
+    .pbtn.warn{background:#8B2542;}
+    .pbtn.warn:hover{background:#7a1d38;}
+    .poll-box{border:1px solid #C7D2FE;background:#EEF2FF;border-radius:8px;padding:10px;margin-bottom:8px;}
+    .slide-thumb{width:72px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #EDE9E3;}
+    /* ── Live games (host) ── */
+    .game-launchers{display:flex;gap:8px;flex-wrap:wrap;}
+    .game-launch-btn{padding:10px 16px;border-radius:10px;border:2px solid #284157;background:#fff;color:#284157;font-weight:700;font-size:14px;cursor:pointer;transition:all .12s;}
+    .game-launch-btn:hover{background:#284157;color:#fff;}
+    .game-close-btn{padding:6px 14px;border-radius:8px;border:none;background:#6B1D34;color:#fff;font-weight:700;font-size:13px;cursor:pointer;}
+    .game-close-btn:hover{background:#571528;}
+    .gbtn{padding:6px 12px;border-radius:8px;border:none;font-weight:700;font-size:13px;cursor:pointer;background:#284157;color:#fff;}
+    .gbtn:hover{filter:brightness(1.12);}
+    .gbtn.gold{background:#D4A855;color:#4A1524;}
+    .gbtn.burg{background:#6B1D34;color:#fff;}
+    .gbtn.ghost{background:#fff;border:1px solid #284157;color:#284157;}
+    .game-section-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:20px;font-weight:700;color:#6B1D34;}
+    /* randomizer */
+    .rand-wheel{font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;font-weight:700;color:#284157;text-align:center;padding:22px;border-radius:14px;border:3px solid #D4A855;background:#FBF6EC;min-height:96px;display:flex;align-items:center;justify-content:center;}
+    .rand-wheel.spinning{animation:randPulse .16s steps(1) infinite;}
+    .rand-wheel.picked{color:#6B1D34;border-color:#6B1D34;animation:randPop .5s ease;}
+    @keyframes randPulse{50%{opacity:.3;}}
+    @keyframes randPop{0%{transform:scale(.82);}60%{transform:scale(1.12);}100%{transform:scale(1);}}
+    .rand-spin-btn{padding:12px 28px;border-radius:12px;border:none;background:#6B1D34;color:#fff;font-weight:800;font-size:16px;cursor:pointer;}
+    .rand-spin-btn:disabled{opacity:.5;cursor:default;}
+    /* timer */
+    .timer-display{font-family:ui-monospace,monospace;font-size:60px;font-weight:800;text-align:center;color:#284157;letter-spacing:2px;}
+    .timer-display.warn{color:#6B1D34;animation:timerPulse .5s steps(2) infinite;}
+    @keyframes timerPulse{50%{opacity:.4;}}
+    .timer-preset{padding:6px 12px;border-radius:8px;border:1px solid #D4A855;background:#FBF6EC;color:#4A1524;font-weight:700;font-size:13px;cursor:pointer;}
+    .timer-preset:hover{background:#D4A855;}
+    /* jeopardy */
+    .jeo-grid{display:grid;gap:5px;}
+    .jeo-head{background:#284157;color:#D4A855;font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.03em;text-align:center;padding:8px 4px;border-radius:6px;}
+    .jeo-cell{background:#284157;color:#D4A855;font-family:'Cormorant Garamond',Georgia,serif;font-weight:800;font-size:20px;text-align:center;padding:14px 4px;border-radius:6px;cursor:pointer;transition:transform .1s;}
+    .jeo-cell:hover{transform:scale(1.05);}
+    .jeo-cell.revealed{background:#6B1D34;color:#fff;cursor:default;font-size:11px;line-height:1.3;}
+    .jeo-cell.correct{outline:3px solid #4A7C59;}
+    .jeo-cell.incorrect{outline:3px solid #b91c1c;opacity:.75;}
+    .jeo-clue{background:#284157;color:#fff;border-radius:12px;padding:18px;animation:jeoFlip .4s ease;}
+    @keyframes jeoFlip{0%{transform:rotateX(88deg);opacity:0;}100%{transform:rotateX(0);opacity:1;}}
+    .jeo-score{border:2px solid #D4A855;border-radius:10px;padding:8px 12px;text-align:center;min-width:110px;}
+    /* clue */
+    .clue-table{width:100%;border-collapse:collapse;}
+    .clue-table th{background:#284157;color:#D4A855;font-size:11px;text-transform:uppercase;letter-spacing:.03em;padding:6px;}
+    .clue-cell{border:1px solid #EDE9E3;padding:8px;font-size:13px;color:#284157;vertical-align:top;}
+    .clue-cell.hidden-col{color:#b9b3a8;text-align:center;font-size:20px;}
+    .clue-cell.revealed{animation:clueFade .4s ease;}
+    @keyframes clueFade{from{opacity:0;background:#FBF6EC;}to{opacity:1;background:transparent;}}
+    .clue-reveal-btn{padding:3px 8px;border-radius:6px;border:none;background:#D4A855;color:#4A1524;font-size:11px;font-weight:700;cursor:pointer;}
+    /* feud */
+    .feud-answer{display:flex;justify-content:space-between;align-items:center;background:#284157;color:#fff;border-radius:8px;padding:10px 14px;margin-bottom:6px;font-weight:700;cursor:pointer;}
+    .feud-answer.hidden-ans{color:#7d94a8;}
+    .feud-answer.revealed{background:#6B1D34;animation:feudFlip .4s ease;}
+    @keyframes feudFlip{0%{transform:scale(.9);opacity:.4;}100%{transform:scale(1);opacity:1;}}
+    .feud-strike{color:#b91c1c;font-size:26px;font-weight:900;}
+    .feud-team{border:2px solid #D4A855;border-radius:10px;padding:10px;text-align:center;}
+    .feud-team.active{border-color:#6B1D34;background:#FBF6EC;}
   </style>
 </head>
 <body>
@@ -44,7 +136,9 @@
           <p id="sessionMeta" class="text-sm mt-1" style="color:#284157;"></p>
         </div>
         <div class="flex gap-3 items-center">
+          <span id="autopilotCtl" class="flex items-center gap-2"></span>
           <span id="attendeeCount" class="text-sm font-semibold" style="color:#284157;">– attendees</span>
+          <span id="segTimer" class="seg-timer hidden"></span>
           <span id="elapsed" class="text-sm font-mono" style="color:#7a5c1e;"></span>
         </div>
       </div>
@@ -53,8 +147,8 @@
       <div class="grid lg:grid-cols-2 gap-6 mb-6">
 
         <!-- Whereby host room embed -->
-        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:400px;">
-          <div id="roomGate" class="flex items-center justify-center" style="min-height:400px;">
+        <div class="rounded-xl overflow-hidden" style="background:#111;min-height:560px;">
+          <div id="roomGate" class="flex items-center justify-center" style="min-height:560px;">
             <div class="text-center px-6">
               <div class="text-4xl mb-4">📹</div>
               <button onclick="joinRoom()" class="px-5 py-2.5 rounded-lg font-semibold text-sm" style="background:#6B1D34;color:#fff;">
@@ -63,7 +157,7 @@
               <p class="mt-3 text-xs" style="color:#8a7a7b;">Host room opens here — no Whereby site visit needed.</p>
             </div>
           </div>
-          <iframe id="roomFrame" class="hidden w-full" style="height:400px;border:0;"
+          <iframe id="roomFrame" class="hidden w-full" style="height:560px;min-height:560px;border:0;"
                   allow="camera; microphone; fullscreen; speaker; display-capture; autoplay"></iframe>
         </div>
 
@@ -102,6 +196,65 @@
         <div class="lg:col-span-2"></div>
 
       </div>
+
+      <!-- ═══ HOST CONTROLS (host-only; nothing here is broadcast to attendees) ═══ -->
+      <div id="hostPanel" class="mt-6 bg-white rounded-xl border" style="border-color:#EDE9E3;">
+        <div class="flex items-center justify-between flex-wrap gap-3 px-4 pt-4">
+          <div class="flex gap-1" id="hostTabs">
+            <button class="host-tab active" data-tab="roster">Roster</button>
+            <button class="host-tab" data-tab="notes">Segment Notes</button>
+            <button class="host-tab" data-tab="checklists">Checklists</button>
+            <button class="host-tab" data-tab="scratchpad">Scratchpad</button>
+            <button class="host-tab" data-tab="games">Games</button>
+          </div>
+          <div id="certWrap"></div>
+        </div>
+        <div class="p-4">
+          <!-- ROSTER -->
+          <div class="host-tabpane" data-pane="roster">
+            <div id="rosterTotals" class="text-sm font-semibold mb-2" style="color:#284157;">– live · – attended</div>
+            <div style="overflow-x:auto;">
+              <table class="rtable">
+                <thead><tr><th>Attendee</th><th>Joined</th><th>Left</th><th>Duration</th></tr></thead>
+                <tbody id="rosterBody"><tr><td colspan="4" style="color:#57534e;">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- SEGMENT NOTES -->
+          <div class="host-tabpane hidden" data-pane="notes">
+            <div id="segNotes" class="text-sm" style="color:#57534e;">No segment selected.</div>
+            <div id="globalCautions" class="mt-4"></div>
+          </div>
+          <!-- CHECKLISTS -->
+          <div class="host-tabpane hidden" data-pane="checklists">
+            <div id="preFlightList"></div>
+            <div id="hostChecklistList"></div>
+            <span id="checklistSaved" class="saved-ind">✓ saved</span>
+          </div>
+          <!-- SCRATCHPAD -->
+          <div class="host-tabpane hidden" data-pane="scratchpad">
+            <div class="flex items-center justify-between mb-2">
+              <div class="text-xs font-bold" style="color:#284157;">HOST SCRATCHPAD (private)</div>
+              <span id="scratchpadSaved" class="saved-ind">✓ saved</span>
+            </div>
+            <textarea id="scratchpad" rows="8" class="w-full rounded-lg p-3 text-sm" style="border:1px solid #EDE9E3;color:#44403c;resize:vertical;" placeholder="Private notes — never shown to attendees…"></textarea>
+          </div>
+          <!-- GAMES -->
+          <div class="host-tabpane hidden" data-pane="games">
+            <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+              <div class="game-launchers">
+                <button class="game-launch-btn" onclick="launchGame('randomizer')">🎲 Randomizer</button>
+                <button class="game-launch-btn" onclick="launchGame('timer')">⏱ Timer</button>
+                <button class="game-launch-btn" onclick="launchGame('jeopardy')">🎯 Jeopardy</button>
+                <button class="game-launch-btn" onclick="launchGame('clue')">🔍 Clue</button>
+                <button class="game-launch-btn" onclick="launchGame('feud')">📣 Feud</button>
+              </div>
+              <button id="gameCloseBtn" class="game-close-btn" style="display:none;" onclick="closeGame()">✕ Close game</button>
+            </div>
+            <div id="gamePanel"><p class="text-sm" style="color:#57534e;">No game running. Launch one above — attendees see the same board live.</p></div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
@@ -112,6 +265,11 @@
 
     let session = null;
     let currentSegIdx = 0;
+    // Agenda lives in host-state (public session fetch strips it). Fall back to
+    // session.agenda for any legacy payloads.
+    function agendaData() {
+      return (hostState && Array.isArray(hostState.agenda) && hostState.agenda.length) ? hostState.agenda : (session.agenda || []);
+    }
     let sessionStartedAt = null;
     let attendanceTimer = null;
     let elapsedTimer = null;
@@ -136,7 +294,7 @@
         const frame = document.getElementById('roomFrame');
         // Append Whereby embed params to minimise Whereby chrome
         const sep = data.roomUrl.includes('?') ? '&' : '?';
-        let embedUrl = data.roomUrl + sep + 'minimal=on&lang=en&skipMediaPermissionPrompt=on';
+        let embedUrl = data.roomUrl + sep + 'lang=en&skipMediaPermissionPrompt=on&screenshare=on&chat=on&people=on&leaveButton=on&pipButton=on&breakout=on';
         // Presenter avatar shown when the host camera is off. Whereby requires an
         // https, square png/jpg (<=64x64) URL with NO query params; only append
         // when the stored value satisfies that, otherwise skip silently.
@@ -159,8 +317,9 @@
       try {
         // Verify admin
         const meRes = await fetch(`${API_URL}/api/auth/me`, { headers: { 'Authorization': `Bearer ${token}` } });
-        const me = await meRes.json();
-        if (!meRes.ok || me.role !== 'admin') return gateMsg('Admin access required.');
+        const meRaw = await meRes.json();
+        const me = meRaw.user || meRaw; // /api/auth/me returns { user: {...} }
+        if (!meRes.ok || me?.role !== 'admin') return gateMsg('Admin access required.');
 
         // Load session
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`, {
@@ -179,12 +338,15 @@
         startElapsedTimer();
 
         renderAgenda();
+        wireHostTabs();
+        await loadHostState();
         document.getElementById('gate').classList.add('hidden');
         document.getElementById('console').classList.remove('hidden');
 
-        // Poll attendance count every 10s
+        // Poll attendance count + follow server segment every 10s
         pollAttendance();
-        attendanceTimer = setInterval(pollAttendance, 10000);
+        syncLiveSegment();
+        attendanceTimer = setInterval(() => { pollAttendance(); syncLiveSegment(); }, 10000);
 
         // Wire transport
         document.getElementById('playBtn').addEventListener('click', broadcastPlay);
@@ -199,12 +361,14 @@
     function renderAgenda() {
       const list = document.getElementById('agendaList');
       const noAgenda = document.getElementById('noAgenda');
-      if (!session.agenda || session.agenda.length === 0) {
+      const agn = agendaData();
+      if (!agn || agn.length === 0) {
         noAgenda.style.display = '';
         return;
       }
+      noAgenda.style.display = 'none';
       list.innerHTML = '';
-      session.agenda.forEach((seg, idx) => {
+      agn.forEach((seg, idx) => {
         const row = document.createElement('div');
         row.className = 'seg-row' + (idx === 0 ? ' active' : '');
         row.dataset.idx = idx;
@@ -221,6 +385,14 @@
     async function advanceSegment(idx, e) {
       e.stopPropagation();
       try {
+        // Manual ▶ Go while autopilot is actively syncing means the host is
+        // taking the wheel — pause autopilot so the clock stops overriding.
+        if (hostState?.autopilot?.enabled && !hostState.autopilot.pausedAt) {
+          const pausedAt = new Date().toISOString();
+          hostState.autopilot.pausedAt = pausedAt;
+          renderAutopilotControl();
+          patchSession({ autopilot: { pausedAt } });
+        }
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/segment`, {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -230,6 +402,7 @@
           currentSegIdx = idx;
           selectSegment(idx);
           showSegmentInClipPanel(idx);
+          startSegmentTimer(idx);
         }
       } catch {}
     }
@@ -238,14 +411,15 @@
       document.querySelectorAll('.seg-row').forEach((r, i) => {
         r.classList.toggle('active', i === idx);
       });
-      const seg = session.agenda?.[idx];
+      const seg = agendaData()[idx];
       const nowSummary = document.getElementById('nowSummary');
       if (!seg) { nowSummary.textContent = 'No segment.'; return; }
       nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
+      renderSegmentNotes(idx);
     }
 
     async function showSegmentInClipPanel(idx) {
-      const seg = session.agenda?.[idx];
+      const seg = agendaData()[idx];
       const panel = document.getElementById('clipPanel');
       const player = document.getElementById('hostClipPlayer');
       const seekBar = document.getElementById('seekBar');
@@ -281,10 +455,43 @@
       }, { passive: true });
     }
 
+
+    // Follow the server's current segment (autopilot or another host tab).
+    let lastSyncedSegIdx = null;
+    async function syncLiveSegment() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        onGameData(d.game);
+        const idx = d.liveState?.currentSegment;
+        if (typeof idx === 'number' && idx !== lastSyncedSegIdx) {
+          lastSyncedSegIdx = idx;
+          if (idx !== currentSegIdx) {
+            currentSegIdx = idx;
+            selectSegment(idx);
+            const seg = agendaData()[idx];
+            if (seg?.durationMin) {
+              startSegmentTimer(idx);
+              // Re-anchor the countdown to the server's segment start, not "now"
+              if (d.liveState?.segmentStartedAt) {
+                const startedMs = new Date(d.liveState.segmentStartedAt).getTime();
+                if (Number.isFinite(startedMs)) segTimerEndsAt = startedMs + seg.durationMin * 60000;
+              }
+            } else {
+              stopSegmentTimer();
+            }
+          }
+        }
+      } catch {}
+    }
+
     async function broadcastPlay() {
       const player = document.getElementById('hostClipPlayer');
       await player.play().catch(() => {});
-      const seg = session.agenda?.[currentSegIdx];
+      const seg = agendaData()[currentSegIdx];
       if (seg?.clipIndex == null) return;
       await broadcastPlayback(seg.clipIndex, true, player.currentTime);
     }
@@ -292,7 +499,7 @@
     async function broadcastPause() {
       const player = document.getElementById('hostClipPlayer');
       player.pause();
-      const seg = session.agenda?.[currentSegIdx];
+      const seg = agendaData()[currentSegIdx];
       if (seg?.clipIndex == null) return;
       await broadcastPlayback(seg.clipIndex, false, player.currentTime);
     }
@@ -321,8 +528,11 @@
           const d = await res.json();
           const live = d.rawAttendance?.filter(a => !a.leftAt).length ?? '–';
           document.getElementById('attendeeCount').textContent = `${live} live`;
+          renderRoster(d.rawAttendance || []);
         }
       } catch {}
+      // Piggyback the poll tally refresh on this same 10s cycle — no new interval.
+      refreshPollResults();
     }
 
     function startElapsedTimer() {
@@ -333,6 +543,925 @@
         document.getElementById('elapsed').textContent = `${m}:${s.toString().padStart(2,'0')} elapsed`;
       }, 1000);
     }
+
+    /* ═══════════════ HOST CONTROLS ═══════════════ */
+    let hostState = null;
+    let activePollState = null; // { activePoll, results, ... } from GET /poll/results
+    let segTimerInterval = null;
+    let segTimerEndsAt = null;
+    let checklistDebounce = null;
+    let scratchpadDebounce = null;
+    let audioCtx = null;
+
+    async function loadHostState() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/host-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        hostState = await res.json();
+        renderGlobalCautions();
+        renderChecklists();
+        seedScratchpad();
+        renderAgenda();
+        selectSegment(currentSegIdx);
+        renderCertButton();
+        renderAutopilotControl();
+      } catch {}
+    }
+
+    function wireHostTabs() {
+      document.querySelectorAll('.host-tab').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          document.querySelectorAll('.host-tab').forEach(b => b.classList.toggle('active', b === btn));
+          document.querySelectorAll('.host-tabpane').forEach(p => p.classList.toggle('hidden', p.dataset.pane !== tab));
+        });
+      });
+    }
+
+    // ── ROSTER ──
+    function renderRoster(rows) {
+      const body = document.getElementById('rosterBody');
+      const totals = document.getElementById('rosterTotals');
+      if (!body || !totals) return;
+      if (!rows.length) {
+        body.innerHTML = `<tr><td colspan="4" style="color:#57534e;">No attendees yet.</td></tr>`;
+        totals.textContent = '0 live · 0 attended';
+        return;
+      }
+      body.innerHTML = rows.map(a => {
+        const joined = a.joinedAt ? new Date(a.joinedAt).toLocaleTimeString() : '—';
+        const left = a.leftAt ? new Date(a.leftAt).toLocaleTimeString() : `<span class="roster-live">● live</span>`;
+        const dur = (a.durationMin != null) ? `${a.durationMin}m` : '—';
+        return `<tr><td>${esc(a.displayName || 'Unnamed')}</td><td>${joined}</td><td>${left}</td><td>${dur}</td></tr>`;
+      }).join('');
+      const live = rows.filter(a => !a.leftAt).length;
+      const attended = new Set(rows.map(a => a.displayName || 'Unnamed')).size;
+      totals.textContent = `${live} live · ${attended} attended`;
+    }
+
+    // ── SEGMENT NOTES ──
+    function renderSegmentNotes(idx) {
+      const el = document.getElementById('segNotes');
+      if (!el || !hostState) return;
+      const seg = hostState.agenda?.[idx];
+      if (!seg) { el.innerHTML = `<p style="color:#57534e;">No segment selected.</p>`; return; }
+      let html = `<h3 class="font-display text-base font-bold mb-2" style="color:#6B1D34;">${esc(seg.title || seg.type)}</h3>`;
+      if (seg.speakerNotes) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SPEAKER NOTES</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.speakerNotes)}</div></div>`;
+      if (seg.activityInstructions) html += `<div class="mb-3"><div class="text-xs font-bold mb-1" style="color:#284157;">ACTIVITY INSTRUCTIONS</div><div class="text-sm" style="color:#44403c;white-space:pre-wrap;">${esc(seg.activityInstructions)}</div></div>`;
+      const cautions = seg.facilitatorCautions || [];
+      if (cautions.length) {
+        html += `<div class="mb-1"><div class="text-xs font-bold mb-1" style="color:#284157;">SEGMENT CAUTIONS</div>`;
+        html += cautions.map(c => c.critical
+          ? `<div class="crit-caution">⚠ ${esc(c.text)}</div>`
+          : `<div class="caution">${esc(c.text)}</div>`).join('');
+        html += `</div>`;
+      }
+      if (!seg.speakerNotes && !seg.activityInstructions && !cautions.length) {
+        html += `<p class="text-sm" style="color:#57534e;">No facilitator notes for this segment.</p>`;
+      }
+
+      // Slides (what the room sees) — thumbnails of this segment's media
+      const media = seg.media || [];
+      if (media.length) {
+        html += `<div class="mt-3"><div class="text-xs font-bold mb-1" style="color:#284157;">SLIDES (what the room sees)</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">` +
+          media.map(m => `<img src="${esc(m.url)}" alt="${esc(m.caption || 'slide')}" title="${esc(m.caption || '')}" class="slide-thumb">`).join('') +
+          `</div></div>`;
+      }
+
+      // Native poll controls — Launch / Close / Reveal + live tally + Trend
+      html += renderSegmentPolls(idx, seg);
+
+      el.innerHTML = html;
+    }
+
+    // Build the poll-control block for a segment's notes pane.
+    function renderSegmentPolls(idx, seg) {
+      const polls = seg.polls || [];
+      if (!polls.length) return '';
+      const ap = activePollState && activePollState.activePoll;
+      const results = activePollState && activePollState.results;
+      let html = `<div class="mt-4"><div class="text-xs font-bold mb-2" style="color:#284157;">POLLS</div>`;
+      polls.forEach((p, pi) => {
+        const isActive = ap && ap.segIdx === idx && ap.pollIdx === pi;
+        const closed = isActive && !!ap.closedAt;
+        const revealed = isActive && !!ap.revealed;
+        html += `<div class="poll-box"><div style="font-size:13px;font-weight:600;color:#312e81;margin-bottom:6px;">${esc(p.question)}</div>`;
+        html += (p.options || []).map((o, oi) => {
+          let tally = '';
+          if (isActive && results) {
+            const total = results.total || 0;
+            const c = (results.counts && results.counts[oi]) || 0;
+            const pct = total ? Math.round((c / total) * 100) : 0;
+            tally = `<span style="float:right;font-size:11px;color:#3730A3;">${pct}% (${c})</span>`;
+          }
+          return `<div style="font-size:12px;color:#312e81;line-height:1.7;">${String.fromCharCode(65 + oi)}. ${esc(o.text)}${tally}</div>`;
+        }).join('');
+        html += `<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">`;
+        if (!isActive) {
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Launch</button>`;
+        } else {
+          if (!closed) html += `<button class="pbtn warn" onclick="pollAction('close',${idx},${pi})">Close</button>`;
+          if (!revealed) html += `<button class="pbtn rev" onclick="pollAction('reveal',${idx},${pi})">Reveal</button>`;
+          html += `<button class="pbtn" onclick="pollAction('launch',${idx},${pi})">Relaunch</button>`;
+          html += `<span style="font-size:11px;color:#3730A3;">${revealed ? 'revealed' : (closed ? 'closed' : 'live')}${results ? ' · ' + (results.total || 0) + ' votes' : ''}</span>`;
+        }
+        if (questionRepeats(p.question)) {
+          html += `<button class="pbtn rev" onclick="showPollTrendFor(${idx},${pi})">Trend</button>`;
+        }
+        html += `</div></div>`;
+      });
+      html += `</div>`;
+      return html;
+    }
+
+    // True when this exact question text appears on more than one segment (the
+    // Hour 2 escalation ladder), so a Trend button is worth showing.
+    function questionRepeats(q) {
+      const target = (q || '').trim();
+      let count = 0;
+      for (const s of (hostState?.agenda || [])) {
+        for (const p of (s.polls || [])) {
+          if ((p.question || '').trim() === target) count++;
+        }
+      }
+      return count > 1;
+    }
+
+    async function pollAction(action, segIdx, pollIdx) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/${action}`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segIdx, pollIdx })
+        });
+        if (res.ok) { await refreshPollResults(); }
+        else { const d = await res.json().catch(() => ({})); toast(d.error || 'Poll action failed.'); }
+      } catch { toast('Poll action failed.'); }
+    }
+
+    // Refreshed on the existing 10s attendance cycle — no new interval.
+    async function refreshPollResults() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        activePollState = await res.json();
+        renderSegmentNotes(currentSegIdx); // repaint tally in the open notes pane
+      } catch { /* try again next cycle */ }
+    }
+
+    function showPollTrendFor(segIdx, pollIdx) {
+      const q = hostState?.agenda?.[segIdx]?.polls?.[pollIdx]?.question || '';
+      showPollTrend(q);
+    }
+
+    // Renders yes-% per segment for a repeated question — the Hour 2 trend-line
+    // reveal, computed from real votes across every segment carrying that question.
+    async function showPollTrend(question) {
+      const q = (question || '').trim();
+      const matches = [];
+      (hostState?.agenda || []).forEach((seg, si) => {
+        (seg.polls || []).forEach((p, pi) => {
+          if ((p.question || '').trim() === q) matches.push({ si, pi, seg, poll: p });
+        });
+      });
+      const panel = ensureTrendPanel();
+      const body = panel.querySelector('#trendBody');
+      body.innerHTML = 'Loading…';
+      panel.style.display = 'flex';
+      try {
+        const rows = await Promise.all(matches.map(async m => {
+          const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/poll/results?segIdx=${m.si}&pollIdx=${m.pi}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const d = res.ok ? await res.json() : null;
+          const opts = m.poll.options || [];
+          let primary = opts.findIndex(o => /^\s*yes\s*$/i.test(o.text || ''));
+          if (primary < 0) primary = 0;
+          const total = d?.results?.total || 0;
+          const c = (d?.results?.counts && d.results.counts[primary]) || 0;
+          const pct = total ? Math.round((c / total) * 100) : 0;
+          return { label: m.seg.title || ('Segment ' + (m.si + 1)), pct, c, total, primaryText: opts[primary]?.text || 'Option A' };
+        }));
+        const primaryLabel = rows[0]?.primaryText || 'Yes';
+        body.innerHTML =
+          `<div style="font-size:12px;color:#57534e;margin-bottom:10px;">"${esc(q)}" — % choosing "${esc(primaryLabel)}" across segments (live votes)</div>` +
+          rows.map(r => `
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#284157;"><span>${esc(r.label)}</span><span>${r.pct}% (${r.c}/${r.total})</span></div>
+              <div style="height:8px;background:#E0E7FF;border-radius:4px;overflow:hidden;margin-top:3px;"><div style="height:100%;width:${r.pct}%;background:#4A7C59;"></div></div>
+            </div>`).join('') || '<p style="font-size:13px;color:#57534e;">No matching segments.</p>';
+      } catch {
+        body.innerHTML = '<p style="font-size:13px;color:#b91c1c;">Could not load trend.</p>';
+      }
+    }
+
+    function ensureTrendPanel() {
+      let panel = document.getElementById('trendPanel');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.id = 'trendPanel';
+        panel.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:70;display:none;align-items:center;justify-content:center;';
+        panel.innerHTML = `<div style="background:#fff;border-radius:14px;padding:20px;max-width:440px;width:90%;max-height:80vh;overflow:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <h3 class="font-display" style="font-size:18px;font-weight:700;color:#6B1D34;">Poll Trend — Hour 2 Ladder</h3>
+            <button onclick="document.getElementById('trendPanel').style.display='none'" style="border:none;background:#EDE9E3;border-radius:8px;padding:4px 10px;cursor:pointer;color:#284157;">✕</button>
+          </div>
+          <div id="trendBody"></div>
+        </div>`;
+        document.body.appendChild(panel);
+      }
+      return panel;
+    }
+
+    function renderGlobalCautions() {
+      const el = document.getElementById('globalCautions');
+      if (!el || !hostState) return;
+      const gc = hostState.globalFacilitatorCautions || [];
+      if (!gc.length) { el.innerHTML = ''; return; }
+      el.innerHTML = `<div class="text-xs font-bold mb-1" style="color:#6B1D34;">SESSION-WIDE CAUTIONS</div>` +
+        gc.map(c => `<div class="caution">${esc(c.text)}</div>`).join('');
+    }
+
+    // ── CHECKLISTS ──
+    function renderChecklists() {
+      if (!hostState) return;
+      const pre = document.getElementById('preFlightList');
+      const preItems = hostState.preFlightChecklist || [];
+      if (pre) {
+        pre.innerHTML = `<div class="text-xs font-bold mb-2" style="color:#284157;">PRE-FLIGHT (read-only)</div>` +
+          (preItems.length
+            ? preItems.map(i => `<div class="text-sm mb-1" style="color:#44403c;">${i.critical ? '<span style="color:#6B1D34;font-weight:700;">[CRITICAL]</span> ' : ''}${esc(i.text)}</div>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+      }
+      const host = document.getElementById('hostChecklistList');
+      const items = hostState.hostChecklist || [];
+      if (host) {
+        host.innerHTML = `<div class="text-xs font-bold mb-2 mt-4" style="color:#284157;">HOST CHECKLIST</div>` +
+          (items.length
+            ? items.map((i, k) => `<label class="flex items-center gap-2 text-sm mb-1" style="color:#44403c;cursor:pointer;"><input type="checkbox" data-ck="${k}" ${i.done ? 'checked' : ''} style="accent-color:#4A7C59;"> ${esc(i.text)}</label>`).join('')
+            : `<div class="text-sm" style="color:#57534e;">None.</div>`);
+        host.querySelectorAll('input[data-ck]').forEach(cb => {
+          cb.addEventListener('change', () => {
+            const k = parseInt(cb.dataset.ck, 10);
+            if (hostState.hostChecklist[k]) hostState.hostChecklist[k].done = cb.checked;
+            scheduleChecklistSave();
+          });
+        });
+      }
+    }
+
+    function scheduleChecklistSave() {
+      clearTimeout(checklistDebounce);
+      checklistDebounce = setTimeout(() => {
+        patchSession({ hostChecklist: hostState.hostChecklist }, 'checklistSaved');
+      }, 800);
+    }
+
+    // ── SCRATCHPAD ──
+    function seedScratchpad() {
+      const ta = document.getElementById('scratchpad');
+      if (!ta || !hostState) return;
+      ta.value = hostState.hostScratchpad || '';
+      ta.addEventListener('input', () => {
+        clearTimeout(scratchpadDebounce);
+        scratchpadDebounce = setTimeout(() => {
+          patchSession({ hostScratchpad: ta.value }, 'scratchpadSaved');
+        }, 1200);
+      });
+    }
+
+    async function patchSession(body, savedIndicatorId) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}`, {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (res.ok && savedIndicatorId) flashSaved(savedIndicatorId);
+      } catch {}
+    }
+
+    function flashSaved(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 1500);
+    }
+
+    // ── SEGMENT TIMER + WebAudio beep (host-only, no broadcast) ──
+    function startSegmentTimer(idx) {
+      const seg = hostState?.agenda?.[idx] || session.agenda?.[idx];
+      const timerEl = document.getElementById('segTimer');
+      if (!timerEl) return;
+      if (!seg || !seg.durationMin) { stopSegmentTimer(); return; }
+      clearInterval(segTimerInterval);
+      segTimerEndsAt = Date.now() + seg.durationMin * 60000;
+      timerEl.classList.remove('hidden', 'flash');
+      const lead = (hostState?.alarmLeadSec ?? 60);
+      let beeped = false;
+      const tick = () => {
+        const remaining = Math.round((segTimerEndsAt - Date.now()) / 1000);
+        if (remaining <= 0) {
+          timerEl.textContent = '0:00 ⏱';
+          timerEl.classList.add('flash');
+          clearInterval(segTimerInterval);
+          if (!beeped) { beeped = true; playBeep(); }
+          return;
+        }
+        const m = Math.floor(remaining / 60), s = remaining % 60;
+        timerEl.textContent = `${m}:${s.toString().padStart(2, '0')} left`;
+        if (remaining <= lead) {
+          timerEl.classList.add('flash');
+          if (!beeped) { beeped = true; playBeep(); }
+        }
+      };
+      tick();
+      segTimerInterval = setInterval(tick, 1000);
+    }
+
+    function stopSegmentTimer() {
+      clearInterval(segTimerInterval);
+      const timerEl = document.getElementById('segTimer');
+      if (timerEl) { timerEl.classList.add('hidden'); timerEl.classList.remove('flash'); }
+    }
+
+    function playBeep() {
+      try {
+        audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        [[880, 0], [660, 0.22]].forEach(([freq, offset]) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.0001, now + offset);
+          gain.gain.exponentialRampToValueAtTime(0.25, now + offset + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.18);
+          osc.connect(gain); gain.connect(audioCtx.destination);
+          osc.start(now + offset); osc.stop(now + offset + 0.2);
+        });
+      } catch {}
+    }
+
+    // ── ISSUE CERTIFICATES ──
+    function renderCertButton() {
+      const wrap = document.getElementById('certWrap');
+      if (!wrap || !hostState) return;
+      const now = Date.now();
+      const ended = hostState.status === 'completed' ||
+        (session.scheduledEnd && now > new Date(session.scheduledEnd).getTime());
+      if (!ended) { wrap.innerHTML = ''; return; }
+      if (hostState.certificatesIssuedAt) {
+        const d = new Date(hostState.certificatesIssuedAt).toLocaleDateString();
+        wrap.innerHTML = `<button class="cert-btn" disabled>Issued ${d}</button>`;
+        return;
+      }
+      wrap.innerHTML = `<button class="cert-btn" id="issueCertBtn">Issue Certificates</button>`;
+      document.getElementById('issueCertBtn').addEventListener('click', issueCertificates);
+    }
+
+    // ── AUTOPILOT CONTROL ──
+    // Shows ON (syncing) / PAUSED / OFF and wires to PATCH /:id { autopilot }.
+    function renderAutopilotControl() {
+      const el = document.getElementById('autopilotCtl');
+      if (!el || !hostState) return;
+      const ap = hostState.autopilot || { enabled: false };
+      if (ap.enabled && ap.pausedAt) {
+        el.innerHTML = `<span class="ap-pill ap-paused"><span class="ap-dot"></span>Autopilot paused</span>
+          <button class="ap-btn" id="apResumeBtn" title="Clear pause and re-sync to the clock">Resume</button>`;
+        document.getElementById('apResumeBtn').addEventListener('click', resumeAutopilot);
+      } else if (ap.enabled) {
+        el.innerHTML = `<span class="ap-pill ap-on"><span class="ap-dot"></span>Autopilot on · syncing</span>
+          <button class="ap-btn ap-btn-off" id="apOffBtn">Turn off</button>`;
+        document.getElementById('apOffBtn').addEventListener('click', () => setAutopilot(false));
+      } else {
+        el.innerHTML = `<span class="ap-pill ap-off">Autopilot off</span>
+          <button class="ap-btn" id="apOnBtn" title="Auto-start + timed segment advance">Turn on</button>`;
+        document.getElementById('apOnBtn').addEventListener('click', () => setAutopilot(true));
+      }
+    }
+
+    async function setAutopilot(enabled) {
+      if (!hostState) return;
+      hostState.autopilot = hostState.autopilot || {};
+      hostState.autopilot.enabled = enabled;
+      if (!enabled) hostState.autopilot.pausedAt = null;
+      renderAutopilotControl();
+      await patchSession({ autopilot: { enabled } });
+    }
+
+    // Resume clears pausedAt; the next tick re-syncs the segment to the clock.
+    async function resumeAutopilot() {
+      if (!hostState) return;
+      hostState.autopilot = hostState.autopilot || {};
+      hostState.autopilot.pausedAt = null;
+      renderAutopilotControl();
+      await patchSession({ autopilot: { pausedAt: null } });
+    }
+
+    async function issueCertificates() {
+      const btn = document.getElementById('issueCertBtn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Issuing…'; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/issue-certificates`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        if (!res.ok) {
+          toast(d.error || 'Failed to issue certificates.');
+          if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+          return;
+        }
+        const count = d.issued ?? d.count ?? d.certificatesIssued ?? (Array.isArray(d.certificates) ? d.certificates.length : 0);
+        toast(`Issued ${count} certificate${count === 1 ? '' : 's'}.`);
+        hostState.certificatesIssuedAt = new Date().toISOString();
+        renderCertButton();
+      } catch {
+        toast('Could not issue certificates.');
+        if (btn) { btn.disabled = false; btn.textContent = 'Issue Certificates'; }
+      }
+    }
+
+    function toast(msg) {
+      let t = document.getElementById('hostToast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'hostToast';
+        t.className = 'host-toast';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3200);
+    }
+
+    /* ═══════════════ LIVE GAMES (host) ═══════════════ */
+    let liveGame = null;          // { type, state } or null when none
+    let gamePollTimer = null;     // dedicated 2s poll while a game is active
+    let timerTicker = null;       // client-side countdown for the shared timer
+    let randVisualTimer = null;   // wheel name-cycler while spinning
+    let lastRandSpinning = false;
+    let timerWarnFired = false, timerEndFired = false, lastTimerKey = null;
+
+    // Called from the 10s syncLiveSegment poll AND the 2s game poll.
+    function onGameData(game) {
+      const active = game && game.type && game.type !== 'none';
+      liveGame = active ? game : null;
+      if (active && !gamePollTimer) gamePollTimer = setInterval(pollGame, 2000);
+      if (!active && gamePollTimer) { clearInterval(gamePollTimer); gamePollTimer = null; }
+      document.getElementById('gameCloseBtn').style.display = active ? '' : 'none';
+      renderGamePanel();
+      syncJeopardySound();
+    }
+
+    async function pollGame() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const d = await res.json();
+        onGameData(d.game);
+      } catch { /* retry next tick */ }
+    }
+
+    async function launchGame(type) {
+      SoundEngine.init(); // this click is a user gesture — unlock audio
+      const config = (type === 'timer') ? { durationSec: 60 } : {};
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/game/launch`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, config })
+        });
+        const d = await res.json();
+        if (!res.ok) return toast(d.error || 'Could not launch game.');
+        // Reset per-game client flags
+        timerWarnFired = false; timerEndFired = false; lastTimerKey = null; lastRandSpinning = false;
+        onGameData(d.game);
+        document.querySelector('.host-tab[data-tab="games"]')?.click();
+      } catch { toast('Could not launch game.'); }
+    }
+
+    async function gameAction(action, payload) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/game/action`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, payload: payload || {} })
+        });
+        const d = await res.json();
+        if (!res.ok) return toast(d.error || 'Game action failed.');
+        onGameData(d.game);
+      } catch { toast('Game action failed.'); }
+    }
+
+    async function closeGame() {
+      try {
+        SoundEngine.stop();
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/game/close`, {
+          method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const d = await res.json();
+        if (res.ok) onGameData(d.game);
+      } catch { toast('Could not close game.'); }
+    }
+
+    let lastGameSig = null;
+    function renderGamePanel() {
+      const panel = document.getElementById('gamePanel');
+      if (!panel) return;
+      if (!liveGame) {
+        stopTimerTicker(); stopRandVisual(); lastGameSig = null;
+        panel.innerHTML = `<p class="text-sm" style="color:#57534e;">No game running. Launch one above — attendees see the same board live.</p>`;
+        return;
+      }
+      // Only rebuild the DOM when the game state actually changes — otherwise
+      // every poll would replay the reveal animations and wipe the timer input.
+      const sig = liveGame.type + '|' + JSON.stringify(liveGame.state);
+      if (sig !== lastGameSig) {
+        lastGameSig = sig;
+        if (liveGame.type === 'randomizer') panel.innerHTML = renderRandomizer();
+        else if (liveGame.type === 'timer') panel.innerHTML = renderTimer();
+        else if (liveGame.type === 'jeopardy') panel.innerHTML = renderJeopardy();
+        else if (liveGame.type === 'clue') panel.innerHTML = renderClue();
+        else if (liveGame.type === 'feud') panel.innerHTML = renderFeud();
+      }
+      // Post-render side effects (tickers, visuals) — idempotent, run every poll.
+      if (liveGame.type === 'timer') startTimerTicker(); else stopTimerTicker();
+      manageRandomizerVisual();
+    }
+
+    /* ── Randomizer ── */
+    function renderRandomizer() {
+      const st = liveGame.state || {};
+      const names = st.names || [];
+      let display;
+      if (st.spinning) display = '…';
+      else if (st.pickedIndex != null && names[st.pickedIndex]) display = names[st.pickedIndex];
+      else display = names.length ? 'Ready — tap Spin' : 'No attendees present';
+      let html = `<div class="mb-3 flex items-center justify-between flex-wrap gap-2">
+          <span class="game-section-title">Randomizer</span>
+          <label style="font-size:13px;color:#284157;display:flex;align-items:center;gap:6px;cursor:pointer;">
+            <input type="checkbox" ${st.showToAttendees ? 'checked' : ''} onchange="gameAction('toggle-visibility',{})"> Show to room</label>
+        </div>`;
+      html += `<div id="randWheel" class="rand-wheel ${st.spinning ? 'spinning' : ''} ${(!st.spinning && st.pickedIndex != null) ? 'picked' : ''}">${esc(display)}</div>`;
+      html += `<div class="mt-3 flex items-center gap-3 flex-wrap">
+          <button class="rand-spin-btn" ${st.spinning ? 'disabled' : ''} onclick="spinRandomizer()">${st.spinning ? 'Spinning…' : '🎲 Spin'}</button>
+          <span style="font-size:12px;color:#57534e;">${names.length} name${names.length === 1 ? '' : 's'} · from live attendees</span></div>`;
+      html += `<div class="mt-3" style="font-size:12px;color:#57534e;line-height:1.7;">${names.map(esc).join(' · ')}</div>`;
+      return html;
+    }
+
+    function spinRandomizer() {
+      SoundEngine.wheelTick(2000);
+      gameAction('spin', {});
+    }
+
+    function manageRandomizerVisual() {
+      const st = liveGame && liveGame.type === 'randomizer' ? liveGame.state : null;
+      if (!st) { stopRandVisual(); lastRandSpinning = false; return; }
+      const wheel = document.getElementById('randWheel');
+      if (st.spinning) {
+        lastRandSpinning = true;
+        if (!randVisualTimer && wheel) {
+          const names = st.names || [];
+          let i = 0;
+          randVisualTimer = setInterval(() => {
+            const w = document.getElementById('randWheel');
+            if (!w || !names.length) return;
+            w.textContent = names[i % names.length];
+            i++;
+          }, 90);
+        }
+      } else {
+        stopRandVisual();
+        if (lastRandSpinning && st.pickedIndex != null) { SoundEngine.wheelFanfare(); }
+        lastRandSpinning = false;
+      }
+    }
+    function stopRandVisual() { if (randVisualTimer) { clearInterval(randVisualTimer); randVisualTimer = null; } }
+
+    /* ── Timer ── */
+    function renderTimer() {
+      const st = liveGame.state || {};
+      let html = `<div class="mb-2 flex items-center justify-between flex-wrap gap-2">
+          <span class="game-section-title">Shared Timer</span>
+          <span style="font-size:13px;color:#284157;">${esc(st.label || '')}</span></div>`;
+      html += `<div id="timerDisplay" class="timer-display">${fmtTime(timerRemaining(st))}</div>`;
+      html += `<div class="mt-2 flex items-center gap-2 flex-wrap justify-center">
+          <button class="timer-preset" onclick="gameAction('set-duration',{durationSec:30})">30s</button>
+          <button class="timer-preset" onclick="gameAction('set-duration',{durationSec:60})">60s</button>
+          <button class="timer-preset" onclick="gameAction('set-duration',{durationSec:90})">90s</button>
+          <button class="timer-preset" onclick="gameAction('set-duration',{durationSec:120})">2min</button>
+          <input id="timerCustom" type="number" min="1" placeholder="sec" style="width:70px;padding:5px 8px;border:1px solid #EDE9E3;border-radius:8px;font-size:13px;">
+          <button class="gbtn ghost" onclick="setCustomDuration()">Set</button>
+        </div>`;
+      html += `<div class="mt-3 flex items-center gap-3 justify-center flex-wrap">
+          <button class="gbtn" style="background:#4A7C59" onclick="gameAction('start',{})">▶ Start</button>
+          <button class="gbtn burg" onclick="gameAction('pause',{})">⏸ Pause</button>
+          <button class="gbtn ghost" onclick="gameAction('reset',{})">↺ Reset</button></div>`;
+      return html;
+    }
+    function setCustomDuration() {
+      const v = parseInt(document.getElementById('timerCustom')?.value, 10);
+      if (Number.isFinite(v) && v > 0) gameAction('set-duration', { durationSec: v });
+    }
+    function timerRemaining(st) {
+      if (st.running && st.startedAt) {
+        const elapsed = (Date.now() - new Date(st.startedAt).getTime()) / 1000;
+        return Math.max(0, (st.durationSec || 0) - elapsed);
+      }
+      return st.durationSec || 0;
+    }
+    function fmtTime(sec) {
+      sec = Math.max(0, Math.ceil(sec));
+      const m = Math.floor(sec / 60), s = sec % 60;
+      return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+    function startTimerTicker() {
+      if (timerTicker) return; // already running — the ticker reads live state each tick
+      timerTicker = setInterval(() => {
+        if (!liveGame || liveGame.type !== 'timer') { stopTimerTicker(); return; }
+        const st = liveGame.state || {};
+        const rem = timerRemaining(st);
+        const disp = document.getElementById('timerDisplay');
+        if (disp) {
+          disp.textContent = fmtTime(rem);
+          disp.classList.toggle('warn', st.running && rem <= 10 && rem > 0);
+        }
+        const key = (st.startedAt || '') + ':' + (st.durationSec || 0);
+        if (key !== lastTimerKey) { lastTimerKey = key; timerWarnFired = false; timerEndFired = false; }
+        if (st.running && rem <= 10 && rem > 0 && !timerWarnFired) { timerWarnFired = true; SoundEngine.timerWarning(); }
+        if (st.running && rem <= 0 && !timerEndFired) { timerEndFired = true; SoundEngine.timerEnd(); }
+      }, 250);
+    }
+    function stopTimerTicker() { if (timerTicker) { clearInterval(timerTicker); timerTicker = null; } }
+
+    /* ── Jeopardy ── */
+    function renderJeopardy() {
+      const st = liveGame.state || {};
+      const cats = st.categories || [];
+      const nCat = cats.length;
+      const nRows = cats[0]?.cells?.length || 0;
+      let html = `<div class="mb-3"><span class="game-section-title">Jeopardy</span></div>`;
+      if (st.activeCell) {
+        const ci = st.activeCell.catIdx, vi = st.activeCell.cellIdx;
+        const c = cats[ci]?.cells?.[vi];
+        if (c) {
+          html += `<div class="jeo-clue mb-3">
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:#D4A855;">${esc(cats[ci].name)} · $${c.value}</div>
+            <div style="font-size:18px;margin:8px 0;">${esc(c.clue) || '<em style="color:#a9bccd">(no clue authored)</em>'}</div>
+            <div style="font-size:13px;color:#D4A855;">Answer: ${esc(c.answer) || '—'}</div>
+            <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+              <button class="gbtn" style="background:#4A7C59" onclick="gameAction('mark-correct',{catIdx:${ci},cellIdx:${vi}})">✓ Correct</button>
+              <button class="gbtn burg" onclick="gameAction('mark-incorrect',{catIdx:${ci},cellIdx:${vi}})">✗ Incorrect</button>
+              <button class="gbtn ghost" onclick="gameAction('close-cell',{})">Close clue</button>
+            </div></div>`;
+        }
+      }
+      html += `<div class="jeo-grid" style="grid-template-columns:repeat(${nCat},1fr);">`;
+      cats.forEach(c => { html += `<div class="jeo-head">${esc(c.name)}</div>`; });
+      for (let vi = 0; vi < nRows; vi++) {
+        cats.forEach((c, ci) => {
+          const cell = c.cells[vi];
+          let cls = 'jeo-cell';
+          if (cell.isRevealed) cls += ' revealed';
+          if (cell.markedCorrect) cls += ' correct';
+          if (cell.markedIncorrect) cls += ' incorrect';
+          const label = cell.isRevealed ? (esc(cell.clue).slice(0, 70) || 'opened') : ('$' + cell.value);
+          const click = cell.isRevealed ? '' : `onclick="gameAction('reveal-cell',{catIdx:${ci},cellIdx:${vi}})"`;
+          html += `<div class="${cls}" ${click}>${label}</div>`;
+        });
+      }
+      html += `</div>`;
+      html += `<div class="flex gap-3 mt-4 flex-wrap">` + (st.scores || []).map((s, i) => `
+        <div class="jeo-score">
+          <div style="font-weight:700;color:#284157;">${esc(s.teamName)}</div>
+          <div style="font-size:22px;font-weight:800;color:#6B1D34;">${s.points}</div>
+          <div style="display:flex;gap:4px;justify-content:center;margin-top:4px;">
+            <button class="gbtn ghost" style="padding:2px 8px" onclick="gameAction('update-score',{teamIdx:${i},delta:100})">+100</button>
+            <button class="gbtn ghost" style="padding:2px 8px" onclick="gameAction('update-score',{teamIdx:${i},delta:-100})">−100</button>
+          </div>
+        </div>`).join('') + `</div>`;
+      return html;
+    }
+
+    /* ── Clue ── */
+    function renderClue() {
+      const st = liveGame.state || {};
+      const rows = st.rows || [];
+      const labels = ['conduct', 'rule', 'outcome'];
+      let html = `<div class="mb-3"><span class="game-section-title">Clue — Disciplinary Reveal</span>
+          <button class="gbtn" style="margin-left:10px" onclick="gameAction('next-row',{})">Next row ▶</button>
+          <button class="gbtn ghost" style="margin-left:6px" onclick="gameAction('reset',{})">Reset</button></div>`;
+      html += `<div style="overflow-x:auto;"><table class="clue-table"><thead><tr><th>#</th><th>Conduct</th><th>Rule</th><th>Outcome</th></tr></thead><tbody>`;
+      rows.forEach((r, ri) => {
+        const cols = [r.conduct, r.rule, r.outcome];
+        html += `<tr${st.activeRow === ri ? ' style="outline:2px solid #D4A855"' : ''}><td class="clue-cell">${ri + 1}</td>`;
+        cols.forEach((val, ci) => {
+          const rev = r.revealedCols && r.revealedCols[ci];
+          html += `<td class="clue-cell ${rev ? 'revealed' : 'hidden-col'}">${rev
+            ? (esc(val) || '<em>—</em>')
+            : `<button class="clue-reveal-btn" onclick="gameAction('reveal-col',{rowIdx:${ri},colIdx:${ci}})">Reveal ${labels[ci]}</button>`}</td>`;
+        });
+        html += `</tr>`;
+      });
+      html += `</tbody></table></div>`;
+      return html;
+    }
+
+    /* ── Feud ── */
+    function renderFeud() {
+      const st = liveGame.state || {};
+      const answers = st.answers || [];
+      const teams = st.teams || [];
+      const strikes = st.strikes || 0;
+      let html = `<div class="mb-3 flex items-center justify-between flex-wrap gap-2">
+          <span class="game-section-title">Family Feud</span>
+          <button class="gbtn ghost" onclick="gameAction('next-question',{})">Next question ▶</button></div>`;
+      html += `<div style="font-size:16px;font-weight:700;color:#284157;margin-bottom:10px;">${esc(st.question) || '(no question)'}</div>`;
+      html += `<div style="margin-bottom:10px;">Strikes: <span class="feud-strike">${'✗'.repeat(strikes)}${'·'.repeat(Math.max(0, 3 - strikes))}</span>
+          <button class="gbtn burg" style="margin-left:10px" onclick="feudStrike()">Add strike</button></div>`;
+      html += `<div style="max-width:560px;">` + answers.map((a, i) => {
+        const rev = a.isRevealed;
+        return `<div class="feud-answer ${rev ? 'revealed' : 'hidden-ans'}" ${rev ? '' : `onclick="feudReveal(${i})"`}>
+            <span>${rev ? (esc(a.text) || ('Answer ' + (a.rank || i + 1))) : ('#' + (i + 1))}</span>
+            <span>${rev ? a.points : '&nbsp;'}</span></div>`;
+      }).join('') + `</div>`;
+      html += `<div class="flex gap-3 mt-4 flex-wrap">` + teams.map((t, i) => `
+        <div class="feud-team ${st.activeTeam === i ? 'active' : ''}">
+          <div style="font-weight:700;color:#284157;">${esc(t.name)}</div>
+          <div style="font-size:22px;font-weight:800;color:#6B1D34;">${t.score}</div>
+          <div style="display:flex;gap:4px;justify-content:center;margin-top:4px;">
+            <button class="gbtn" style="padding:2px 10px" onclick="feudBuzzTeam(${i})">Buzz</button>
+            <button class="gbtn ghost" style="padding:2px 8px" onclick="gameAction('update-score',{teamIdx:${i},delta:10})">+</button>
+            <button class="gbtn ghost" style="padding:2px 8px" onclick="gameAction('update-score',{teamIdx:${i},delta:-10})">−</button>
+          </div>
+        </div>`).join('') + `</div>`;
+      return html;
+    }
+    function feudReveal(i) { SoundEngine.feudDing(); gameAction('reveal-answer', { idx: i }); }
+    function feudBuzzTeam(i) { SoundEngine.feudBuzz(); gameAction('buzz', { teamIdx: i }); }
+    function feudStrike() { SoundEngine.feudBuzz(); gameAction('add-strike', {}); }
+
+    // Host-only jeopardy loop: play while a jeopardy game is on, stop otherwise.
+    function syncJeopardySound() {
+      if (liveGame && liveGame.type === 'jeopardy') SoundEngine.jeopardyLoop();
+      else SoundEngine.stopJeopardy();
+    }
+
+    /* ═══════════════ SoundEngine (WebAudio, no external files) ═══════════════ */
+    // Shared design with live-room.html. Host has ALL sounds; attendees get the
+    // shared-experience subset. Lazy-inits AudioContext on first gesture.
+    const SoundEngine = {
+      ctx: null,
+      _active: [],
+      _loopTimer: null,
+      _tickTimer: null,
+      _jeopardyOn: false,
+      NOTE: { D3: 146.83, E3: 164.81, F3: 174.61, G3: 196.00, A3: 220.00, B3: 246.94,
+              C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00,
+              C5: 523.25, E5: 659.25, F5: 698.46, G5: 783.99 },
+      init() {
+        if (!this.ctx) {
+          try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { this.ctx = null; }
+        }
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+        return this.ctx;
+      },
+      _tone(freq, offset, durMs, type, peak) {
+        const ctx = this.init(); if (!ctx) return;
+        const t0 = ctx.currentTime + offset;
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = type || 'sine';
+        osc.frequency.setValueAtTime(freq, t0);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(peak || 0.22, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durMs / 1000);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0); osc.stop(t0 + durMs / 1000 + 0.03);
+        this._active.push(osc);
+      },
+      _sweep(f1, f2, offset, durMs, type, peak) {
+        const ctx = this.init(); if (!ctx) return;
+        const t0 = ctx.currentTime + offset, t1 = t0 + durMs / 1000;
+        const osc = ctx.createOscillator(), gain = ctx.createGain();
+        osc.type = type || 'sawtooth';
+        osc.frequency.setValueAtTime(f1, t0);
+        osc.frequency.linearRampToValueAtTime(f2, t1);
+        gain.gain.setValueAtTime(0.0001, t0);
+        gain.gain.exponentialRampToValueAtTime(peak || 0.28, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t1);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0); osc.stop(t1 + 0.03);
+        this._active.push(osc);
+      },
+      _noise(offset, durMs, peak) {
+        const ctx = this.init(); if (!ctx) return;
+        const frames = Math.max(1, Math.floor(ctx.sampleRate * durMs / 1000));
+        const buf = ctx.createBuffer(1, frames, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * 0.7;
+        const src = ctx.createBufferSource(); src.buffer = buf;
+        const gain = ctx.createGain();
+        const t0 = ctx.currentTime + offset;
+        gain.gain.setValueAtTime(peak || 0.2, t0);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + durMs / 1000);
+        src.connect(gain); gain.connect(ctx.destination);
+        src.start(t0); src.stop(t0 + durMs / 1000 + 0.01);
+      },
+      // Stop any looping/scheduled sound (called before a new sound starts).
+      stop() {
+        this.stopJeopardy();
+        if (this._tickTimer) { clearTimeout(this._tickTimer); this._tickTimer = null; }
+        this._active.forEach(o => { try { o.stop(); } catch {} });
+        this._active = [];
+      },
+      // jeopardyLoop — 8-bar procedural melody, triangle, looping until stopped.
+      jeopardyLoop() {
+        if (this._jeopardyOn) return;
+        const ctx = this.init(); if (!ctx) return;
+        this._jeopardyOn = true;
+        const seq = ['E4','E4','E4','B3','D4','C4','A3','A3','A3','E3','G3','F3','D3','D3'];
+        const step = 0.12; // 90ms note + 30ms gap
+        const playOnce = () => {
+          if (!this._jeopardyOn) return;
+          seq.forEach((n, i) => this._tone(this.NOTE[n], i * step, 90, 'triangle', 0.16));
+          this._loopTimer = setTimeout(playOnce, seq.length * step * 1000);
+        };
+        playOnce();
+      },
+      stopJeopardy() {
+        this._jeopardyOn = false;
+        if (this._loopTimer) { clearTimeout(this._loopTimer); this._loopTimer = null; }
+      },
+      // clueChime — 4-note descending minor arpeggio, sine.
+      clueChime() {
+        this.stopJeopardy();
+        ['A4','F4','E4','C4'].forEach((n, i) => this._tone(this.NOTE[n], i * 0.42, 400, 'sine', 0.24));
+      },
+      // randomizerSpin — ascending blips decelerating over 2.5s, final ding.
+      randomizerSpin(names, onPick) {
+        this.stopJeopardy();
+        let elapsed = 0, interval = 80;
+        const total = 2500;
+        const tick = () => {
+          if (elapsed >= total) {
+            this._tone(this.NOTE.G5, 0, 200, 'sine', 0.3);
+            if (typeof onPick === 'function') { try { onPick(); } catch {} }
+            return;
+          }
+          this._tone(400 + (elapsed / total) * 500, 0, 40, 'square', 0.14);
+          elapsed += interval;
+          interval = Math.min(400, interval * 1.12);
+          this._tickTimer = setTimeout(tick, interval);
+        };
+        tick();
+      },
+      // timerWarning — two 880Hz square beeps, 150ms each, 100ms gap.
+      timerWarning() {
+        this.stopJeopardy();
+        this._tone(880, 0, 150, 'square', 0.24);
+        this._tone(880, 0.25, 150, 'square', 0.24);
+      },
+      // timerEnd — descending sweep 440→220 over 800ms, sawtooth buzzer.
+      timerEnd() { this.stopJeopardy(); this._sweep(440, 220, 0, 800, 'sawtooth', 0.3); },
+      // feudBuzz — sawtooth 180→100 over 600ms (wrong answer).
+      feudBuzz() { this.stopJeopardy(); this._sweep(180, 100, 0, 600, 'sawtooth', 0.32); },
+      // feudDing — three ascending sine notes (correct reveal).
+      feudDing() {
+        this.stopJeopardy();
+        ['C5','E5','G5'].forEach((n, i) => this._tone(this.NOTE[n], i * 0.12, 120, 'sine', 0.26));
+      },
+      // wheelTick — click pulses slowing exponentially over durationMs.
+      wheelTick(durationMs) {
+        this.stopJeopardy();
+        let elapsed = 0, interval = 80;
+        const tick = () => {
+          if (elapsed >= durationMs) return;
+          this._noise(0, 20, 0.18);
+          elapsed += interval;
+          interval = Math.min(400, interval * 1.15);
+          this._tickTimer = setTimeout(tick, interval);
+        };
+        tick();
+      },
+      // wheelFanfare — [C4,E4,G4,C5] sine, gain boost on the last note.
+      wheelFanfare() {
+        this.stopJeopardy();
+        ['C4','E4','G4','C5'].forEach((n, i) =>
+          this._tone(this.NOTE[n], i * 0.15, 150, 'sine', i === 3 ? 0.34 : 0.24));
+      }
+    };
+    // Unlock/resume audio on the first gesture anywhere on the page.
+    window.addEventListener('pointerdown', () => SoundEngine.init(), { once: true });
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
     init();

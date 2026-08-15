@@ -10,8 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
@@ -106,6 +105,8 @@
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Status</label><select id="f-status" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></div>
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Price ($)</label><input type="number" id="f-price" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"></div>
         <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Access Type</label><select id="f-accessType" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="subscription">Subscription</option><option value="purchase">Purchase</option><option value="free">Free</option></select></div>
+        <div><label class="block text-xs font-bold text-navy-800 uppercase tracking-wide mb-1">Visibility</label><select id="f-visibility" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-forest-500"><option value="public">Public (in catalog)</option><option value="private">Private (code only)</option></select></div>
+        <div class="col-span-2"><p id="courseCodeWarning" class="hidden text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></p></div>
       </div>
     </div>
     <div class="bg-gradient-to-br from-forest-50 to-blue-50 border-2 border-forest-200 rounded-xl p-5 mb-4">
@@ -299,6 +300,7 @@ function populateForm() {
   setVal('f-courseCode', c.courseCode); setVal('f-ceHours', c.ceHours || c.ceuHours);
   setVal('f-ceCategory', c.ceCategory); setVal('f-status', c.isPublished ? 'published' : (c.status || 'draft'));
   setVal('f-price', c.price); setVal('f-accessType', c.accessType);
+  setVal('f-visibility', c.visibility || 'public');
   setVal('f-minimumTimeMinutes', c.minimumTimeMinutes || ''); updateTimerDisplay();
   setVal('f-r-passThreshold', c.passThreshold || c.assessment?.passingScore || 80);
   setVal('f-r-maxAttempts', c.maxAttempts || c.assessment?.attemptsAllowed || 3);
@@ -430,6 +432,7 @@ function addSuppFromBrowse(f) { if (!courseData.resources) courseData.resources 
 
 async function saveAll() {
   const btn = document.getElementById('saveBtn'); btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Saving...';
+  const warnEl = document.getElementById('courseCodeWarning'); if (warnEl) warnEl.classList.add('hidden');
   const objs = [...document.querySelectorAll('.obj-input')].map(i => i.value).filter(Boolean);
   const status = document.getElementById('f-status').value;
   const payload = { ...courseData,
@@ -440,6 +443,7 @@ async function saveAll() {
     ceCategory: document.getElementById('f-ceCategory').value, status, isPublished: status === 'published',
     price: parseFloat(document.getElementById('f-price').value) || 0,
     accessType: document.getElementById('f-accessType').value,
+    visibility: document.getElementById('f-visibility').value,
     minimumTimeMinutes: parseInt(document.getElementById('f-minimumTimeMinutes').value) || 0,
     passThreshold: parseInt(document.getElementById('f-r-passThreshold').value) || 80,
     maxAttempts: parseInt(document.getElementById('f-r-maxAttempts').value) || 3,
@@ -455,8 +459,27 @@ async function saveAll() {
     instructor: document.getElementById('f-instructor').value, objectives: objs,
     assessment: { ...courseData.assessment, passingScore: parseInt(document.getElementById('f-passScore').value)||80, maxAttempts: parseInt(document.getElementById('f-maxAttempts2').value)||3 }
   };
+  const token = localStorage.getItem('token');
+
+  // Duplicate-code guard: courseCode has no uniqueness constraint, so a private
+  // course silently landing on a code another course already uses would make
+  // the code ambiguous. Only gate private courses — public ones are unaffected.
+  if (payload.visibility === 'private' && payload.courseCode && payload.courseCode.trim()) {
+    try {
+      const dupRes = await fetch(`${API}/interactive-courses/code/${encodeURIComponent(payload.courseCode.trim())}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (dupRes.ok) {
+        const dupData = await dupRes.json().catch(() => null);
+        const existing = dupData && dupData.data;
+        if (existing && existing._id && String(existing._id) !== String(courseId)) {
+          if (warnEl) { warnEl.textContent = 'This code is already in use by another course — pick a different one'; warnEl.classList.remove('hidden'); }
+          btn.disabled = false; btn.innerHTML = '<i class="fas fa-save mr-1"></i> Save All Changes';
+          return;
+        }
+      }
+    } catch (e) { /* lookup failure shouldn't block save */ }
+  }
+
   try {
-    const token = localStorage.getItem('token');
     const res = await fetch(`${API}/admin/courses/${courseId}`, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify(payload) });
     if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
     const saved = await res.json().catch(() => payload);

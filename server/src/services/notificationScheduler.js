@@ -24,6 +24,9 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM_EMAIL = process.env.FROM_EMAIL || 'CounselorReady <noreply@counselorready.com>';
 const PLATFORM_URL = process.env.PLATFORM_URL || 'https://counselorready.com';
 
+// Resend caps at 10 req/s — pace sequential sends in loops to stay under it.
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 /**
  * Send email using Resend
  */
@@ -89,10 +92,8 @@ export async function sendProgressReminders() {
         });
 
         const result = await sendEmail(progress.userId.email, template);
+        await sleep(150);
         if (result.success) totalSent++;
-        
-        // Small delay to avoid rate limiting
-        await new Promise(r => setTimeout(r, 100));
       }
     } catch (error) {
       console.error(`  Error processing ${days}-day reminders:`, error.message);
@@ -156,6 +157,7 @@ export async function checkCEMilestones() {
           });
 
           const result = await sendEmail(user.email, template);
+          await sleep(150);
           if (result.success) {
             totalSent++;
             console.log(`  Sent ${milestone} hour milestone email to ${user.email}`);
@@ -313,13 +315,11 @@ export async function sendIncompleteCourseReminders() {
         });
 
         const result = await sendEmail(user.email, template);
+        await sleep(150);
         if (result.success) {
           totalSent++;
           console.log(`  Sent incomplete course reminder to ${user.email} (${courses.length} courses)`);
         }
-
-        // Small delay to avoid rate limiting
-        await new Promise(r => setTimeout(r, 100));
       } catch (userErr) {
         console.error(`  Error sending reminder to user ${userId}:`, userErr.message);
       }

@@ -15,6 +15,21 @@ import { protect, requireSubscription } from '../middleware/auth.js';
 import { requireAddon } from '../middleware/partnerFeatureGate.js';
 import { syncCredentialToCalendar, removeEventFromCalendar } from '../services/googleCalendarService.js';
 import User from '../models/User.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+
+// Non-blocking activity log — must never block or fail a credential response.
+function logCredentialActivity(type, credential, userId, extra = {}) {
+  try {
+    logActivity(type, {
+      credentialType: credential.type || credential.credentialType,
+      licenseState: credential.state,
+      ...extra
+    }, { userId, notifyAdmin: false })
+      .catch(err => console.error('[credentials] activity log failed:', err.message));
+  } catch (err) {
+    console.error('[credentials] activity log failed:', err.message);
+  }
+}
 
 const router = express.Router();
 
@@ -122,7 +137,7 @@ router.get('/', protect, requireAddon('credentialManagement'), async (req, res) 
 // @route   POST /api/credentials
 // @desc    Add a credential
 // @access  Private (Pro required for more than 1)
-router.post('/', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.post('/', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const {
       templateId,
@@ -215,6 +230,10 @@ router.post('/', protect, requireAddon('credentialManagement'), async (req, res)
       message: 'Credential added',
       credential
     });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_ADDED, credential, req.user._id, {
+      expiresAt: credential.expirationDate
+    });
   } catch (error) {
     console.error('Add credential error:', error);
     res.status(500).json({ error: 'Failed to add credential' });
@@ -251,7 +270,7 @@ router.get('/consult-status', protect, requireAddon('credentialManagement'), asy
 // @route   POST /api/credentials/sync
 // @desc    Recalculate CE hours from linked certificates AND platform certificates
 // @access  Private
-router.post('/sync', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.post('/sync', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -415,7 +434,7 @@ router.post('/sync', protect, requireAddon('credentialManagement'), async (req, 
 // @route   POST /api/credentials/recalculate
 // @desc    Force recalculate all credential progress from ceuLogs (data repair)
 // @access  Private
-router.post('/recalculate', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.post('/recalculate', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const userId = req.user._id;
     
@@ -703,7 +722,7 @@ router.get('/user/dashboard', protect, requireAddon('credentialManagement'), asy
 // @route   POST /api/credentials/book-consult
 // @desc    Book a VIP consultation (1 per quarter)
 // @access  Private (VIP only)
-router.post('/book-consult', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.post('/book-consult', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     const { topic } = req.body;
     
@@ -763,7 +782,7 @@ router.get('/:id', protect, requireAddon('credentialManagement'), async (req, re
 // @route   PUT /api/credentials/:id
 // @desc    Update credential
 // @access  Private
-router.put('/:id', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.put('/:id', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -807,6 +826,10 @@ router.put('/:id', protect, requireAddon('credentialManagement'), async (req, re
       message: 'Credential updated',
       credential
     });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_RENEWED, credential, req.user._id, {
+      newExpiresAt: credential.expirationDate
+    });
   } catch (error) {
     console.error('Update credential error:', error);
     res.status(500).json({ error: 'Failed to update credential' });
@@ -841,6 +864,8 @@ router.delete('/:id', protect, requireAddon('credentialManagement'), async (req,
     }
 
     res.json({ message: 'Credential deleted' });
+
+    logCredentialActivity(ACTIVITY_TYPES.CREDENTIAL_DELETED, credential, req.user._id);
   } catch (error) {
     console.error('Delete credential error:', error);
     res.status(500).json({ error: 'Failed to delete credential' });
@@ -850,7 +875,7 @@ router.delete('/:id', protect, requireAddon('credentialManagement'), async (req,
 // @route   POST /api/credentials/:id/log-ceu
 // @desc    Log CEU hours to a credential
 // @access  Private
-router.post('/:id/log-ceu', protect, requireAddon('credentialManagement'), async (req, res) => {
+router.post('/:id/log-ceu', protect, requireSubscription, requireAddon('credentialManagement'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });
@@ -922,7 +947,7 @@ const upload = multer({
 // @route   POST /api/credentials/:id/upload
 // @desc    Upload document for a credential
 // @access  Private
-router.post('/:id/upload', protect, requireAddon('credentialManagement'), upload.single('document'), async (req, res) => {
+router.post('/:id/upload', protect, requireSubscription, requireAddon('credentialManagement'), upload.single('document'), async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ error: 'Invalid ID' });

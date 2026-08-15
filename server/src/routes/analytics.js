@@ -8,7 +8,7 @@ import mongoose from 'mongoose';
 import { protect } from '../middleware/auth.js';
 import Course from '../models/Course.js';
 import Evaluation from '../models/Evaluation.js';
-import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress } from '../models/InteractiveCourse.js';
 import PlatformSurvey from '../models/PlatformSurvey.js';
 import UserCourseProgress from '../models/UserCourseProgress.js';
 import User from '../models/User.js';
@@ -25,12 +25,24 @@ const router = express.Router();
 // @access  Public (but tracks user if logged in)
 router.post('/course/:id/view', async (req, res) => {
   try {
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
-    // Increment view count
+
+    if (!fromLegacy) {
+      // InteractiveCourse has no analytics.views field to persist into —
+      // that's a schema addition out of scope here (InteractiveCourse.js
+      // isn't named in this task). Acknowledge without claiming a tracked count.
+      return res.json({ success: true, tracked: false });
+    }
+
+    // Increment view count (legacy Course path — unchanged)
     course.analytics.views = (course.analytics.views || 0) + 1;
     
     // Track unique views via cookie
@@ -61,22 +73,35 @@ router.post('/course/:id/rate', protect, async (req, res) => {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
     }
     
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+    if (!fromLegacy) {
+      // InteractiveCourse has no ratings/analytics fields to persist into —
+      // same schema gap as view tracking above, same scope boundary.
+      return res.status(501).json({
+        error: 'Ratings are not yet supported for this course.',
+        reason: 'unsupported_course_type'
+      });
+    }
+
     // Check if user completed the course
     const progress = await UserCourseProgress.findOne({
       userId: req.user._id,
       courseId: req.params.id,
       status: 'completed'
     });
-    
+
     if (!progress) {
       return res.status(400).json({ error: 'You must complete the course before rating' });
     }
-    
+
     // Check if already rated
     const existingRating = course.ratings.find(
       r => r.userId.toString() === req.user._id.toString()
@@ -129,17 +154,27 @@ router.get('/course/:id', protect, async (req, res) => {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    const course = await Course.findById(req.params.id);
+    let course = await Course.findById(req.params.id);
+    let fromLegacy = true;
+    if (!course) {
+      course = await InteractiveCourse.findById(req.params.id);
+      fromLegacy = false;
+    }
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
     }
-    
+
+    // Interactive courses track progress in CourseProgress (interactivecourseprogresses),
+    // legacy in UserCourseProgress. Ratings for interactive courses come from the
+    // NBCC-required Evaluation every completer files — no separate ratings[] needed.
+    const ProgressModel = fromLegacy ? UserCourseProgress : CourseProgress;
+
     // Get completion time stats
-    const completedProgress = await UserCourseProgress.find({
+    const completedProgress = await ProgressModel.find({
       courseId: req.params.id,
       status: 'completed'
     });
-    
+
     let avgTimeToComplete = 0;
     if (completedProgress.length > 0) {
       const totalHours = completedProgress.reduce((sum, p) => {
@@ -148,21 +183,46 @@ router.get('/course/:id', protect, async (req, res) => {
       }, 0);
       avgTimeToComplete = Math.round((totalHours / completedProgress.length) * 10) / 10;
     }
-    
-    // Get recent ratings with user info
-    const recentRatings = course.ratings
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, 10);
-    
+
+    // Recent ratings: legacy reads its embedded ratings[]; interactive reads
+    // submitted course evaluations (one per completer, unique per user+course).
+    let recentRatings = [];
+    let interactiveAnalytics = null;
+    if (fromLegacy) {
+      recentRatings = course.ratings.sort((a, b) => b.createdAt - a.createdAt).slice(0, 10);
+    } else {
+      const [enrollments, evalStats, recentEvals] = await Promise.all([
+        CourseProgress.countDocuments({ courseId: req.params.id }),
+        Evaluation.getCourseStats(req.params.id),
+        Evaluation.find({ course: req.params.id, status: { $in: ['submitted', 'completed', 'reviewed'] } })
+          .sort({ submittedAt: -1 }).limit(10)
+          .select('user overallRating wouldRecommend submittedAt').lean()
+      ]);
+      const completions = completedProgress.length;
+      interactiveAnalytics = {
+        enrollments,
+        completions,
+        completionRate: enrollments > 0 ? Math.round((completions / enrollments) * 100) : 0,
+        avgTimeToComplete,
+        avgRating: evalStats.avgOverall ? Math.round(evalStats.avgOverall * 10) / 10 : 0,
+        totalRatings: evalStats.count || 0
+      };
+      recentRatings = recentEvals.map(e => ({
+        userId: e.user,
+        rating: e.overallRating,
+        wouldRecommend: e.wouldRecommend,
+        createdAt: e.submittedAt
+      }));
+    }
+
     res.json({
       courseId: course._id,
       title: course.title,
-      analytics: {
-        ...course.analytics,
-        avgTimeToComplete
-      },
+      analytics: fromLegacy
+        ? { ...course.analytics, avgTimeToComplete }
+        : interactiveAnalytics,
       recentRatings,
-      enrollmentTrend: await getEnrollmentTrend(req.params.id)
+      enrollmentTrend: await getEnrollmentTrend(req.params.id, fromLegacy)
     });
   } catch (error) {
     console.error('Get course analytics error:', error);
@@ -171,11 +231,12 @@ router.get('/course/:id', protect, async (req, res) => {
 });
 
 // Helper: Get enrollment trend (last 30 days)
-async function getEnrollmentTrend(courseId) {
+async function getEnrollmentTrend(courseId, fromLegacy = true) {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const enrollments = await UserCourseProgress.aggregate([
+
+  const ProgressModel = fromLegacy ? UserCourseProgress : CourseProgress;
+  const enrollments = await ProgressModel.aggregate([
     {
       $match: {
         courseId: new mongoose.Types.ObjectId(courseId),
@@ -202,19 +263,61 @@ router.get('/courses/popular', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const sortBy = req.query.sortBy || 'enrollments'; // enrollments, rating, completions
     
-    const sortField = {
-      enrollments: 'analytics.enrollments',
-      rating: 'analytics.avgRating',
-      completions: 'analytics.completions',
-      views: 'analytics.views'
-    }[sortBy] || 'analytics.enrollments';
-    
-    const courses = await Course.find({ status: 'published' })
-      .select('title slug thumbnail ceuHours analytics')
-      .sort({ [sortField]: -1 })
-      .limit(limit);
-    
-    res.json({ courses });
+    const metricKey = {
+      enrollments: 'enrollments',
+      rating: 'avgRating',
+      completions: 'completions',
+      views: 'views'
+    }[sortBy] || 'enrollments';
+
+    // Legacy courses sort on their stored analytics counters. Interactive
+    // courses have no stored counters — their metrics are computed live from
+    // CourseProgress (enrollments/completions) and Evaluation (avgRating from
+    // the NBCC-required evaluation every completer files). Views have no data
+    // source for interactive courses (nothing client-side pings /view) and
+    // stay 0.
+    const [legacyCourses, interactiveCourses, progressAgg, evalAgg] = await Promise.all([
+      Course.find({ status: 'published' }).select('title slug thumbnail ceuHours analytics').lean(),
+      InteractiveCourse.find({ status: 'published' }).select('title slug thumbnail ceHours').lean(),
+      CourseProgress.aggregate([
+        { $group: {
+          _id: '$courseId',
+          enrollments: { $sum: 1 },
+          completions: { $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] } }
+        } }
+      ]),
+      Evaluation.aggregate([
+        { $match: { status: { $in: ['submitted', 'completed', 'reviewed'] } } },
+        { $group: { _id: '$course', avgRating: { $avg: '$overallRating' }, totalRatings: { $sum: 1 } } }
+      ])
+    ]);
+
+    const progressByCourse = Object.fromEntries(progressAgg.map(p => [p._id?.toString(), p]));
+    const evalByCourse = Object.fromEntries(evalAgg.map(e => [e._id?.toString(), e]));
+
+    const merged = [
+      ...legacyCourses.map(c => ({
+        _id: c._id, title: c.title, slug: c.slug, thumbnail: c.thumbnail,
+        ceuHours: c.ceuHours, analytics: c.analytics || {}
+      })),
+      ...interactiveCourses.map(c => {
+        const p = progressByCourse[c._id.toString()] || {};
+        const e = evalByCourse[c._id.toString()] || {};
+        return {
+          _id: c._id, title: c.title, slug: c.slug, thumbnail: c.thumbnail,
+          ceuHours: c.ceHours, analytics: {
+            enrollments: p.enrollments || 0,
+            completions: p.completions || 0,
+            avgRating: e.avgRating ? Math.round(e.avgRating * 10) / 10 : 0,
+            totalRatings: e.totalRatings || 0,
+            views: 0
+          }
+        };
+      })
+    ];
+    merged.sort((a, b) => (b.analytics?.[metricKey] || 0) - (a.analytics?.[metricKey] || 0));
+
+    res.json({ courses: merged.slice(0, limit) });
   } catch (error) {
     console.error('Get popular courses error:', error);
     res.status(500).json({ error: 'Failed to get popular courses' });

@@ -54,6 +54,11 @@ const blogPostSchema = new mongoose.Schema({
     enum: ['draft', 'published'],
     default: 'draft'
   },
+  // One-time token embedded in approve/reject email links so Ke can act
+  // on a draft without logging in. Cleared after use (approve or reject).
+  reviewToken: {
+    type: String
+  },
   publishedAt: {
     type: Date
   },

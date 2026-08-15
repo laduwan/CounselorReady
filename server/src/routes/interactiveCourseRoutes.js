@@ -39,7 +39,6 @@ async function findCourseByIdOrSlug(param) {
 const FREE_COURSES_PER_MONTH = 4;   // free plan: 4 courses/month
 const FREE_MAX_COURSE_HOURS  = 1;   // free plan covers 1-CE-hour courses only
 const TRIAL_COURSES_TOTAL    = 2;   // no-card trial: 2 one-CE courses, lifetime
-const BASIC_MAX_COURSE_HOURS = 3;   // basic plan: unlimited courses up to 3 CE hours
 
 /**
  * Strip sensitive content from course for preview/unauthenticated users.
@@ -89,6 +88,11 @@ function hasCardOnFile(user) {
 
 // Free-tier eligibility for a PAID course. Read-only (does NOT consume a slot).
 function freeTierDecision(user, course) {
+  // Purchase-only courses are never covered by free-tier slots — must be bought.
+  if (course?.accessType === 'purchase') {
+    return { allowed: false, code: 'PURCHASE_REQUIRED',
+      message: 'This course is sold separately. Purchase it to enroll.' };
+  }
   const courseHours = course.ceHours || course.ceuHours || 1;
   if (courseHours > FREE_MAX_COURSE_HOURS) {
     return { allowed: false, code: 'OVER_FREE_HOUR_LIMIT',
@@ -111,15 +115,13 @@ function freeTierDecision(user, course) {
   return { allowed: true, code: 'FREE_OK' };
 }
 
-// True if an active PAID plan covers THIS course. Accounts for the basic-tier
-// hour cap: basic gets unlimited courses up to BASIC_MAX_COURSE_HOURS CE hours;
-// all other paid plans (starter/professional/vip) are unlimited. free → false.
+// True if an active PAID plan covers THIS course. All paid plans
+// (starter/professional/vip) are unlimited here; per-plan CE-hour caps
+// are enforced separately by User.canAccessAsyncCourse. free → false.
 function planCoversCourse(plan, course) {
+  // Purchase-only courses are never covered by any subscription plan.
+  if (course?.accessType === 'purchase') return false;
   if (plan === 'free') return false;
-  if (plan === 'basic') {
-    const hrs = course.ceHours || course.ceuHours || 1;
-    return hrs <= BASIC_MAX_COURSE_HOURS;
-  }
   return true;
 }
 
@@ -193,6 +195,24 @@ async function gateContent(courseObj, user) {
   const stripped = stripContent(courseObj);
   stripped._requiresEnrollment = true;
   return stripped;
+}
+
+/**
+ * Renewal-cycle "updated since your last completion" viewer feature.
+ * Embeds the learner's most recent completedAt for THIS course (if any)
+ * into the course payload the viewer already fetches — no second round
+ * trip needed. The course's own `changeLog` needs no extra plumbing here:
+ * gateContent() above returns the full course object (or a stripped
+ * preview object), and Mongoose serializes every schema field —
+ * changeLog included — by default.
+ */
+async function withUserCompletedAt(gated, user, courseId) {
+  const obj = gated.toObject ? gated.toObject() : gated;
+  if (user) {
+    const progress = await CourseProgress.findOne({ userId: user._id, courseId }, 'completedAt');
+    if (progress?.completedAt) obj.userCompletedAt = progress.completedAt;
+  }
+  return obj;
 }
 
 // Export for testing
@@ -292,6 +312,7 @@ router.get('/', async (req, res) => {
         { partnerId: { $in: listedIds } }
       ]
     }]);
+    query.visibility = { $ne: 'private' };
 
     const courses = await Course.find(query)
       .select('title slug status courseCode description thumbnail ceHours totalEstimatedTime categories tags wordCount sectionCount moduleCount assessmentQuestionCount ceuCategories accessType price pricingTier status ceuHours ceuApprovalNumber partnerId')
@@ -363,9 +384,33 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
     }
 
     const gated = await gateContent(course, req.user);
-    res.json({ success: true, data: gated });
+    const responseData = await withUserCompletedAt(gated, req.user, course._id);
+    res.json({ success: true, data: responseData });
   } catch (error) {
     console.error('Error fetching course:', error);
+    res.status(500).json({ success: false, error: 'Failed to fetch course' });
+  }
+});
+
+/**
+ * GET /api/interactive-courses/code/:courseCode
+ * Direct lookup by courseCode — works for public AND private courses.
+ * This is the only way to reach a private course without knowing its slug/id.
+ */
+router.get('/code/:courseCode', optionalAuth, async (req, res) => {
+  try {
+    const escapedCode = req.params.courseCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const course = await Course.findOne({
+      courseCode: new RegExp(`^${escapedCode}$`, 'i'),
+      status: 'published'
+    });
+    if (!course) {
+      return res.status(404).json({ success: false, error: 'Course not found' });
+    }
+    const gated = await gateContent(course, req.user);
+    res.json({ success: true, data: gated });
+  } catch (error) {
+    console.error('Error fetching course by code:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
   }
 });
@@ -417,7 +462,8 @@ router.get('/:id', optionalAuth, async (req, res) => {
     }
 
     const gated = await gateContent(course, req.user);
-    res.json({ success: true, data: gated });
+    const responseData = await withUserCompletedAt(gated, req.user, course._id);
+    res.json({ success: true, data: responseData });
   } catch (error) {
     console.error('Error fetching course:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch course' });
@@ -504,6 +550,30 @@ router.post('/:id/enroll', protect, async (req, res) => {
       pc => pc.courseId?.toString() === course._id.toString()
     );
 
+    // ── New membership async-course cap ──
+    // Monthly, the single grandfathered Starter account, and the new
+    // Starter/Professional plans are hour-capped. Every existing plan keeps
+    // its current access path below (VIP/Annual are uncapped; purchased/
+    // admin/free bypass this).
+    if (!isAdmin && !isFree && !hasPurchased &&
+        (user.isMonthly?.() || user.isGrandfatheredStarter?.() || user.isStarter?.() || user.isProfessional?.())) {
+      if (!user.canAccessAsyncCourse(course)) {
+        const hrs = course.ceHours || course.ceuHours || 0;
+        const cap = user.isProfessional?.() ? 5 : 4;
+        const upgradeMsg = user.isProfessional?.()
+          ? 'Upgrade to VIP or Annual for full catalog access.'
+          : 'Upgrade to Professional, VIP, or Annual for full catalog access.';
+        return res.status(403).json({
+          success: false,
+          error: hrs > cap
+            ? `This course is ${hrs} CE hours. Your plan covers courses up to ${cap} CE hours. ${upgradeMsg}`
+            : 'Active membership required.',
+          upgradeRequired: true,
+          upgradeUrl: '/subscription.html'
+        });
+      }
+    }
+
     let accessGranted = false;
     let usedFreeHours = false;
     let freeDenial = null;
@@ -521,7 +591,7 @@ router.post('/:id/enroll', protect, async (req, res) => {
     if (!accessGranted) {
       return res.status(403).json({
         success: false,
-        error: freeDenial?.code === 'OVER_FREE_HOUR_LIMIT' ? 'Upgrade required' : 'Subscription required',
+        error: freeDenial?.code === 'PURCHASE_REQUIRED' ? 'Purchase required' : freeDenial?.code === 'OVER_FREE_HOUR_LIMIT' ? 'Upgrade required' : 'Subscription required',
         code: freeDenial?.code || 'SUBSCRIPTION_REQUIRED',
         message: freeDenial?.message || `Subscribe for unlimited access.`,
         freeCoursesUsedThisMonth: effectiveFreeCoursesUsed(user),

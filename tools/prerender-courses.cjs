@@ -110,8 +110,7 @@ function pageHtml(c) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <script type="application/ld+json">${JSON.stringify(courseLd)}</script>
   <script type="application/ld+json">${JSON.stringify(breadcrumbLd)}</script>
   <style>body{background:#F8F7F4;font-family:'Lato',system-ui,sans-serif}.font-display{font-family:'Cormorant Garamond',Georgia,serif}</style>
@@ -131,6 +130,7 @@ function pageHtml(c) {
     <header class="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
       <div class="flex flex-wrap items-center gap-2 mb-3">
         ${ce ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:#fdf2f5;color:#6B1D34">${ce} CE Hours</span>` : ''}
+        ${c.accessType === 'purchase' ? `<span class="text-xs font-semibold px-2.5 py-1 rounded-full" style="background:rgba(212,168,85,0.20);color:#876520">★ SOLD SEPARATELY</span>` : ''}
         ${cats.map(cat => `<span class="text-xs font-medium px-2.5 py-1 rounded-full bg-stone-100 text-stone-600">${esc(cat)}</span>`).join('')}
       </div>
       <h1 class="font-display text-3xl font-bold text-burgundy-900">${esc(title)}</h1>

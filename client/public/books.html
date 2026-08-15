@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Books - CounselorReady</title>
+  <meta name="description" content="Books by Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH — clinical resources for counselors and mental health professionals.">
+  <meta property="og:title" content="Books by Kejuiana Johnson — CounselorReady">
+  <meta property="og:description" content="Clinical books and resources for counselors and mental health professionals.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://counselorready.com/books.html">
+  <link rel="canonical" href="https://counselorready.com/books">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+    .dd{display:none;position:absolute;top:100%;margin-top:6px;background:#fff;border-radius:10px;box-shadow:0 10px 40px rgba(107,29,52,.12);border:1px solid #FAE8EB;z-index:50;padding:6px 0;min-width:210px}
+    .dd.open{display:block}
+    .dd a{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:13px;color:#284157;text-decoration:none;transition:background .1s}
+    .dd a:hover{background:#F2F7F4}
+    .ov{display:none;position:fixed;inset:0;z-index:40}.ov.open{display:block}
+    .nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:#57534e;text-decoration:none;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .nav-link:hover{color:#6B1D34;background:#FDF5F7}
+    .nav-link.active{color:#6B1D34;background:#FDF5F7;font-weight:600;border-bottom:2px solid #6B1D34}
+    .skeleton{background:linear-gradient(90deg,#efeae2 25%,#f7f4ee 50%,#efeae2 75%);background-size:200% 100%;animation:sk 1.3s ease-in-out infinite}
+    @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  </style>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Header -->
+  <div id="cr-header"></div>
+  <script src="/shared/nav-footer.js"></script>
+
+  <!-- Hero -->
+  <section style="background:#F8F7F4;padding:56px 20px 40px;">
+    <div style="max-width:1152px;margin:0 auto;text-align:center;">
+      <h1 class="font-display" style="font-size:44px;font-weight:600;color:#6B1D34;margin:0;line-height:1.1;">Books by Kejuiana Johnson</h1>
+      <p style="font-size:17px;color:#284157;margin:14px auto 0;max-width:640px;">Clinical resources, workbooks, and guides for counselors and mental health professionals.</p>
+    </div>
+  </section>
+
+  <!-- Catalog -->
+  <main style="max-width:1152px;margin:0 auto;padding:8px 20px 72px;">
+    <div id="grid" class="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:24px;"></div>
+    <div id="state" style="text-align:center;padding:60px 20px;display:none;"></div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    function money(n){ return '$' + Number(n || 0).toFixed(2); }
+
+    function skeletons(){
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      for (let i = 0; i < 6; i++){
+        const c = document.createElement('div');
+        c.style.cssText = 'background:#fff;border:1px solid #eee7dd;border-radius:14px;overflow:hidden;';
+        c.innerHTML = '<div class="skeleton" style="aspect-ratio:3/4;"></div>' +
+          '<div style="padding:16px;"><div class="skeleton" style="height:16px;border-radius:4px;margin-bottom:8px;"></div>' +
+          '<div class="skeleton" style="height:12px;width:70%;border-radius:4px;"></div></div>';
+        grid.appendChild(c);
+      }
+    }
+
+    function showState(html){
+      document.getElementById('grid').innerHTML = '';
+      const s = document.getElementById('state');
+      s.style.display = 'block';
+      s.innerHTML = html;
+    }
+
+    function card(b){
+      const badge = b.memberFree
+        ? '<span style="position:absolute;top:10px;left:10px;background:#D4A855;color:#3a2a06;font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;">Member Free</span>'
+        : '';
+      const cover = b.coverUrl
+        ? '<img src="' + esc(b.coverUrl) + '" alt="' + esc(b.title) + '" style="width:100%;aspect-ratio:3/4;object-fit:cover;" onerror="this.style.display=\'none\'">'
+        : '<div style="width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#6B1D34,#4A7C59);"></div>';
+      return '<a href="/book-details.html?slug=' + encodeURIComponent(b.slug) + '" ' +
+        'style="display:block;background:#fff;border:1px solid #eee7dd;border-radius:14px;overflow:hidden;text-decoration:none;box-shadow:0 2px 10px rgba(107,29,52,.05);transition:transform .15s,box-shadow .15s;" ' +
+        'onmouseover="this.style.transform=\'translateY(-3px)\';this.style.boxShadow=\'0 10px 30px rgba(107,29,52,.12)\'" ' +
+        'onmouseout="this.style.transform=\'\';this.style.boxShadow=\'0 2px 10px rgba(107,29,52,.05)\'">' +
+        '<div style="position:relative;">' + cover + badge + '</div>' +
+        '<div style="padding:16px;">' +
+        '<h3 class="font-display" style="font-size:19px;font-weight:600;color:#6B1D34;margin:0;line-height:1.2;">' + esc(b.title) + '</h3>' +
+        (b.subtitle ? '<p style="font-size:13px;color:#284157;margin:6px 0 0;">' + esc(b.subtitle) + '</p>' : '') +
+        (b.blurb ? '<p style="font-size:13px;color:#57534e;margin:8px 0 0;line-height:1.5;">' + esc(b.blurb) + '</p>' : '') +
+        '<p style="font-size:16px;font-weight:700;color:#4A7C59;margin:12px 0 0;">' + (b.memberFree ? 'Free for members · ' : '') + money(b.price) + '</p>' +
+        '</div></a>';
+    }
+
+    async function load(){
+      skeletons();
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch(API_URL + '/api/books', { signal: ctrl.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error('bad status');
+        const books = await res.json();
+        if (!Array.isArray(books) || books.length === 0){
+          showState('<p class="font-display" style="font-size:22px;color:#6B1D34;margin:0;">No books yet</p><p style="color:#57534e;margin:8px 0 0;">Check back soon — new titles are on the way.</p>');
+          return;
+        }
+        document.getElementById('state').style.display = 'none';
+        document.getElementById('grid').innerHTML = books.map(card).join('');
+      } catch (err) {
+        showState('<p class="font-display" style="font-size:22px;color:#6B1D34;margin:0;">Could not load books</p><p style="color:#57534e;margin:8px 0 0;">Please refresh the page or try again later.</p>');
+      }
+    }
+
+    load();
+  </script>
+</body>
+</html>

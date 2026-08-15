@@ -1,0 +1,21 @@
+{
+  "baseUrl": "",
+  "_note": "Single source of truth for live-session content, editable in GitHub and verified at merge so nothing is fumbled day-of. baseUrl defaults to the same origin; file paths are resolved relative to it, while absolute http(s) URLs (e.g. Cloudinary) are used verbatim. Slide entries marked 'TODO' fill in after the first manual upload — the loader modal offers 'Copy manifest snippet' with the Cloudinary URLs returned by the handout/media upload responses.",
+  "sessions": {
+    "live-continuing-education-webinar": {
+      "guide": "content/live-sessions/ethics-table-talk/facilitator-guide.md",
+      "slides": [
+        { "file": "TODO-cloudinary-url-slide-01-welcome.png", "segmentHint": "Welcome, objectives, and ground rules" },
+        { "file": "TODO-cloudinary-url-slide-02-dual-relationships.png", "segmentHint": "Dual relationships and boundary crossings" },
+        { "file": "TODO-cloudinary-url-slide-03-informed-consent.png", "segmentHint": "Informed consent and documentation" },
+        { "file": "TODO-cloudinary-url-slide-04-confidentiality.png", "segmentHint": "Confidentiality limits and mandated reporting" },
+        { "file": "TODO-cloudinary-url-slide-05-decision-model.png", "segmentHint": "Applying an ethical decision-making model" }
+      ],
+      "handouts": [
+        { "file": "TODO-cloudinary-url-participant-workbook.pdf", "label": "Participant Workbook" },
+        { "file": "TODO-cloudinary-url-case-vignettes.pdf", "label": "Case Vignettes" },
+        { "file": "TODO-cloudinary-url-decision-model.pdf", "label": "Ethical Decision-Making Model (one-pager)" }
+      ]
+    }
+  }
+}

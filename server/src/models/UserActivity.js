@@ -28,7 +28,15 @@ const userActivitySchema = new mongoose.Schema({
       'course_completed',
       'course_failed',
       'certificate_generated',
-      'tool_used'
+      'tool_used',
+      'live_session_registered',
+      'live_session_attended',
+      'live_session_cert_issued',
+      'credential_added',
+      'credential_renewed',
+      'credential_deleted',
+      'certificate_downloaded',
+      'replay_watched'
     ]
   },
   userName: { type: String },

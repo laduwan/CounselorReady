@@ -30,7 +30,8 @@ import {
   onClientLeft,
   onSessionEnded,
   onRecordingFinished,
-  onTranscriptionFinished
+  onTranscriptionFinished,
+  closeDanglingSegments
 } from '../services/sessionProducer.js';
 
 const router = express.Router();
@@ -68,7 +69,14 @@ router.post('/', async (req, res) => {
     ? req.body
     : Buffer.from(typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {}));
 
-  if (secret && !verifyWherebySignature(raw, req.headers, secret)) {
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      console.error('[whereby-webhook] WHEREBY_WEBHOOK_SECRET is not set — rejecting webhook in production.');
+      return res.status(401).json({ error: 'Webhook not configured' });
+    }
+    console.warn('[whereby-webhook] WHEREBY_WEBHOOK_SECRET not set — skipping signature check (non-production only).');
+  } else if (!verifyWherebySignature(raw, req.headers, secret)) {
+    console.error('[whereby-webhook] REJECTED invalid signature — header present:', !!req.headers['whereby-signature'], '— check WHEREBY_WEBHOOK_SECRET matches the webhook in the Whereby dashboard');
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
@@ -78,6 +86,8 @@ router.post('/', async (req, res) => {
   } catch {
     return res.status(400).json({ error: 'Invalid JSON' });
   }
+
+  console.log(`[whereby-webhook] ACCEPTED ${event.type || 'unknown'} meetingId=${event.data?.meetingId || 'n/a'}`);
 
   // Ack fast; process inline (events are small) but never let errors 500 a retry storm
   try {
@@ -133,14 +143,7 @@ async function handleEvent(event) {
 
     case 'room.session.ended': {
       const endedAt = new Date(event.createdAt || Date.now());
-      let dirty = false;
-      for (const a of session.attendance) {
-        if (!a.leftAt) {
-          a.leftAt = endedAt;
-          a.durationMin = Math.max(0, Math.round((endedAt - a.joinedAt) / 60000));
-          dirty = true;
-        }
-      }
+      let dirty = closeDanglingSegments(session, endedAt);
       if (session.status === 'live') { session.status = 'completed'; dirty = true; }
       if (dirty) await session.save();
       onSessionEnded(session); // wrap-up deferred to cron tick

@@ -8,8 +8,7 @@
   <meta name="description" content="View course details, CE hours, and approval information. Enroll in NBCC-approved continuing education for counselors.">
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -591,6 +590,11 @@
       // Clock + Minutes (navy)
       badges += `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:13px;font-size:11px;font-weight:600;background:rgba(40,65,87,0.10);color:#284157">${ICON_CLOCK} ${minutes} min</span>`;
 
+      // Sold-separately tag (gold) — premium courses aren't bundled into any subscription tier
+      if (currentCourse.accessType === 'purchase' || currentCourse.accessTier === 'premium') {
+        badges += `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:13px;font-size:11px;font-weight:600;background:rgba(212,168,85,0.20);color:#876520">★ SOLD SEPARATELY</span>`;
+      }
+
       // Seal + Approval body (burgundy)
       let activeApprovals = [];
       if (currentCourse.approvals && currentCourse.approvals.length > 0) {
@@ -889,10 +893,12 @@
     function renderPricing() {
       const price = currentCourse.price;
       const accessTier = currentCourse.accessTier || 'professional';
-      
+      // Premium courses are sold separately — never bundled into a subscription tier
+      const isStandalone = currentCourse.accessType === 'purchase' || accessTier === 'premium';
+
       // Update approval badge in pricing card header
       updatePricingApprovalBadge();
-      
+
       // Individual price section
       if (price && price > 0) {
         document.getElementById('individualPriceSection').classList.remove('hidden');
@@ -900,7 +906,30 @@
       } else {
         document.getElementById('individualPriceSection').classList.add('hidden');
       }
-      
+
+      // Check if user has access (purchase check happens first inside checkUserAccess,
+      // so this is reliable for standalone/premium courses too)
+      const hasAccess = checkUserAccess(accessTier);
+
+      if (isStandalone) {
+        // Not included with any plan — hide the "Included with..." price display
+        // and the subscribe link, since subscribing doesn't grant access.
+        document.getElementById('subscriptionPriceDisplay').classList.add('hidden');
+        document.getElementById('subscribeLink').classList.add('hidden');
+
+        if (hasAccess) {
+          document.getElementById('startCourseBtn').classList.remove('hidden');
+          if (userProgress && userProgress.status === 'completed') {
+            document.getElementById('startCourseBtn').textContent = 'Review Course';
+          } else if (userProgress && userProgress.currentLesson > 0) {
+            document.getElementById('startCourseBtn').textContent = 'Continue Course';
+          }
+        } else {
+          document.getElementById('startCourseBtn').classList.add('hidden');
+        }
+        return;
+      }
+
       // Subscription tier
       const tierNames = {
         'free': 'Free',
@@ -912,13 +941,11 @@
         'professional': 19,
         'vip': 49
       };
-      
+
+      document.getElementById('subscriptionPriceDisplay').classList.remove('hidden');
       document.getElementById('subscriptionTierName').textContent = tierNames[accessTier] || 'Professional Plan';
       document.getElementById('subscriptionPrice').textContent = tierPrices[accessTier] || 19;
-      
-      // Check if user has access
-      const hasAccess = checkUserAccess(accessTier);
-      
+
       if (hasAccess) {
         document.getElementById('startCourseBtn').classList.remove('hidden');
         document.getElementById('subscribeLink').classList.add('hidden');
@@ -951,6 +978,11 @@
           pc => pc.courseId === currentCourse._id || pc.slug === currentCourse.slug
         );
         if (owned) return true;
+      }
+
+      // Purchase-only courses are never granted by subscription — no fallback
+      if (currentCourse.accessType === 'purchase' || currentCourse.accessTier === 'premium') {
+        return false;
       }
 
       // Fall back to subscription

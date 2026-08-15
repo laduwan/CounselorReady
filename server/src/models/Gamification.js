@@ -36,6 +36,7 @@ const gamificationSchema = new mongoose.Schema({
 
   // Stats
   totalCoursesCompleted: { type: Number, default: 0 },
+  totalLiveSessionsCompleted: { type: Number, default: 0 },
   totalCEHoursEarned: { type: Number, default: 0 },
   totalQuizzesPassed: { type: Number, default: 0 },
   totalTimeSpentMinutes: { type: Number, default: 0 }

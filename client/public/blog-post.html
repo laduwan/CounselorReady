@@ -19,9 +19,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/css/design-tokens.css">
   <link rel="stylesheet" href="/css/typography.css">
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="/js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
 
   <style>
     body { font-family: 'Lato', sans-serif; }
@@ -51,7 +51,7 @@
   </style>
 <script src="/js/cr-gtag.js"></script>
 </head>
-<body class="bg-cream min-h-screen">
+<body class="bg-stone min-h-screen">
 
   <!-- Header -->
   <header class="bg-white border-b border-gray-200">
@@ -201,14 +201,20 @@
           ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
           : '';
 
-        // Render markdown content
-        document.getElementById('art-content').innerHTML = marked.parse(post.content || '');
+        // Render markdown content (sanitized — DB content is untrusted, prevents stored XSS)
+        document.getElementById('art-content').innerHTML = DOMPurify.sanitize(marked.parse(post.content || ''));
 
-        // Render tags
+        // Render tags — build via DOM so tag values are never interpolated as raw HTML
         if (post.tags && post.tags.length > 0) {
-          document.getElementById('art-tags').innerHTML = post.tags.map(tag =>
-            `<a href="/blog.html?tag=${tag}" class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-burgundy/10 hover:text-burgundy transition-colors">#${tag}</a>`
-          ).join('');
+          const tagsEl = document.getElementById('art-tags');
+          tagsEl.innerHTML = '';
+          post.tags.forEach(tag => {
+            const a = document.createElement('a');
+            a.href = `/blog.html?tag=${encodeURIComponent(tag)}`;
+            a.className = 'text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-600 hover:bg-burgundy/10 hover:text-burgundy transition-colors';
+            a.textContent = `#${tag}`;
+            tagsEl.appendChild(a);
+          });
         }
 
         // Show article

@@ -1,3 +1,13 @@
+// ⚠️  DO NOT RUN — PRODUCES NON-COMPLIANT CERTIFICATES.
+//
+// This script regenerates certificates via certificateService.generatePDF(), which
+// omits the synchronous/asynchronous delivery designation required by GA Board Rule
+// 135-9-.01(4)(c), along with approval blocks and learning objectives.
+//
+// Any certificate this script rewrites is downgraded and would fail a CE audit.
+//
+// It must be ported to utils/certificate.js (with buildApprovalBlock) before use.
+// Until then, treat it as quarantined.
 // server/src/scripts/bulkRegenerateBadCerts.js
 // Regenerates all certificates with the user's current firstName/lastName.
 // Run from Render shell: node src/scripts/bulkRegenerateBadCerts.js --dry-run

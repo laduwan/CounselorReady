@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Organization Support - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <link rel="stylesheet" href="/css/cr-tailwind.min.css">
+  <link rel="stylesheet" href="/lib/fontawesome/css/all.min.css">
+  <style>
+    body{background:#F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">STAFF</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="staffEmail">Staff</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-6 py-8">
+    <div class="mb-6">
+      <h1 class="font-display text-3xl font-bold text-burgundy-900">Organization Support</h1>
+      <p class="text-sm text-stone-600 mt-1">Look up any customer organization to view its roster and fix seat issues. All actions are logged.</p>
+    </div>
+
+    <!-- Search -->
+    <div class="bg-white rounded-xl border border-stone-200 p-4 mb-6">
+      <div class="relative">
+        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm"></i>
+        <input type="text" id="orgSearch" placeholder="Search by org name, billing email, or member email..."
+          class="w-full pl-9 pr-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400">
+      </div>
+    </div>
+
+    <!-- Org list -->
+    <div id="orgListPanel" class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 text-left text-stone-500">
+            <tr>
+              <th class="px-4 py-3 font-medium">Organization</th>
+              <th class="px-4 py-3 font-medium">Plan</th>
+              <th class="px-4 py-3 font-medium">Seats</th>
+              <th class="px-4 py-3 font-medium">Billing Email</th>
+              <th class="px-4 py-3 font-medium">Created</th>
+            </tr>
+          </thead>
+          <tbody id="orgListBody">
+            <tr><td colspan="5" class="px-4 py-8 text-center text-stone-400">Loading organizations...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3 border-t border-stone-100 flex items-center justify-between text-sm">
+        <span class="text-stone-500" id="orgPageInfo"></span>
+        <div class="flex gap-2">
+          <button onclick="prevOrgPage()" id="orgPrevBtn" disabled class="px-3 py-1 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+          <button onclick="nextOrgPage()" id="orgNextBtn" class="px-3 py-1 border border-stone-300 rounded-lg text-stone-600 hover:bg-stone-100 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Org detail -->
+    <div id="orgDetailPanel" class="hidden">
+      <button onclick="backToList()" class="mb-4 text-sm text-burgundy-700 hover:text-burgundy-900 flex items-center gap-2">
+        <i class="fas fa-arrow-left"></i> Back to organizations
+      </button>
+
+      <div class="bg-white rounded-xl border border-stone-200 p-5 mb-6">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 class="font-display text-2xl font-bold text-burgundy-900" id="detailOrgName">--</h2>
+            <p class="text-sm text-stone-600 mt-1">
+              Owner: <span id="detailOrgOwner" class="font-medium">--</span>
+              &nbsp;&middot;&nbsp; Billing: <span id="detailOrgBilling">--</span>
+            </p>
+            <p class="text-sm text-stone-500 mt-1">
+              Plan: <span id="detailOrgPlan">--</span>
+              &nbsp;&middot;&nbsp; Seats: <span id="detailOrgSeats">--</span>
+              &nbsp;&middot;&nbsp; Created: <span id="detailOrgCreated">--</span>
+            </p>
+          </div>
+          <div id="detailRollup" class="flex gap-3 text-center text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Invite form -->
+      <div class="bg-white rounded-xl border border-stone-200 p-4 mb-6">
+        <h3 class="font-semibold text-stone-800 mb-3 text-sm"><i class="fas fa-user-plus mr-2 text-burgundy-700"></i>Add / Invite Member (on behalf of org)</h3>
+        <div class="flex flex-col sm:flex-row gap-3 items-end">
+          <div class="flex-1 w-full">
+            <label class="block text-xs text-stone-500 mb-1">Email</label>
+            <input type="email" id="staffInviteEmail" placeholder="member@example.com" class="w-full px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400">
+          </div>
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Role</label>
+            <select id="staffInviteRole" class="px-3 py-2 border border-stone-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400">
+              <option value="member">Member</option>
+              <option value="clinician">Clinician</option>
+              <option value="associate">Associate</option>
+              <option value="supervisor">Supervisor</option>
+              <option value="staff">Staff</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button onclick="staffInvite()" class="bg-burgundy-700 hover:bg-burgundy-800 text-white px-4 py-2 rounded-lg text-sm font-medium">Create Invite</button>
+        </div>
+      </div>
+
+      <!-- Roster -->
+      <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+        <div class="px-4 py-3 border-b border-stone-100">
+          <h3 class="font-semibold text-stone-800 text-sm"><i class="fas fa-users mr-2 text-burgundy-700"></i>Roster</h3>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50 text-left text-stone-500">
+              <tr>
+                <th class="px-4 py-3 font-medium">Member</th>
+                <th class="px-4 py-3 font-medium">Role</th>
+                <th class="px-4 py-3 font-medium">Status</th>
+                <th class="px-4 py-3 font-medium">Compliance</th>
+                <th class="px-4 py-3 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="rosterBody">
+              <tr><td colspan="5" class="px-4 py-8 text-center text-stone-400">Loading roster...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    let orgPage = 1;
+    let orgTotalPages = 1;
+    let currentOrgId = null;
+    let searchTimeout = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadOrgs();
+      document.getElementById('orgSearch').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => { orgPage = 1; loadOrgs(); }, 350);
+      });
+    });
+
+    function checkAuth() {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!token || (user.role !== 'admin' && user.role !== 'support')) {
+        alert('Staff access required');
+        window.location.href = '/dashboard.html';
+        return;
+      }
+      document.getElementById('staffEmail').textContent = user.email || 'Staff';
+    }
+
+    function authHeaders() {
+      return { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+    }
+
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    // ── Org list ──
+    async function loadOrgs() {
+      const q = document.getElementById('orgSearch').value.trim();
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs?q=${encodeURIComponent(q)}&page=${orgPage}&limit=25`, { headers: authHeaders() });
+        if (!res.ok) throw new Error('Failed to load organizations');
+        const data = await res.json();
+        orgTotalPages = data.totalPages || 1;
+
+        const body = document.getElementById('orgListBody');
+        if (!data.organizations.length) {
+          body.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-stone-400">No organizations found</td></tr>';
+        } else {
+          body.innerHTML = data.organizations.map(o => `
+            <tr class="border-t border-stone-100 hover:bg-stone-50 cursor-pointer" onclick="viewOrg('${o._id}')">
+              <td class="px-4 py-3">
+                <p class="font-medium text-stone-800">${esc(o.name)}</p>
+                <p class="text-xs text-stone-500">${esc(o.segment || '')}</p>
+              </td>
+              <td class="px-4 py-3 text-stone-600">${esc(o.plan || '--')}</td>
+              <td class="px-4 py-3 text-stone-600">${o.activeSeats} / ${o.maxSeats}</td>
+              <td class="px-4 py-3 text-stone-600">${esc(o.billingEmail || '--')}</td>
+              <td class="px-4 py-3 text-stone-500">${o.createdAt ? new Date(o.createdAt).toLocaleDateString() : '--'}</td>
+            </tr>`).join('');
+        }
+        document.getElementById('orgPageInfo').textContent = `Page ${data.page} of ${orgTotalPages} — ${data.total} organizations`;
+        document.getElementById('orgPrevBtn').disabled = orgPage <= 1;
+        document.getElementById('orgNextBtn').disabled = orgPage >= orgTotalPages;
+      } catch (err) {
+        document.getElementById('orgListBody').innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500">${esc(err.message)}</td></tr>`;
+      }
+    }
+
+    function prevOrgPage() { if (orgPage > 1) { orgPage--; loadOrgs(); } }
+    function nextOrgPage() { if (orgPage < orgTotalPages) { orgPage++; loadOrgs(); } }
+
+    // ── Org detail ──
+    async function viewOrg(orgId) {
+      currentOrgId = orgId;
+      document.getElementById('orgListPanel').classList.add('hidden');
+      document.getElementById('orgDetailPanel').classList.remove('hidden');
+      await loadOrgDetail();
+    }
+
+    function backToList() {
+      currentOrgId = null;
+      document.getElementById('orgDetailPanel').classList.add('hidden');
+      document.getElementById('orgListPanel').classList.remove('hidden');
+    }
+
+    async function loadOrgDetail() {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs/${currentOrgId}`, { headers: authHeaders() });
+        if (!res.ok) throw new Error('Failed to load organization');
+        const data = await res.json();
+        const org = data.organization || {};
+        const rollup = data.rollup || {};
+
+        document.getElementById('detailOrgName').textContent = org.name || '--';
+        document.getElementById('detailOrgOwner').textContent = org.owner ? `${org.owner.name || ''} (${org.owner.email})` : '--';
+        document.getElementById('detailOrgBilling').textContent = org.billingEmail || '--';
+        document.getElementById('detailOrgPlan').textContent = org.plan || '--';
+        document.getElementById('detailOrgSeats').textContent = `${rollup.totalMembers ?? '--'} / ${org.maxSeats ?? '--'}`;
+        document.getElementById('detailOrgCreated').textContent = org.createdAt ? new Date(org.createdAt).toLocaleDateString() : '--';
+
+        document.getElementById('detailRollup').innerHTML = `
+          <div class="px-3 py-2 bg-green-50 rounded-lg"><p class="font-bold text-green-700">${rollup.compliant ?? 0}</p><p class="text-xs text-green-600">Compliant</p></div>
+          <div class="px-3 py-2 bg-yellow-50 rounded-lg"><p class="font-bold text-yellow-700">${rollup.atRisk ?? 0}</p><p class="text-xs text-yellow-600">At Risk</p></div>
+          <div class="px-3 py-2 bg-red-50 rounded-lg"><p class="font-bold text-red-700">${rollup.nonCompliant ?? 0}</p><p class="text-xs text-red-600">Non-compliant</p></div>`;
+
+        renderRoster(data.members || []);
+      } catch (err) {
+        document.getElementById('rosterBody').innerHTML = `<tr><td colspan="5" class="px-4 py-8 text-center text-red-500">${esc(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderRoster(members) {
+      const body = document.getElementById('rosterBody');
+      if (!members.length) {
+        body.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-stone-400">No members</td></tr>';
+        return;
+      }
+      const statusColors = { compliant: 'bg-green-100 text-green-700', at_risk: 'bg-yellow-100 text-yellow-700', non_compliant: 'bg-red-100 text-red-700' };
+      const roleOptions = ['member', 'clinician', 'associate', 'supervisor', 'staff', 'manager', 'admin'];
+      body.innerHTML = members.map(m => {
+        const isOwner = m.role === 'owner';
+        const roleCell = isOwner
+          ? `<span class="px-2 py-0.5 bg-burgundy-100 text-burgundy-700 text-xs font-medium rounded-full">owner</span>`
+          : `<select onchange="staffChangeRole('${m.seatId}', this.value)" class="px-2 py-1 border border-stone-200 rounded text-xs">
+              ${roleOptions.map(r => `<option value="${r}"${m.role === r ? ' selected' : ''}>${r}</option>`).join('')}
+            </select>`;
+        const statusCell = isOwner
+          ? `<span class="text-xs text-stone-500">${esc(m.seatStatus)}</span>`
+          : `<select onchange="staffChangeStatus('${m.seatId}', this.value)" class="px-2 py-1 border border-stone-200 rounded text-xs">
+              ${['active', 'invited', 'suspended', 'offboarded', 'removed'].map(s => `<option value="${s}"${m.seatStatus === s ? ' selected' : ''}>${s}</option>`).join('')}
+            </select>`;
+        const inviteBtn = m.seatStatus === 'invited'
+          ? `<button onclick="staffRegenInvite('${m.seatId}')" class="px-2 py-1 border border-stone-300 rounded text-xs text-stone-600 hover:bg-stone-100" title="Regenerate invite token"><i class="fas fa-rotate-right mr-1"></i>Regenerate Invite</button>`
+          : '';
+        return `
+          <tr class="border-t border-stone-100">
+            <td class="px-4 py-3">
+              <p class="font-medium text-stone-800">${esc(m.name)}</p>
+              <p class="text-xs text-stone-500">${esc(m.email)}${m.title ? ' &middot; ' + esc(m.title) : ''}</p>
+            </td>
+            <td class="px-4 py-3">${roleCell}</td>
+            <td class="px-4 py-3">${statusCell}</td>
+            <td class="px-4 py-3">
+              <span class="px-2 py-0.5 text-xs font-medium rounded-full ${statusColors[m.status] || 'bg-stone-100 text-stone-600'}">${esc((m.status || '').replace('_', ' '))}</span>
+              <p class="text-xs text-stone-400 mt-1">${m.completed}/${m.totalAssignments} done &middot; ${m.overdue} overdue</p>
+            </td>
+            <td class="px-4 py-3">${inviteBtn}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── Actions ──
+    async function staffChangeRole(seatId, role) {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs/${currentOrgId}/members/${seatId}`, {
+          method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ role })
+        });
+        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Update failed'); }
+        await loadOrgDetail();
+      } catch (err) { alert(err.message); await loadOrgDetail(); }
+    }
+
+    async function staffChangeStatus(seatId, status) {
+      const risky = ['offboarded', 'removed', 'suspended'];
+      if (risky.includes(status) && !confirm(`Set this member's status to "${status}"?`)) { await loadOrgDetail(); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs/${currentOrgId}/members/${seatId}`, {
+          method: 'PATCH', headers: authHeaders(), body: JSON.stringify({ status })
+        });
+        if (!res.ok) { const d = await res.json().catch(() => ({})); throw new Error(d.error || 'Update failed'); }
+        await loadOrgDetail();
+      } catch (err) { alert(err.message); await loadOrgDetail(); }
+    }
+
+    async function staffInvite() {
+      const email = document.getElementById('staffInviteEmail').value.trim();
+      const role = document.getElementById('staffInviteRole').value;
+      if (!email) { alert('Email is required'); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs/${currentOrgId}/invites`, {
+          method: 'POST', headers: authHeaders(), body: JSON.stringify({ email, role })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to create invite');
+        document.getElementById('staffInviteEmail').value = '';
+        alert('Invite created');
+        await loadOrgDetail();
+      } catch (err) { alert(err.message); }
+    }
+
+    async function staffRegenInvite(seatId) {
+      try {
+        const res = await fetch(`${API_URL}/api/admin/orgs/${currentOrgId}/invites/${seatId}/regenerate`, {
+          method: 'POST', headers: authHeaders()
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.error || 'Failed to regenerate invite');
+        alert('Invite token regenerated');
+        await loadOrgDetail();
+      } catch (err) { alert(err.message); }
+    }
+  </script>
+</body>
+</html>
