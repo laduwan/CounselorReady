@@ -287,11 +287,12 @@ export default function Landing() {
       </section>
 
       {/* ── FOOTER (burgundy, matching nav-footer.js) ── */}
-      <footer style={{ background: '#3B0F1D', marginTop: 0 }}>
-        <div style={{ maxWidth: 900, margin: '0 auto', padding: '40px 24px 28px', fontFamily: "'Lato', Calibri, sans-serif" }}>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 32, alignItems: 'flex-start', marginBottom: 28 }}>
+      <footer className="py-16 px-4" style={{ background: '#3B0F1D' }}>
+        <div className="max-w-6xl mx-auto">
+          {/* Top row: brand + NBCC badge + link columns */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
             {/* Brand block */}
-            <div style={{ flex: 1, minWidth: 220 }}>
+            <div>
               <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
                 <span style={{ color: '#D0768A' }}>Counselor</span><span style={{ color: '#4A7C59' }}>Ready</span>&#8482;
               </div>
@@ -302,18 +303,20 @@ export default function Landing() {
             </div>
 
             {/* NBCC badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '16px 20px', minWidth: 260 }}>
-              <div style={{ width: 64, height: 64, background: '#fff', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style={{ width: 56, height: 56, objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/images/nbcc-provider-badge.jpg'; }} />
-              </div>
-              <div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', lineHeight: 1.4 }}>NBCC Approved Provider</div>
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>ACEP #7760 · GAITP LLC</div>
+            <div className="flex items-center justify-center">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '16px 20px' }}>
+                <div style={{ width: 64, height: 64, background: '#fff', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                  <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style={{ width: 56, height: 56, objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/images/nbcc-provider-badge.jpg'; }} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', lineHeight: 1.4 }}>NBCC Approved Provider</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>ACEP #7760 · GAITP LLC</div>
+                </div>
               </div>
             </div>
 
             {/* Link columns */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, flex: 1, minWidth: 200, justifyContent: 'flex-end' }}>
+            <div className="flex gap-12 justify-center md:justify-end">
               <div>
                 <h4 style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#D4A855', margin: '0 0 10px' }}>Platform</h4>
                 {[
@@ -343,14 +346,14 @@ export default function Landing() {
           <div style={{ height: 1, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent)', marginBottom: 20 }}></div>
 
           {/* Disclaimer */}
-          <p style={{ fontSize: 10.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.45)', textAlign: 'center', maxWidth: 720, margin: '0 auto 20px' }}>
+          <p className="text-center max-w-4xl mx-auto mb-5" style={{ fontSize: 10.5, lineHeight: 1.7, color: 'rgba(255,255,255,0.45)' }}>
             CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE® is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
           </p>
 
           {/* Bottom bar */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+          <div className="pt-6 flex flex-col md:flex-row justify-between items-center gap-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: 0 }}>© {new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC. CounselorReady™ is a trademark of GAITP LLC. All rights reserved.</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+            <div className="flex flex-wrap justify-center gap-3">
               {[
                 ['/partner', 'Become a Partner'],
                 ['/privacy.html', 'Privacy'],
