@@ -158,7 +158,7 @@
 
   const footerHTML = `
   <footer style="background:#3B0F1D;margin-top:2rem">
-    <div style="max-width:900px;margin:0 auto;padding:40px 24px 28px;font-family:'Lato',Calibri,sans-serif">
+    <div style="max-width:1280px;margin:0 auto;padding:40px 24px 28px;font-family:'Lato',Calibri,sans-serif">
       <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-bottom:28px">
         <div style="flex:1;min-width:220px">
           <div class="font-display" style="font-size:24px;font-weight:700;margin-bottom:8px">
@@ -194,7 +194,7 @@
         </div>
       </div>
       <div style="height:1px;background:linear-gradient(to right,transparent,rgba(255,255,255,0.1),transparent);margin-bottom:20px"></div>
-      <p style="font-size:10.5px;line-height:1.7;color:rgba(255,255,255,0.45);text-align:center;max-width:720px;margin:0 auto 20px">
+      <p style="font-size:10.5px;line-height:1.7;color:rgba(255,255,255,0.45);text-align:center;max-width:960px;margin:0 auto 20px">
         CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
       </p>
       <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
