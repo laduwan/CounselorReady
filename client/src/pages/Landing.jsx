@@ -304,7 +304,7 @@ export default function Landing() {
             {/* NBCC badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '16px 20px', minWidth: 260 }}>
               <div style={{ width: 64, height: 64, background: '#fff', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                <img src="/images/logo/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style={{ width: 56, height: 56, objectFit: 'contain' }} />
+                <img src="/images/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style={{ width: 56, height: 56, objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/images/nbcc-provider-badge.jpg'; }} />
               </div>
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: '#fff', lineHeight: 1.4 }}>NBCC Approved Provider</div>
