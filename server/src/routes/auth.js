@@ -4,6 +4,7 @@
  * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import crypto from 'crypto';
 import { Resend } from 'resend';
 import User from '../models/User.js';
@@ -28,10 +29,22 @@ const twilioClient = process.env.TWILIO_ACCOUNT_SID
   : null;
 
 const router = express.Router();
+
+// Rate limiter for credential-submission endpoints only (login, register,
+// password reset, etc). Deliberately NOT applied to read-only session routes
+// like GET /me and GET /features, which the shared nav include calls on every
+// page load; those are covered by the global /api/ limiter in index.js.
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many authentication attempts, please try again later' }
+});
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { email, password, firstName, lastName, state, partnerSlug, referralCode, website } = req.body;
 
@@ -239,7 +252,7 @@ router.post('/register', async (req, res) => {
 });
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password, remember } = req.body;
     
@@ -313,7 +326,7 @@ router.post('/login', async (req, res) => {
 // POST /api/auth/login/verify-2fa
 // Accepts a challenge token and either a 6-digit TOTP code or an
 // XXXX-XXXX backup code. Returns the full JWT on success.
-router.post('/login/verify-2fa', async (req, res) => {
+router.post('/login/verify-2fa', authLimiter, async (req, res) => {
   try {
     const { challengeToken, code, remember } = req.body;
 
@@ -391,7 +404,7 @@ router.get('/me', protect, async (req, res) => {
 });
 
 // Forgot password
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     
@@ -445,7 +458,7 @@ router.post('/forgot-password', async (req, res) => {
 });
 
 // Reset password
-router.post('/reset-password', async (req, res) => {
+router.post('/reset-password', authLimiter, async (req, res) => {
   try {
     const { token, password } = req.body;
     
@@ -505,7 +518,7 @@ router.post('/reset-password', async (req, res) => {
 });
 
 // Change password (logged in)
-router.post('/change-password', protect, async (req, res) => {
+router.post('/change-password', authLimiter, protect, async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
     
@@ -535,7 +548,7 @@ router.post('/change-password', protect, async (req, res) => {
 });
 
 // Verify email
-router.post('/verify-email', async (req, res) => {
+router.post('/verify-email', authLimiter, async (req, res) => {
   try {
     const { token } = req.body;
     
@@ -573,7 +586,7 @@ router.post('/verify-email', async (req, res) => {
 });
 
 // Resend verification email
-router.post('/resend-verification', protect, async (req, res) => {
+router.post('/resend-verification', authLimiter, protect, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     

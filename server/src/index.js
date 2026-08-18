@@ -233,16 +233,11 @@ const globalLimiter = rateLimit({
   message: { error: 'Too many requests, please try again later' }
 });
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 15,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many authentication attempts, please try again later' }
-});
-
+// authLimiter now lives in server/src/routes/auth.js, applied per-route to
+// credential-submission endpoints only (see change log). /api/auth/me and
+// /api/auth/features are called on every page load by the shared nav include
+// and must not count against the 15-req login/register quota.
 app.use('/api/', globalLimiter);
-app.use('/api/auth', authLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/interactive-courses', interactiveCourseRoutes);
 app.use('/api/courses', coursesRoutes);
