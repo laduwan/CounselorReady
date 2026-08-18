@@ -121,6 +121,25 @@
               </div>
             </div>
           </div>
+
+          <!-- Live poll -->
+          <div class="bg-white rounded-xl border p-4 mt-4" style="border-color:#EDE9E3;">
+            <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Live poll</h2>
+            <input id="pollQ" type="text" placeholder="Poll question" class="w-full text-sm mb-2 px-2 py-1 rounded border" style="border-color:#E0DCD5;">
+            <div class="flex gap-2 mb-2">
+              <input id="pollO1" type="text" value="Yes" class="flex-1 text-sm px-2 py-1 rounded border" style="border-color:#E0DCD5;">
+              <input id="pollO2" type="text" value="No" class="flex-1 text-sm px-2 py-1 rounded border" style="border-color:#E0DCD5;">
+              <input id="pollO3" type="text" placeholder="Option 3 (optional)" class="flex-1 text-sm px-2 py-1 rounded border" style="border-color:#E0DCD5;">
+              <input id="pollO4" type="text" placeholder="Option 4 (optional)" class="flex-1 text-sm px-2 py-1 rounded border" style="border-color:#E0DCD5;">
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button type="button" onclick="openPoll()" class="text-xs font-semibold px-3 py-1 rounded" style="background:#4A7C59;color:#fff;">Open poll</button>
+              <button type="button" onclick="closePoll()" class="text-xs font-semibold px-3 py-1 rounded" style="background:#6B1D34;color:#fff;">Close voting</button>
+              <button type="button" onclick="revealPoll(true)" class="text-xs font-semibold px-3 py-1 rounded" style="background:#D4A855;color:#284157;">Reveal results</button>
+              <button type="button" onclick="revealPoll(false)" class="text-xs font-semibold px-3 py-1 rounded border" style="border-color:#E0DCD5;color:#284157;">Hide</button>
+            </div>
+            <div id="pollTally" class="text-sm mt-3" style="color:#284157;"></div>
+          </div>
         </div>
 
         <div class="lg:col-span-2"></div>
@@ -419,6 +438,40 @@
       else if(e.code==='ArrowUp'){ e.preventDefault(); tpSpeedBy(5); }
       else if(e.code==='ArrowDown'){ e.preventDefault(); tpSpeedBy(-5); }
     });
+
+    /* ===== Host live poll ===== */
+    let pollLoop = null;
+    async function pollApi(path, body) {
+      const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/poll/${path}`, {
+        method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {})
+      });
+      return res.ok ? res.json() : Promise.reject(await res.json().catch(() => ({})));
+    }
+    async function openPoll() {
+      const question = document.getElementById('pollQ').value.trim();
+      if (!question) { alert('Enter a poll question.'); return; }
+      const options = ['pollO1','pollO2','pollO3','pollO4'].map(id => document.getElementById(id).value.trim()).filter(Boolean);
+      try { await pollApi('open', { question, options }); startPollLoop(); } catch (e) { alert(e.error || 'Failed to open poll'); }
+    }
+    async function closePoll() { try { await pollApi('close'); refreshTally(); } catch (e) { alert(e.error || 'Failed'); } }
+    async function revealPoll(show) { try { await pollApi('reveal', { show }); refreshTally(); } catch (e) { alert(e.error || 'Failed'); } }
+    function startPollLoop() { if (pollLoop) clearInterval(pollLoop); refreshTally(); pollLoop = setInterval(refreshTally, 3000); }
+    async function refreshTally() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await res.json();
+        const p = data.liveState?.poll;
+        const el = document.getElementById('pollTally');
+        if (!p || (!p.active && !p.showResults && !(p.voterCount))) { el.innerHTML = ''; if (pollLoop && !p?.active) { clearInterval(pollLoop); pollLoop = null; } return; }
+        const total = (p.options || []).reduce((s, o) => s + (o.count || 0), 0);
+        el.innerHTML = `<div class="mb-1"><strong>${esc(p.question || '')}</strong> — ${p.active ? 'open' : 'closed'} · ${total} vote(s)${p.showResults ? ' · revealed' : ''}</div>` +
+          (p.options || []).map(o => {
+            const pct = total ? Math.round((o.count / total) * 100) : 0;
+            return `<div style="margin:2px 0;">${esc(o.text)}: ${o.count} (${pct}%)<div style="height:6px;background:#EDE9E3;border-radius:3px;"><div style="height:6px;width:${pct}%;background:#4A7C59;border-radius:3px;"></div></div></div>`;
+          }).join('');
+      } catch { /* retry next tick */ }
+    }
   </script>
 </body>
 </html>

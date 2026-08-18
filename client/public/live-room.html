@@ -58,6 +58,10 @@
             <div id="nowPrompt"></div>
             <div id="nowCountdown"></div>
           </div>
+          <div id="pollCard" class="hidden bg-white rounded-xl border p-4 mt-3" style="border-color:#EDE9E3;">
+            <div id="pollQuestion" class="font-semibold mb-2" style="color:#284157;"></div>
+            <div id="pollBody"></div>
+          </div>
           <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-3" style="color:#284157;">Handouts</h2>
             <div id="handouts" class="flex flex-col gap-2">
@@ -253,6 +257,7 @@
         const data = await res.json();
         updateNowCard(data.currentSegment, data.liveState);
         updateWatchParty(data.liveState);
+        renderPoll(data.liveState?.poll);
         if (data.status === 'completed' && syncInterval) {
           clearInterval(syncInterval);
           syncInterval = null;
@@ -284,6 +289,39 @@
       } else {
         countEl.textContent = '';
       }
+    }
+
+    let pollVoted = {};
+    // Keyed per poll instance (session + openedAt), not per session — a host can run
+    // several polls in one session and each must accept a fresh vote.
+    function pollKey(poll) { return `${currentSessionId}|${poll?.openedAt || ''}`; }
+    function renderPoll(poll) {
+      const card = document.getElementById('pollCard');
+      if (!poll || (!poll.active && !poll.showResults)) { card.classList.add('hidden'); return; }
+      card.classList.remove('hidden');
+      document.getElementById('pollQuestion').textContent = poll.question || '';
+      const body = document.getElementById('pollBody');
+      const showResults = poll.showResults || poll.youVoted || pollVoted[pollKey(poll)];
+      if (showResults) {
+        const total = (poll.options || []).reduce((s, o) => s + (o.count || 0), 0);
+        body.innerHTML = (poll.options || []).map(o => {
+          const c = o.count || 0, pct = total ? Math.round((c / total) * 100) : 0;
+          return `<div style="margin:4px 0;color:#284157;">${esc(o.text)}${poll.showResults ? ` — ${c} (${pct}%)` : ''}<div style="height:8px;background:#EDE9E3;border-radius:4px;margin-top:2px;"><div style="height:8px;width:${poll.showResults ? pct : 0}%;background:#4A7C59;border-radius:4px;"></div></div></div>`;
+        }).join('') + (poll.youVoted || pollVoted[pollKey(poll)] ? '<div class="text-xs mt-2" style="color:#8A8580;">Your vote is in.</div>' : '');
+      } else {
+        body.innerHTML = (poll.options || []).map((o, i) =>
+          `<button type="button" onclick="votePoll(${i}, '${esc(String(poll.openedAt || ''))}')" class="block w-full text-left px-3 py-2 mb-2 rounded border" style="border-color:#E0DCD5;color:#284157;">${esc(o.text)}</button>`
+        ).join('');
+      }
+    }
+    async function votePoll(idx, openedAt) {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/poll/vote`, {
+          method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ optionIndex: idx })
+        });
+        if (res.ok || res.status === 409) { pollVoted[`${currentSessionId}|${openedAt || ''}`] = true; }
+      } catch { /* next poll tick re-renders */ }
     }
 
     async function updateWatchParty(liveState) {
