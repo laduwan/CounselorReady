@@ -137,6 +137,9 @@ const liveSessionSchema = new mongoose.Schema({
     title: String,
     durationMin: { type: Number, min: 1 },
     prompt: String,
+    // Full speaker script/notes for this segment — host-only, never shown to
+    // attendees (see live-host.html host console vs live-sessions.html NOW card).
+    script: String,
     clipIndex: Number
   }],
 

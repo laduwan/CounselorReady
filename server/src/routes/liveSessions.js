@@ -17,16 +17,127 @@
  */
 import express from 'express';
 import Stripe from 'stripe';
+import multer from 'multer';
+import mammoth from 'mammoth';
 import LiveSession from '../models/LiveSession.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
 
 const router = express.Router();
+const agendaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
 const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
 const JOIN_WINDOW_BEFORE_MIN = 15; // doors open 15 min early
 const JOIN_WINDOW_AFTER_MIN = 30;  // grace after scheduled end (overruns)
+
+/**
+ * parseAgendaMarkdown — deterministic (no-AI) parser for the Run of Show importer.
+ *
+ * Does NOT rewrite, summarize, or paraphrase any text — every character of the
+ * script the presenter wrote lands in the `script` field verbatim. This is
+ * intentional: unlike course content generation, an agenda script is read aloud
+ * live, so exact wording matters more than it does anywhere else in the platform.
+ *
+ * Expected format:
+ *   # Hour 1: Framing and Statute        <- level-1 headings are ignored (organizational only)
+ *   ## [breakout] Case A — the record that doesn't separate (25 min)
+ *   Prompt: What would you have flagged in this note?
+ *   <everything else here is the speaker script, preserved as-is>
+ *
+ * - `##` or `###` starts a new segment.
+ * - An optional `[type]` tag at the start of the heading sets segment type
+ *   (lecture/discussion/breakout/clip/break); falls back to keyword sniffing
+ *   in the title, then defaults to 'lecture'.
+ * - An optional `(NN min)` anywhere in the heading sets durationMin.
+ * - An optional line starting with `Prompt:` (case-insensitive) anywhere in the
+ *   body is pulled out as the segment's `prompt`; everything else is `script`.
+ */
+function parseAgendaMarkdown(rawText) {
+  const TYPES = ['lecture', 'clip', 'discussion', 'breakout', 'break'];
+  const KEYWORD_TYPE = [
+    [/\bbreakout\b/i, 'breakout'],
+    [/\bdiscussion\b|\bpoll\b/i, 'discussion'],
+    [/\bbreak\b/i, 'break'],
+    [/\bclip\b|\bvideo\b/i, 'clip']
+  ];
+
+  const lines = (rawText || '').replace(/\r\n/g, '\n').split('\n');
+  const segments = [];
+  let current = null;
+
+  function pushCurrent() {
+    if (!current) return;
+    // Extract the Prompt: line (first match) out of the accumulated body.
+    const bodyLines = current.bodyLines;
+    let prompt = '';
+    const keptLines = [];
+    let promptTaken = false;
+    for (const line of bodyLines) {
+      const m = !promptTaken && line.match(/^\s*prompt:\s*(.*)$/i);
+      if (m) {
+        prompt = m[1].trim();
+        promptTaken = true;
+      } else {
+        keptLines.push(line);
+      }
+    }
+    // Trim leading/trailing blank lines only — internal spacing/paragraphs preserved verbatim.
+    while (keptLines.length && keptLines[0].trim() === '') keptLines.shift();
+    while (keptLines.length && keptLines[keptLines.length - 1].trim() === '') keptLines.pop();
+
+    segments.push({
+      type: current.type,
+      title: current.title,
+      durationMin: current.durationMin,
+      prompt,
+      script: keptLines.join('\n')
+    });
+    current = null;
+  }
+
+  for (const rawLine of lines) {
+    const headingMatch = rawLine.match(/^(#{2,3})\s+(.*)$/);
+    if (headingMatch) {
+      pushCurrent();
+      let headingText = headingMatch[2].trim();
+
+      let type = null;
+      const tagMatch = headingText.match(/^\[(\w+)\]\s*/);
+      if (tagMatch && TYPES.includes(tagMatch[1].toLowerCase())) {
+        type = tagMatch[1].toLowerCase();
+        headingText = headingText.slice(tagMatch[0].length).trim();
+      }
+
+      let durationMin = null;
+      const durMatch = headingText.match(/\((\d+)\s*min\)/i);
+      if (durMatch) {
+        durationMin = parseInt(durMatch[1], 10);
+        headingText = headingText.replace(durMatch[0], '').trim();
+      }
+
+      if (!type) {
+        for (const [re, t] of KEYWORD_TYPE) {
+          if (re.test(headingText)) { type = t; break; }
+        }
+      }
+      if (!type) type = 'lecture';
+
+      headingText = headingText.replace(/[-–—\s]+$/, '').trim();
+
+      current = { type, title: headingText, durationMin, bodyLines: [] };
+      continue;
+    }
+
+    // Skip level-1 headings entirely (organizational "# Hour N" dividers only).
+    if (/^#\s+/.test(rawLine)) continue;
+
+    if (current) current.bodyLines.push(rawLine);
+  }
+  pushCurrent();
+
+  return segments.map((s, i) => ({ order: i, ...s }));
+}
 
 /* ════════════════════════ PUBLIC / LEARNER ════════════════════════ */
 
@@ -385,7 +496,15 @@ router.get('/:id/live-state', protect, async (req, res) => {
       return res.status(403).json({ error: 'Not registered for this session.' });
     }
 
-    const seg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
+    const rawSeg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
+    // 'script' is the host's speaker script — host-only, never sent to attendees.
+    // Mirrors the existing whereby/S3/handout gating pattern: strip on the way out
+    // for non-admins rather than trusting the client not to render it.
+    let seg = rawSeg;
+    if (rawSeg && !isAdmin) {
+      const { script, ...attendeeSeg } = rawSeg;
+      seg = attendeeSeg;
+    }
     res.json({
       liveState: session.liveState,
       currentSegment: seg,
@@ -527,6 +646,59 @@ router.delete('/:id/clips/:clipIndex', protect, requireAdmin, async (req, res) =
   } catch (err) {
     console.error('[live] delete-clip:', err.message);
     res.status(500).json({ error: 'Failed to delete clip' });
+  }
+});
+
+/* ════════════════════════ RUN OF SHOW — GUIDE IMPORTER ════════════════════════
+ * PREVIEW-ONLY: neither route below writes to the database. They parse text
+ * (pasted or extracted from a .docx) into agenda rows and hand them back to the
+ * admin UI, which loads them into the existing Run of Show editor for review.
+ * Saving still goes through the existing PATCH /:id, unchanged. */
+
+// POST /api/live-sessions/:id/agenda/import-text — paste path
+router.post('/:id/agenda/import-text', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id).select('sessionType');
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.sessionType !== 'live-course') {
+      return res.status(403).json({ error: 'Agenda import is only available for live CE courses.' });
+    }
+    const { text } = req.body;
+    if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided.' });
+
+    const agenda = parseAgendaMarkdown(text);
+    if (!agenda.length) {
+      return res.status(400).json({ error: 'No segments found. Expected headings like "## Segment Title (25 min)".' });
+    }
+    res.json({ agenda, segmentCount: agenda.length, totalMinutes: agenda.reduce((s, a) => s + (a.durationMin || 0), 0) });
+  } catch (err) {
+    console.error('[live] agenda/import-text:', err.message);
+    res.status(500).json({ error: 'Failed to parse text.' });
+  }
+});
+
+// POST /api/live-sessions/:id/agenda/import-docx — file upload path
+router.post('/:id/agenda/import-docx', protect, requireAdmin, agendaUpload.single('file'), async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id).select('sessionType');
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.sessionType !== 'live-course') {
+      return res.status(403).json({ error: 'Agenda import is only available for live CE courses.' });
+    }
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+
+    // convertToMarkdown (not extractRawText) so Word's Heading 1/2/3 styles
+    // become '#'/'##'/'###' — the same convention the paste-path parser expects.
+    const { value: markdown } = await mammoth.convertToMarkdown({ buffer: req.file.buffer });
+
+    const agenda = parseAgendaMarkdown(markdown);
+    if (!agenda.length) {
+      return res.status(400).json({ error: 'No segments found. Make sure segment titles use a Word Heading 2 style (or ## in the raw text).' });
+    }
+    res.json({ agenda, segmentCount: agenda.length, totalMinutes: agenda.reduce((s, a) => s + (a.durationMin || 0), 0) });
+  } catch (err) {
+    console.error('[live] agenda/import-docx:', err.message);
+    res.status(500).json({ error: 'Failed to parse document.' });
   }
 });
 

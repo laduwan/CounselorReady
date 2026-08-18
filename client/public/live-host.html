@@ -96,6 +96,7 @@
           <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Current segment</h2>
             <div id="nowSummary" class="text-sm" style="color:#57534e;">No segment selected.</div>
+            <div id="nowScript" class="hidden mt-3 pt-3 text-sm whitespace-pre-wrap" style="border-top:1px solid #EDE9E3;color:#284157;max-height:280px;overflow-y:auto;"></div>
           </div>
         </div>
 
@@ -163,13 +164,16 @@
         const me = meData.user || meData;
         if (!meRes.ok || me.role !== 'admin') return gateMsg('Admin access required.');
 
-        // Load session
-        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(slug)}`, {
+        // Load session — use the admin/all endpoint (not the public GET /:id, whose
+        // toPublicJSON() never includes agenda) so the host console actually gets
+        // the agenda/script data that was saved in Run of Show.
+        const res = await fetch(`${API_URL}/api/live-sessions/admin/all`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
-        if (!res.ok) return gateMsg(data.error || 'Session not found.');
-        session = data.session;
+        if (!res.ok) return gateMsg(data.error || 'Could not load sessions.');
+        session = (data.sessions || []).find(s => s.slug === slug);
+        if (!session) return gateMsg('Session not found.');
 
         document.getElementById('sessionTitle').textContent = session.title;
         document.getElementById('sessionMeta').textContent =
@@ -241,8 +245,15 @@
       });
       const seg = session.agenda?.[idx];
       const nowSummary = document.getElementById('nowSummary');
-      if (!seg) { nowSummary.textContent = 'No segment.'; return; }
+      const nowScript = document.getElementById('nowScript');
+      if (!seg) { nowSummary.textContent = 'No segment.'; nowScript.classList.add('hidden'); return; }
       nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
+      if (seg.script && seg.script.trim()) {
+        nowScript.textContent = seg.script;
+        nowScript.classList.remove('hidden');
+      } else {
+        nowScript.classList.add('hidden');
+      }
     }
 
     async function showSegmentInClipPanel(idx) {

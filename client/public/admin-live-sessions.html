@@ -1,4 +1,4 @@
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -324,10 +324,15 @@
       <div class="px-6 py-5 space-y-6">
         <div id="rosClipsSection"></div>
         <div class="border-t border-gray-100"></div>
+        <div id="rosImportSection"></div>
+        <div class="border-t border-gray-100"></div>
         <div id="rosAgendaSection"></div>
       </div>
     </div>
   </div>
+
+  <!-- Hidden file input for docx guide import -->
+  <input type="file" id="rosImportFileInput" accept=".docx" class="hidden" onchange="importAgendaFromDocx(this.files[0])">
 
   <script>
     const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
@@ -687,6 +692,7 @@
         title: a.title || '',
         durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
         prompt: a.prompt || '',
+        script: a.script || '',
         clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
       }));
       renderRunOfShow();
@@ -702,7 +708,89 @@
     function renderRunOfShow() {
       document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
       renderRosClips();
+      renderRosImport();
       renderRosAgenda();
+    }
+
+    function renderRosImport() {
+      const ro = rosReadOnly();
+      if (ro) { document.getElementById('rosImportSection').innerHTML = ''; return; }
+      document.getElementById('rosImportSection').innerHTML = `
+        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Import Guide</h3>
+        <p class="text-xs text-forest-500 mb-2">
+          Paste your facilitator guide (headings like <code>## Segment Title (25 min)</code>, with an optional
+          <code>Prompt:</code> line) or upload the .docx directly — Word Heading 2 styles are read the same way.
+          This only fills the editor below; nothing saves until you click "Save agenda."
+        </p>
+        <textarea id="rosImportText" rows="4" placeholder="Paste your facilitator guide text here…"
+          class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500 mb-2"></textarea>
+        <div class="flex items-center gap-2">
+          <button onclick="importAgendaFromText()" class="px-3 py-1.5 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-xs font-semibold transition-colors flex items-center gap-1">
+            <i class="fas fa-file-import text-xs"></i> Parse pasted text
+          </button>
+          <button onclick="document.getElementById('rosImportFileInput').click()" class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
+            <i class="fas fa-file-word text-xs"></i> Upload .docx instead
+          </button>
+          <span id="rosImportStatus" class="text-xs text-forest-500"></span>
+        </div>`;
+    }
+
+    function applyParsedAgenda(agenda, meta) {
+      if (rosAgenda.length > 0 && !confirm(`This will replace the ${rosAgenda.length} row(s) currently in the editor with ${agenda.length} imported segment(s) (${meta.totalMinutes} min total). Continue?`)) {
+        return;
+      }
+      rosAgenda = agenda.map(a => ({
+        type: a.type, title: a.title || '',
+        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
+        prompt: a.prompt || '', script: a.script || '', clipIndex: ''
+      }));
+      renderRosAgenda();
+      showToast(`Imported ${agenda.length} segments (${meta.totalMinutes} min). Review below, then Save agenda.`, '#284157');
+    }
+
+    async function importAgendaFromText() {
+      const text = document.getElementById('rosImportText').value;
+      if (!text || !text.trim()) { showToast('Paste some text first.', '#c0392b'); return; }
+      const status = document.getElementById('rosImportStatus');
+      status.textContent = 'Parsing…';
+      try {
+        const r = await fetch(`${API}/${rosSession._id}/agenda/import-text`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        const d = await r.json();
+        status.textContent = '';
+        if (!r.ok) { showToast(d.error || 'Failed to parse text.', '#c0392b'); return; }
+        applyParsedAgenda(d.agenda, d);
+      } catch (e) {
+        status.textContent = '';
+        showToast('Error: ' + e.message, '#c0392b');
+      }
+    }
+
+    async function importAgendaFromDocx(file) {
+      if (!file) return;
+      const status = document.getElementById('rosImportStatus');
+      if (status) status.textContent = 'Uploading & parsing…';
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await fetch(`${API}/${rosSession._id}/agenda/import-docx`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: fd
+        });
+        const d = await r.json();
+        if (status) status.textContent = '';
+        if (!r.ok) { showToast(d.error || 'Failed to parse document.', '#c0392b'); return; }
+        applyParsedAgenda(d.agenda, d);
+      } catch (e) {
+        if (status) status.textContent = '';
+        showToast('Error: ' + e.message, '#c0392b');
+      } finally {
+        document.getElementById('rosImportFileInput').value = '';
+      }
     }
 
     function renderRosClips() {
@@ -834,8 +922,13 @@
               <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
             </div>
           </div>
-          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional)" ${ro ? 'disabled' : ''}
+          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional — shown to attendees in their NOW card)" ${ro ? 'disabled' : ''}
             class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <div>
+            <label class="block text-xs text-forest-600 mb-1">Speaker script (host-only — never shown to attendees)</label>
+            <textarea id="ros_script_${i}" rows="3" placeholder="What you actually say during this segment…" ${ro ? 'disabled' : ''}
+              class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.script)}</textarea>
+          </div>
           ${clipCell}
         </div>`;
       }).join('');
@@ -863,11 +956,13 @@
         const tiEl = document.getElementById('ros_title_' + i);
         const dEl = document.getElementById('ros_dur_' + i);
         const pEl = document.getElementById('ros_prompt_' + i);
+        const sEl = document.getElementById('ros_script_' + i);
         const cEl = document.getElementById('ros_clip_' + i);
         if (tEl) a.type = tEl.value;
         if (tiEl) a.title = tiEl.value;
         if (dEl) a.durationMin = dEl.value;
         if (pEl) a.prompt = pEl.value;
+        if (sEl) a.script = sEl.value;
         if (cEl) a.clipIndex = cEl.value;
         else if (a.type !== 'clip') a.clipIndex = '';
       });
@@ -882,7 +977,7 @@
 
     function addAgendaRow() {
       syncAgendaFromDom();
-      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', clipIndex: '' });
+      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', script: '', clipIndex: '' });
       renderRosAgenda();
     }
 
@@ -911,6 +1006,7 @@
         const dur = parseInt(a.durationMin, 10);
         if (a.durationMin !== '' && Number.isFinite(dur) && dur >= 1) row.durationMin = dur;
         if ((a.prompt || '').trim()) row.prompt = a.prompt.trim();
+        if ((a.script || '').trim()) row.script = a.script.trim();
         if (a.type === 'clip' && a.clipIndex !== '' && a.clipIndex != null) {
           const ci = parseInt(a.clipIndex, 10);
           if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
