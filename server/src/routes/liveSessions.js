@@ -505,8 +505,28 @@ router.get('/:id/live-state', protect, async (req, res) => {
       const { script, ...attendeeSeg } = rawSeg;
       seg = attendeeSeg;
     }
+    // Poll is gated like `script`: attendees never receive the voters list, and never
+    // see counts until the host reveals them. The host (admin) sees full tallies.
+    const uid = req.user._id.toString();
+    let outLiveState = session.liveState || {};
+    const poll = outLiveState.poll;
+    if (poll) {
+      if (isAdmin) {
+        outLiveState = { ...outLiveState, poll: { ...poll, voterCount: (poll.voters || []).length, voters: undefined } };
+      } else if (poll.active || poll.showResults) {
+        const youVoted = (poll.voters || []).some(v => v.toString() === uid);
+        const options = poll.showResults
+          ? (poll.options || []).map(o => ({ text: o.text, count: o.count }))
+          : (poll.options || []).map(o => ({ text: o.text }));
+        // openedAt identifies the poll instance so the client can scope its
+        // local "already voted" flag per poll, not per session.
+        outLiveState = { ...outLiveState, poll: { active: poll.active, question: poll.question, options, showResults: !!poll.showResults, youVoted, openedAt: poll.openedAt } };
+      } else {
+        outLiveState = { ...outLiveState, poll: undefined };
+      }
+    }
     res.json({
-      liveState: session.liveState,
+      liveState: outLiveState,
       currentSegment: seg,
       status: session.status
     });
@@ -613,6 +633,104 @@ router.post('/:id/live-state/playback', protect, requireAdmin, async (req, res) 
   } catch (err) {
     console.error('[live] playback:', err.message);
     res.status(500).json({ error: 'Failed to update playback state' });
+  }
+});
+
+/* ────────────────────── LIVE POLLS ─────────────────────── */
+
+// POST /:id/live-state/poll/open — host opens a poll (defaults to Yes/No)
+router.post('/:id/live-state/poll/open', protect, requireAdmin, async (req, res) => {
+  try {
+    let { question, options } = req.body;
+    if (!question || typeof question !== 'string') return res.status(400).json({ error: 'question is required.' });
+    if (!Array.isArray(options)) options = ['Yes', 'No'];
+    options = options.map(t => String(t || '').trim()).filter(Boolean).slice(0, 4);
+    if (options.length < 2) return res.status(400).json({ error: 'Need at least 2 options.' });
+
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      poll: {
+        active: true,
+        question: question.trim(),
+        options: options.map(text => ({ text, count: 0 })),
+        voters: [],
+        showResults: false,
+        openedAt: new Date()
+      }
+    };
+    session.markModified('liveState');
+    await session.save();
+    res.json({ poll: session.liveState.poll });
+  } catch (err) {
+    console.error('[live] poll/open:', err.message);
+    res.status(500).json({ error: 'Failed to open poll' });
+  }
+});
+
+// POST /:id/live-state/poll/close — host stops voting (keeps results)
+router.post('/:id/live-state/poll/close', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!session.liveState?.poll) return res.status(400).json({ error: 'No poll to close.' });
+    session.liveState.poll.active = false;
+    session.markModified('liveState');
+    await session.save();
+    res.json({ poll: session.liveState.poll });
+  } catch (err) {
+    console.error('[live] poll/close:', err.message);
+    res.status(500).json({ error: 'Failed to close poll' });
+  }
+});
+
+// POST /:id/live-state/poll/reveal — host shows/hides results ({ show: true|false })
+router.post('/:id/live-state/poll/reveal', protect, requireAdmin, async (req, res) => {
+  try {
+    const show = req.body?.show !== false;
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (!session.liveState?.poll) return res.status(400).json({ error: 'No poll.' });
+    session.liveState.poll.showResults = show;
+    session.markModified('liveState');
+    await session.save();
+    res.json({ poll: session.liveState.poll });
+  } catch (err) {
+    console.error('[live] poll/reveal:', err.message);
+    res.status(500).json({ error: 'Failed to update poll visibility' });
+  }
+});
+
+// POST /:id/live-state/poll/vote — attendee casts one vote (anonymous, deduped)
+router.post('/:id/live-state/poll/vote', protect, async (req, res) => {
+  try {
+    const { optionIndex } = req.body;
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const isAdmin = req.user.role === 'admin';
+    const registered = session.registrants.some(r => r.user && r.user.toString() === req.user._id.toString());
+    if (!isAdmin && !registered) return res.status(403).json({ error: 'Not registered for this session.' });
+
+    const poll = session.liveState?.poll;
+    if (!poll || !poll.active) return res.status(400).json({ error: 'No poll is open.' });
+    if (typeof optionIndex !== 'number' || optionIndex < 0 || optionIndex >= poll.options.length) {
+      return res.status(400).json({ error: 'Invalid option.' });
+    }
+    const uid = req.user._id.toString();
+    if (poll.voters.some(v => v.toString() === uid)) {
+      return res.status(409).json({ error: 'You have already voted.', youVoted: true });
+    }
+    poll.options[optionIndex].count += 1;
+    poll.voters.push(req.user._id);
+    session.markModified('liveState');
+    await session.save();
+    res.json({ ok: true, youVoted: true });
+  } catch (err) {
+    console.error('[live] poll/vote:', err.message);
+    res.status(500).json({ error: 'Failed to record vote' });
   }
 });
 

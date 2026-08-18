@@ -152,6 +152,15 @@ const liveSessionSchema = new mongoose.Schema({
       playing: { type: Boolean, default: false },
       positionSec: { type: Number, default: 0 },
       stateUpdatedAt: Date
+    },
+    poll: {
+      active: { type: Boolean, default: false },
+      question: String,
+      options: [{ text: String, count: { type: Number, default: 0 } }],
+      // voters records WHO has voted (dedupe only) — never linked to WHICH option.
+      voters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+      showResults: { type: Boolean, default: false },
+      openedAt: Date
     }
   },
 
