@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+        <!DOCTYPE html>
 <html lang="en">
 <head>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -116,20 +116,26 @@
       <!-- Sessions Table -->
       <div id="mainContent" class="hidden">
         <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
-          <table class="w-full text-sm">
-            <thead class="bg-stone-50 border-b border-burgundy-100">
-              <tr>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Title</th>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Type</th>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Scheduled</th>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Status</th>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Registered</th>
-                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">CEUs</th>
-                <th class="text-right px-4 py-3 font-semibold text-burgundy-800">Actions</th>
-              </tr>
-            </thead>
-            <tbody id="sessionsBody"></tbody>
-          </table>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[900px]">
+              <thead class="bg-stone-50 border-b border-burgundy-100">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Title</th>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Type</th>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">
+                    <button onclick="toggleSort()" class="flex items-center gap-1 hover:text-burgundy-600 transition-colors" title="Click to change sort order">
+                      Scheduled <i id="sortIcon" class="fas fa-arrow-up text-[10px]"></i>
+                    </button>
+                  </th>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Status</th>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Registered</th>
+                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">CEUs</th>
+                  <th class="text-right px-4 py-3 font-semibold text-burgundy-800">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sessionsBody"></tbody>
+            </table>
+          </div>
           <div id="emptyState" class="hidden text-center py-16 text-forest-500">
             <i class="fas fa-video text-4xl text-burgundy-200 mb-3 block"></i>
             No sessions yet. Create one to get started.
@@ -328,6 +334,7 @@
     const API = API_URL + '/api/live-sessions';
     const token = localStorage.getItem('token');
     let sessions = [];
+    let sortDir = 'asc'; // 'asc' = soonest/current first, 'desc' = furthest-out first
 
     /* Run-of-show working state */
     let rosSession = null;
@@ -365,6 +372,7 @@
         if (!r.ok) throw new Error('Failed');
         const d = await r.json();
         sessions = d.sessions || [];
+        sortSessions();
         renderTable();
         document.getElementById('loadingState').classList.add('hidden');
         document.getElementById('mainContent').classList.remove('hidden');
@@ -373,6 +381,23 @@
         document.getElementById('errorState').classList.remove('hidden');
         document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
       }
+    }
+
+    /* ── Sort sessions by scheduled date ── */
+    function sortSessions() {
+      sessions.sort((a, b) => {
+        const ta = a.scheduledStart ? new Date(a.scheduledStart).getTime() : 0;
+        const tb = b.scheduledStart ? new Date(b.scheduledStart).getTime() : 0;
+        return sortDir === 'asc' ? ta - tb : tb - ta;
+      });
+    }
+
+    function toggleSort() {
+      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      const icon = document.getElementById('sortIcon');
+      if (icon) icon.className = sortDir === 'asc' ? 'fas fa-arrow-up text-[10px]' : 'fas fa-arrow-down text-[10px]';
+      sortSessions();
+      renderTable();
     }
 
     /* ── Render table ── */
