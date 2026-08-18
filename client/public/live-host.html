@@ -394,7 +394,6 @@
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
     init();
-    tpLoad();
 
     /* ===== Host teleprompter (additive) ===== */
     let tpPlaying=false, tpSpeed=40, tpFont=22, tpRAF=null, tpLast=0;
@@ -438,6 +437,8 @@
       else if(e.code==='ArrowUp'){ e.preventDefault(); tpSpeedBy(5); }
       else if(e.code==='ArrowDown'){ e.preventDefault(); tpSpeedBy(-5); }
     });
+    // Init teleprompter prefs AFTER its let-declarations above (avoids TDZ ReferenceError).
+    tpLoad();
 
     /* ===== Host live poll ===== */
     let pollLoop = null;
