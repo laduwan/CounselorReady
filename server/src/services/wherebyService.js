@@ -67,8 +67,12 @@ export async function createMeeting(session) {
           ? {
               type: 'cloud',
               // Destination (own S3 bucket) is configured account-wide in the
-              // Whereby dashboard. Verify against current Whereby docs if this
-              // request is rejected — destination may also be settable here.
+              // Whereby dashboard. Whereby's API now REQUIRES this field to be
+              // present when a recording object is sent; `null` = use that
+              // account-wide default (our S3), which the transcription/catch-up
+              // pipeline reads from. Do not switch to provider:'whereby' — that
+              // would send recordings to Whereby storage and break catch-up.
+              destination: null,
               startTrigger: 'automatic-2nd-participant'
             }
           : { type: 'none' })
