@@ -30,6 +30,14 @@
     .btn-pause:hover{background:#7a1d38;}
     #seekBar{width:100%;accent-color:#284157;}
   </style>
+  <style>
+    /* Host teleprompter */
+    #tpBar .cr-tp-btn{width:26px;height:26px;border-radius:6px;border:1px solid #E0DCD5;background:#fff;color:#284157;font-size:13px;line-height:1;cursor:pointer;}
+    #tpBar .cr-tp-btn:hover{background:#F5F4F1;}
+    #nowScript .cr-tp-say{margin:0 0 2px;}
+    #nowScript .cr-tp-dir{color:#9A948C;font-size:0.7em;font-style:italic;border-left:2px solid #D4A855;padding-left:8px;margin:4px 0;}
+    #nowScript .cr-tp-gap{height:0.7em;}
+  </style>
 </head>
 <body>
   <script src="/shared/nav-footer.js"></script>
@@ -96,7 +104,22 @@
           <div class="bg-white rounded-xl border p-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Current segment</h2>
             <div id="nowSummary" class="text-sm" style="color:#57534e;">No segment selected.</div>
-            <div id="nowScript" class="hidden mt-3 pt-3 text-sm whitespace-pre-wrap" style="border-top:1px solid #EDE9E3;color:#284157;max-height:280px;overflow-y:auto;"></div>
+            <div id="tpWrap" class="hidden mt-3 pt-3" style="border-top:1px solid #EDE9E3;">
+              <div id="tpBar" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+                <button id="tpPlay" type="button" onclick="tpToggle()" title="Play / Pause (Space)"
+                  style="width:34px;height:34px;border-radius:8px;background:#284157;color:#fff;font-size:15px;line-height:1;cursor:pointer;">▶</button>
+                <span style="font-size:11px;color:#8A8580;">Speed</span>
+                <button type="button" class="cr-tp-btn" onclick="tpSpeedBy(-5)" title="Slower (Down arrow)">–</button>
+                <button type="button" class="cr-tp-btn" onclick="tpSpeedBy(5)" title="Faster (Up arrow)">+</button>
+                <span style="font-size:11px;color:#8A8580;margin-left:6px;">Text</span>
+                <button type="button" class="cr-tp-btn" onclick="tpFontBy(-2)" title="Smaller">A–</button>
+                <button type="button" class="cr-tp-btn" onclick="tpFontBy(2)" title="Larger">A+</button>
+                <span id="tpReadout" style="font-size:11px;color:#8A8580;margin-left:auto;"></span>
+              </div>
+              <div id="tpViewport" style="max-height:340px;overflow-y:auto;position:relative;">
+                <div id="nowScript" class="whitespace-pre-wrap" style="color:#284157;line-height:1.6;font-size:22px;"></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -245,14 +268,18 @@
       });
       const seg = session.agenda?.[idx];
       const nowSummary = document.getElementById('nowSummary');
-      const nowScript = document.getElementById('nowScript');
-      if (!seg) { nowSummary.textContent = 'No segment.'; nowScript.classList.add('hidden'); return; }
+      const tpWrap = document.getElementById('tpWrap');
+      if (!seg) { nowSummary.textContent = 'No segment.'; tpWrap.classList.add('hidden'); tpPause(); return; }
       nowSummary.innerHTML = `<strong>${esc(seg.title || seg.type)}</strong>${seg.prompt ? `<br><em>Prompt: ${esc(seg.prompt)}</em>` : ''}${seg.durationMin ? ` · ${seg.durationMin} min` : ''}`;
       if (seg.script && seg.script.trim()) {
-        nowScript.textContent = seg.script;
-        nowScript.classList.remove('hidden');
+        tpRender(seg.script);
+        tpApplyFont();
+        tpReset();
+        tpPause();
+        tpWrap.classList.remove('hidden');
       } else {
-        nowScript.classList.add('hidden');
+        tpPause();
+        tpWrap.classList.add('hidden');
       }
     }
 
@@ -348,6 +375,50 @@
 
     function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
     init();
+    tpLoad();
+
+    /* ===== Host teleprompter (additive) ===== */
+    let tpPlaying=false, tpSpeed=40, tpFont=22, tpRAF=null, tpLast=0;
+    function tpVp(){ return document.getElementById('tpViewport'); }
+    function tpLoad(){
+      const s=parseFloat(localStorage.getItem('cr_tp_speed')); if(!isNaN(s)) tpSpeed=s;
+      const f=parseFloat(localStorage.getItem('cr_tp_font')); if(!isNaN(f)) tpFont=f;
+      tpApplyFont(); tpReadout();
+      const vp=tpVp(); if(vp) vp.addEventListener('wheel',()=>{ if(tpPlaying) tpPause(); },{passive:true});
+    }
+    function tpRender(text){
+      const el=document.getElementById('nowScript'); if(!el) return; el.innerHTML='';
+      let depth=0;
+      for(const line of String(text||'').split('\n')){
+        if(line.trim()===''){ const g=document.createElement('div'); g.className='cr-tp-gap'; el.appendChild(g); continue; }
+        const opens=(line.match(/\[/g)||[]).length, closes=(line.match(/\]/g)||[]).length;
+        const isDir = depth>0 || line.trimStart().startsWith('[');
+        const d=document.createElement('div'); d.className=isDir?'cr-tp-dir':'cr-tp-say'; d.textContent=line; el.appendChild(d);
+        depth+=opens-closes; if(depth<0) depth=0;
+      }
+    }
+    function tpApplyFont(){ const el=document.getElementById('nowScript'); if(el) el.style.fontSize=tpFont+'px'; }
+    function tpReadout(){ const r=document.getElementById('tpReadout'); if(r) r.textContent=Math.round(tpSpeed)+' px/s · '+tpFont+'px'; }
+    function tpBtn(){ const b=document.getElementById('tpPlay'); if(b) b.textContent=tpPlaying?'⏸':'▶'; }
+    function tpStep(ts){
+      if(!tpPlaying) return;
+      const vp=tpVp(); if(!tpLast) tpLast=ts; const dt=(ts-tpLast)/1000; tpLast=ts;
+      if(vp){ vp.scrollTop+=tpSpeed*dt; if(vp.scrollTop+vp.clientHeight>=vp.scrollHeight-1){ tpPause(); return; } }
+      tpRAF=requestAnimationFrame(tpStep);
+    }
+    function tpPlay(){ if(tpPlaying) return; tpPlaying=true; tpLast=0; tpBtn(); tpRAF=requestAnimationFrame(tpStep); }
+    function tpPause(){ tpPlaying=false; if(tpRAF) cancelAnimationFrame(tpRAF); tpRAF=null; tpBtn(); }
+    function tpToggle(){ tpPlaying?tpPause():tpPlay(); }
+    function tpSpeedBy(d){ tpSpeed=Math.max(5,Math.min(200,tpSpeed+d)); localStorage.setItem('cr_tp_speed',tpSpeed); tpReadout(); }
+    function tpFontBy(d){ tpFont=Math.max(14,Math.min(48,tpFont+d)); localStorage.setItem('cr_tp_font',tpFont); tpApplyFont(); tpReadout(); }
+    function tpReset(){ const vp=tpVp(); if(vp) vp.scrollTop=0; }
+    document.addEventListener('keydown',(e)=>{
+      const t=(e.target.tagName||'').toLowerCase();
+      if(t==='input'||t==='textarea'||e.target.isContentEditable) return;
+      if(e.code==='Space'){ e.preventDefault(); tpToggle(); }
+      else if(e.code==='ArrowUp'){ e.preventDefault(); tpSpeedBy(5); }
+      else if(e.code==='ArrowDown'){ e.preventDefault(); tpSpeedBy(-5); }
+    });
   </script>
 </body>
 </html>
