@@ -37,6 +37,7 @@
     #nowScript .cr-tp-say{margin:0 0 2px;}
     #nowScript .cr-tp-dir{color:#9A948C;font-size:0.7em;font-style:italic;border-left:2px solid #D4A855;padding-left:8px;margin:4px 0;}
     #nowScript .cr-tp-gap{height:0.7em;}
+    #nowScript .cr-tp-say.cr-tp-current{border-left:3px solid #D4A855;padding-left:8px;font-weight:600;color:#284157;transition:border-color 0.1s;}
     #tpReadingLine{position:absolute;left:0;right:0;top:25%;height:2px;background:#D4A855;opacity:0.55;pointer-events:none;z-index:10;}
   </style>
 </head>
@@ -404,7 +405,7 @@
       const s=parseFloat(localStorage.getItem('cr_tp_speed')); if(!isNaN(s)) tpSpeed=s;
       const f=parseFloat(localStorage.getItem('cr_tp_font')); if(!isNaN(f)) tpFont=f;
       tpApplyFont(); tpReadout();
-      const vp=tpVp(); if(vp) vp.addEventListener('wheel',()=>{ if(tpPlaying) tpPause(); },{passive:true});
+      const vp=tpVp(); if(vp) vp.addEventListener('wheel',()=>{ if(tpPlaying) tpPause(); tpHighlight(); },{passive:true});
     }
     function tpRender(text){
       const el=document.getElementById('nowScript'); if(!el) return; el.innerHTML='';
@@ -420,10 +421,23 @@
     function tpApplyFont(){ const el=document.getElementById('nowScript'); if(el) el.style.fontSize=tpFont+'px'; }
     function tpReadout(){ const r=document.getElementById('tpReadout'); if(r) r.textContent=Math.round(tpSpeed)+' px/s · '+tpFont+'px'; }
     function tpBtn(){ const b=document.getElementById('tpPlay'); if(b) b.textContent=tpPlaying?'⏸':'▶'; }
+    function tpHighlight(){
+      const vp=tpVp(); const el=document.getElementById('nowScript'); if(!vp||!el) return;
+      // Reading line sits 25% down from the top of the visible viewport
+      const readY=vp.getBoundingClientRect().top + vp.clientHeight*0.25;
+      let best=null, bestDist=Infinity;
+      el.querySelectorAll('.cr-tp-say').forEach(d=>{
+        const r=d.getBoundingClientRect();
+        const dist=Math.abs((r.top+r.height/2)-readY);
+        if(dist<bestDist){ bestDist=dist; best=d; }
+      });
+      el.querySelectorAll('.cr-tp-say.cr-tp-current').forEach(d=>d.classList.remove('cr-tp-current'));
+      if(best) best.classList.add('cr-tp-current');
+    }
     function tpStep(ts){
       if(!tpPlaying) return;
       const vp=tpVp(); if(!tpLast) tpLast=ts; const dt=(ts-tpLast)/1000; tpLast=ts;
-      if(vp){ vp.scrollTop+=tpSpeed*dt; if(vp.scrollTop+vp.clientHeight>=vp.scrollHeight-1){ tpPause(); return; } }
+      if(vp){ vp.scrollTop+=tpSpeed*dt; tpHighlight(); if(vp.scrollTop+vp.clientHeight>=vp.scrollHeight-1){ tpPause(); return; } }
       tpRAF=requestAnimationFrame(tpStep);
     }
     function tpPlay(){ if(tpPlaying) return; tpPlaying=true; tpLast=0; tpBtn(); tpRAF=requestAnimationFrame(tpStep); }
