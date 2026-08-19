@@ -576,7 +576,7 @@
                 ${tier ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200">${tier}</span>` : ''}
               </div>
             </div>
-            <div class="flex gap-1.5 shrink-0">
+            <div class="flex flex-wrap justify-end gap-1.5">
               <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
                 title="${pub ? 'Unpublish' : 'Publish'}">
