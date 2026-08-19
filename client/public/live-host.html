@@ -37,6 +37,7 @@
     #nowScript .cr-tp-say{margin:0 0 2px;}
     #nowScript .cr-tp-dir{color:#9A948C;font-size:0.7em;font-style:italic;border-left:2px solid #D4A855;padding-left:8px;margin:4px 0;}
     #nowScript .cr-tp-gap{height:0.7em;}
+    #tpReadingLine{position:absolute;left:0;right:0;top:25%;height:2px;background:#D4A855;opacity:0.55;pointer-events:none;z-index:10;}
   </style>
 </head>
 <body>
@@ -117,6 +118,7 @@
                 <span id="tpReadout" style="font-size:11px;color:#8A8580;margin-left:auto;"></span>
               </div>
               <div id="tpViewport" style="max-height:340px;overflow-y:auto;position:relative;">
+                <div id="tpReadingLine"></div>
                 <div id="nowScript" class="whitespace-pre-wrap" style="color:#284157;line-height:1.6;font-size:22px;"></div>
               </div>
             </div>
