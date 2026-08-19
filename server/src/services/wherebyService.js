@@ -66,13 +66,19 @@ export async function createMeeting(session) {
       : (session.recordingEnabled
           ? {
               type: 'cloud',
-              // Destination (own S3 bucket) is configured account-wide in the
-              // Whereby dashboard. Whereby's API now REQUIRES this field to be
-              // present when a recording object is sent; `null` = use that
-              // account-wide default (our S3), which the transcription/catch-up
-              // pipeline reads from. Do not switch to provider:'whereby' — that
-              // would send recordings to Whereby storage and break catch-up.
-              destination: null,
+              // Whereby requires an explicit destination OBJECT for cloud recording
+              // (null is rejected). Point it at our own S3 with the same creds the
+              // transcription/catch-up pipeline uses, so recordings land where
+              // recording.finished → AWS Transcribe reads them. Do NOT use
+              // provider:'whereby' — that stores in Whereby's bucket and breaks catch-up.
+              destination: {
+                provider: 's3',
+                authenticationType: 'accessKey',
+                bucket: process.env.AWS_S3_RECORDINGS_BUCKET,
+                accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+                accessKeySecret: process.env.AWS_SECRET_ACCESS_KEY,
+                fileFormat: 'mp4'
+              },
               startTrigger: 'automatic-2nd-participant'
             }
           : { type: 'none' })
