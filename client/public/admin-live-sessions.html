@@ -915,7 +915,7 @@
               class="col-span-5 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
             <input id="ros_dur_${i}" type="number" min="1" value="${a.durationMin === '' ? '' : escHtml(a.durationMin)}" placeholder="min" ${ro ? 'disabled' : ''}
               class="col-span-2 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            <div class="col-span-2 flex items-center justify-end gap-1">
+            <div class="col-span-2 flex flex-wrap items-center justify-end gap-1">
               ${ro ? '' : `
               <button onclick="moveAgendaRow(${i},-1)" title="Move up" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-up"></i></button>
               <button onclick="moveAgendaRow(${i},1)" title="Move down" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-down"></i></button>
