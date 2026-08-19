@@ -88,7 +88,7 @@
               <h2 class="font-display text-2xl font-bold" style="color:#284157;">${esc(s.title)}</h2>
               <p class="text-sm mt-1" style="color:#57534e;">${esc(s.description || '')}</p>
               <p class="text-sm mt-2 font-medium" style="color:#6B1D34;">${fmtDate(s.scheduledStart)}</p>
-              <p class="text-xs mt-1" style="color:#57534e;">${full ? 'Session full' : s.seatsRemaining + ' seats remaining'} · Presented by ${esc(s.presenter?.name || 'CounselorReady')}</p>
+              <p class="text-xs mt-1" style="color:#57534e;">${full ? 'Session full · ' : s.seatsRemaining <= 10 ? 'Only ' + s.seatsRemaining + ' seats left · ' : ''}Presented by ${esc(s.presenter?.name || 'CounselorReady')}</p>
             </div>
             <div class="flex flex-col items-stretch gap-2 md:w-44">
               <div class="text-center font-semibold" style="color:#284157;">${s.price > 0 ? '$' + s.price.toFixed(2) : 'Free'}</div>
