@@ -716,17 +716,50 @@ router.post('/:id/live-state/poll/vote', protect, async (req, res) => {
 
     const poll = session.liveState?.poll;
     if (!poll || !poll.active) return res.status(400).json({ error: 'No poll is open.' });
-    if (typeof optionIndex !== 'number' || optionIndex < 0 || optionIndex >= poll.options.length) {
+    // Integer check matters here specifically: optionIndex is interpolated into the
+    // $inc field path below, so a float would write to a nested garbage path.
+    if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= poll.options.length) {
       return res.status(400).json({ error: 'Invalid option.' });
     }
     const uid = req.user._id.toString();
     if (poll.voters.some(v => v.toString() === uid)) {
       return res.status(409).json({ error: 'You have already voted.', youVoted: true });
     }
-    poll.options[optionIndex].count += 1;
-    poll.voters.push(req.user._id);
-    session.markModified('liveState');
-    await session.save();
+
+    // The check above is a fast path for a good error message, not the dedupe itself.
+    // Applying the tally as one conditional update fixes a lost-update problem: the
+    // previous read-modify-save rewrote the whole liveState subtree, so concurrent
+    // votes clobbered each other and a room voting on a cue could land as one vote.
+    // Here { $ne: uid } and the $push commit together or not at all, so the dedupe is
+    // enforced by the write rather than incidentally by that clobbering, and a rejected
+    // repeat gets an explicit 409 instead of silently succeeding. openedAt pins the
+    // write to the exact poll we validated, so a vote landing just as the host opens
+    // the next poll cannot be counted into it.
+    const filter = {
+      _id: req.params.id,
+      'liveState.poll.active': true,
+      'liveState.poll.voters': { $ne: req.user._id }
+    };
+    if (poll.openedAt) filter['liveState.poll.openedAt'] = poll.openedAt;
+
+    const updated = await LiveSession.findOneAndUpdate(
+      filter,
+      {
+        $inc: { [`liveState.poll.options.${optionIndex}.count`]: 1 },
+        $push: { 'liveState.poll.voters': req.user._id }
+      },
+      { new: true }
+    ).select('liveState.poll.voters liveState.poll.active liveState.poll.openedAt');
+
+    if (!updated) {
+      // Nothing matched — re-read to say which guard rejected it.
+      const now = await LiveSession.findById(req.params.id).select('liveState.poll').lean();
+      const p = now?.liveState?.poll;
+      if (p && (p.voters || []).some(v => v.toString() === uid)) {
+        return res.status(409).json({ error: 'You have already voted.', youVoted: true });
+      }
+      return res.status(400).json({ error: 'No poll is open.' });
+    }
     res.json({ ok: true, youVoted: true });
   } catch (err) {
     console.error('[live] poll/vote:', err.message);
