@@ -552,7 +552,31 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-prose h1, .cr-prose h2, .cr-prose h3, .cr-prose h4 {
   margin-top: 1.5em; margin-bottom: 0.5em;
 }
-.cr-prose h1 { font-family: var(--cr-font-display); font-size: 2.5rem; font-weight: 700; color: var(--cr-burgundy); }
+/* Mockup 12a: reading-page titles are Cormorant 600 32px/1.2 (opener titles are the
+   42px ones). Authored top-level headings inside text blocks are page titles. */
+.cr-prose h1 { font-family: var(--cr-font-display); font-size: 32px; line-height: 1.2; font-weight: 600; color: var(--cr-burgundy); }
+
+/* Page eyebrow (mockup 12a): the numbered honey label above a page title, e.g.
+   "2.3 — CROSSINGS AND VIOLATIONS". Authored headings matching "N.N — Label" are
+   converted to this by renderText. */
+.cr-page-eyebrow {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700;
+  letter-spacing: .19em; text-transform: uppercase;
+  color: #A67936;
+  margin: 0 0 11px;
+}
+.cr-page-eyebrow + h1, .cr-page-eyebrow + h2, .cr-page-eyebrow + h3 { margin-top: 0 !important; }
+/* A heading directly under the eyebrow IS the page title — 32px per spec,
+   whatever its authored level. (Extra ancestor selectors outweigh the later
+   Phase-1 per-level heading rules.) */
+.cr-block .cr-prose .cr-page-eyebrow + h1,
+.cr-block .cr-prose .cr-page-eyebrow + h2,
+.cr-block .cr-prose .cr-page-eyebrow + h3 {
+  font-family: var(--cr-font-display);
+  font-size: 32px; line-height: 1.2; font-weight: 600;
+  color: var(--cr-burgundy);
+}
 .cr-prose h2 { font-family: var(--cr-font-display); font-size: 1.75rem; font-weight: 600; color: var(--cr-navy); }
 .cr-prose h3 { font-family: var(--cr-font-body); font-size: 1.25rem; font-weight: 700; color: var(--cr-green); }
 .cr-prose h4 { font-family: var(--cr-font-body); font-size: 1.1rem; font-weight: 600; color: var(--cr-navy); }
@@ -6349,6 +6373,17 @@ function renderText(wrap, block) {
   const raw = block.content || block.textContent || '';
   const parsed = parseCalloutSyntax(raw, block.callouts);
   wrap.innerHTML = `<div class="cr-prose">${parsed}</div>`;
+  // Mockup 12a page eyebrows: an authored heading whose text is "N.N — Label"
+  // (or "N — Label") is the numbered honey locator label, not a display title —
+  // convert it so the next heading/prose reads as the page content under it.
+  wrap.querySelectorAll('h1, h2, h3').forEach(h => {
+    const m = (h.textContent || '').trim().match(/^(\d+(?:\.\d+)*)\s*[—–-]\s*(.+)$/);
+    if (!m) return;
+    const eyebrow = document.createElement('div');
+    eyebrow.className = 'cr-page-eyebrow';
+    eyebrow.textContent = m[1] + ' — ' + m[2];
+    h.replaceWith(eyebrow);
+  });
   return wrap;
 }
 
