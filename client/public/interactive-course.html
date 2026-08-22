@@ -9106,7 +9106,32 @@ function buildTitlePageOverview() {
   const title = course.title || '';
   const subtitle = course.subtitle || '';
 
+  // NBCC display requirement: state the delivery method. Schema enum is
+  // async | live | hybrid, default async (self-paced platform courses).
+  const deliveryLabels = {
+    async: 'Asynchronous · Self-paced',
+    live: 'Synchronous · Live',
+    hybrid: 'Hybrid · Live + self-paced'
+  };
+  const delivery = deliveryLabels[course.deliveryFormat] || deliveryLabels.async;
+
+  // Content format (text / video / hybrid) — derived from the course's actual
+  // blocks rather than a schema field, so it stays truthful per course.
+  let hasVideo = false, hasText = false;
+  course.sections.forEach(s => (s.contentBlocks || []).forEach(b => {
+    if (b.type === 'video' || b.type === 'videoEmbed') hasVideo = true;
+    else if (b.type === 'text' || b.type === 'imageText' || b.type === 'accordion') hasText = true;
+  }));
+  const contentFormat = hasVideo && hasText ? 'Text + video' : (hasVideo ? 'Video-based' : 'Text-based');
+
   let h = '';
+
+  // Exit row (stands in for the mockup top bar's "My Courses" breadcrumb — the
+  // overview's way OUT of the course pre-Begin) + ACEP badge on the right.
+  h += '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">';
+  h += '<a href="/dashboard.html" style="font-family:' + uiFont + ';font-weight:700;font-size:13px;color:#4A7C59;text-decoration:none">← My Courses</a>';
+  h += '<span style="font-family:' + uiFont + ';font-weight:700;font-size:10.5px;letter-spacing:0.08em;color:#4A7C59">NBCC ACEP #' + esc(approvalNo) + '</span>';
+  h += '</div>';
 
   // Hero card (mockup 11a): white card, eyebrow → H1 → italic subtitle → pill row
   // → hairline → description prose → intended-for. One card, per canon — the
@@ -9124,6 +9149,8 @@ function buildTitlePageOverview() {
   if (ceHours) h += pill(ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : ''), '#F9F0DB', '#F3E0B5', '#6B4A25');
   if (hrsLabel) h += pill('~' + hrsLabel, '#F8F7F4', '#E5E0D8', '#4b5563');
   if (level) h += pill(esc(level), '#F8F7F4', '#E5E0D8', '#4b5563');
+  h += pill(delivery, '#F8F7F4', '#E5E0D8', '#4b5563');
+  h += pill(contentFormat, '#F8F7F4', '#E5E0D8', '#4b5563');
   h += '</div>';
 
   if (description || instructor || audience.length) {
@@ -9156,6 +9183,15 @@ function buildTitlePageOverview() {
   h += '<div style="font-family:var(--cr-font-display);font-weight:600;font-size:19px;color:var(--cr-navy);margin-bottom:14px">Accreditation</div>';
   h += '<p style="font-family:' + uiFont + ';font-size:14px;line-height:1.6;color:#2C2C2C;margin:0 0 10px">'
      + esc(approvalBody) + ' ACEP Provider #' + esc(approvalNo) + '. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of this program.</p>';
+  const deliverySentences = {
+    async: 'Asynchronous, self-paced distance learning.',
+    live: 'Synchronous, live instruction.',
+    hybrid: 'Hybrid — live instruction with self-paced components.'
+  };
+  h += '<p style="font-family:' + uiFont + ';font-size:13px;line-height:1.6;color:#2C2C2C;margin:0 0 10px"><strong>Delivery method:</strong> '
+     + (deliverySentences[course.deliveryFormat] || deliverySentences.async)
+     + ' <strong>Format:</strong> ' + contentFormat + '.'
+     + (instructor ? ' <strong>Instructor:</strong> ' + esc(instructor) + '.' : '') + '</p>';
   if (areas.length) {
     h += '<p style="font-family:' + uiFont + ';font-size:12px;color:#6B7280;margin:0"><strong>NBCC Content Areas:</strong> '
        + areas.map(a => esc(typeof a === 'string' ? a : (a.name || a.area || ''))).filter(Boolean).join(' · ') + '</p>';
