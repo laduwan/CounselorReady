@@ -413,12 +413,15 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-sidebar-overlay.visible { display: block; }
 
 /* — MAIN CONTENT — */
+/* .cr-main spans the full content track (so the reader header/footer bars can too);
+   only .cr-reading-column below is capped at 640px, matching the mockup's own
+   proportions (chrome bars wider than the centered reading text). */
 .cr-main {
-  max-width: 640px;
   margin: 0 auto;
   padding: 40px 32px 80px;
   width: 100%;
 }
+.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
 @media (max-width: 640px) { .cr-main { padding: 20px 16px 60px; } }
 
 /* — ACCESSIBILITY PANEL — */
@@ -1236,31 +1239,97 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    READER HEADER (desktop only)
    ═══════════════════════════════════════════════════════════════ */
 .cr-reader-header {
-  display: flex; align-items: center; gap: 16px;
+  display: flex; align-items: center; gap: 12px;
   background: #FFFFFF;
   padding: 13px 28px;
   border-bottom: 1px solid #E5E0D8;
   position: sticky; top: 0; z-index: 29;
 }
+/* display:contents wrappers (the Aa vs. Contents/Save&exit tool-group swap) put their
+   button children one level deeper than a direct child of .cr-reader-header, so the
+   flex/nowrap rule targets .cr-reader-tab/.cr-reader-tool directly instead of relying
+   on ">*" — a header-row-overflow issue this file has hit once before (see the ADA
+   z-index fragility notes on this header's row-width budget). */
 .cr-reader-header > * { flex: none; white-space: nowrap; }
+.cr-reader-tab, .cr-reader-tool { flex: none; white-space: nowrap; }
 .cr-reader-tab {
   font-family: 'Lato', system-ui, sans-serif;
   font-size: 12px; font-weight: 400;
   color: #6B7280; background: none;
   border: none; border-radius: 8px;
-  padding: 6px 12px; cursor: pointer;
+  padding: 5px 10px; cursor: pointer;
 }
 .cr-reader-tab.active {
   background: #FDF5F6; font-weight: 700; color: #6B1D34;
 }
 .cr-reader-tool {
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 12px; font-weight: 700;
+  font-size: 11px; font-weight: 700;
   color: #6B7280; background: none;
   border: 1px solid #E5E0D8; border-radius: 8px;
-  padding: 6px 10px; cursor: pointer;
+  padding: 5px 9px; cursor: pointer;
 }
 @media (max-width: 1024px) { .cr-reader-header { display: none; } }
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION OPENER
+   ═══════════════════════════════════════════════════════════════ */
+.cr-opener-panel {
+  margin: -40px -32px;
+  padding: 56px 34px;
+  border-radius: 0;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+}
+.cr-opener-col { width: 100%; max-width: 640px; }
+.cr-opener-eyebrow {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 14px;
+}
+.cr-opener-title {
+  font-family: var(--cr-font-display);
+  font-weight: 600; font-size: 42px; line-height: 1.15;
+  color: #FFFFFF; max-width: 22ch;
+  margin: 0 0 18px;
+}
+.cr-opener-intro {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 17px; line-height: 1.75;
+  color: rgba(255,255,255,0.8);
+  max-width: 60ch;
+  margin: 0 0 24px;
+}
+.cr-opener-topics { margin-bottom: 32px; }
+.cr-opener-topic {
+  display: flex; align-items: center; gap: 14px;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 15px; color: #FFFFFF;
+  margin-bottom: 12px;
+}
+.cr-opener-topic-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.cr-opener-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.cr-opener-start {
+  background: #D4A855; color: #4A1524;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 15.5px;
+  padding: 16px 32px; border: none; border-radius: 11px;
+  box-shadow: 0 2px 10px rgba(212,168,85,.24);
+  cursor: pointer;
+}
+.cr-opener-review {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Lato', system-ui, sans-serif; font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+}
+.cr-opener-review:hover { text-decoration: underline; }
 
 /* ═══════════════════════════════════════════════════════════════
    NAVIGATION BUTTONS
@@ -2730,6 +2799,36 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   color: #4A1524;
 }
 
+/* — Table block card (Prompt 2 item 5: rounded card, warm-white stripes, hairline) — */
+.cr-tableblock-wrap {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid #E5E0D8;
+}
+.cr-tableblock-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.cr-tableblock-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--cr-burgundy);
+  color: #FFFFFF;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.cr-tableblock-table td {
+  padding: 10px 12px;
+  line-height: 1.55;
+  color: var(--cr-text);
+  border-top: 1px solid #EDEDD0;
+}
+.cr-tableblock-table tbody tr:nth-child(even) { background: #FBFAF6; }
+
 
 /* — Variant: DONOT — */
 .cr-callout-donot {
@@ -3884,7 +3983,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
   <!-- MAIN CONTENT -->
   <main class="cr-main" id="cr-content" role="main">
-    <!-- Desktop reader header (hidden on mobile; hidden on the Course Overview screen) -->
+    <!-- Desktop reader header (hidden on mobile; hidden on the Course Overview screen).
+         Spans .cr-main's full (unconstrained) width — only .cr-reading-column below is
+         capped at 640px, so the header/footer bars are wider than the reading column,
+         matching the mockup's own proportions. -->
     <div class="cr-reader-header" id="crReaderHeader">
       <span style="font-family:var(--cr-font-display);font-weight:700;font-size:15px"><span style="color:var(--cr-burgundy)">Counselor</span><span style="color:var(--cr-green)">Ready</span></span><sup style="font-size:8px;vertical-align:super">™</sup>
       <span id="crReaderPageLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:12.5px;color:#6B7280"></span>
@@ -3892,24 +3994,40 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button type="button" class="cr-reader-tab active" data-action="setReaderTab" data-tab="lesson">Lesson</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental</button>
-      <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
+      <span id="crReaderToolsNormal" style="display:contents">
+        <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
+      </span>
+      <span id="crReaderToolsOpener" style="display:none">
+        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
+        <button type="button" class="cr-reader-tool" data-action="saveAndExit">Save &amp; exit</button>
+      </span>
     </div>
-    <!-- Section toolbar -->
-    <div class="cr-toolbar" id="crToolbar" style="display:none">
-      <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
-      <button class="cr-toolbar-btn" data-action="exportPDF">📄 Export as PDF</button>
+
+    <!-- Reading column: the actual 640px-capped text width. Everything content-related
+         (toolbar, objectives tracker, block content) stays inside here. -->
+    <div class="cr-reading-column">
+      <!-- Section toolbar -->
+      <div class="cr-toolbar" id="crToolbar" style="display:none">
+        <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
+        <button class="cr-toolbar-btn" data-action="exportPDF">📄 Export as PDF</button>
+      </div>
+
+      <!-- Learning objectives tracker (injected on first content section) -->
+      <div id="crObjectivesTracker"></div>
+
+      <!-- Section content rendered here -->
+      <div id="crContentArea"></div>
     </div>
-    
-    <!-- Learning objectives tracker (injected on first content section) -->
-    <div id="crObjectivesTracker"></div>
-    
-    <!-- Section content rendered here -->
-    <div id="crContentArea"></div>
-    
-    <!-- Navigation -->
+
+    <!-- Section opener target: full .cr-main width (not the 640px reading column),
+         since the opener is a full-bleed panel. Mutually exclusive with .cr-reading-column. -->
+    <div id="crOpenerArea" style="display:none"></div>
+
+    <!-- Navigation — same full-width reasoning as the header above. -->
     <div class="cr-nav-buttons" id="crNavButtons">
       <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="prevSection">← Previous</button>
       <span id="crPageIndicator" style="font-size:0.85em;color:var(--cr-text-muted)"></span>
+      <span id="crReadTimeLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#9CA3AF;white-space:nowrap"></span>
       <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="nextSection">Next →</button>
     </div>
   </main>
@@ -4080,6 +4198,7 @@ let currentBlockPage = 0;
 let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
+let sectionSubState = 'reading'; // 'opener' | 'reading' — shown before a section's content on first entry
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let certPipelineState = { assessmentSaved: false, evaluationDone: false, attestationDone: false };
 let ttsActive = false;
@@ -4730,16 +4849,108 @@ function detectModuleGroups() {
 function goToSection(i) {
   if (currentView === 'assessment') currentView = 'section';
   completedSections.add(currentSectionIndex);
+  const alreadyVisited = visitedSections.has(i); // must read before marking visited below
   visitedSections.add(i);
   currentSectionIndex = i;
   window.__crCurrentSectionIndex = i; // [Stage 5f] expose for retrieval popup
   currentBlockPage = 0; // reset within-section pagination on section change
   buildSectionNav();
-  renderCurrentSection();
+
+  const section = course.sections[i];
+  if (!alreadyVisited && section && !section._isOverview) {
+    sectionSubState = 'opener';
+    renderSectionOpener(i);
+  } else {
+    sectionSubState = 'reading';
+    renderCurrentSection();
+  }
+
   updateProgress();
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
+}
+
+const CR_OPENER_COLORS = ['#6B1D34', '#284157', '#4A7C59', '#8B2542'];
+const CR_OPENER_ORDINALS = ['ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN','ELEVEN','TWELVE'];
+
+function renderSectionOpener(i) {
+  const section = course.sections[i];
+  const area = document.getElementById('crOpenerArea'); // full .cr-main width, not the 640px reading column
+  const readingColumn = document.querySelector('.cr-reading-column');
+  const readerHeader = document.getElementById('crReaderHeader');
+  const navBtns = document.getElementById('crNavButtons');
+  const toolbar = document.getElementById('crToolbar');
+  const toolsNormal = document.getElementById('crReaderToolsNormal');
+  const toolsOpener = document.getElementById('crReaderToolsOpener');
+  if (readingColumn) readingColumn.style.display = 'none';
+  if (area) area.style.display = 'block';
+  if (readerHeader) readerHeader.style.display = 'flex'; // header stays visible on the opener (mockup 11b)
+  if (toolsNormal) toolsNormal.style.display = 'none';
+  if (toolsOpener) toolsOpener.style.display = 'contents';
+  if (navBtns) navBtns.style.display = 'none';
+  if (toolbar) toolbar.style.display = 'none'; // restored by renderCurrentSection() once reading begins
+
+  // Content-section-relative number, excluding the synthesized overview — same
+  // convention makeNavItem() already uses for its display number.
+  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+  const displayNum = i - overviewCount + 1; // 1-based content-section number (excludes the synthesized overview)
+  const color = CR_OPENER_COLORS[(displayNum - 1) % CR_OPENER_COLORS.length];
+  const ordinal = CR_OPENER_ORDINALS[displayNum - 1] || String(displayNum);
+
+  const blocks = section.contentBlocks || [];
+  const pageCount = blocks.length;
+  const minutes = Math.ceil(pageCount * 3);
+
+  let title = (section.title || 'Section ' + displayNum).replace(/^Section\s+\d+\s*[:—–-]\s*/i, '').trim();
+  if (!title) title = 'Section ' + displayNum;
+
+  // Up to 3 topics: sectionDivider block titles, else headings pulled from text blocks.
+  let topics = blocks.filter(b => b.type === 'sectionDivider' && b.title).map(b => b.title).slice(0, 3);
+  if (!topics.length) {
+    blocks.forEach(b => {
+      if (topics.length >= 3 || b.type !== 'text' || !b.content) return;
+      const m = String(b.content).match(/<h[23][^>]*>(.*?)<\/h[23]>/i);
+      if (m) topics.push(m[1].replace(/<[^>]+>/g, '').trim());
+    });
+  }
+
+  const showReview = displayNum > 1;
+
+  let html = '<div class="cr-opener-panel" style="background:' + color + '">';
+  html += '<div class="cr-opener-col">';
+  html += '<div class="cr-opener-eyebrow">SECTION ' + ordinal + ' · ' + minutes + ' MINUTES · ' + pageCount + ' PAGE' + (pageCount !== 1 ? 'S' : '') + '</div>';
+  html += '<h1 class="cr-opener-title">' + esc(title) + '</h1>';
+  if (section.description) {
+    html += '<p class="cr-opener-intro">' + (typeof mdInlineParse === 'function' ? mdInlineParse(section.description) : esc(section.description)) + '</p>';
+  }
+  if (topics.length) {
+    html += '<div class="cr-opener-topics">';
+    topics.forEach((t, idx) => {
+      html += '<div class="cr-opener-topic"><span class="cr-opener-topic-num">' + (idx + 1) + '</span><span>' + esc(t) + '</span></div>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="cr-opener-actions">';
+  html += '<button type="button" class="cr-opener-start" data-action="startSection">Start section ' + displayNum + ' →</button>';
+  if (showReview) {
+    html += '<button type="button" class="cr-opener-review" data-action="reviewPrevSection">Review section ' + (displayNum - 1) + '</button>';
+  }
+  html += '</div>';
+  html += '</div></div>';
+
+  area.innerHTML = html;
+
+  const readerLabel = document.getElementById('crReaderPageLabel');
+  if (readerLabel) {
+    const totalPages = Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE));
+    readerLabel.textContent = 'Section ' + displayNum + ' · page 1 of ' + totalPages;
+  }
+}
+
+function saveAndExit() {
+  saveProgress();
+  window.location.href = '/dashboard.html';
 }
 
 function prevSection() {
@@ -4986,7 +5197,13 @@ function renderCurrentSection() {
   
   const area = document.getElementById('crContentArea');
   area.innerHTML = '';
-  
+
+  // Reading resumes: restore the 640px reading column, hide/clear the full-width opener target.
+  const readingColumn = document.querySelector('.cr-reading-column');
+  const openerArea = document.getElementById('crOpenerArea');
+  if (readingColumn) readingColumn.style.display = 'block';
+  if (openerArea) { openerArea.style.display = 'none'; openerArea.innerHTML = ''; }
+
   // Course-level hero — only on the first section, only when set (additive; absent = unchanged)
   if (currentSectionIndex === 0 && course.headerImage) {
     const heroTitle = course.headerTitle || course.title || '';
@@ -5050,6 +5267,11 @@ function renderCurrentSection() {
 
   // Reader header carries section tabs/context that don't exist pre-Begin — same exclusion as the footer nav.
   if (readerHeader) readerHeader.style.display = onOverview ? 'none' : 'flex';
+  // Reading state always shows the normal Aa tool group, not the opener's Contents/Save & exit pair.
+  const toolsNormal = document.getElementById('crReaderToolsNormal');
+  const toolsOpener = document.getElementById('crReaderToolsOpener');
+  if (toolsNormal) toolsNormal.style.display = 'contents';
+  if (toolsOpener) toolsOpener.style.display = 'none';
 
   if (onOverview) {
     // Hide standard nav on overview — the "Let's Begin" button is in the content
@@ -5072,23 +5294,35 @@ function renderCurrentSection() {
       document.getElementById('crNextBtn').textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Next →';
     }
 
-    // Page dots: completed (green) / current (burgundy pill) / upcoming (grey)
+    // Page dots: one per block-page WITHIN THE CURRENT SECTION (matches the mockup's
+    // "page 3 of 9" dot row) — completed (green) / current (burgundy pill) / upcoming (grey),
+    // plus a trailing honey dot marking the course's final assessment, same as before.
     const dotsEl = document.getElementById('crPageIndicator');
-    dotsEl.innerHTML = navSections.map((s, i) => {
-      const pos = i + 1;
-      if (pos < navIdx) return '<span style="width:8px;height:8px;border-radius:50%;background:var(--cr-green);display:inline-block"></span>';
-      if (pos === navIdx) return '<span style="width:22px;height:8px;border-radius:4px;background:var(--cr-burgundy);display:inline-block"></span>';
-      return '<span style="width:8px;height:8px;border-radius:50%;background:#E5E0D8;display:inline-block"></span>';
-    }).join('');
+    let dotsHtml = '';
+    for (let p = 0; p < totalBlockPages; p++) {
+      if (p < currentBlockPage) dotsHtml += '<span style="width:8px;height:8px;border-radius:50%;background:var(--cr-green);display:inline-block"></span>';
+      else if (p === currentBlockPage) dotsHtml += '<span style="width:22px;height:8px;border-radius:4px;background:var(--cr-burgundy);display:inline-block"></span>';
+      else dotsHtml += '<span style="width:8px;height:8px;border-radius:50%;background:#E5E0D8;display:inline-block"></span>';
+    }
+    if (hasAssessment) dotsHtml += '<span style="width:8px;height:8px;border-radius:50%;background:#F3E0B5;display:inline-block"></span>';
+    dotsEl.innerHTML = dotsHtml;
+
+    // Reading-time + autosave label
+    const readTimeEl = document.getElementById('crReadTimeLabel');
+    if (readTimeEl) {
+      const mins = Math.max(1, Math.ceil((section.contentBlocks || []).length * 3));
+      readTimeEl.textContent = '~' + mins + ' min read · autosaved';
+    }
+
+    // Reader-header page label: "Section X of Y" (+ within-section block-page count when paginated)
+    const readerLabel = document.getElementById('crReaderPageLabel');
+    if (readerLabel) {
+      let label = 'Section ' + navIdx + ' of ' + navSections.length;
+      if (totalBlockPages > 1) label += ' · page ' + (currentBlockPage + 1) + ' of ' + totalBlockPages;
+      readerLabel.textContent = label;
+    }
   }
   document.getElementById('crTopbarSection').textContent = section.title || 'Section ' + (currentSectionIndex + 1);
-
-  const readerLabel = document.getElementById('crReaderPageLabel');
-  if (readerLabel) {
-    const sectionNum = currentSectionIndex + 1;
-    const totalSections = course.sections.length;
-    readerLabel.textContent = 'Section ' + sectionNum + ' of ' + totalSections;
-  }
 
   // Keyboard drag support
   setTimeout(addKeyboardDragSupport, 100);
@@ -6284,21 +6518,17 @@ function renderTableBlock(wrap, block) {
   if (block.title) {
     html += `<h4 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:12px">${esc(block.title)}</h4>`;
   }
-  html += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:0.85rem">';
+  html += '<div class="cr-tableblock-wrap"><table class="cr-tableblock-table">';
   if (headers.length) {
     html += '<thead><tr>';
-    headers.forEach(h => {
-      html += `<th style="text-align:left;padding:10px 12px;background:var(--cr-burgundy);color:#fff;font-weight:700;border:1px solid var(--cr-border)">${esc(h)}</th>`;
-    });
+    headers.forEach(h => { html += `<th>${esc(h)}</th>`; });
     html += '</tr></thead>';
   }
   html += '<tbody>';
-  rows.forEach((r, ri) => {
+  rows.forEach(r => {
     const cells = Array.isArray(r) ? r : [r];
-    html += `<tr style="background:${ri % 2 ? 'var(--cr-gold-faded)' : '#fff'}">`;
-    cells.forEach(c => {
-      html += `<td style="padding:10px 12px;border:1px solid var(--cr-border);line-height:1.55;color:var(--cr-text)">${esc(c == null ? '' : c)}</td>`;
-    });
+    html += '<tr>';
+    cells.forEach(c => { html += `<td>${esc(c == null ? '' : c)}</td>`; });
     html += '</tr>';
   });
   html += '</tbody></table></div>';
@@ -8606,6 +8836,9 @@ document.addEventListener('click', function(e) {
     case 'prevBlockPage': prevBlockPage(); break;
     case 'nextBlockPage': nextBlockPage(); break;
     case 'goToSection': goToSection(idx); break;
+    case 'startSection': sectionSubState = 'reading'; renderCurrentSection(); break;
+    case 'reviewPrevSection': goToSection(currentSectionIndex - 1); break;
+    case 'saveAndExit': saveAndExit(); break;
     case 'showAssessment': showAssessment(); break;
     
     // ─── Assessment ───
