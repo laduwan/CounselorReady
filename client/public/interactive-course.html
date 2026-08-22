@@ -6050,11 +6050,25 @@ function buildNotesPanel() {
 // heading — used by the footer's destination-naming buttons (ELEMENT_INVENTORY §2).
 function crBlockPageTitle(section, pageIdx) {
   const blocks = (section.contentBlocks || []).slice(pageIdx * BLOCK_PAGE_SIZE, (pageIdx + 1) * BLOCK_PAGE_SIZE);
+  const clean = s => String(s).replace(/<[^>]+>/g, '').replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+  // Pass 1: explicit titles — sectionDivider first, then any block's own title.
   for (const b of blocks) {
-    if (b.type === 'sectionDivider' && b.title) return String(b.title).replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
-    if (b.type === 'text' && b.content) {
-      const m = String(b.content).match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-      if (m) return m[1].replace(/<[^>]+>/g, '').replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+    if (b.type === 'sectionDivider' && b.title) return clean(b.title);
+  }
+  // Pass 2: first heading inside any block's HTML content (text, imageText,
+  // callout, etc.) — the footer buttons must NAME their destinations, and a
+  // generic "Page N" is the error state (ELEMENT_INVENTORY §3).
+  for (const b of blocks) {
+    if (b.content) {
+      const m = String(b.content).match(/<h[1-4][^>]*>([\s\S]*?)<\/h[1-4]>/i);
+      if (m) { const t = clean(m[1]); if (t) return t; }
+    }
+  }
+  // Pass 3: other explicit title-like fields.
+  for (const b of blocks) {
+    if (b.title) { const t = clean(b.title); if (t) return t; }
+    if (b.instructions && (b.type === 'cardSort' || b.type === 'sequencing' || b.type === 'hotspot')) {
+      const t = clean(b.instructions); if (t) return t;
     }
   }
   return null;
