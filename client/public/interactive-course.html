@@ -1733,6 +1733,38 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 .cr-exam-submit-note { text-align: center; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
 @media (max-width: 900px) { .cr-exam-body { flex-direction: column; } .cr-exam-rail { width: 100%; position: static; } }
 
+/* ═══════════════════════════════════════════════════════════════
+   SECTION CHECKPOINT (mockup 11e) — ends a section: summarize, then
+   hand off. Also where skipped knowledge checks and unsaved
+   Supplemental items resurface. 640px centered column.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-cp { max-width: 640px; margin: 0 auto; }
+.cr-cp-head { text-align: center; margin-bottom: 26px; }
+.cr-cp-check { width: 48px; height: 48px; border-radius: 50%; background: #4A7C59; color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
+.cr-cp-eyebrow { font: 700 10.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #3D6A4A; margin-bottom: 10px; }
+.cr-cp-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 32px; line-height: 1.2; color: #2C2C2C; margin: 0 0 8px; }
+.cr-cp-meta { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-cp-card { background: #FFFFFF; border: 1px solid #E2E2BE; border-radius: 14px; padding: 22px 26px; margin-bottom: 18px; }
+.cr-cp-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #6B7280; }
+.cr-cp-item { display: flex; gap: 10px; font: 400 15px/1.65 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 10px; }
+.cr-cp-dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #D4A855; margin-top: 9px; }
+.cr-cp-skipped { background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 14px; padding: 18px 24px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.cr-cp-skipped-text { font: 400 14px/1.5 'Lato', system-ui, sans-serif; color: #6B4A25; }
+.cr-cp-skipped-btn { font: 700 12.5px/1 'Lato', system-ui, sans-serif; padding: 10px 16px; border-radius: 9px; border: none; background: #D4A855; color: #4A1524; cursor: pointer; flex-shrink: 0; }
+.cr-cp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.cr-cp-stat { background: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 14px; padding: 20px 24px; }
+.cr-cp-stat-num { font-family: var(--cr-font-display); font-weight: 600; font-size: 34px; color: #6B1D34; line-height: 1; }
+.cr-cp-stat-label { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 6px; }
+.cr-cp-stat-action { display: inline-block; margin-top: 8px; background: none; border: none; cursor: pointer; padding: 0; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #A67936; }
+.cr-cp-next { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.cr-cp-next-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 21px; color: #4A1524; margin: 6px 0 4px; }
+.cr-cp-next-meta { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-cp-next-btn { font: 700 14px/1 'Lato', system-ui, sans-serif; padding: 14px 24px; border-radius: 10px; border: none; background: var(--cr-burgundy); color: #fff; cursor: pointer; box-shadow: 0 2px 10px rgba(107,29,52,.24); flex-shrink: 0; }
+.cr-cp-util { display: flex; gap: 22px; align-items: center; justify-content: center; margin-top: 6px; font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; }
+.cr-cp-util button { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-cp-util button:hover { color: #4A7C59; }
+@media (max-width: 560px) { .cr-cp-stats { grid-template-columns: 1fr; } }
+
 .cr-glossary-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--cr-border);
@@ -4507,6 +4539,9 @@ let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
 let sectionSubState = 'reading'; // 'opener' | 'reading' — shown before a section's content on first entry
+// Section checkpoint (mockup 11e): advancing past a content section routes
+// through its checkpoint screen once, not straight into the next section.
+let crCheckpointShown = false;
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 // Exam view state (mockup 11f): which question is on screen + flag-for-review.
 // Presentation only — scoring still reads assessmentState.answers as before.
@@ -5272,6 +5307,14 @@ function prevSection() {
 
 function nextSection() {
   if (currentView === 'assessment') return;
+  // Route section endings through the checkpoint (mockup 11e). The checkpoint's
+  // own continue button calls nextSection again with the flag still set, which
+  // falls through to the original advance below.
+  const endingSection = course.sections[currentSectionIndex];
+  if (endingSection && !endingSection._isOverview && !crCheckpointShown) {
+    renderSectionCheckpoint(currentSectionIndex);
+    return;
+  }
   completedSections.add(currentSectionIndex);
   if (currentSectionIndex < course.sections.length - 1) {
     goToSection(currentSectionIndex + 1);
@@ -5292,6 +5335,143 @@ function nextBlockPage() {
 
 function prevBlockPage() {
   if (currentBlockPage > 0) currentBlockPage--;
+  renderCurrentSection();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION CHECKPOINT (mockup 11e) — summarize the finished section,
+// resurface skipped knowledge checks and unsaved Supplemental items,
+// then hand off to the next section (or the final assessment).
+// ═══════════════════════════════════════════════════════════════
+const CR_ORDINAL_WORDS = ['ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE', 'TEN', 'ELEVEN', 'TWELVE'];
+
+function crSectionStats(section) {
+  const blocks = section?.contentBlocks || [];
+  return {
+    pages: Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE)),
+    minutes: Math.max(1, Math.ceil(blocks.length * 3)),
+    checks: blocks.reduce((n, b) => n + (b.type === 'knowledgeCheck' ? (b.questions || []).length : 0), 0)
+  };
+}
+
+function renderSectionCheckpoint(si) {
+  const section = course.sections[si];
+  if (!section) return;
+  crCheckpointShown = true;
+
+  const area = document.getElementById('crContentArea');
+  const readingColumn = document.querySelector('.cr-reading-column');
+  const openerArea = document.getElementById('crOpenerArea');
+  if (readingColumn) readingColumn.style.display = 'block';
+  if (openerArea) { openerArea.style.display = 'none'; openerArea.innerHTML = ''; }
+  const readerHeader = document.getElementById('crReaderHeader');
+  if (readerHeader) readerHeader.style.display = 'flex';
+
+  const navSections = course.sections.filter(s => !s._isOverview);
+  const displayNum = navSections.indexOf(section) + 1;
+  const ordinal = CR_ORDINAL_WORDS[displayNum - 1] || String(displayNum);
+  const stats = crSectionStats(section);
+
+  const checks = crKcSectionChecks(si);
+  const kcState = crKcState();
+  let answered = 0, correct = 0; const skippedChecks = [];
+  checks.forEach(c => {
+    const rec = kcState[crKcKey(si, c.blockIndex, c.questionIndex)];
+    if (!rec) return;
+    if (rec.skipped) skippedChecks.push(c);
+    else { answered++; if (rec.correct) correct++; }
+  });
+
+  let carry = [];
+  (section.contentBlocks || []).forEach(b => {
+    if (b.type === 'keyTakeaway') carry.push(...(b.takeaways || b.items || []));
+  });
+  carry = carry.slice(0, 4);
+
+  const suppState = crSupplementalState();
+  const suppAll = crSupplementalPool('section');
+  const suppSaved = suppAll.filter(it => suppState[crSupplementalItemKey(it)] === 'saved').length;
+  const suppUnsaved = suppAll.length - suppSaved;
+
+  const nextSec = navSections[displayNum]; // section after this one, if any
+  const hasAssessment = course.assessment?.questions?.length > 0;
+
+  let h = '<div class="cr-cp">';
+  h += '<div class="cr-cp-head">';
+  h += '<div class="cr-cp-check">✓</div>';
+  h += '<div class="cr-cp-eyebrow">SECTION ' + ordinal + ' COMPLETE</div>';
+  h += '<h2 class="cr-cp-title">' + esc(section.title || 'Section ' + displayNum) + '</h2>';
+  h += '<div class="cr-cp-meta">' + stats.pages + ' page' + (stats.pages !== 1 ? 's' : '') + ' · ' + stats.minutes + ' minutes'
+     + (checks.length ? ' · ' + answered + ' of ' + checks.length + ' checks answered' : '') + '</div>';
+  h += '</div>';
+
+  if (skippedChecks.length) {
+    const first = skippedChecks[0];
+    h += '<div class="cr-cp-skipped">'
+      + '<span class="cr-cp-skipped-text">You skipped ' + skippedChecks.length + ' knowledge check' + (skippedChecks.length !== 1 ? 's' : '') + ' in this section — they\'re not scored, but they\'re worth a minute.</span>'
+      + '<button type="button" class="cr-cp-skipped-btn" data-action="openKnowledgeCheck" data-sec="' + si + '" data-block="' + first.blockIndex + '" data-q="' + first.questionIndex + '">Answer now</button>'
+      + '</div>';
+  }
+
+  if (carry.length) {
+    h += '<div class="cr-cp-card"><div class="cr-cp-label">WHAT TO CARRY FORWARD</div>';
+    carry.forEach(item => { h += '<div class="cr-cp-item"><span class="cr-cp-dot"></span><span>' + esc(item) + '</span></div>'; });
+    h += '</div>';
+  }
+
+  if (checks.length || suppAll.length) {
+    h += '<div class="cr-cp-stats">';
+    if (checks.length) {
+      h += '<div class="cr-cp-stat"><div class="cr-cp-stat-num">' + correct + '<span style="font-size:18px;color:#9CA3AF">/' + checks.length + '</span></div>'
+        + '<div class="cr-cp-stat-label">Knowledge checks correct</div></div>';
+    }
+    if (suppAll.length) {
+      h += '<div class="cr-cp-stat"><div class="cr-cp-stat-num">' + suppSaved + '<span style="font-size:18px;color:#9CA3AF">/' + suppAll.length + '</span></div>'
+        + '<div class="cr-cp-stat-label">Supplemental items saved</div>'
+        + (suppUnsaved ? '<button type="button" class="cr-cp-stat-action" data-action="setReaderTab" data-tab="supplemental">' + suppUnsaved + ' not saved yet — open Supplemental</button>' : '')
+        + '</div>';
+    }
+    h += '</div>';
+  }
+
+  if (nextSec) {
+    const nextStats = crSectionStats(nextSec);
+    h += '<div class="cr-cp-card cr-cp-next"><div>'
+      + '<div class="cr-cp-label">UP NEXT · SECTION ' + (CR_ORDINAL_WORDS[displayNum] || String(displayNum + 1)) + '</div>'
+      + '<div class="cr-cp-next-title">' + esc(nextSec.title || '') + '</div>'
+      + '<div class="cr-cp-next-meta">' + nextStats.pages + ' page' + (nextStats.pages !== 1 ? 's' : '') + ' · ~' + nextStats.minutes + ' min'
+      + (nextStats.checks ? ' · ' + nextStats.checks + ' knowledge check' + (nextStats.checks !== 1 ? 's' : '') : '') + '</div>'
+      + '</div><button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Start section ' + (displayNum + 1) + ' →</button></div>';
+  } else if (hasAssessment) {
+    h += '<div class="cr-cp-card cr-cp-next"><div>'
+      + '<div class="cr-cp-label">UP NEXT · FINAL ASSESSMENT</div>'
+      + '<div class="cr-cp-next-title">Show what you\'ve learned</div>'
+      + '<div class="cr-cp-next-meta">' + (course.assessment.questions.length) + ' questions · ' + (course.assessment.passingScore || 75) + '% to pass · no time limit</div>'
+      + '</div><button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Take the final assessment →</button></div>';
+  }
+
+  h += '<div class="cr-cp-util">'
+    + '<button type="button" data-action="checkpointReview">Review section ' + displayNum + '</button>'
+    + '<button type="button" data-action="printSection">Print this section</button>'
+    + '<span>Progress saved</span>'
+    + '</div>';
+  h += '</div>';
+
+  area.innerHTML = h;
+  document.getElementById('crNavButtons').style.display = 'none';
+  saveProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function checkpointContinue() {
+  // crCheckpointShown stays true so nextSection falls through to the real advance.
+  nextSection();
+}
+
+function checkpointReview() {
+  crCheckpointShown = false;
+  currentBlockPage = 0;
   renderCurrentSection();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -5526,7 +5706,8 @@ function srAnnounce(msg) {
 // ═══════════════════════════════════════════════════════════════
 function renderCurrentSection() {
   if (currentView === 'assessment') { renderAssessment(); return; }
-  
+  crCheckpointShown = false; // leaving/re-rendering reading state re-arms the checkpoint
+
   const section = course.sections[currentSectionIndex];
   if (!section) return;
   
@@ -9605,6 +9786,8 @@ document.addEventListener('click', function(e) {
     case 'examNext': examGoTo(examView.current + 1); break;
     case 'examJump': examGoTo(parseInt(el.dataset.idx, 10)); break;
     case 'examFlag': examFlagToggle(); break;
+    case 'checkpointContinue': checkpointContinue(); break;
+    case 'checkpointReview': checkpointReview(); break;
     
     // ─── Sidebar / UI ───
     case 'toggleSidebar': toggleSidebar(); break;
