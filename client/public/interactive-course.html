@@ -8192,24 +8192,27 @@ function buildTitlePageOverview() {
     h += '<p style="font-family:var(--cr-font-display);font-style:italic;font-weight:400;font-size:16px;color:#B8CBD9;margin:0 0 12px">' + esc(subtitle) + '</p>';
   }
 
-  h += '<div style="margin-bottom:14px">';
+  h += '<div style="margin:0">';
   if (ceHours) h += pill(ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : ''), 'rgba(212,168,85,0.22)', 'rgba(212,168,85,0.4)', '#F9E7C2');
   if (hrsLabel) h += pill('~' + hrsLabel, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
   if (level) h += pill(esc(level), 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
   h += '</div>';
-
-  h += '<div style="border-top:1px solid rgba(255,255,255,0.16);margin:0 0 14px"></div>';
-
-  if (description) {
-    h += '<p style="max-width:70ch;color:#E4EAEF;margin:0 0 10px;font-size:15px;line-height:1.55">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
-  }
-  if (instructor) {
-    h += '<p style="font-family:' + uiFont + ';font-size:12.5px;color:#B8CBD9;margin:0 0 6px">Instructor: ' + esc(instructor) + '</p>';
-  }
-  if (audience.length) {
-    h += '<p style="font-family:' + uiFont + ';font-size:12.5px;color:#B8CBD9;margin:0"><strong style="color:#E4EAEF">Intended for:</strong> ' + audience.map(esc).join(', ') + '</p>';
-  }
   h += '</div>';
+
+  // Description / intended-for card — outside the hero, on the plain page background
+  if (description || instructor || audience.length) {
+    h += '<div style="background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px;padding:24px;margin-bottom:20px">';
+    if (description) {
+      h += '<p style="max-width:70ch;margin:0 0 10px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
+    }
+    if (instructor) {
+      h += '<p style="font-family:' + uiFont + ';font-size:13px;color:#6B7280;margin:0 0 6px">Instructor: ' + esc(instructor) + '</p>';
+    }
+    if (audience.length) {
+      h += '<p style="font-family:' + uiFont + ';font-size:13px;color:#6B7280;margin:0"><strong style="color:#4b5563">Intended for:</strong> ' + audience.map(esc).join(', ') + '</p>';
+    }
+    h += '</div>';
+  }
 
   // Two-column row: objectives / accreditation
   h += '<div style="display:flex;gap:18px;margin:24px 0;flex-wrap:wrap">';
