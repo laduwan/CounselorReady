@@ -1666,6 +1666,8 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* Reading area dims + blurs behind the modal, per spec */
 body.cr-kcm-open .cr-reading-column,
 body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: opacity var(--cr-transition), filter var(--cr-transition); }
+/* Multi-select (multiSelect blocks): square markers signal checkbox semantics. */
+.cr-kcm-option.multi .cr-kcm-option-letter { border-radius: 6px; }
 /* Left inline where the knowledgeCheck block would have rendered */
 .cr-kcm-marker { margin: 20px 0; padding: 12px 16px; border-radius: 10px; font: 700 12.5px/1.5 'Lato', system-ui, sans-serif; }
 .cr-kcm-marker.pending { cursor: pointer; background: #FDF5F6; border: 1px solid #F5D0D6; color: #6B1D34; }
@@ -2670,25 +2672,44 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       Pure CSS via ::before on .cr-block[data-block-type=...].
    ═══════════════════════════════════════════════════════════════ */
 
+/* Canon (design handoff token table): violet is the engagement-block family —
+   "Scenario tree, engagement blocks" — #7C3AED / #5B21B6 / #F4F0FE / #DDD0FB.
+   Each interactive block gets the violet card wrapper + a violet type label.
+   multipleChoice/multiSelect are absent: they render as popout-check markers now. */
+.cr-block[data-block-type="scenarioTree"],
+.cr-block[data-block-type="cardSort"],
+.cr-block[data-block-type="matching"],
+.cr-block[data-block-type="flashcardDeck"],
+.cr-block[data-block-type="sequencing"],
+.cr-block[data-block-type="hotspot"],
+.cr-block[data-block-type="timeline"],
+.cr-block[data-block-type="fillInBlank"],
+.cr-block[data-block-type="reflection"] {
+  background: #F4F0FE;
+  border: 1px solid #DDD0FB;
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+
 .cr-block[data-block-type="scenarioTree"]::before,
 .cr-block[data-block-type="cardSort"]::before,
 .cr-block[data-block-type="matching"]::before,
 .cr-block[data-block-type="flashcardDeck"]::before,
 .cr-block[data-block-type="sequencing"]::before,
 .cr-block[data-block-type="hotspot"]::before,
-.cr-block[data-block-type="multipleChoice"]::before,
-.cr-block[data-block-type="multiSelect"]::before,
+.cr-block[data-block-type="timeline"]::before,
+.cr-block[data-block-type="fillInBlank"]::before,
 .cr-block[data-block-type="reflection"]::before {
   display: block;
-  font-family: var(--cr-font-sans, system-ui, sans-serif);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: var(--cr-text-muted, #6B7280);
-  margin-bottom: 10px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--cr-border);
+  color: #5B21B6;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #DDD0FB;
 }
 
 .cr-block[data-block-type="scenarioTree"]::before    { content: "Scenario"; }
@@ -2697,8 +2718,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="flashcardDeck"]::before   { content: "Flashcards"; }
 .cr-block[data-block-type="sequencing"]::before      { content: "Sequence"; }
 .cr-block[data-block-type="hotspot"]::before         { content: "Identify"; }
-.cr-block[data-block-type="multipleChoice"]::before  { content: "Knowledge check"; }
-.cr-block[data-block-type="multiSelect"]::before     { content: "Select all that apply"; }
+.cr-block[data-block-type="timeline"]::before        { content: "Timeline"; }
+.cr-block[data-block-type="fillInBlank"]::before     { content: "Fill in the blanks"; }
 .cr-block[data-block-type="reflection"]::before      { content: "Reflection"; }
 
 
@@ -5396,7 +5417,11 @@ function crSectionStats(section) {
   return {
     pages: Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE)),
     minutes: Math.max(1, Math.ceil(blocks.length * 3)),
-    checks: blocks.reduce((n, b) => n + (b.type === 'knowledgeCheck' ? (b.questions || []).length : 0), 0)
+    checks: blocks.reduce((n, b) => {
+      if (b.type === 'knowledgeCheck') return n + (b.questions || []).length;
+      if (b.type === 'multipleChoice' || b.type === 'multiSelect') return n + 1;
+      return n;
+    }, 0)
   };
 }
 
@@ -5799,9 +5824,11 @@ function renderCurrentSection() {
   const pageBlocks = blocks.slice(pageStart, pageStart + BLOCK_PAGE_SIZE);
   pageBlocks.forEach((block, localIndex) => {
     const i = pageStart + localIndex;
-    // knowledgeCheck blocks render as a popout modal (mockup 14a/14b), not inline —
-    // leave a small marker where the block sits so the layout doesn't jump.
-    const el = block.type === 'knowledgeCheck' ? renderKnowledgeCheckMarker(block, i) : renderBlock(block, i);
+    // Knowledge-check-shaped blocks (knowledgeCheck, multipleChoice, multiSelect)
+    // render as a popout modal (mockup 14a/14b), not inline — leave a small marker
+    // where the block sits so the layout doesn't jump.
+    const isCheck = block.type === 'knowledgeCheck' || block.type === 'multipleChoice' || block.type === 'multiSelect';
+    const el = isCheck ? renderKnowledgeCheckMarker(block, i) : renderBlock(block, i);
     if (el) area.appendChild(el);
   });
 
@@ -9192,8 +9219,12 @@ function crKcSectionChecks(sectionIndex) {
   const section = course?.sections?.[sectionIndex];
   const list = [];
   (section?.contentBlocks || []).forEach((b, bi) => {
-    if (b.type !== 'knowledgeCheck') return;
-    (b.questions || []).forEach((q, qi) => list.push({ blockIndex: bi, questionIndex: qi }));
+    if (b.type === 'knowledgeCheck') {
+      (b.questions || []).forEach((q, qi) => list.push({ blockIndex: bi, questionIndex: qi }));
+    } else if (b.type === 'multipleChoice' || b.type === 'multiSelect') {
+      // Single-question blocks: the block IS the question.
+      list.push({ blockIndex: bi, questionIndex: 0 });
+    }
   });
   return list;
 }
@@ -9204,12 +9235,51 @@ function crKcCorrectIndex(question) {
   return found >= 0 ? found : 0;
 }
 
+// Normalize any check-shaped source into one modal question:
+// knowledgeCheck questions[qi], or a multipleChoice / multiSelect block itself.
+function crKcQuestion(si, bi, qi) {
+  const block = course?.sections?.[si]?.contentBlocks?.[bi];
+  if (!block) return null;
+  if (block.type === 'knowledgeCheck') {
+    const q = (block.questions || [])[qi];
+    if (!q) return null;
+    return {
+      stem: q.question || '',
+      options: (q.options || []).map(o => typeof o === 'string' ? o : o.text || ''),
+      correct: [crKcCorrectIndex(q)],
+      multi: false,
+      explanation: q.explanation || ''
+    };
+  }
+  if (block.type === 'multipleChoice') {
+    return {
+      stem: block.question || '',
+      options: (block.options || []).map(o => typeof o === 'string' ? o : o.text || ''),
+      correct: [crKcCorrectIndex(block)],
+      multi: false,
+      explanation: block.explanation || ''
+    };
+  }
+  if (block.type === 'multiSelect') {
+    const correct = (block.options || []).map((o, i) => (typeof o === 'object' && o.isCorrect) ? i : -1).filter(i => i >= 0);
+    return {
+      stem: block.question || '',
+      options: (block.options || []).map(o => typeof o === 'string' ? o : o.text || ''),
+      correct,
+      multi: true,
+      explanation: block.explanation || ''
+    };
+  }
+  return null;
+}
+
 function renderKnowledgeCheckMarker(block, blockIndex) {
   const wrap = document.createElement('div');
   wrap.className = 'cr-block';
-  wrap.dataset.blockType = 'knowledgeCheck';
+  wrap.dataset.blockType = block.type;
   const state = crKcState();
-  const questions = block.questions || [];
+  // knowledgeCheck carries a questions[] array; multipleChoice/multiSelect are one question each.
+  const questions = block.type === 'knowledgeCheck' ? (block.questions || []) : [block];
   let html = '';
   questions.forEach((q, qi) => {
     const rec = state[crKcKey(currentSectionIndex, blockIndex, qi)];
@@ -9233,9 +9303,9 @@ function crKcAutoOpen() {
 }
 
 function openKnowledgeCheck(sectionIndex, blockIndex, questionIndex) {
-  const question = course?.sections?.[sectionIndex]?.contentBlocks?.[blockIndex]?.questions?.[questionIndex];
+  const question = crKcQuestion(sectionIndex, blockIndex, questionIndex);
   if (!question) return;
-  crKcmCurrent = { sectionIndex, blockIndex, questionIndex, picked: null, resolved: false, correct: undefined };
+  crKcmCurrent = { sectionIndex, blockIndex, questionIndex, picked: [], resolved: false, correct: undefined };
   document.body.classList.add('cr-kcm-open');
   document.getElementById('crKcmStage').classList.add('open');
   renderKcmModal();
@@ -9265,19 +9335,28 @@ function skipKnowledgeCheck() {
 
 function pickKnowledgeCheckOption(idx) {
   if (!crKcmCurrent || crKcmCurrent.resolved) return;
-  crKcmCurrent.picked = idx;
+  const q = crKcQuestion(crKcmCurrent.sectionIndex, crKcmCurrent.blockIndex, crKcmCurrent.questionIndex);
+  if (q && q.multi) {
+    const at = crKcmCurrent.picked.indexOf(idx);
+    if (at >= 0) crKcmCurrent.picked.splice(at, 1); else crKcmCurrent.picked.push(idx);
+  } else {
+    crKcmCurrent.picked = [idx];
+  }
   renderKcmModal();
 }
 
 function submitKnowledgeCheck() {
-  if (!crKcmCurrent || crKcmCurrent.picked === null || crKcmCurrent.resolved) return;
+  if (!crKcmCurrent || crKcmCurrent.picked.length === 0 || crKcmCurrent.resolved) return;
   const { sectionIndex, blockIndex, questionIndex, picked } = crKcmCurrent;
-  const question = course.sections[sectionIndex].contentBlocks[blockIndex].questions[questionIndex];
-  const correct = picked === crKcCorrectIndex(question);
+  const question = crKcQuestion(sectionIndex, blockIndex, questionIndex);
+  if (!question) return;
+  const pickedSorted = [...picked].sort((a, b) => a - b);
+  const correctSorted = [...question.correct].sort((a, b) => a - b);
+  const correct = pickedSorted.length === correctSorted.length && pickedSorted.every((v, i) => v === correctSorted[i]);
   crKcmCurrent.resolved = true;
   crKcmCurrent.correct = correct;
   const state = crKcState();
-  state[crKcKey(sectionIndex, blockIndex, questionIndex)] = { answer: picked, correct: correct };
+  state[crKcKey(sectionIndex, blockIndex, questionIndex)] = { answer: question.multi ? pickedSorted : picked[0], correct: correct };
   crKcSaveState(state);
   renderKcmModal();
 }
@@ -9285,7 +9364,7 @@ function submitKnowledgeCheck() {
 function retryKnowledgeCheck() {
   if (!crKcmCurrent) return;
   crKcmCurrent.resolved = false;
-  crKcmCurrent.picked = null;
+  crKcmCurrent.picked = [];
   crKcmCurrent.correct = undefined;
   renderKcmModal();
 }
@@ -9293,9 +9372,11 @@ function retryKnowledgeCheck() {
 function renderKcmModal() {
   if (!crKcmCurrent) return;
   const { sectionIndex, blockIndex, questionIndex, picked, resolved, correct } = crKcmCurrent;
-  const question = course.sections[sectionIndex].contentBlocks[blockIndex].questions[questionIndex];
-  const options = (question.options || []).map(o => typeof o === 'string' ? o : (o.text || ''));
-  const correctI = crKcCorrectIndex(question);
+  const question = crKcQuestion(sectionIndex, blockIndex, questionIndex);
+  if (!question) return;
+  const options = question.options;
+  const correctSet = new Set(question.correct);
+  const pickedSet = new Set(picked);
 
   const checks = crKcSectionChecks(sectionIndex);
   const ordinal = checks.findIndex(c => c.blockIndex === blockIndex && c.questionIndex === questionIndex) + 1;
@@ -9315,13 +9396,14 @@ function renderKcmModal() {
     : 'KNOWLEDGE CHECK ' + ordinal + ' OF ' + total;
   scoredEl.textContent = resolved ? '' : 'Not scored';
 
-  stem.textContent = question.question || '';
+  stem.innerHTML = esc(question.stem)
+    + (question.multi ? '<span style="display:block;font:400 12.5px/1 \'Lato\',system-ui,sans-serif;color:#6B7280;margin-top:8px">Select all that apply</span>' : '');
 
   optionsEl.innerHTML = options.map((opt, i) => {
-    let cls = 'cr-kcm-option';
-    if (!resolved) { if (picked === i) cls += ' picked'; }
-    else if (i === correctI) cls += ' right';
-    else if (i === picked) cls += ' wrong';
+    let cls = 'cr-kcm-option' + (question.multi ? ' multi' : '');
+    if (!resolved) { if (pickedSet.has(i)) cls += ' picked'; }
+    else if (correctSet.has(i)) cls += ' right';
+    else if (pickedSet.has(i)) cls += ' wrong';
     else cls += ' dim';
     if (resolved) cls += ' cr-kcm-locked';
     return '<div class="' + cls + '"' + (resolved ? '' : ' data-action="pickKnowledgeCheckOption" data-idx="' + i + '"') + '>'
@@ -9330,9 +9412,10 @@ function renderKcmModal() {
   }).join('');
 
   if (resolved) {
+    const whyLetters = [...question.correct].sort((a, b) => a - b).map(i => String.fromCharCode(65 + i)).join(', ');
     rationaleEl.className = 'cr-kcm-rationale' + (correct ? '' : ' incorrect');
     rationaleEl.style.display = 'block';
-    rationaleEl.innerHTML = '<div class="cr-kcm-rationale-label">WHY ' + String.fromCharCode(65 + correctI) + '</div>'
+    rationaleEl.innerHTML = '<div class="cr-kcm-rationale-label">WHY ' + whyLetters + '</div>'
       + '<div class="cr-kcm-rationale-body">' + esc(question.explanation || '') + '</div>';
   } else {
     rationaleEl.style.display = 'none';
@@ -9340,7 +9423,7 @@ function renderKcmModal() {
 
   if (!resolved) {
     footer.innerHTML = '<span class="cr-kcm-footer-note">Answer to continue · or <button type="button" class="cr-kcm-footer-link" data-action="skipKnowledgeCheck">skip</button> and it returns at the checkpoint</span>'
-      + '<button type="button" class="cr-kcm-check-btn" data-action="submitKnowledgeCheck"' + (picked === null ? ' disabled' : '') + '>Check answer</button>';
+      + '<button type="button" class="cr-kcm-check-btn" data-action="submitKnowledgeCheck"' + (picked.length === 0 ? ' disabled' : '') + '>Check answer</button>';
   } else if (correct) {
     footer.innerHTML = '<span class="cr-kcm-footer-link" style="cursor:default">Add a note</span>'
       + '<span class="cr-kcm-footer-note">Saved to your section summary</span>'
