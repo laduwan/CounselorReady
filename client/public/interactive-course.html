@@ -424,18 +424,19 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 0;
   width: 100%;
 }
-/* MEASURED from mockup 12a (not interpreted from the docs): the prose TEXT is
-   640px wide inside a 920px frame — 69.6%, with 140px of eggshell per side.
-   With border-box the column needs 640 + 2×32 padding = 704px so the text
-   itself measures 640px, and the frame matches the mockup card at 920px.
-   Capping only the column produced a ribbon; 70vw produced 120-char lines;
-   640px on the PADDED container produced 576px text (Ke: "wider prose, less
-   eggshell" — fixed here). Never reintroduce a viewport-relative width. */
-#crApp { max-width: 920px; margin-inline: auto; width: 100%; }
+/* ══ KE'S RULING — FINAL, overrides every design doc ══
+   The reading column is 70% OF THE PAGE (the viewport), not of any frame or
+   mockup card. Ke has rejected narrower treatments three times: fixed 640px
+   ("you made the prose narrow again"), and the 920px-frame proportion ("thats
+   not 70 percent of page"). The app frame is UNCAPPED so the header/footer
+   bars span the full window (also Ke's explicit ask). Do NOT re-narrow this
+   from DRIFT_FIXES/README reasoning — surface any conflict to Ke instead.
+   Below 1025px the column falls back to 704px (640px text). */
 .cr-reading-column { max-width: 704px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
-/* Exam layout (11f) uses a two-column question + progress rail and needs more room
-   than a prose line-length column. */
-.cr-reading-column:has(.cr-exam-header) { max-width: 940px; }
+@media (min-width: 1025px) {
+  .cr-reading-column { max-width: min(70vw, 1360px); }
+}
+/* Exam (11f) uses the same wide reading column — no separate cap. */
 /* Page title (mockup 12a): replaces the pink section-divider card the viewer used
    to inject when a section has no sectionDivider block of its own. */
 .cr-page-title {
