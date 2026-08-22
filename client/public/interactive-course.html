@@ -4597,9 +4597,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <!-- Mockup 12a: tabs sit LEFT, grouped with the breadcrumb; only the tool
            buttons are right-aligned (the flex spacer comes after the tabs). -->
       <button type="button" class="cr-reader-tab active" data-action="setReaderTab" data-tab="lesson">Lesson</button>
+      <span style="flex:1"></span>
+      <!-- KE'S TWEAK: the References and Supplemental drawer tabs live on the
+           RIGHT side (they open right-side drawers), ahead of the tool group.
+           Outside the swapped tool-group spans so they stay visible on the
+           opener/boundary screens too. -->
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
-      <span style="flex:1"></span>
       <!-- ELEMENT_INVENTORY §1/§4: reading page tools are Aa · Highlights · Notes;
            Save & exit belongs to the opener/boundary group only; Contents is not a
            reading-page control (the tab group + boundary screens cover navigation;
