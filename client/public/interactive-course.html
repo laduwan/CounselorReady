@@ -181,10 +181,11 @@
 }
 .cr-block.cr-remediation-highlight {
   animation: cr-remediation-pulse 3s ease-out;
-  border-left: 4px solid var(--cr-burgundy);
-  background: var(--cr-burgundy-faded);
-  padding: 8px 12px 8px 16px;
-  border-radius: 4px 8px 8px 4px;
+  /* Full border + tint, not a left accent bar (DRIFT §10) */
+  border: 1px solid #F5D0D6;
+  background: #FDF5F6;
+  padding: 12px 16px;
+  border-radius: 10px;
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 @keyframes cr-remediation-pulse {
@@ -423,10 +424,14 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 0;
   width: 100%;
 }
+/* DRIFT_FIXES §1 (bundle 4): two constraints at once. The COLUMN is fixed at
+   640px (~70 chars at 17.5px Lato) and the APP FRAME is capped at 1040px so the
+   column occupies ~70% of what surrounds it — the mockup's proportion. Capping
+   only the column produced a ribbon on wide monitors; widening the column to
+   70vw produced 120-char lines. The frame is capped and the column is fixed;
+   never reintroduce a viewport-relative column width. */
+#crApp { max-width: 1040px; margin-inline: auto; width: 100%; }
 .cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
-/* 640px is a fixed line-length decision (~70 characters at 17.5px Lato), not a
-   fraction of the mockup canvas — do not reintroduce a vw-based override here.
-   Wide-screen breathing room comes from margin around the column, never width. */
 /* Exam layout (11f) uses a two-column question + progress rail and needs more room
    than a prose line-length column. */
 .cr-reading-column:has(.cr-exam-header) { max-width: 940px; }
@@ -684,12 +689,12 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    KNOWLEDGE CHECKS (MC, Multi-Select)
    ═══════════════════════════════════════════════════════════════ */
 .cr-kc {
-  background: var(--cr-surface);
-  border: 1px solid var(--cr-border);
-  border-radius: var(--cr-radius);
+  /* Full border + assessment tint; the question header is the chip (DRIFT §10) */
+  background: #FDF5F6;
+  border: 1px solid #F5D0D6;
+  border-radius: 14px;
   padding: 24px;
   margin-bottom: 24px;
-  border-left: 4px solid var(--cr-burgundy);
 }
 .cr-kc-question {
   font-family: var(--cr-font-display);
@@ -759,10 +764,10 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    ═══════════════════════════════════════════════════════════════ */
 .cr-matching {
   background: var(--cr-surface);
-  border: 1px solid var(--cr-border);
-  border-radius: var(--cr-radius);
+  /* Assessment accent comes from the block shell's full border + chip (DRIFT §10) */
+  border: 1px solid #F5D0D6;
+  border-radius: 14px;
   padding: 24px; margin-bottom: 24px;
-  border-left: 4px solid var(--cr-burgundy);
 }
 .cr-matching-instructions {
   font-size: 0.9em; color: var(--cr-text-muted);
@@ -793,62 +798,39 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   FLASHCARD DECK
+   FLASHCARD DECK (mockup 15b / DRIFT §8): a STACKED deck — two offset
+   layers behind a white face — with instant front/back state (no 3D
+   flip) and a Shaky / Got it self-rating that makes the deck adaptive.
    ═══════════════════════════════════════════════════════════════ */
-.cr-flashcard-container { perspective: 1000px; margin-bottom: 24px; }
+.cr-fc-statusrow { display: flex; align-items: center; gap: 10px; }
+.cr-fc-count { font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-fc-bars { margin-left: auto; flex: none; display: flex; gap: 4px; }
+.cr-fc-bar { width: 16px; height: 4px; border-radius: 2px; background: #DCE5EC; }
+.cr-fc-bar.done { background: #284157; }
+.cr-fc-deck { position: relative; margin-top: 16px; }
+.cr-fc-layer-b { position: absolute; top: 8px; left: 14px; right: 14px; height: 100%; border-radius: 12px; background: #DCE5EC; }
+.cr-fc-layer-a { position: absolute; top: 4px; left: 7px; right: 7px; height: 100%; border-radius: 12px; background: #E9EFF4; border: 1px solid #DCE5EC; }
 .cr-flashcard {
-  width: 100%; min-height: 220px;
-  position: relative;
+  position: relative; background: #fff; border: 1px solid #B8CBD9; border-radius: 12px;
+  padding: 30px 28px; min-height: 150px;
+  display: flex; flex-direction: column; justify-content: center; text-align: center;
   cursor: pointer;
-  transform-style: preserve-3d;
-  transition: transform 0.6s ease;
 }
-.cr-flashcard.flipped { transform: rotateY(180deg); }
-.cr-flashcard-face {
-  position: absolute; inset: 0;
-  backface-visibility: hidden;
-  border-radius: var(--cr-radius);
-  padding: 32px;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center;
-}
-.cr-flashcard-front {
-  background: linear-gradient(135deg, var(--cr-burgundy-faded), var(--cr-gold-faded));
-  border: 2px solid var(--cr-gold);
-}
-.cr-flashcard-front .cr-flashcard-label {
-  font-size: 0.75em; text-transform: uppercase;
-  letter-spacing: 0.1em; color: var(--cr-gold);
-  font-weight: 700; margin-bottom: 12px;
-}
-.cr-flashcard-back {
-  background: linear-gradient(135deg, var(--cr-green-faded), var(--cr-navy-faded));
-  border: 2px solid var(--cr-green);
-  transform: rotateY(180deg);
-}
-.cr-flashcard-text {
-  font-family: var(--cr-font-display);
-  font-size: 1.2em; font-weight: 600;
-  color: var(--cr-text);
-  line-height: 1.4;
-}
-.cr-flashcard-nav {
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  margin-top: 16px;
-}
-.cr-flashcard-nav button {
-  width: 44px; height: 44px;
-  border-radius: 50%; border: 2px solid var(--cr-border);
-  background: var(--cr-surface); cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all var(--cr-transition);
-  font-size: 18px;
-}
-.cr-flashcard-nav button:hover { border-color: var(--cr-burgundy); }
-.cr-flashcard-counter {
-  font-size: 0.85em; color: var(--cr-text-muted); font-weight: 600;
-}
+.cr-fc-eyebrow { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #5C82A0; }
+.cr-fc-term { font: 600 27px/1.25 var(--cr-font-display); color: #1F344A; margin-top: 10px; }
+.cr-fc-def { font: 400 15.5px/1.65 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 10px; }
+.cr-fc-hint { font: 400 12px/1.4 'Lato', system-ui, sans-serif; color: #5C82A0; margin-top: 14px; }
+.cr-fc-quote { font: 400 12px/1.4 'Lato', system-ui, sans-serif; font-style: italic; color: #5C82A0; margin-top: 14px; }
+.cr-fc-footer { display: flex; align-items: center; gap: 9px; margin-top: 16px; flex-wrap: wrap; }
+.cr-fc-backbtn { flex: none; padding: 10px 16px; border-radius: 9px; border: 1px solid #DCE5EC; background: #fff; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #1F344A; cursor: pointer; min-height: 44px; }
+.cr-fc-flipbtn { flex: none; padding: 10px 20px; border-radius: 9px; border: none; background: #284157; color: #fff; font: 700 12.5px/1 'Lato', system-ui, sans-serif; cursor: pointer; min-height: 44px; }
+.cr-fc-rate { margin-left: auto; flex: none; display: flex; align-items: center; gap: 8px; }
+.cr-fc-ratelabel { font: 400 11.5px/1 'Lato', system-ui, sans-serif; color: #41627C; }
+.cr-fc-shaky { flex: none; padding: 9px 13px; border-radius: 8px; border: 1px solid #F5D0D6; background: #FDF5F6; font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #8B2542; cursor: pointer; min-height: 44px; }
+.cr-fc-gotit { flex: none; padding: 9px 13px; border-radius: 8px; border: 1px solid #C8D7CC; background: #F3F6F4; font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #2B4133; cursor: pointer; min-height: 44px; }
+.cr-fc-done { margin-top: 16px; background: #fff; border: 1px solid #C8D7CC; border-radius: 12px; padding: 26px 24px; text-align: center; }
+.cr-fc-done-title { font: 600 22px/1.3 var(--cr-font-display); color: #2B4133; }
+.cr-fc-done-sub { font: 400 13.5px/1.6 'Lato', system-ui, sans-serif; color: #4b5563; margin-top: 8px; }
 
 /* ═══════════════════════════════════════════════════════════════
    SCENARIO TREE
@@ -899,52 +881,100 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD SORT
+   CARD SORT (mockups 15c drag · 16d keyboard · 19a mobile)
+   Tray of chips → labeled bins. Keyboard affordances are HONEY —
+   the brand's transient-attention color — never the block's navy.
    ═══════════════════════════════════════════════════════════════ */
 .cr-cardsort { margin-bottom: 24px; }
-.cr-cardsort-categories {
-  display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  margin-bottom: 16px;
+.cr-cs-statusrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cr-cs-status { font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-cs-kbbadge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px; border-radius: 6px; background: #D4A855;
+  font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; color: #4A1524;
 }
-.cr-cardsort-category {
-  border: 2px dashed var(--cr-border);
-  border-radius: var(--cr-radius);
-  padding: 16px; min-height: 120px;
-  transition: border-color var(--cr-transition), background var(--cr-transition);
-}
-.cr-cardsort-category.dragover {
-  border-color: var(--cr-gold);
-  background: var(--cr-gold-faded);
-}
-.cr-cardsort-category-title {
-  font-weight: 700; font-size: 0.9em;
-  color: var(--cr-navy);
-  padding-bottom: 8px;
-  border-bottom: 2px solid var(--cr-border);
-  margin-bottom: 10px;
-}
-.cr-cardsort-pool {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  padding: 16px;
-  background: var(--cr-stone);
-  border-radius: var(--cr-radius);
-  min-height: 60px;
-  margin-bottom: 16px;
-}
+.cr-cs-title { font: 600 20px/1.35 var(--cr-font-display); color: #1F344A; margin-top: 12px; }
+.cr-cs-legend { margin-top: 14px; background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 11px; padding: 16px 18px; }
+.cr-cs-legend-title { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #7A5C24; }
+.cr-cs-legend-rows { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.cr-cs-legend-row { display: flex; align-items: center; gap: 11px; font: 400 13px/1.4 'Lato', system-ui, sans-serif; color: #4A3E22; }
+.cr-cs-key { flex: none; padding: 3px 8px; border-radius: 5px; background: #fff; border: 1px solid #EACD86; font: 700 10.5px/1.4 ui-monospace, Menlo, monospace; color: #7A5C24; }
+.cr-cs-tray { margin-top: 16px; padding: 14px; border: 1px dashed #B8CBD9; border-radius: 11px; background: #F7FAFC; }
+.cr-cs-tray-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #5C82A0; }
+.cr-cardsort-pool { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; min-height: 20px; }
 .cr-cardsort-card {
-  padding: 10px 16px;
-  background: var(--cr-surface);
-  border: 2px solid var(--cr-border);
-  border-radius: 8px;
-  cursor: grab; font-size: 0.85em;
-  transition: all var(--cr-transition);
-  user-select: none;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 13px; border-radius: 9px;
+  background: #fff; border: 1px solid #B8CBD9;
+  box-shadow: 0 2px 6px rgba(40,65,87,.12);
+  font: 400 13px/1.4 'Lato', system-ui, sans-serif; color: #2C2C2C;
+  cursor: grab; user-select: none; min-height: 44px;
+  transition: box-shadow var(--cr-transition), transform var(--cr-transition), border-color var(--cr-transition);
 }
-.cr-cardsort-card:active { cursor: grabbing; opacity: 0.7; }
-.cr-cardsort-card:hover { border-color: var(--cr-gold); }
+.cr-cardsort-card:active { cursor: grabbing; }
+.cr-cardsort-card.dragging { box-shadow: 0 8px 20px rgba(40,65,87,.24); transform: rotate(1.5deg); }
+.cr-cardsort-card.held {
+  border: 2px solid #D4A855; box-shadow: 0 0 0 3px rgba(212,168,85,.3);
+  font-weight: 700; color: #4A3E22;
+}
+.cr-cs-heldchip { display: none; padding: 2px 7px; border-radius: 4px; background: #D4A855; font: 700 9.5px/1.4 'Lato', system-ui, sans-serif; color: #4A1524; }
+.cr-cardsort-card.held .cr-cs-heldchip { display: inline-block; }
+.cr-cs-handle { flex: none; width: 11px; height: 11px; color: #5C82A0; }
+.cr-cardsort-categories { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 640px) { .cr-cardsort-categories { grid-template-columns: 1fr; } }
+.cr-cardsort-category {
+  border: 2px dashed; border-radius: 11px; padding: 14px; min-height: 120px;
+  transition: border-color var(--cr-transition), background var(--cr-transition), box-shadow var(--cr-transition);
+  /* per-bin tint + border colors set inline from the bin rotation */
+}
+.cr-cardsort-category.dragover { border-style: solid; border-color: #284157 !important; background: #F0F4F7 !important; }
+.cr-cardsort-category.kbtarget { border-style: solid; border-color: #D4A855 !important; background: #FDF9F0 !important; box-shadow: 0 0 0 3px rgba(212,168,85,.28); }
+.cr-cs-bin-head { display: flex; align-items: center; gap: 8px; }
+.cr-cs-bin-key { flex: none; width: 19px; height: 19px; border-radius: 5px; background: #fff; display: flex; align-items: center; justify-content: center; font: 700 10px/1 ui-monospace, Menlo, monospace; }
+.cr-cardsort-category.kbtarget .cr-cs-bin-key { background: #D4A855; color: #4A1524 !important; border-color: #D4A855 !important; }
+.cr-cs-bin-name { font: 700 10px/1.4 'Lato', system-ui, sans-serif; letter-spacing: .13em; text-transform: uppercase; }
+.cr-cs-bin-count { margin-left: auto; font: 700 10px/1 'Lato', system-ui, sans-serif; }
+.cr-cs-droptag { display: none; margin-left: auto; font: 700 9.5px/1 'Lato', system-ui, sans-serif; color: #7A5C24; }
+.cr-cardsort-category.kbtarget .cr-cs-droptag { display: inline; }
+.cr-cardsort-category.kbtarget .cr-cs-bin-count { display: none; }
+.cr-cardsort-category-cards { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+.cr-cardsort-category-cards .cr-cardsort-card { box-shadow: none; border: 1px solid #B8CBD9; }
+.cr-cs-ghost { display: none; margin-top: 9px; padding: 9px 12px; border-radius: 8px; border: 1px dashed #B8CBD9; font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #5C82A0; }
+.cr-cardsort-category.dragover .cr-cs-ghost, .cr-cardsort-category.kbtarget .cr-cs-ghost { display: block; }
+.cr-cs-footer { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+.cr-cs-reset { background: none; border: none; cursor: pointer; padding: 0; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #1F344A; min-height: 44px; }
+.cr-cs-reset:hover { text-decoration: underline; }
+.cr-cs-check {
+  margin-left: auto; flex: none; padding: 11px 22px; border-radius: 9px; border: none;
+  background: #284157; color: #fff; font: 700 12.5px/1 'Lato', system-ui, sans-serif;
+  cursor: pointer; min-height: 44px;
+}
+.cr-cs-check:disabled { background: #E5E0D8; color: #B0A89E; cursor: default; }
 .cr-cardsort-card.correct { border-color: var(--cr-success); background: #F3F6F4; }
 .cr-cardsort-card.incorrect { border-color: var(--cr-danger); background: #FEF2F2; }
+/* 19a mobile — one card at a time, bins as buttons */
+.cr-csm-count { margin-left: auto; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-csm-bars { display: flex; gap: 4px; margin-top: 13px; }
+.cr-csm-bar { flex: 1; height: 5px; border-radius: 3px; background: #DCE5EC; }
+.cr-csm-bar.done { background: #284157; }
+.cr-csm-cardpanel {
+  margin-top: 15px; background: #fff; border: 1px solid #B8CBD9; border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(40,65,87,.13); padding: 22px 18px; min-height: 104px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+.cr-csm-cardnum { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #5C82A0; }
+.cr-csm-cardtext { font: 400 16.5px/1.5 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 9px; }
+.cr-csm-hint { font: 400 11px/1 'Lato', system-ui, sans-serif; color: #41627C; margin-top: 13px; text-align: center; }
+.cr-csm-bins { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
+.cr-csm-bin {
+  display: flex; align-items: center; gap: 11px; min-height: 52px; padding: 0 16px;
+  border-radius: 11px; border: 2px solid; cursor: pointer; width: 100%;
+  font: 700 13.5px/1.3 'Lato', system-ui, sans-serif; text-align: left;
+}
+.cr-csm-bin-count { margin-left: auto; flex: none; font: 400 11px/1 'Lato', system-ui, sans-serif; }
+.cr-csm-footer { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+.cr-csm-undo { flex: none; min-height: 44px; background: none; border: none; cursor: pointer; padding: 0; font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-csm-skip { margin-left: auto; flex: none; min-height: 44px; background: none; border: none; cursor: pointer; padding: 0; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #41627C; }
 
 /* ═══════════════════════════════════════════════════════════════
    SEQUENCING
@@ -980,73 +1010,95 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TIMELINE
+   TIMELINE (mockup 15g): a horizontal scrub — 3px track with a navy
+   progress fill, solid past nodes, an enlarged ringed current node,
+   hollow future nodes, and a detail card below
    ═══════════════════════════════════════════════════════════════ */
-.cr-timeline { position: relative; margin-bottom: 24px; }
-.cr-timeline-line {
-  position: absolute; left: 20px; top: 0; bottom: 0;
-  width: 3px; background: var(--cr-border);
-}
-.cr-timeline-event {
-  display: flex; gap: 16px;
-  margin-bottom: 20px;
-  position: relative;
-}
-.cr-timeline-dot {
-  width: 42px; height: 42px;
-  border-radius: 50%;
-  background: var(--cr-surface);
-  border: 3px solid var(--cr-burgundy);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700;
-  color: var(--cr-burgundy);
-  flex-shrink: 0;
-  z-index: 1;
-}
-.cr-timeline-content {
-  flex: 1; padding: 12px 16px;
-  background: var(--cr-surface);
-  border: 1px solid var(--cr-border);
-  border-radius: 10px;
-}
+.cr-timeline { margin-bottom: 24px; outline: none; }
+.cr-tl-status { font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-tl-title { font: 600 20px/1.35 var(--cr-font-display); color: #1F344A; margin-top: 12px; }
+.cr-tl-rail { position: relative; margin-top: 26px; height: 78px; }
+.cr-tl-track { position: absolute; left: 0; right: 0; top: 15px; height: 3px; background: #DCE5EC; }
+.cr-tl-fill { position: absolute; left: 0; top: 15px; height: 3px; background: #284157; }
+.cr-tl-node { position: absolute; top: 9px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 9px; background: none; border: none; cursor: pointer; padding: 0; min-width: 44px; min-height: 44px; }
+.cr-tl-node.first { transform: none; align-items: flex-start; }
+.cr-tl-node.last { transform: translateX(-100%); align-items: flex-end; }
+.cr-tl-dot { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2px solid #B8CBD9; }
+.cr-tl-node.visited .cr-tl-dot { background: #284157; border: 3px solid #F0F4F7; }
+.cr-tl-node.active { top: 5px; gap: 7px; }
+.cr-tl-node.active .cr-tl-dot { width: 22px; height: 22px; background: #284157; border: 4px solid #fff; box-shadow: 0 3px 12px rgba(31,52,74,.32); }
+.cr-tl-label { font: 400 10.5px/1.2 'Lato', system-ui, sans-serif; color: #5C82A0; white-space: nowrap; }
+.cr-tl-node.visited .cr-tl-label { color: #41627C; }
+.cr-tl-node.active .cr-tl-label { font: 700 11px/1.2 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-tl-detail { background: #fff; border: 1px solid #B8CBD9; border-radius: 11px; padding: 20px 22px; }
+.cr-tl-detail-head { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
+.cr-tl-year { font: 600 25px/1.1 var(--cr-font-display); color: #1F344A; }
+.cr-tl-headline { font: 700 12.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-tl-body { font: 400 15px/1.7 'Lato', system-ui, sans-serif; color: #2C2C2C; margin: 11px 0 0; }
+.cr-tl-body p { margin: 0 0 0.8em; } .cr-tl-body p:last-child { margin-bottom: 0; }
+.cr-tl-nav { display: flex; align-items: center; gap: 9px; margin-top: 14px; }
+.cr-tl-prev { flex: none; padding: 10px 16px; border-radius: 9px; border: 1px solid #DCE5EC; background: #fff; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #1F344A; cursor: pointer; min-height: 44px; }
+.cr-tl-next { margin-left: auto; flex: none; padding: 10px 18px; border-radius: 9px; border: none; background: #284157; color: #fff; font: 700 12.5px/1 'Lato', system-ui, sans-serif; cursor: pointer; min-height: 44px; }
+.cr-tl-prev:disabled, .cr-tl-next:disabled { opacity: .45; cursor: default; }
 
 /* ═══════════════════════════════════════════════════════════════
    HOTSPOT
    ═══════════════════════════════════════════════════════════════ */
+/* Hotspot (mockup 15f/18a + DRIFT §9): 26px pins, no perpetual pulse —
+   unexplored pins are dashed ? outlines, found pins solid hunter with a
+   check, the active pin a 30px navy circle with a popover. The numbered
+   text list is VISIBLE UI (SCREEN-READER PATH), built before the image. */
 .cr-hotspot { position: relative; margin-bottom: 24px; }
+.cr-hs-statusrow { display: flex; align-items: center; gap: 10px; }
+.cr-hs-status { font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
+.cr-hs-status.complete { font-weight: 700; color: #3D6A4A; }
+.cr-hs-dots { margin-left: auto; flex: none; display: flex; gap: 5px; }
+.cr-hs-dot { width: 9px; height: 9px; border-radius: 50%; background: #DCE5EC; }
+.cr-hs-dot.found { background: #4A7C59; }
+.cr-hs-title { font: 600 20px/1.35 var(--cr-font-display); color: #1F344A; margin-top: 12px; }
 .cr-hotspot-image-wrap {
-  position: relative; border-radius: var(--cr-radius);
-  overflow: hidden; border: 1px solid var(--cr-border);
+  position: relative; border-radius: 11px; margin-top: 15px;
+  overflow: hidden; border: 1px solid #B8CBD9;
 }
 .cr-hotspot-btn {
   position: absolute;
-  width: 32px; height: 32px;
+  width: 26px; height: 26px; min-width: 26px; min-height: 26px;
   border-radius: 50%;
-  background: var(--cr-gold);
-  border: 3px solid #fff;
+  background: #FFFFFF;
+  border: 2px dashed #B8CBD9;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(31,52,74,0.18);
   transform: translate(-50%, -50%);
-  transition: all var(--cr-transition);
-  animation: cr-pulse 2s infinite;
+  transition: background var(--cr-transition), border-color var(--cr-transition);
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: #fff;
+  font-size: 12px; font-weight: 700; color: #5C82A0;
+}
+.cr-hotspot-btn.active {
+  width: 30px; height: 30px;
+  background: #284157; border: 2.5px solid #fff; color: #fff;
+  box-shadow: 0 5px 16px rgba(31,52,74,.38);
 }
 .cr-hotspot-btn.revealed {
-  background: var(--cr-green);
-  animation: none;
+  background: #4A7C59; border: 3px solid #fff; color: #fff;
 }
-@keyframes cr-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,85,0.4); }
-  50% { box-shadow: 0 0 0 10px rgba(212,168,85,0); }
+.cr-hs-popover {
+  position: absolute; width: 262px; max-width: calc(100% - 16px);
+  background: #fff; border: 1px solid #284157; border-radius: 10px;
+  box-shadow: 0 12px 30px rgba(31,52,74,.24);
+  padding: 14px 16px; z-index: 5;
 }
-.cr-hotspot-info {
-  margin-top: 12px; padding: 16px;
-  background: var(--cr-gold-faded);
-  border-radius: 10px;
-  display: none;
-}
-.cr-hotspot-info.show { display: block; }
+.cr-hs-popover-eyebrow { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #5C82A0; }
+.cr-hs-popover-title { font: 700 13px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; margin-top: 5px; }
+.cr-hs-popover-body { font: 400 12.5px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 5px; }
+.cr-hs-popover-close { position: absolute; top: 6px; right: 6px; background: none; border: none; cursor: pointer; font-size: 13px; color: #6B7280; min-width: 32px; min-height: 32px; }
+.cr-hs-textlist { margin-top: 12px; background: #fff; border: 1px solid #DCE5EC; border-radius: 11px; padding: 16px 18px; }
+.cr-hs-textlist-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cr-hs-textlist-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #1F344A; }
+.cr-hs-srbadge { flex: none; padding: 3px 8px; border-radius: 5px; background: #F0F4F7; font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .08em; color: #284157; }
+.cr-hs-textlist-rows { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+.cr-hs-textrow { display: flex; gap: 10px; font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-hs-textrow-num { flex: none; font: 700 11px/1.6 ui-monospace, Menlo, monospace; color: #5C82A0; }
+.cr-hs-textrow-label { font-weight: 700; color: #1F344A; }
 
 /* ═══════════════════════════════════════════════════════════════
    REFLECTION
@@ -1205,22 +1257,22 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-info-card-body p:last-child { margin-bottom: 0; }
 
 /* Vignette — Burgundy accent */
-.cr-info-vignette { border-left: 5px solid var(--cr-burgundy); }
+.cr-info-vignette { border: 1px solid #F5D0D6; }
 .cr-info-vignette .cr-info-card-header { background: var(--cr-burgundy-faded); color: var(--cr-burgundy); }
 .cr-info-vignette .cr-info-card-body { background: var(--cr-surface); font-style: italic; }
 
 /* Myth vs Fact — Gold accent */
-.cr-info-mythfact { border-left: 5px solid var(--cr-gold); }
+.cr-info-mythfact { border: 1px solid #F3E0B5; }
 .cr-info-mythfact .cr-info-card-header { background: var(--cr-gold-faded); color: #8B6914; }
 .cr-info-mythfact .cr-info-card-body { background: var(--cr-surface); }
 
 /* Activity / Skill Builder — Navy accent */
-.cr-info-activity { border-left: 5px solid var(--cr-navy); }
+.cr-info-activity { border: 1px solid #DCE5EC; }
 .cr-info-activity .cr-info-card-header { background: var(--cr-navy-faded); color: var(--cr-navy); }
 .cr-info-activity .cr-info-card-body { background: var(--cr-surface); }
 
 /* Reflection card — Green accent */
-.cr-info-reflection { border-left: 5px solid var(--cr-green); }
+.cr-info-reflection { border: 1px solid #C8D7CC; }
 .cr-info-reflection .cr-info-card-header { background: var(--cr-green-faded); color: var(--cr-green); }
 .cr-info-reflection .cr-info-card-body { background: var(--cr-surface); }
 
@@ -1289,6 +1341,29 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #B6CBD8; min-height: 44px;
 }
 .cr-fail-quiet:hover { text-decoration: underline; }
+.cr-fail-integrity {
+  margin: 18px auto 0; max-width: 52ch;
+  padding: 11px 14px; border-radius: 9px;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+  font: 400 12px/1.55 'Lato', system-ui, sans-serif; color: #D3E0E8;
+}
+/* 17b — attempts exhausted: burgundy banner; red is confined to the
+   renewal-impact panel. */
+.cr-assessment-result.exhausted { border: none; background: var(--cr-burgundy); color: #FFFFFF; }
+.cr-assessment-result.exhausted .score { color: #FFFFFF; }
+.cr-exhausted-kept { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; text-align: left; }
+@media (max-width: 560px) { .cr-exhausted-kept { grid-template-columns: 1fr; } }
+.cr-exhausted-kept-col {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 10px; padding: 14px 16px;
+  font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #FBEDF0;
+}
+.cr-exhausted-kept-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #F5CBD5; margin-bottom: 7px; }
+.cr-exhausted-impact {
+  margin-top: 14px; padding: 13px 16px; border-radius: 10px;
+  background: #FEF2F2; border: 1px solid #DC2626;
+  font: 700 13px/1.55 'Lato', system-ui, sans-serif; color: #991B1B; text-align: left;
+}
 .cr-assessment-result h3 {
   font-family: var(--cr-font-display);
   font-size: 1.8em; font-weight: 700;
@@ -1421,9 +1496,23 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-buttons {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 28px;
-  border-top: 1px solid #E5E0D8;
+  border-top: 1px solid #E2E2BE;
   background: #FFFFFF;
   position: sticky; bottom: 0; z-index: 28;
+}
+/* Footer buttons name their destinations (ELEMENT_INVENTORY §2): prev is
+   outlined and titled with the previous page, continue is hunter and titled
+   with the next page. */
+#crPrevBtn {
+  background: #FFFFFF; border: 1px solid #E2E2BE; border-radius: 10px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13px;
+  color: #4b5563; padding: 12px 18px; min-height: 44px;
+}
+#crNextBtn {
+  background: #4A7C59; border: none; border-radius: 10px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13.5px;
+  color: #FFFFFF; padding: 13px 24px; min-height: 44px;
+  box-shadow: none;
 }
 #crPrevBtn {
   border: 1px solid #E5E0D8; background: #FFFFFF;
@@ -1537,6 +1626,43 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-glossary-panel.open { transform: translateX(0); }
 
+/* Highlights + Notes drawers (reading-page tools per ELEMENT_INVENTORY §1) —
+   same 440px side-drawer family as References/Supplemental/Key terms. */
+.cr-hl-panel, .cr-notes-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 440px; max-width: 92vw; /* canon: no sub-440px side panels */
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-hl-panel.open, .cr-notes-panel.open { transform: translateX(0); }
+.cr-hl-item {
+  background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px;
+}
+.cr-hl-item-text { font: 400 13.5px/1.55 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-hl-item-note { font: 400 12px/1.5 'Lato', system-ui, sans-serif; color: #7A5C24; margin-top: 6px; }
+.cr-hl-item-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.cr-hl-item-sec { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; color: #9CA3AF; }
+.cr-hl-item-remove {
+  margin-left: auto; background: none; border: none; cursor: pointer; padding: 0;
+  font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; min-height: 32px;
+}
+.cr-hl-item-remove:hover { color: var(--cr-burgundy); }
+.cr-hl-empty { font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-notes-area {
+  width: 100%; min-height: 180px; resize: vertical;
+  border: 1.5px solid var(--cr-border); border-radius: 10px;
+  padding: 14px; font: 400 14px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C;
+}
+.cr-notes-area:focus { border-color: var(--cr-navy); outline: none; }
+.cr-notes-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #6B7280; margin: 0 0 8px; }
+.cr-notes-saved { font: 400 11.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
+.cr-notes-other { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 18px; }
+
 /* References drawer — mirrors glossary, burgundy accent */
 .cr-refs-btn {
   position: fixed; bottom: 24px; right: 148px;
@@ -1567,7 +1693,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    instead of at top:0, so the header's tab row — which opens/closes these same
    panels — stays clickable while a panel is open, instead of being covered by it. */
 @media (min-width: 1025px) {
-  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel { top: 72px; }
+  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel, .cr-hl-panel, .cr-notes-panel { top: 72px; }
 }
 .cr-refs-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -2416,8 +2542,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   line-height: 1.75;
   color: var(--cr-text-body);
   margin: 0 0 1.2em;
-  /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
-     the old 680px per-paragraph cap silently re-narrowed the column. */
+  /* Width comes from .cr-reading-column (frame capped at 1040px, column fixed at
+     640px per DRIFT_FIXES §1) — the old 680px per-paragraph cap silently
+     re-narrowed the column. */
 }
 
 .cr-prose p:last-child,
@@ -2643,8 +2770,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   .cr-prose,
   .cr-block[data-block-type="text"],
   .cr-block[data-block-type="imageText"] {
-    /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
-       the old 720px cap here silently re-narrowed the column. */
+    /* Width comes from .cr-reading-column (frame capped at 1040px, column fixed at
+       640px per DRIFT_FIXES §1) — the old 720px cap here silently re-narrowed
+       the column. */
     margin-left: auto;
     margin-right: auto;
   }
@@ -2805,7 +2933,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="matching"]::before        { content: "Match"; }
 .cr-block[data-block-type="flashcardDeck"]::before   { content: "Flashcards"; }
 .cr-block[data-block-type="sequencing"]::before      { content: "Sequence"; }
-.cr-block[data-block-type="hotspot"]::before         { content: "Identify"; }
+.cr-block[data-block-type="hotspot"]::before         { content: "Hotspot"; }
 .cr-block[data-block-type="timeline"]::before        { content: "Timeline"; }
 .cr-block[data-block-type="fillInBlank"]::before     { content: "Fill in the blanks"; }
 .cr-block[data-block-type="reflection"]::before      { content: "Reflection"; }
@@ -2884,37 +3012,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 
-/* Card-sort restyle to match activity-tag system */
-.cr-cardsort-category {
-  border: 1px solid var(--cr-border) !important;
-  border-style: solid !important;
-  background: var(--cr-surface, #fff);
-  border-radius: 6px !important;
-}
-
-.cr-cardsort-category.dragover {
-  border-color: var(--cr-gold) !important;
-  background: var(--cr-gold-faded, rgba(212, 168, 85, 0.12)) !important;
-}
-
-.cr-cardsort-pool {
-  background: transparent !important;
-  border: 1px dashed var(--cr-border);
-  padding: 12px !important;
-}
-
-.cr-cardsort-card {
-  border: 1px solid var(--cr-border) !important;
-  border-radius: 4px !important;
-  background: #fff !important;
-  font-family: 'Lato', system-ui, sans-serif !important;
-  font-size: 14px !important;
-  padding: 8px 12px !important;
-}
-
-.cr-cardsort-card:hover {
-  border-color: var(--cr-burgundy) !important;
-}
+/* Card sort styling lives in the CARD SORT section above (mockups 15c/16d/19a). */
 
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2995,11 +3093,11 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
    ═══════════════════════════════════════════════════════════════ */
 
 .cr-kc {
-  background: transparent !important;
-  border: none !important;
-  border-left: 2px solid var(--cr-burgundy) !important;
-  border-radius: 0 !important;
-  padding: 4px 0 4px 24px !important;
+  /* Full border + tint card (DRIFT §10) — the left accent bar is retired */
+  background: #FDF5F6 !important;
+  border: 1px solid #F5D0D6 !important;
+  border-radius: 14px !important;
+  padding: 20px 24px !important;
   margin-bottom: 32px !important;
 }
 
@@ -3108,9 +3206,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-kc-explanation {
   margin-top: 18px !important;
   padding: 14px 18px !important;
-  background: rgba(74, 124, 89, 0.06) !important;
-  border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
-  border-radius: 0 !important;
+  background: #F3F6F4 !important;
+  border: 1px solid #C8D7CC !important;
+  border-radius: 10px !important;
   font-family: 'Lato', system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.6;
@@ -3136,8 +3234,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   position: relative;
   margin: 24px auto;
   padding: 16px 20px;
-  border-left: 4px solid var(--cr-burgundy);
-  border-radius: var(--cr-radius);
+  /* Full border + tinted fill; the label header is the chip (DRIFT §10) */
+  border: 1px solid #F5D0D6;
+  border-radius: 14px;
   background: var(--cr-tint-burg);
   font-family: 'Lato', system-ui, sans-serif;
   font-size: 16px;
@@ -3205,7 +3304,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — Variant: INFO — */
 .cr-callout-info {
-  border-left-color: var(--cr-navy, #284157);
+  border-color: #DCE5EC;
   background: rgba(40, 65, 87, 0.04);
 }
 .cr-callout-info .cr-callout-title { color: var(--cr-navy, #284157); }
@@ -3213,7 +3312,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — Variant: WARNING — */
 .cr-callout-warning {
-  border-left-color: #C97A1B;
+  border-color: #EBCFA9;
   background: rgba(201, 122, 27, 0.05);
 }
 .cr-callout-warning .cr-callout-title { color: #8E5613; }
@@ -3221,9 +3320,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — Variant: ETHICS — */
 .cr-callout-ethics {
-  border-left-color: var(--cr-gold, #D4A855);
+  border-color: #F3E0B5;
   background: rgba(212, 168, 85, 0.07);
-  border-left-width: 4px;
 }
 .cr-callout-ethics .cr-callout-title { color: #8C6A1F; }
 
@@ -3256,7 +3354,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — Variant: TIP — */
 .cr-callout-tip {
-  border-left-color: var(--cr-hunter, var(--cr-green, #4A7C59));
+  border-color: #C8D7CC;
   background: rgba(74, 124, 89, 0.05);
 }
 .cr-callout-tip .cr-callout-title { color: var(--cr-hunter, #4A7C59); }
@@ -3264,7 +3362,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* — Variant: KEY — */
 .cr-callout-key {
-  border-left-color: var(--cr-burgundy, #6B1D34);
+  border-color: #F5D0D6;
   background: rgba(107, 29, 52, 0.05);
 }
 .cr-callout-key .cr-callout-title { color: var(--cr-burgundy, #6B1D34); }
@@ -3275,7 +3373,6 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-callout-key {
   background: #FDF9F0;
   border: 1px solid #F3E0B5;
-  border-left: 1px solid #F3E0B5;
   border-radius: 14px;
   padding: 22px 26px;
 }
@@ -3871,10 +3968,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-kc-explanation {
   margin-top: 22px !important;
   padding: 12px 16px 12px 18px !important;
-  background: transparent !important;
-  border: none !important;
-  border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
-  border-radius: 0 !important;
+  background: #F3F6F4 !important;
+  border: 1px solid #C8D7CC !important;
+  border-radius: 10px !important;
   font-family: 'Lato', system-ui, sans-serif !important;
   font-size: 14.5px !important;
   font-style: italic !important;
@@ -4083,8 +4179,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   position: relative;
   margin: 24px auto;
   padding: 18px 22px;
-  border-left: 4px solid var(--cr-gold);
-  border-radius: var(--cr-radius);
+  /* Full border + tint, not a left accent bar (DRIFT §10) */
+  border: 1px solid #F3E0B5;
+  border-radius: 14px;
   background: var(--cr-tint-gold);
   box-shadow: 0 1px 0 var(--cr-border-subtle);
 }
@@ -4496,16 +4593,19 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
       <span style="flex:1"></span>
+      <!-- ELEMENT_INVENTORY §1/§4: reading page tools are Aa · Highlights · Notes;
+           Save & exit belongs to the opener/boundary group only; Contents is not a
+           reading-page control (the tab group + boundary screens cover navigation;
+           the drawer remains reachable from the mobile topbar hamburger).
+           Key terms is a deliberate deviation: hidden unless the course defines
+           glossary terms — removing it would strand the glossary feature. -->
       <span id="crReaderToolsNormal" style="display:contents">
         <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
-        <!-- Hidden until buildGlossary() finds terms — mirrors the old floating 📖 button's visibility rule. -->
+        <button type="button" class="cr-reader-tool" data-action="toggleHlPanel">Highlights</button>
+        <button type="button" class="cr-reader-tool" data-action="toggleNotesPanel">Notes</button>
         <button type="button" class="cr-reader-tool" id="crGlossaryTool" data-action="toggleGlossary" style="display:none">Key terms</button>
-        <!-- Now that the sidebar is off-canvas at every width, this is the desktop
-             route to section nav / downloads / progress during reading. -->
-        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
       </span>
       <span id="crReaderToolsOpener" style="display:none">
-        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
         <button type="button" class="cr-reader-tool" data-action="saveAndExit">Save &amp; exit</button>
       </span>
     </div>
@@ -4532,10 +4632,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
     <!-- Navigation — same full-width reasoning as the header above. -->
     <div class="cr-nav-buttons" id="crNavButtons">
-      <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="prevSection">← Previous</button>
+      <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="footerPrev">← Previous</button>
       <span id="crPageIndicator" style="font-size:0.85em;color:var(--cr-text-muted)"></span>
       <span id="crReadTimeLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#9CA3AF;white-space:nowrap"></span>
-      <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="nextSection">Next →</button>
+      <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="footerNext">Next →</button>
     </div>
   </main>
 </div>
@@ -4633,6 +4733,24 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   </div>
   <input class="cr-glossary-search" id="crGlossarySearch" placeholder="Search terms..." type="text">
   <div class="cr-glossary-list" id="crGlossaryList"></div>
+</div>
+
+<!-- HIGHLIGHTS PANEL (reader-header "Highlights" tool) -->
+<div class="cr-hl-panel" id="crHlPanel" role="dialog" aria-label="Highlights">
+  <div class="cr-refs-header">
+    <h3 style="color:var(--cr-navy)">Highlights</h3>
+    <button data-action="toggleHlPanel" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close">✕</button>
+  </div>
+  <div class="cr-refs-list" id="crHlList"></div>
+</div>
+
+<!-- NOTES PANEL (reader-header "Notes" tool) -->
+<div class="cr-notes-panel" id="crNotesPanel" role="dialog" aria-label="Notes">
+  <div class="cr-refs-header">
+    <h3 style="color:var(--cr-navy)">Notes</h3>
+    <button data-action="toggleNotesPanel" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close">✕</button>
+  </div>
+  <div class="cr-refs-list" id="crNotesBody"></div>
 </div>
 
 <!-- REFERENCES BUTTON + PANEL -->
@@ -5617,6 +5735,12 @@ function renderSectionCheckpoint(si) {
   if (openerArea) { openerArea.style.display = 'none'; openerArea.innerHTML = ''; }
   const readerHeader = document.getElementById('crReaderHeader');
   if (readerHeader) readerHeader.style.display = 'flex';
+  // Boundary screens carry the Save & exit tool group (ELEMENT_INVENTORY §4) —
+  // a natural stopping point, unlike mid-reading.
+  const cpToolsNormal = document.getElementById('crReaderToolsNormal');
+  const cpToolsOpener = document.getElementById('crReaderToolsOpener');
+  if (cpToolsNormal) cpToolsNormal.style.display = 'none';
+  if (cpToolsOpener) cpToolsOpener.style.display = 'contents';
 
   const navSections = course.sections.filter(s => !s._isOverview);
   const displayNum = navSections.indexOf(section) + 1;
@@ -5663,7 +5787,8 @@ function renderSectionCheckpoint(si) {
   h += '</div>';
   h += '<div class="cr-cp-meta">' + stats.pages + ' page' + (stats.pages !== 1 ? 's' : '') + ' · ' + stats.minutes + ' min'
      + (checks.length ? ' · ' + answered + ' of ' + checks.length + ' check' + (checks.length !== 1 ? 's' : '') : '')
-     + (suppAll.length ? ' · ' + suppSaved + ' of ' + suppAll.length + ' saved' : '') + '</div>';
+     + (suppAll.length ? ' · ' + suppSaved + ' of ' + suppAll.length + ' saved' : '')
+     + (crNotesCount(si) ? ' · ' + crNotesCount(si) + ' note' + (crNotesCount(si) !== 1 ? 's' : '') : '') + '</div>';
   if (carry.length) {
     h += '<div class="cr-cp-hairline"></div>';
     h += '<div class="cr-cp-label">THINGS TO REMEMBER</div>';
@@ -5828,7 +5953,131 @@ function closeSidebar() {
 // ═══════════════════════════════════════════════════════════════
 // ACCESSIBILITY
 // ═══════════════════════════════════════════════════════════════
+// ── Highlights & Notes drawers (reader-header tools, ELEMENT_INVENTORY §1).
+// The mockups specify the controls; drawer behavior follows the established
+// 440px side-drawer pattern (References / Supplemental / Key terms).
+function crCloseSideDrawers(except) {
+  ['crHlPanel', 'crNotesPanel', 'crGlossaryPanel', 'crRefsPanel', 'crA11yPanel'].forEach(id => {
+    if (id !== except) document.getElementById(id)?.classList.remove('open');
+  });
+}
+
+function toggleHlPanel() {
+  const panel = document.getElementById('crHlPanel');
+  const opening = !panel.classList.contains('open');
+  crCloseSideDrawers('crHlPanel');
+  if (opening) { buildHlPanel(); panel.classList.add('open'); }
+  else panel.classList.remove('open');
+}
+
+function buildHlPanel() {
+  const list = document.getElementById('crHlList');
+  const all = loadState('highlights') || highlights || [];
+  if (!all.length) {
+    list.innerHTML = '<p class="cr-hl-empty">Nothing highlighted yet. Select any passage in the lesson and choose Highlight.</p>';
+    return;
+  }
+  const navSections = course.sections.filter(s => !s._isOverview);
+  let h = '';
+  all.forEach(hl => {
+    const sec = course.sections[hl.sectionIndex];
+    const num = sec && !sec._isOverview ? navSections.indexOf(sec) + 1 : null;
+    h += '<div class="cr-hl-item">'
+      + '<div class="cr-hl-item-text">' + esc(hl.text) + '</div>'
+      + (hl.note ? '<div class="cr-hl-item-note">' + esc(hl.note) + '</div>' : '')
+      + '<div class="cr-hl-item-meta">'
+      + (num ? '<span class="cr-hl-item-sec">SECTION ' + num + '</span>' : '')
+      + '<button type="button" class="cr-hl-item-remove" data-action="hlRemoveItem" data-hl="' + esc(hl.id) + '">Remove</button>'
+      + '</div></div>';
+  });
+  list.innerHTML = h;
+}
+
+function hlRemoveItem(id) {
+  highlights = (loadState('highlights') || highlights || []).filter(h => h.id !== id);
+  saveState('highlights', highlights);
+  const el = document.querySelector('[data-hl-id="' + id + '"]');
+  if (el) {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+  }
+  buildHlPanel();
+}
+
+function crNotesState() { return loadState('notes') || {}; }
+
+// "N notes" for a section (boundary stats line): the section notepad plus any
+// highlight-attached notes in that section.
+function crNotesCount(si) {
+  const notes = crNotesState();
+  let n = notes[si] && String(notes[si]).trim() ? 1 : 0;
+  n += (loadState('highlights') || []).filter(h => h.sectionIndex === si && h.note).length;
+  return n;
+}
+
+function toggleNotesPanel() {
+  const panel = document.getElementById('crNotesPanel');
+  const opening = !panel.classList.contains('open');
+  crCloseSideDrawers('crNotesPanel');
+  if (opening) { buildNotesPanel(); panel.classList.add('open'); }
+  else panel.classList.remove('open');
+}
+
+function buildNotesPanel() {
+  const body = document.getElementById('crNotesBody');
+  const navSections = course.sections.filter(s => !s._isOverview);
+  const sec = course.sections[currentSectionIndex];
+  const num = sec && !sec._isOverview ? navSections.indexOf(sec) + 1 : null;
+  const notes = crNotesState();
+  let h = '<div class="cr-notes-label">' + (num ? 'YOUR NOTES · SECTION ' + num : 'YOUR NOTES') + '</div>';
+  h += '<textarea class="cr-notes-area" id="crNotesArea" placeholder="Write anything you want to keep from this section…">' + esc(notes[currentSectionIndex] || '') + '</textarea>';
+  h += '<div class="cr-notes-saved" id="crNotesSaved">Saved automatically</div>';
+  const others = Object.keys(notes).filter(k => Number(k) !== currentSectionIndex && String(notes[k] || '').trim());
+  if (others.length) h += '<div class="cr-notes-other">' + others.length + ' other section' + (others.length !== 1 ? 's have' : ' has') + ' notes — they reappear when you visit those sections.</div>';
+  body.innerHTML = h;
+  const area = document.getElementById('crNotesArea');
+  if (area) area.addEventListener('input', () => {
+    const s = crNotesState();
+    s[currentSectionIndex] = area.value;
+    saveState('notes', s);
+    const lbl = document.getElementById('crNotesSaved');
+    if (lbl) lbl.textContent = 'Saved';
+  });
+}
+
+// Title for a block-page: sectionDivider title on that page, else its first
+// heading — used by the footer's destination-naming buttons (ELEMENT_INVENTORY §2).
+function crBlockPageTitle(section, pageIdx) {
+  const blocks = (section.contentBlocks || []).slice(pageIdx * BLOCK_PAGE_SIZE, (pageIdx + 1) * BLOCK_PAGE_SIZE);
+  for (const b of blocks) {
+    if (b.type === 'sectionDivider' && b.title) return String(b.title).replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+    if (b.type === 'text' && b.content) {
+      const m = String(b.content).match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+      if (m) return m[1].replace(/<[^>]+>/g, '').replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+    }
+  }
+  return null;
+}
+
+// Footer buttons page within the section first, then hand off (the in-content
+// pager is retired — the footer is the only pagination control, as in 12a).
+function footerPrev() {
+  if (currentView === 'assessment') { prevSection(); return; }
+  if (currentBlockPage > 0) prevBlockPage();
+  else prevSection();
+}
+
+function footerNext() {
+  if (currentView === 'assessment') return;
+  const blocks = course.sections[currentSectionIndex]?.contentBlocks || [];
+  const totalPages = Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE));
+  if (currentBlockPage < totalPages - 1) nextBlockPage();
+  else nextSection();
+}
+
 function toggleA11yPanel() {
+  crCloseSideDrawers('crA11yPanel');
   document.getElementById('crA11yPanel').classList.toggle('open');
 }
 
@@ -6039,19 +6288,8 @@ function renderCurrentSection() {
     if (el) area.appendChild(el);
   });
 
-  // Within-section pager — only when the section spans more than one page.
-  if (totalBlockPages > 1) {
-    const pager = document.createElement('div');
-    pager.className = 'cr-block-pager';
-    pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--cr-border)';
-    pager.innerHTML = `
-      <button type="button" data-action="prevBlockPage" ${currentBlockPage === 0 ? 'disabled' : ''}
-        style="padding:8px 16px;border:1.5px solid var(--cr-border);border-radius:8px;background:#fff;color:var(--cr-navy);font-size:0.83rem;font-weight:700;cursor:${currentBlockPage === 0 ? 'default' : 'pointer'};opacity:${currentBlockPage === 0 ? '0.5' : '1'}">← Previous</button>
-      <span style="font-size:0.83rem;color:var(--cr-text-muted)">Page ${currentBlockPage + 1} of ${totalBlockPages}</span>
-      <button type="button" data-action="nextBlockPage" ${currentBlockPage >= totalBlockPages - 1 ? 'disabled' : ''}
-        style="padding:8px 16px;border:none;border-radius:8px;background:var(--cr-burgundy);color:#fff;font-size:0.83rem;font-weight:700;cursor:${currentBlockPage >= totalBlockPages - 1 ? 'default' : 'pointer'};opacity:${currentBlockPage >= totalBlockPages - 1 ? '0.5' : '1'}">More →</button>`;
-    area.appendChild(pager);
-  }
+  // In-content pager retired (ELEMENT_INVENTORY §2): the sticky footer is the
+  // only pagination control, exactly as in mockup 12a.
 
   // References now live in the collapsible References drawer (buildReferences()),
   // not inline. Intentionally not appended to the section body.
@@ -6080,20 +6318,35 @@ function renderCurrentSection() {
     navBtns.style.display = 'none';
   } else {
     navBtns.style.display = 'flex';
-    document.getElementById('crPrevBtn').style.visibility = currentSectionIndex > 0 ? 'visible' : 'hidden';
     const hasAssessment = course.assessment?.questions?.length > 0;
 
     // Page indicator excludes overview
     const navSections = course.sections.filter(s => !s._isOverview);
     const navIdx = navSections.indexOf(section) + 1;
 
-    if (isLast) {
-      document.getElementById('crNextBtn').textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
+    // Footer buttons NAME THEIR DESTINATIONS (ELEMENT_INVENTORY §2). Prev is
+    // hidden on a section's first page — crossing a boundary backwards happens
+    // from the boundary's Review link, not here.
+    const prevBtn = document.getElementById('crPrevBtn');
+    prevBtn.style.visibility = currentBlockPage > 0 ? 'visible' : 'hidden';
+    if (currentBlockPage > 0) {
+      let pt = crBlockPageTitle(section, currentBlockPage - 1) || ('Page ' + currentBlockPage);
+      if (pt.length > 30) pt = pt.slice(0, 30) + '…';
+      prevBtn.textContent = '← ' + pt;
+    }
+
+    const nextBtn = document.getElementById('crNextBtn');
+    if (currentBlockPage < totalBlockPages - 1) {
+      let nt = crBlockPageTitle(section, currentBlockPage + 1) || ('Page ' + (currentBlockPage + 2));
+      if (nt.length > 30) nt = nt.slice(0, 30) + '…';
+      nextBtn.textContent = 'Continue: ' + nt + ' →';
+    } else if (isLast) {
+      nextBtn.textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
     } else {
       const nextSec = navSections[navIdx];
       let nextTitle = nextSec?.title || '';
       if (nextTitle.length > 30) nextTitle = nextTitle.slice(0, 30) + '…';
-      document.getElementById('crNextBtn').textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Next →';
+      nextBtn.textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Continue →';
     }
 
     // Page dots: one per block-page WITHIN THE CURRENT SECTION (matches the mockup's
@@ -6116,12 +6369,11 @@ function renderCurrentSection() {
       readTimeEl.textContent = '~' + mins + ' min read · autosaved';
     }
 
-    // Reader-header page label: "Section X of Y" (+ within-section block-page count when paginated)
+    // Reader-header position label: "Section 2 · page 3 of 9" (ELEMENT_INVENTORY §1 —
+    // the section COUNT lives on the boundary screens, never here).
     const readerLabel = document.getElementById('crReaderPageLabel');
     if (readerLabel) {
-      let label = 'Section ' + navIdx + ' of ' + navSections.length;
-      if (totalBlockPages > 1) label += ' · page ' + (currentBlockPage + 1) + ' of ' + totalBlockPages;
-      readerLabel.textContent = label;
+      readerLabel.textContent = 'Section ' + navIdx + ' · page ' + (currentBlockPage + 1) + ' of ' + totalBlockPages;
     }
   }
   document.getElementById('crTopbarSection').textContent = section.title || 'Section ' + (currentSectionIndex + 1);
@@ -6932,50 +7184,112 @@ function renderFlashcardDeck(wrap, block, blockIndex) {
   const id = `fc-${currentSectionIndex}-${blockIndex}`;
   const cards = block.flashcards || [];
   if (cards.length === 0) { wrap.innerHTML = '<p>No flashcards available.</p>'; return wrap; }
-  
-  wrap.innerHTML = `<div id="${id}" data-current="0">
-    ${block.instructions ? `<p style="font-size:0.9em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.instructions)}</p>` : ''}
-    <div class="cr-flashcard-container">
-      <div class="cr-flashcard" data-action="flipCard" data-target="${id}">
-        <div class="cr-flashcard-face cr-flashcard-front">
-          <div class="cr-flashcard-label">Term</div>
-          <div class="cr-flashcard-text" id="${id}-front">${esc(cards[0].front)}</div>
-        </div>
-        <div class="cr-flashcard-face cr-flashcard-back">
-          <div class="cr-flashcard-label" style="color:var(--cr-green)">Definition</div>
-          <div class="cr-flashcard-text" id="${id}-back">${esc(cards[0].back)}</div>
-        </div>
-      </div>
-    </div>
-    <div class="cr-flashcard-nav">
-      <button data-action="fcNav" data-target="${id}" data-dir="-1" aria-label="Previous card">←</button>
-      <span class="cr-flashcard-counter" id="${id}-counter">1 / ${cards.length}</span>
-      <button data-action="fcNav" data-target="${id}" data-dir="1" aria-label="Next card">→</button>
-    </div>
-  </div>`;
-  
-  wrap.querySelector(`#${id}`)._fcCards = cards;
+  wrap.innerHTML = `<div class="cr-flashcard-block" id="${id}"></div>`;
+  const el = wrap.querySelector('#' + id);
+  el._fc = {
+    cards,
+    queue: cards.map((c, i) => i),
+    history: [],
+    shakyEver: new Set(),
+    side: 'front',
+    instructions: block.instructions || ''
+  };
+  fcRender(el);
   return wrap;
 }
 
-function flipCard(id) {
-  document.getElementById(id).querySelector('.cr-flashcard').classList.toggle('flipped');
+function fcRender(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  id = el.id;
+  const st = el._fc;
+  const total = st.cards.length;
+  const done = total - st.queue.length;
+
+  if (!st.queue.length) {
+    el.innerHTML = `<div class="cr-fc-done">
+      <div class="cr-fc-done-title">Deck complete</div>
+      <div class="cr-fc-done-sub">All ${total} card${total !== 1 ? 's' : ''} rated Got it${st.shakyEver.size ? ' — ' + st.shakyEver.size + ' needed a second look along the way' : ''}.</div>
+      <div class="cr-fc-footer" style="justify-content:center"><button type="button" class="cr-fc-backbtn" data-action="fcRestart" data-target="${id}">Start over</button></div>
+    </div>`;
+    srAnnounce('Deck complete.');
+    return;
+  }
+
+  const cardIdx = st.queue[0];
+  const card = st.cards[cardIdx];
+  const front = st.side === 'front';
+  let h = `<div class="cr-fc-statusrow">
+      <span class="cr-fc-count">Card ${Math.min(done + 1, total)} of ${total}</span>
+      <div class="cr-fc-bars">${st.cards.map((c, i) => `<span class="cr-fc-bar${st.queue.includes(i) ? '' : ' done'}"></span>`).join('')}</div>
+    </div>
+    ${st.instructions ? `<div class="cr-cs-title">${esc(st.instructions)}</div>` : ''}
+    <div class="cr-fc-deck">
+      <div class="cr-fc-layer-b"></div>
+      <div class="cr-fc-layer-a"></div>
+      <div class="cr-flashcard" data-action="fcFlip" data-target="${id}" role="button" tabindex="0" aria-label="${front ? 'Reveal the definition' : 'Back to the term'}">
+        ${front
+          ? `<div class="cr-fc-eyebrow">TERM</div>
+             <div class="cr-fc-term">${esc(card.front)}</div>
+             <div class="cr-fc-hint">Tap to reveal the definition</div>`
+          : `<div class="cr-fc-eyebrow">DEFINITION</div>
+             <div class="cr-fc-def">${esc(card.back)}</div>
+             <div class="cr-fc-quote">“${esc(card.front)}”</div>`}
+      </div>
+    </div>
+    <div class="cr-fc-footer">
+      <button type="button" class="cr-fc-backbtn" data-action="fcBack" data-target="${id}" ${st.history.length ? '' : 'disabled style="opacity:.5;cursor:default"'}>← Back</button>
+      <button type="button" class="cr-fc-flipbtn" data-action="fcFlip" data-target="${id}">Flip card</button>
+      <div class="cr-fc-rate">
+        <span class="cr-fc-ratelabel">Rate yourself:</span>
+        <button type="button" class="cr-fc-shaky" data-action="fcRate" data-target="${id}" data-rating="shaky">Shaky</button>
+        <button type="button" class="cr-fc-gotit" data-action="fcRate" data-target="${id}" data-rating="got">Got it</button>
+      </div>
+    </div>`;
+  el.innerHTML = h;
 }
 
-function fcNav(id, dir) {
+function fcFlip(id) {
   const el = document.getElementById(id);
-  const cards = el._fcCards;
-  let idx = parseInt(el.dataset.current) + dir;
-  if (idx < 0) idx = cards.length - 1;
-  if (idx >= cards.length) idx = 0;
-  el.dataset.current = idx;
-  
-  const fc = el.querySelector('.cr-flashcard');
-  fc.classList.remove('flipped');
-  
-  document.getElementById(id + '-front').textContent = cards[idx].front;
-  document.getElementById(id + '-back').textContent = cards[idx].back;
-  document.getElementById(id + '-counter').textContent = `${idx + 1} / ${cards.length}`;
+  el._fc.side = el._fc.side === 'front' ? 'back' : 'front';
+  fcRender(id);
+  srAnnounce(el._fc.side === 'back' ? 'Definition shown.' : 'Term shown.');
+}
+
+// Self-rating drives the deck (mockup 15b): Shaky re-queues the card at the
+// end; Got it clears it. The rating is what makes the deck adaptive.
+function fcRate(id, rating) {
+  const el = document.getElementById(id);
+  const st = el._fc;
+  const cardIdx = st.queue.shift();
+  if (rating === 'shaky') { st.queue.push(cardIdx); st.shakyEver.add(cardIdx); }
+  st.history.push({ cardIdx, rating });
+  st.side = 'front';
+  srAnnounce(rating === 'shaky' ? 'Marked shaky — it will come back around.' : 'Got it. Next card.');
+  fcRender(id);
+}
+
+function fcBack(id) {
+  const el = document.getElementById(id);
+  const st = el._fc;
+  const last = st.history.pop();
+  if (!last) return;
+  if (last.rating === 'shaky') {
+    const pos = st.queue.lastIndexOf(last.cardIdx);
+    if (pos !== -1) st.queue.splice(pos, 1);
+  }
+  st.queue.unshift(last.cardIdx);
+  st.side = 'front';
+  fcRender(id);
+}
+
+function fcRestart(id) {
+  const el = document.getElementById(id);
+  const st = el._fc;
+  st.queue = st.cards.map((c, i) => i);
+  st.history = [];
+  st.shakyEver = new Set();
+  st.side = 'front';
+  fcRender(id);
 }
 
 // ─── SCENARIO TREE ───
@@ -7039,77 +7353,285 @@ function stChoose(id, nextNode, btn) {
 }
 
 // ─── CARD SORT ───
+// Bin tint rotation (mockups 15c/16d/19a): bins alternate brand tints so each
+// bin reads as its own place. Hunter, navy, burgundy, honey.
+const CR_CS_BIN_TINTS = [
+  { bg: '#F3F6F4', border: '#C8D7CC', text: '#2B4133', count: '#7BA88C' },
+  { bg: '#DCE5EC', border: '#B8CBD9', text: '#1F344A', count: '#5C82A0' },
+  { bg: '#FDF5F6', border: '#F5D0D6', text: '#6B1D34', count: '#A83350' },
+  { bg: '#FDF9F0', border: '#F3E0B5', text: '#7A5C24', count: '#A67936' }
+];
+const CR_CS_HANDLE_SVG = '<svg class="cr-cs-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"></path></svg>';
+
 function renderCardSort(wrap, block, blockIndex) {
   const id = `cs-${currentSectionIndex}-${blockIndex}`;
   const categories = block.categories || [];
-  const cards = (block.cards || []).sort(() => Math.random() - 0.5);
-  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
-  let html = `<div class="cr-cardsort" id="${id}" data-mobile="${isMobile}">
-    ${block.instructions ? `<p style="font-size:0.9em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.instructions)}</p>` : ''}
-    ${isMobile ? '<p style="font-size:0.8em;color:var(--cr-gold);margin-bottom:8px">📱 Tap a card, then tap a category to place it</p>' : ''}
-    <div class="cr-cardsort-pool" id="${id}-pool">
-      ${cards.map(c => `<div class="cr-cardsort-card" ${isMobile ? '' : 'draggable="true"'} 
-        data-card-id="${esc(c.id)}" data-correct="${esc(c.correctCategory)}"
-        data-action="csTapCard" data-target="${id}" tabindex="0">${esc(c.text)}</div>`).join('')}
+  const cards = (block.cards || []).slice().sort(() => Math.random() - 0.5);
+  const mobile = window.innerWidth <= 640;
+
+  if (mobile) {
+    wrap.innerHTML = `<div class="cr-cardsort" id="${id}" data-mode="mobile"></div>`;
+    const el = wrap.querySelector('#' + id);
+    el._csBlock = block; el._csBlockIndex = blockIndex;
+    el._csm = { cards, categories, pos: 0, placements: {}, history: [] };
+    csmRender(el);
+    return wrap;
+  }
+
+  let html = `<div class="cr-cardsort" id="${id}" data-mode="desktop">
+    <div class="cr-cs-statusrow">
+      <span class="cr-cs-status">Drag each card into the bin it belongs to · <span id="${id}-placedn">0</span> of ${cards.length} placed</span>
+      <span class="cr-cs-kbbadge" id="${id}-kbbadge" style="display:none">KEYBOARD MODE</span>
+    </div>
+    ${block.instructions ? `<div class="cr-cs-title">${esc(block.instructions)}</div>` : ''}
+    <div class="cr-cs-legend" id="${id}-legend" style="display:none">
+      <div class="cr-cs-legend-title">HOW TO SORT WITHOUT A MOUSE</div>
+      <div class="cr-cs-legend-rows">
+        <div class="cr-cs-legend-row"><span class="cr-cs-key">Tab</span><span>Move between cards and bins</span></div>
+        <div class="cr-cs-legend-row"><span class="cr-cs-key">Space</span><span>Pick up the focused card · press again to drop</span></div>
+        <div class="cr-cs-legend-row"><span class="cr-cs-key">1 – ${categories.length}</span><span>Send the held card straight to that bin</span></div>
+        <div class="cr-cs-legend-row"><span class="cr-cs-key">Esc</span><span>Put it back</span></div>
+      </div>
+    </div>
+    <div class="cr-cs-tray">
+      <div class="cr-cs-tray-label">STILL TO PLACE · <span id="${id}-remaining">${cards.length}</span></div>
+      <div class="cr-cardsort-pool" id="${id}-pool">
+        ${cards.map(c => `<div class="cr-cardsort-card" draggable="true" tabindex="0"
+          data-card-id="${esc(c.id)}" data-correct="${esc(c.correctCategory)}"
+          data-action="csTapCard" data-target="${id}">${CR_CS_HANDLE_SVG}<span>${esc(c.text)}</span><span class="cr-cs-heldchip">HELD</span></div>`).join('')}
+      </div>
     </div>
     <div class="cr-cardsort-categories">
-      ${categories.map(cat => `<div class="cr-cardsort-category" data-category="${esc(cat)}"
-        data-action="csTapCategory" data-target="${id}">
-        <div class="cr-cardsort-category-title">${esc(cat)}</div>
-        <div class="cr-cardsort-category-cards"></div>
-      </div>`).join('')}
+      ${categories.map((cat, ci) => {
+        const t = CR_CS_BIN_TINTS[ci % CR_CS_BIN_TINTS.length];
+        return `<div class="cr-cardsort-category" tabindex="0" data-category="${esc(cat)}" data-binidx="${ci}"
+          data-action="csTapCategory" data-target="${id}" style="background:${t.bg};border-color:${t.border}"
+          aria-label="${esc(cat)} bin">
+          <div class="cr-cs-bin-head">
+            <span class="cr-cs-bin-key" style="border:1px solid ${t.border};color:${t.text}">${ci + 1}</span>
+            <span class="cr-cs-bin-name" style="color:${t.text}">${esc(cat)}</span>
+            <span class="cr-cs-bin-count" id="${id}-count-${ci}" style="color:${t.count}">0</span>
+            <span class="cr-cs-droptag">DROP TARGET</span>
+          </div>
+          <div class="cr-cardsort-category-cards"></div>
+          <div class="cr-cs-ghost">Drop here</div>
+        </div>`;
+      }).join('')}
     </div>
-    <button class="cr-btn cr-btn-primary" data-action="csCheck" data-target="${id}" style="margin-top:12px">Check Answers</button>
+    <div class="cr-cs-footer">
+      <button type="button" class="cr-cs-reset" data-action="csReset" data-target="${id}">Reset</button>
+      <button type="button" class="cr-cs-check" id="${id}-check" data-action="csCheck" data-target="${id}" disabled>Check placement</button>
+    </div>
     <div class="cr-kc-explanation" id="${id}-explanation">${block.explanation || ''}</div>
   </div>`;
   wrap.innerHTML = html;
+  const el = wrap.querySelector('#' + id);
+  el._csBlock = block; el._csBlockIndex = blockIndex;
   return wrap;
 }
 
-// Drag-and-drop (desktop)
+// Drag-and-drop (desktop) — delegation lives in the global listeners below.
 let csDragData = null;
 function csDragStart(e) { csDragData = e.target; e.dataTransfer.effectAllowed = 'move'; }
-function csDrop(e, id) {
-  e.preventDefault();
-  e.currentTarget.classList.remove('dragover');
-  if (csDragData) {
-    e.currentTarget.querySelector('.cr-cardsort-category-cards').appendChild(csDragData);
-    csDragData = null;
-  }
-}
 
-// Tap-to-place (mobile + keyboard fallback)
+// One alternate interaction model serves touch AND keyboard (mockup 16d):
+// pick up, then point at a bin. Held state is honey; announcements via aria-live.
 let csSelectedCard = null;
-function csTapCard(card, id) {
-  const container = document.getElementById(id);
-  // Deselect previous
-  container.querySelectorAll('.cr-cardsort-card').forEach(c => c.style.outline = '');
-  // If tapping same card, deselect
-  if (csSelectedCard === card) { csSelectedCard = null; return; }
-  csSelectedCard = card;
-  card.style.outline = '3px solid var(--cr-gold)';
-  card.style.outlineOffset = '2px';
-  srAnnounce('Card selected. Tap a category to place it.');
+
+function csEnterKeyboardMode(container) {
+  const badge = container.querySelector('.cr-cs-kbbadge');
+  const legend = container.querySelector('.cr-cs-legend');
+  if (badge) badge.style.display = 'inline-flex';
+  if (legend) legend.style.display = 'block';
 }
 
-function csTapCategory(cat, id) {
+function csHold(card, id, viaKeyboard) {
+  const container = document.getElementById(id);
+  container.querySelectorAll('.cr-cardsort-card.held').forEach(c => c.classList.remove('held'));
+  if (csSelectedCard === card) { csSelectedCard = null; card.classList.remove('held'); srAnnounce('Card put down.'); return; }
+  csSelectedCard = card;
+  card.classList.add('held');
+  if (viaKeyboard) csEnterKeyboardMode(container);
+  const cats = [...container.querySelectorAll('.cr-cardsort-category')].map((b, i) => (i + 1) + ' for ' + b.dataset.category).join(', ');
+  srAnnounce(card.textContent.replace('HELD', '').trim() + ', held. ' + (viaKeyboard ? 'Press ' + cats + ', or tab to a bin and press space to drop. Escape puts it back.' : 'Tap a bin to place it.'));
+}
+
+function csTapCard(card, id) { csHold(card, id, false); }
+
+function csPlace(card, bin, id) {
+  const container = document.getElementById(id);
+  bin.querySelector('.cr-cardsort-category-cards').appendChild(card);
+  card.classList.remove('held');
+  if (csSelectedCard === card) csSelectedCard = null;
+  container.querySelectorAll('.cr-cardsort-category.kbtarget').forEach(b => b.classList.remove('kbtarget'));
+  csAfterMove(container);
+  const count = bin.querySelectorAll('.cr-cardsort-card').length;
+  srAnnounce(card.textContent.replace('HELD', '').trim() + ' placed in ' + bin.dataset.category + ', ' + count + ' item' + (count !== 1 ? 's' : '') + '.');
+}
+
+function csTapCategory(bin, id) {
   if (!csSelectedCard) return;
-  cat.querySelector('.cr-cardsort-category-cards').appendChild(csSelectedCard);
-  csSelectedCard.style.outline = '';
-  csSelectedCard = null;
-  srAnnounce('Card placed in ' + cat.dataset.category);
+  csPlace(csSelectedCard, bin, id);
+}
+
+function csReturnToPool(card, id) {
+  const container = document.getElementById(id);
+  container.querySelector('.cr-cardsort-pool').appendChild(card);
+  card.classList.remove('held');
+  if (csSelectedCard === card) csSelectedCard = null;
+  container.querySelectorAll('.cr-cardsort-category.kbtarget').forEach(b => b.classList.remove('kbtarget'));
+  csAfterMove(container);
+  srAnnounce(card.textContent.replace('HELD', '').trim() + ' returned to the tray.');
+}
+
+function csAfterMove(container) {
+  const id = container.id;
+  const pool = container.querySelector('.cr-cardsort-pool');
+  const total = container.querySelectorAll('.cr-cardsort-card').length;
+  const remaining = pool.querySelectorAll('.cr-cardsort-card').length;
+  const placedn = document.getElementById(id + '-placedn');
+  const remainingEl = document.getElementById(id + '-remaining');
+  if (placedn) placedn.textContent = total - remaining;
+  if (remainingEl) remainingEl.textContent = remaining;
+  container.querySelectorAll('.cr-cardsort-category').forEach((bin, ci) => {
+    const c = document.getElementById(id + '-count-' + ci);
+    if (c) c.textContent = bin.querySelectorAll('.cr-cardsort-card').length;
+  });
+  // Check placement enables only when everything is placed (mockup 15c).
+  const check = document.getElementById(id + '-check');
+  if (check) check.disabled = remaining > 0;
+}
+
+function csReset(id) {
+  const el = document.getElementById(id);
+  if (!el || !el._csBlock) return;
+  const wrap = el.parentElement;
+  renderCardSort(wrap, el._csBlock, el._csBlockIndex);
 }
 
 function csCheck(id) {
   const el = document.getElementById(id);
+  let right = 0, total = 0;
   el.querySelectorAll('.cr-cardsort-card').forEach(card => {
     const cat = card.closest('.cr-cardsort-category');
     if (!cat) return;
+    total++;
     const isCorrect = cat.dataset.category === card.dataset.correct;
     card.classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (isCorrect) right++;
   });
-  document.getElementById(id + '-explanation').classList.add('show');
+  const status = el.querySelector('.cr-cs-status');
+  if (status) status.textContent = right + ' of ' + total + ' placed correctly' + (right === total ? ' — well sorted.' : ' — the outlined cards belong elsewhere. Reset to try again.');
+  document.getElementById(id + '-explanation')?.classList.add('show');
+  srAnnounce(right + ' of ' + total + ' correct.');
+}
+
+// ── 19a mobile card sort: one card at a time, bins as buttons ──
+function csmRender(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  id = el.id;
+  const st = el._csm;
+  const total = st.cards.length;
+  const placedCount = Object.keys(st.placements).length;
+
+  if (placedCount >= total) { csmRenderResults(id); return; }
+  // Advance pos past already-placed cards
+  while (st.pos < total && st.placements[st.pos] !== undefined) st.pos++;
+  if (st.pos >= total) { st.pos = st.cards.findIndex((c, i) => st.placements[i] === undefined); }
+  const card = st.cards[st.pos];
+
+  let h = `<div class="cr-cs-statusrow">
+      ${el._csBlock.instructions ? `<span class="cr-cs-status">${esc(el._csBlock.instructions)}</span>` : ''}
+      <span class="cr-csm-count">${placedCount + 1} of ${total}</span>
+    </div>
+    <div class="cr-csm-bars">${st.cards.map((c, i) => `<span class="cr-csm-bar${st.placements[i] !== undefined ? ' done' : ''}"></span>`).join('')}</div>
+    <div class="cr-csm-cardpanel"><div>
+      <div class="cr-csm-cardnum">CARD ${st.pos + 1} OF ${total}</div>
+      <div class="cr-csm-cardtext">${esc(card.text)}</div>
+    </div></div>
+    <div class="cr-csm-hint">Tap where it belongs</div>
+    <div class="cr-csm-bins">
+      ${st.categories.map((cat, ci) => {
+        const t = CR_CS_BIN_TINTS[ci % CR_CS_BIN_TINTS.length];
+        const n = Object.values(st.placements).filter(v => v === ci).length;
+        return `<button type="button" class="cr-csm-bin" data-action="csmAssign" data-target="${id}" data-bin="${ci}"
+          style="background:${t.bg};border-color:${t.border};color:${t.text}">${esc(cat)}
+          <span class="cr-csm-bin-count" style="color:${t.count}">${n} placed</span></button>`;
+      }).join('')}
+    </div>
+    <div class="cr-csm-footer">
+      <button type="button" class="cr-csm-undo" data-action="csmUndo" data-target="${id}">↩ Undo last</button>
+      <button type="button" class="cr-csm-skip" data-action="csmSkip" data-target="${id}">Skip card</button>
+    </div>`;
+  el.innerHTML = h;
+}
+
+function csmAssign(id, binIdx) {
+  const el = document.getElementById(id);
+  const st = el._csm;
+  st.placements[st.pos] = binIdx;
+  st.history.push(st.pos);
+  srAnnounce(st.cards[st.pos].text + ' placed in ' + st.categories[binIdx] + '.');
+  st.pos = 0;
+  csmRender(id);
+}
+
+function csmUndo(id) {
+  const el = document.getElementById(id);
+  const st = el._csm;
+  const last = st.history.pop();
+  if (last === undefined) return;
+  delete st.placements[last];
+  st.pos = last;
+  srAnnounce('Undid the last placement.');
+  csmRender(id);
+}
+
+function csmSkip(id) {
+  const el = document.getElementById(id);
+  const st = el._csm;
+  const total = st.cards.length;
+  let next = st.pos + 1;
+  while (next !== st.pos) {
+    if (next >= total) next = 0;
+    if (st.placements[next] === undefined) break;
+    next++;
+  }
+  st.pos = next;
+  csmRender(id);
+}
+
+function csmRenderResults(id) {
+  const el = document.getElementById(id);
+  const st = el._csm;
+  let right = 0;
+  let h = '<div class="cr-cs-statusrow"><span class="cr-cs-status" id="' + id + '-mstatus"></span></div>';
+  h += st.categories.map((cat, ci) => {
+    const t = CR_CS_BIN_TINTS[ci % CR_CS_BIN_TINTS.length];
+    const items = st.cards.map((c, i) => ({ c, i })).filter(x => st.placements[x.i] === ci);
+    return `<div class="cr-cardsort-category" style="background:${t.bg};border-color:${t.border};margin-top:12px">
+      <div class="cr-cs-bin-head"><span class="cr-cs-bin-name" style="color:${t.text}">${esc(cat)}</span></div>
+      <div class="cr-cardsort-category-cards">
+        ${items.map(x => {
+          const ok = x.c.correctCategory === cat;
+          if (ok) right++;
+          return `<div class="cr-cardsort-card ${ok ? 'correct' : 'incorrect'}">${esc(x.c.text)}</div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  h += `<div class="cr-cs-footer"><button type="button" class="cr-cs-reset" data-action="csmReset" data-target="${id}">Try again</button></div>`;
+  h += `<div class="cr-kc-explanation show">${el._csBlock.explanation || ''}</div>`;
+  el.innerHTML = h;
+  const status = document.getElementById(id + '-mstatus');
+  if (status) status.textContent = right + ' of ' + st.cards.length + ' placed correctly';
+  srAnnounce(right + ' of ' + st.cards.length + ' correct.');
+}
+
+function csmReset(id) {
+  const el = document.getElementById(id);
+  if (!el || !el._csBlock) return;
+  renderCardSort(el.parentElement, el._csBlock, el._csBlockIndex);
 }
 
 // ─── SEQUENCING ───
@@ -7167,47 +7689,104 @@ function seqCheck(id) {
   srAnnounce(allCorrect ? 'All in correct order!' : 'Some items are out of order.');
 }
 
-// ─── TIMELINE ───
+// ─── TIMELINE (mockup 15g): horizontal scrub with a detail card ───
 function renderTimeline(wrap, block, blockIndex) {
+  const id = `tl-${currentSectionIndex}-${blockIndex}`;
   const events = block.events || [];
-  let html = `<div class="cr-timeline">
-    <div class="cr-timeline-line"></div>
-    ${events.map(ev => `<div class="cr-timeline-event">
-      <div class="cr-timeline-dot">${esc(ev.year || '')}</div>
-      <div class="cr-timeline-content">
-        <div class="cr-prose">${ev.text || ''}</div>
-      </div>
-    </div>`).join('')}
-  </div>`;
-  wrap.innerHTML = html;
+  wrap.innerHTML = `<div class="cr-timeline" id="${id}" tabindex="0" aria-label="Timeline — use left and right arrow keys to move between points"></div>`;
+  const el = wrap.querySelector('#' + id);
+  el._tl = { events, active: 0 };
+  tlRender(el);
   return wrap;
 }
 
-// ─── HOTSPOT ───
+function tlRender(id) {
+  const el = typeof id === 'string' ? document.getElementById(id) : id;
+  id = el.id;
+  const st = el._tl;
+  const n = st.events.length;
+  if (!n) { el.innerHTML = ''; return; }
+  const active = st.active;
+  const ev = st.events[active];
+  const pct = i => n === 1 ? 0 : (i / (n - 1)) * 100;
+
+  let h = `<div class="cr-tl-status">Step ${active + 1} of ${n}${n > 1 ? ' · use ← → to move' : ''}</div>`;
+  h += `<div class="cr-tl-rail">
+    <div class="cr-tl-track"></div>
+    <div class="cr-tl-fill" style="width:${pct(active)}%"></div>
+    ${st.events.map((e2, i) => {
+      const cls = i === active ? 'active' : (i < active ? 'visited' : '');
+      const posCls = i === 0 ? ' first' : (i === n - 1 ? ' last' : '');
+      const left = i === n - 1 ? 'left:100%' : 'left:' + pct(i) + '%';
+      return `<button type="button" class="cr-tl-node ${cls}${posCls}" style="${i === 0 ? 'left:0' : left}"
+        data-action="tlGo" data-target="${id}" data-idx="${i}" aria-label="Point ${i + 1}: ${esc(e2.year || '')}">
+        <span class="cr-tl-dot"></span><span class="cr-tl-label">${esc(e2.year || (i + 1))}</span>
+      </button>`;
+    }).join('')}
+  </div>`;
+  h += `<div class="cr-tl-detail">
+    <div class="cr-tl-detail-head"><span class="cr-tl-year">${esc(ev.year || '')}</span></div>
+    <div class="cr-tl-body">${ev.text || ''}</div>
+  </div>`;
+  if (n > 1) {
+    const prevEv = st.events[active - 1], nextEv = st.events[active + 1];
+    h += `<div class="cr-tl-nav">
+      <button type="button" class="cr-tl-prev" data-action="tlGo" data-target="${id}" data-idx="${active - 1}" ${active === 0 ? 'disabled' : ''}>← ${prevEv ? esc(prevEv.year || 'Previous') : 'Previous'}</button>
+      <button type="button" class="cr-tl-next" data-action="tlGo" data-target="${id}" data-idx="${active + 1}" ${active === n - 1 ? 'disabled' : ''}>${nextEv ? esc(nextEv.year || 'Next') : 'Next'} →</button>
+    </div>`;
+  }
+  el.innerHTML = h;
+}
+
+function tlGo(id, idx) {
+  const el = document.getElementById(id);
+  const st = el._tl;
+  if (idx < 0 || idx >= st.events.length) return;
+  st.active = idx;
+  tlRender(id);
+  srAnnounce('Point ' + (idx + 1) + ' of ' + st.events.length + ': ' + (st.events[idx].year || ''));
+}
+
+// ─── HOTSPOT (mockup 15f/18a): text list first, image layered over it ───
 function renderHotspot(wrap, block, blockIndex) {
   const id = `hs-${currentSectionIndex}-${blockIndex}`;
   const spots = block.hotspots || [];
-  
+
   let html = `<div class="cr-hotspot" id="${id}">
-    ${block.instructions ? `<p style="font-size:0.9em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.instructions)}</p>` : ''}
-    <div class="cr-hotspot-image-wrap">
-      ${block.hotspotImage ? `<img src="${esc(block.hotspotImage)}" alt="${esc(block.imageDescription || '')}">` : 
-        `<div style="width:100%;height:300px;background:var(--cr-stone);display:flex;align-items:center;justify-content:center;color:var(--cr-text-muted)">${esc(block.imageDescription || 'Interactive diagram')}</div>`}
-      ${spots.map((s, i) => `<button class="cr-hotspot-btn" 
-        style="left:${s.x || 50}%;top:${s.y || 50}%" 
-        data-hs-id="${i}"
-        data-action="hsReveal" data-target="${id}" data-spot="${i}"
-        aria-label="${esc(s.label || 'Hotspot ' + (i+1))}">${i + 1}</button>`).join('')}
+    <div class="cr-hs-statusrow">
+      <span class="cr-hs-status" id="${id}-count">0 of ${spots.length} found</span>
+      <div class="cr-hs-dots" id="${id}-dots">${spots.map(() => '<span class="cr-hs-dot"></span>').join('')}</div>
     </div>
-    <div class="cr-hotspot-info" id="${id}-info">
-      <strong id="${id}-info-title"></strong>
-      <p id="${id}-info-text" style="margin-top:6px"></p>
+    ${block.instructions ? `<div class="cr-hs-title">${esc(block.instructions)}</div>` : ''}
+    <div class="cr-hotspot-image-wrap" id="${id}-imgwrap">
+      ${block.hotspotImage ? `<img src="${esc(block.hotspotImage)}" alt="${esc(block.imageDescription || '')}" style="display:block;width:100%">` :
+        `<div style="width:100%;height:220px;background:repeating-linear-gradient(135deg,#F0EFEA 0 12px,#FBFAF6 12px 24px);display:flex;align-items:center;justify-content:center;color:#8A8178;font:400 12px 'Lato',system-ui,sans-serif">${esc(block.imageDescription || 'Interactive diagram')}</div>`}
+      ${spots.map((s, i2) => `<button type="button" class="cr-hotspot-btn"
+        style="left:${s.x || 50}%;top:${s.y || 50}%"
+        data-hs-id="${i2}"
+        data-action="hsReveal" data-target="${id}" data-spot="${i2}"
+        aria-label="${esc(s.label || 'Hotspot ' + (i2 + 1))}">${i2 + 1}</button>`).join('')}
+      <div class="cr-hs-popover" id="${id}-pop" style="display:none">
+        <button type="button" class="cr-hs-popover-close" data-action="hsClosePop" data-target="${id}" aria-label="Close">✕</button>
+        <div class="cr-hs-popover-eyebrow" id="${id}-pop-eyebrow"></div>
+        <div class="cr-hs-popover-title" id="${id}-pop-title"></div>
+        <div class="cr-hs-popover-body" id="${id}-pop-body"></div>
+      </div>
     </div>
-    <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px" id="${id}-count">0/${spots.length} discovered</p>
+    <div class="cr-hs-textlist">
+      <div class="cr-hs-textlist-head">
+        <span class="cr-hs-textlist-label">ALL ${spots.length === 5 ? 'FIVE' : spots.length}, AS TEXT</span>
+        <span class="cr-hs-srbadge">SCREEN-READER PATH</span>
+      </div>
+      <div class="cr-hs-textlist-rows">
+        ${spots.map((s, i2) => `<div class="cr-hs-textrow"><span class="cr-hs-textrow-num">${i2 + 1}</span><span><span class="cr-hs-textrow-label">${esc(s.label || 'Hotspot ' + (i2 + 1))}</span>${(s.info || s.description) ? ' — ' + esc(s.info || s.description) : ''}</span></div>`).join('')}
+      </div>
+    </div>
   </div>`;
   wrap.innerHTML = html;
-  wrap.querySelector(`#${id}`)._hsRevealed = new Set();
-  wrap.querySelector(`#${id}`)._hsSpots = spots;
+  const el = wrap.querySelector('#' + id);
+  el._hsRevealed = new Set();
+  el._hsSpots = spots;
   return wrap;
 }
 
@@ -7216,25 +7795,53 @@ function hsReveal(id, spotIdx) {
   const spots = el._hsSpots;
   const spot = spots[spotIdx];
   if (!spot) return;
-  
+
   el._hsRevealed.add(spotIdx);
-  
-  // Mark button
+
+  // Pin states: active = the one just opened (navy); others revert to their
+  // found/unexplored state.
+  el.querySelectorAll('.cr-hotspot-btn').forEach(b => {
+    b.classList.remove('active');
+    const i2 = parseInt(b.dataset.hsId, 10);
+    if (el._hsRevealed.has(i2)) { b.classList.add('revealed'); b.innerHTML = '✓'; }
+  });
   const btn = el.querySelector(`[data-hs-id="${spotIdx}"]`);
-  btn.classList.add('revealed');
-  btn.textContent = '✓';
-  
-  // Show info
-  document.getElementById(id + '-info').classList.add('show');
-  document.getElementById(id + '-info-title').textContent = spot.label || '';
-  document.getElementById(id + '-info-text').textContent = spot.info || spot.description || '';
-  
-  // Update count
-  document.getElementById(id + '-count').textContent = `${el._hsRevealed.size}/${spots.length} discovered`;
-  
-  if (el._hsRevealed.size === spots.length) {
-    srAnnounce('All hotspots discovered!');
-  }
+  btn.classList.remove('revealed');
+  btn.classList.add('active');
+  btn.textContent = spotIdx + 1;
+
+  // Popover near the pin, clamped inside the image
+  const pop = document.getElementById(id + '-pop');
+  document.getElementById(id + '-pop-eyebrow').textContent = 'MOMENT ' + (spotIdx + 1);
+  document.getElementById(id + '-pop-title').textContent = spot.label || '';
+  document.getElementById(id + '-pop-body').textContent = spot.info || spot.description || '';
+  pop.style.display = 'block';
+  const wrapEl = document.getElementById(id + '-imgwrap');
+  const x = Math.min(Math.max((spot.x || 50), 8), 92);
+  const y = spot.y || 50;
+  pop.style.left = 'min(calc(' + x + '% - 40px), calc(100% - 270px))';
+  pop.style.top = y > 55 ? 'auto' : 'calc(' + y + '% + 24px)';
+  pop.style.bottom = y > 55 ? 'calc(' + (100 - y) + '% + 24px)' : 'auto';
+
+  // Progress
+  const found = el._hsRevealed.size;
+  const count = document.getElementById(id + '-count');
+  count.textContent = found === spots.length ? 'All ' + spots.length + ' found' : found + ' of ' + spots.length + ' found';
+  count.classList.toggle('complete', found === spots.length);
+  const dots = document.getElementById(id + '-dots');
+  [...dots.children].forEach((d, i2) => d.classList.toggle('found', el._hsRevealed.has(i2)));
+
+  srAnnounce('Moment ' + (spotIdx + 1) + ': ' + (spot.label || '') + '. ' + (spot.info || spot.description || '') + (found === spots.length ? ' All hotspots found.' : ''));
+}
+
+function hsClosePop(id) {
+  const el = document.getElementById(id);
+  document.getElementById(id + '-pop').style.display = 'none';
+  el.querySelectorAll('.cr-hotspot-btn.active').forEach(b => {
+    const i2 = parseInt(b.dataset.hsId, 10);
+    b.classList.remove('active');
+    if (el._hsRevealed.has(i2)) { b.classList.add('revealed'); b.innerHTML = '✓'; }
+  });
 }
 
 // ─── REFLECTION ───
@@ -7905,13 +8512,27 @@ function renderAssessmentResult() {
       html += `<p class="cr-fail-note">Missing on an attempt is an ordinary part of CE. A focused review before attempt ${assessmentState.attempts + 1} is usually what closes the gap.</p>`;
       html += `<button type="button" class="cr-fail-retry" data-action="retryAssessment">Retake exam →</button>`;
       html += `<button type="button" class="cr-fail-quiet" data-action="prevSection">Review the course first</button>`;
+      html += `<div class="cr-fail-integrity">Per NBCC integrity requirements, individual answers are not shown. Your next attempt uses a new question order.</div>`;
+      html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
+      html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
+      html += '</div>';
     } else {
-      html += `<p class="cr-fail-gap">You needed ${passing}%, and all ${maxAttempts} attempts are used.</p>`;
-      html += `<p class="cr-fail-note">Your reading progress and saved items are kept. Contact your course provider about re-enrollment.</p>`;
+      // 17b — all attempts used: burgundy banner with the warning confined to
+      // the renewal-impact panel; the learner's work is framed as kept.
+      html = `<div class="cr-assessment-result exhausted">
+        <div class="cr-fail-clock" aria-hidden="true">⚠</div>
+        <div class="cr-fail-eyebrow" style="color:#F5CBD5">${maxAttempts > 1 ? 'ALL ' + (CR_OPENER_ORDINALS[maxAttempts - 1] || maxAttempts) + ' ATTEMPTS USED' : 'NO ATTEMPTS REMAINING'}</div>
+        <div class="score">${failCorrect !== null ? failCorrect + ' of ' + failTotalQs + ' correct — ' + score + '%' : score + '%'}</div>
+        <div class="cr-exhausted-kept">
+          <div class="cr-exhausted-kept-col"><div class="cr-exhausted-kept-label">WHAT IS KEPT</div>Reading progress, notes, highlights, and saved supplemental items.</div>
+          <div class="cr-exhausted-kept-col"><div class="cr-exhausted-kept-label">WHAT IS NOT</div>CE hours for this course — they issue only on a passing attempt.</div>
+        </div>
+        <div class="cr-exhausted-impact">These CE hours are not counted toward renewal. Your credential standing is otherwise unchanged.</div>
+        <p class="cr-fail-note" style="color:#F3D3DA">Contact your course provider from your dashboard about re-enrollment options.</p>
+        <button type="button" class="cr-fail-quiet" style="color:#F5CBD5" data-action="saveAndExit">Back to dashboard</button>
+        <div style="margin-top:24px;font-size:10px;color:#EBA9B5;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>
+      </div>`;
     }
-    html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
-    html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
-    html += '</div>';
     area.innerHTML = html;
     document.getElementById('crNavButtons').style.display = 'none';
     return;
@@ -10245,8 +10866,10 @@ document.addEventListener('click', function(e) {
     case 'selectMatchDef': selectMatchDef(target, idx); break;
     
     // ─── Flashcards ───
-    case 'flipCard': flipCard(target); break;
-    case 'fcNav': fcNav(target, parseInt(el.dataset.dir)); break;
+    case 'fcFlip': fcFlip(target); break;
+    case 'fcRate': fcRate(target, el.dataset.rating); break;
+    case 'fcBack': fcBack(target); break;
+    case 'fcRestart': fcRestart(target); break;
     
     // ─── Scenario Tree ───
     case 'stChoose': stChoose(target, el.dataset.next, el); break;
@@ -10256,13 +10879,20 @@ document.addEventListener('click', function(e) {
     case 'csTapCard': csTapCard(el, target); break;
     case 'csTapCategory': csTapCategory(el, target); break;
     case 'csCheck': csCheck(target); break;
+    case 'csReset': csReset(target); break;
+    case 'csmAssign': csmAssign(target, parseInt(el.dataset.bin, 10)); break;
+    case 'csmUndo': csmUndo(target); break;
+    case 'csmSkip': csmSkip(target); break;
+    case 'csmReset': csmReset(target); break;
     
     // ─── Sequencing ───
     case 'seqMove': seqMove(target, el, parseInt(el.dataset.dir)); break;
+    case 'tlGo': tlGo(target, parseInt(el.dataset.idx, 10)); break;
     case 'seqCheck': seqCheck(target); break;
     
     // ─── Hotspot ───
     case 'hsReveal': hsReveal(target, parseInt(el.dataset.spot)); break;
+    case 'hsClosePop': hsClosePop(target); break;
     
     // ─── Adaptive Remediation ───
     case 'jumpToBlock': jumpToBlock(el.dataset.targetId); break;
@@ -10271,6 +10901,11 @@ document.addEventListener('click', function(e) {
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
     case 'prevBlockPage': prevBlockPage(); break;
+    case 'footerPrev': footerPrev(); break;
+    case 'footerNext': footerNext(); break;
+    case 'toggleHlPanel': toggleHlPanel(); break;
+    case 'toggleNotesPanel': toggleNotesPanel(); break;
+    case 'hlRemoveItem': hlRemoveItem(el.dataset.hl); break;
     case 'nextBlockPage': nextBlockPage(); break;
     case 'goToSection': goToSection(idx); break;
     case 'startSection': sectionSubState = 'reading'; renderCurrentSection(); break;
@@ -10420,14 +11055,17 @@ if (dropzone) {
 document.addEventListener('dragstart', function(e) {
   if (e.target.classList && e.target.classList.contains('cr-cardsort-card')) {
     csDragData = e.target;
+    e.target.classList.add('dragging'); // stronger shadow + ~1.5° rotation (mockup 15c)
     e.dataTransfer.effectAllowed = 'move';
   }
 });
+document.addEventListener('dragend', function(e) {
+  if (e.target.classList && e.target.classList.contains('cr-cardsort-card')) e.target.classList.remove('dragging');
+});
 document.addEventListener('dragover', function(e) {
-  if (e.target.closest && e.target.closest('.cr-cardsort-category')) {
-    e.preventDefault();
-    e.target.closest('.cr-cardsort-category').classList.add('dragover');
-  }
+  const cat = e.target.closest && e.target.closest('.cr-cardsort-category');
+  if (cat) { e.preventDefault(); cat.classList.add('dragover'); return; }
+  if (e.target.closest && e.target.closest('.cr-cs-tray')) e.preventDefault(); // cards can go back to the tray
 });
 document.addEventListener('dragleave', function(e) {
   if (e.target.closest && e.target.closest('.cr-cardsort-category')) {
@@ -10435,13 +11073,74 @@ document.addEventListener('dragleave', function(e) {
   }
 });
 document.addEventListener('drop', function(e) {
+  if (!csDragData) return;
   const cat = e.target.closest && e.target.closest('.cr-cardsort-category');
-  if (cat && csDragData) {
+  const tray = e.target.closest && e.target.closest('.cr-cs-tray');
+  const container = csDragData.closest('.cr-cardsort');
+  if (cat) {
     e.preventDefault();
     cat.classList.remove('dragover');
     cat.querySelector('.cr-cardsort-category-cards').appendChild(csDragData);
-    csDragData = null;
+  } else if (tray && container) {
+    e.preventDefault();
+    container.querySelector('.cr-cardsort-pool').appendChild(csDragData);
   }
+  if (container) { csDragData.classList.remove('dragging'); csAfterMove(container); }
+  csDragData = null;
+});
+
+// ── Keyboard path for the card sort (mockup 16d): Space picks up/drops, number
+// keys send the held card to a bin, Esc returns it to the tray. Held state and
+// the focused-bin DROP TARGET are honey; every move is announced. ──
+document.addEventListener('keydown', function(e) {
+  const card = e.target.closest && e.target.closest('.cr-cardsort-card');
+  const bin = e.target.closest && e.target.closest('.cr-cardsort-category');
+  const container = (card || bin) ? e.target.closest('.cr-cardsort') : null;
+  if (card && (e.key === ' ' || e.key === 'Enter')) {
+    e.preventDefault();
+    csHold(card, container.id, true);
+    return;
+  }
+  if (bin && csSelectedCard && (e.key === ' ' || e.key === 'Enter')) {
+    e.preventDefault();
+    csPlace(csSelectedCard, bin, container.id);
+    return;
+  }
+  if (csSelectedCard && e.key === 'Escape') {
+    const held = csSelectedCard;
+    const cont = held.closest('.cr-cardsort');
+    if (cont) { e.preventDefault(); csReturnToPool(held, cont.id); }
+    return;
+  }
+  if (csSelectedCard && /^[1-9]$/.test(e.key)) {
+    const cont = csSelectedCard.closest('.cr-cardsort');
+    if (!cont) return;
+    const bins = cont.querySelectorAll('.cr-cardsort-category');
+    const target = bins[parseInt(e.key, 10) - 1];
+    if (target) { e.preventDefault(); csPlace(csSelectedCard, target, cont.id); }
+  }
+});
+document.addEventListener('focusin', function(e) {
+  const bin = e.target.closest && e.target.closest('.cr-cardsort-category');
+  if (bin && csSelectedCard) {
+    bin.classList.add('kbtarget');
+    const n = bin.querySelectorAll('.cr-cardsort-card').length;
+    srAnnounce(bin.dataset.category + ' bin focused, ' + n + ' card' + (n !== 1 ? 's' : '') + '. Press space to drop.');
+  }
+});
+document.addEventListener('focusout', function(e) {
+  const bin = e.target.closest && e.target.closest('.cr-cardsort-category');
+  if (bin) bin.classList.remove('kbtarget');
+});
+
+// Timeline arrow keys (mockup 15g: "use ← → to move")
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const tl = e.target.closest && e.target.closest('.cr-timeline');
+  if (!tl || !tl._tl) return;
+  e.preventDefault();
+  tlGo(tl.id, tl._tl.active + (e.key === 'ArrowRight' ? 1 : -1));
+  tl.focus();
 });
 
 // Text selection → show highlight toolbar
