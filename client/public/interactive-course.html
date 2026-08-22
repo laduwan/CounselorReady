@@ -414,14 +414,22 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 /* — MAIN CONTENT — */
 /* .cr-main spans the full content track (so the reader header/footer bars can too);
-   only .cr-reading-column below is capped at 640px, matching the mockup's own
-   proportions (chrome bars wider than the centered reading text). */
+   only .cr-reading-column below is capped, matching the mockup's own proportions
+   (chrome bars wider than the centered reading text). */
 .cr-main {
   margin: 0 auto;
   padding: 40px 32px 80px;
   width: 100%;
 }
-.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
+/* The mockup's own artboard was only ever previewed at a ~920px-wide viewport,
+   where its 640px column reads as ~70% of the screen. A flat 640px cap matches
+   that number but reads as a much narrower, more heavily-margined strip on a
+   real wide desktop (50% or less at 1280-1920px). Scale with viewport instead:
+   70vw keeps the mockup's tested proportion, floored at the mockup's literal
+   640px (so it never goes narrower), capped at 860px (this file's own prior
+   reading-column width, before this pass) so lines don't get too long to
+   track on very wide monitors. */
+.cr-reading-column { max-width: clamp(640px, 70vw, 860px); margin: 0 auto; width: 100%; }
 @media (max-width: 640px) { .cr-main { padding: 20px 16px 60px; } }
 
 /* — ACCESSIBILITY PANEL — */
