@@ -424,14 +424,15 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 0;
   width: 100%;
 }
-/* DRIFT_FIXES §1 (bundle 4): two constraints at once. The COLUMN is fixed at
-   640px (~70 chars at 17.5px Lato) and the APP FRAME is capped at 1040px so the
-   column occupies ~70% of what surrounds it — the mockup's proportion. Capping
-   only the column produced a ribbon on wide monitors; widening the column to
-   70vw produced 120-char lines. The frame is capped and the column is fixed;
-   never reintroduce a viewport-relative column width. */
-#crApp { max-width: 1040px; margin-inline: auto; width: 100%; }
-.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
+/* MEASURED from mockup 12a (not interpreted from the docs): the prose TEXT is
+   640px wide inside a 920px frame — 69.6%, with 140px of eggshell per side.
+   With border-box the column needs 640 + 2×32 padding = 704px so the text
+   itself measures 640px, and the frame matches the mockup card at 920px.
+   Capping only the column produced a ribbon; 70vw produced 120-char lines;
+   640px on the PADDED container produced 576px text (Ke: "wider prose, less
+   eggshell" — fixed here). Never reintroduce a viewport-relative width. */
+#crApp { max-width: 920px; margin-inline: auto; width: 100%; }
+.cr-reading-column { max-width: 704px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
 /* Exam layout (11f) uses a two-column question + progress rail and needs more room
    than a prose line-length column. */
 .cr-reading-column:has(.cr-exam-header) { max-width: 940px; }
