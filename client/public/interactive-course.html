@@ -419,6 +419,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   width: 100%;
 }
 .cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
+/* Per the design canvas, the reading column occupies 70% of the screen — the 640px
+   in the mockup spec is 70% of its ~915px artboard, i.e. proportional, not fixed.
+   Applied on desktop only (70vw of a phone would be a sliver); capped at 1360px so
+   ultrawide monitors don't produce unreadable line lengths. */
+@media (min-width: 1025px) {
+  .cr-reading-column { max-width: min(70vw, 1360px); }
+}
 /* Page title (mockup 12a): replaces the pink section-divider card the viewer used
    to inject when a section has no sectionDivider block of its own. */
 .cr-page-title {
@@ -2185,9 +2192,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   line-height: 1.75;
   color: var(--cr-text-body);
   margin: 0 0 1.2em;
-  max-width: 680px;
-  margin-left: auto;
-  margin-right: auto;
+  /* Width comes from .cr-reading-column (70% of screen per the design canvas) —
+     the old 680px per-paragraph cap silently re-narrowed wider columns. */
 }
 
 .cr-prose p:last-child,
@@ -2322,7 +2328,6 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   padding-left: 28px;
   text-indent: -28px;
   margin: 0 auto 14px;
-  max-width: 720px;
 }
 
 .cr-reference em {
@@ -2414,7 +2419,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   .cr-prose,
   .cr-block[data-block-type="text"],
   .cr-block[data-block-type="imageText"] {
-    max-width: 720px;
+    /* Width comes from .cr-reading-column (70% of screen per the design canvas) —
+       the old 720px cap here silently re-narrowed wider columns. */
     margin-left: auto;
     margin-right: auto;
   }
@@ -2831,7 +2837,6 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   font-family: 'Lato', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.65;
-  max-width: 720px;
   break-inside: avoid;
   box-shadow: 0 1px 0 var(--cr-border-subtle);
 }
@@ -3771,7 +3776,6 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   position: relative;
   margin: 24px auto;
   padding: 18px 22px;
-  max-width: 720px;
   border-left: 4px solid var(--cr-gold);
   border-radius: var(--cr-radius);
   background: var(--cr-tint-gold);
