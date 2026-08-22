@@ -27,7 +27,7 @@
 :root {
   /* Brand palette */
   --cr-burgundy: #6B1D34;
-  --cr-burgundy-light: #8B3A54;
+  --cr-burgundy-light: #8B2542; /* canon burgundy-mid */
   --cr-burgundy-faded: #F9EEF1;
   --cr-green: #4A7C59;
   --cr-green-light: #6A9A78;
@@ -42,16 +42,18 @@
   --cr-eggshell: #F5F5DC;
   --cr-rose: #D0768A;
   
-  /* Semantic */
+  /* Semantic — values aligned to the design handoff's token table (ink #2C2C2C,
+     secondary #4b5563, muted #6B7280, border #E5E0D8, success = hunter, error
+     #DC2626) so legacy components referencing these vars render on-palette. */
   --cr-bg: var(--cr-eggshell);
   --cr-surface: #FFFFFF;
-  --cr-text: #2D2D2D;
-  --cr-text-secondary: #5A5A5A;
-  --cr-text-muted: #8A8A8A;
-  --cr-border: #E2DFD8;
-  --cr-success: #2E7D4F;
-  --cr-danger: #C0392B;
-  --cr-info: #2980B9;
+  --cr-text: #2C2C2C;
+  --cr-text-secondary: #4b5563;
+  --cr-text-muted: #6B7280;
+  --cr-border: #E5E0D8;
+  --cr-success: #4A7C59;
+  --cr-danger: #DC2626;
+  --cr-info: #284157;
   
   /* Typography */
   --cr-font-display: 'Cormorant Garamond', Georgia, serif;
@@ -451,25 +453,31 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-a11y-toggle:hover { transform: scale(1.1); }
 
+/* Accessibility drawer (mockup 2a): right-side drawer with a navy header, matching
+   the references/supplemental panels — replaces the old 320px popover that sat
+   pinned to the bottom-right corner where the retired floating ♿ button lived. */
 .cr-a11y-panel {
-  position: fixed; bottom: 88px; right: 24px;
-  width: 320px; max-height: 70vh;
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 440px; max-width: 92vw;
   background: var(--cr-surface);
-  border: 1px solid var(--cr-border);
-  border-radius: var(--cr-radius);
-  box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-  z-index: 50;
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -14px 0 34px rgba(40,65,87,.1);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
   overflow-y: auto;
-  display: none;
-  padding: 20px;
+  padding: 0 20px 20px;
 }
-.cr-a11y-panel.open { display: block; }
-.cr-a11y-panel h3 {
+.cr-a11y-panel.open { transform: translateX(0); }
+@media (min-width: 1025px) { .cr-a11y-panel { top: 72px; } }
+.cr-a11y-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--cr-navy); margin: 0 -20px 12px; padding: 14px 20px;
+}
+.cr-a11y-header h3 {
   font-family: var(--cr-font-display);
-  font-size: 18px; font-weight: 700;
-  color: var(--cr-navy);
-  margin-bottom: 16px;
-  display: flex; align-items: center; gap: 8px;
+  font-size: 19px; font-weight: 600;
+  color: #FFFFFF; margin: 0;
 }
 .cr-a11y-option {
   display: flex; align-items: center; justify-content: space-between;
@@ -1455,7 +1463,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 .cr-glossary-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 360px; max-width: 90vw;
+  width: 440px; max-width: 92vw; /* canon: no sub-440px side panels */
   background: var(--cr-surface);
   border-left: 1px solid var(--cr-border);
   box-shadow: -4px 0 24px rgba(0,0,0,0.12);
@@ -1481,7 +1489,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-refs-btn.visible { display: flex; }
 .cr-refs-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 420px; max-width: 92vw;
+  width: 440px; max-width: 92vw; /* canon: no sub-440px side panels */
   background: var(--cr-surface);
   border-left: 1px solid var(--cr-border);
   box-shadow: -4px 0 24px rgba(0,0,0,0.12);
@@ -1524,6 +1532,12 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    display:block inline after its fetch, hence !important. Panels/overlays are only
    reachable through these tabs, so hiding the tabs retires the whole widget. */
 #crdTabR, #crdTabS { display: none !important; }
+
+/* Retired: the Print Section / Export as PDF toolbar that sat on the reading canvas.
+   Not part of the mockup reading page — both actions now live in the Contents
+   drawer's Downloads section (printSection / exportPDF, unchanged). JS still
+   toggles this element's display; !important keeps it retired. */
+#crToolbar { display: none !important; }
 
 /* ═══════════════════════════════════════════════════════════════
    SUPPLEMENTAL DRAWER (mockup 13b) — bound to course.resources[] plus
@@ -1877,7 +1891,6 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 }
 /* When timer is present, push a11y panel and floating buttons above it */
 body.cr-has-timer .cr-a11y-toggle { bottom: 220px; }
-body.cr-has-timer .cr-a11y-panel { bottom: 284px; }
 body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 @media print {
   .cr-timer-widget { display: none !important; }
@@ -1886,7 +1899,6 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   .cr-timer-widget { bottom: 80px; right: 12px; min-width: 160px; padding: 10px 14px; }
   .cr-timer-display { font-size: 22px; }
   body.cr-has-timer .cr-a11y-toggle { bottom: 200px; }
-  body.cr-has-timer .cr-a11y-panel { bottom: 264px; }
   body.cr-has-timer .cr-glossary-btn { bottom: 200px; }
 }
 
@@ -4125,6 +4137,15 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
         <span style="font-size:16px">💾</span>
         <span>Course Data (.json)</span>
       </button>
+      <!-- Relocated from the retired reading-canvas toolbar -->
+      <button class="cr-nav-item" data-action="printSection" style="font-size:12px;padding:8px 12px;min-height:36px">
+        <span style="font-size:16px">🖨️</span>
+        <span>Print Section</span>
+      </button>
+      <button class="cr-nav-item" data-action="exportPDF" style="font-size:12px;padding:8px 12px;min-height:36px">
+        <span style="font-size:16px">📄</span>
+        <span>Export as PDF</span>
+      </button>
     </div>
     <!-- Translation -->
     <div class="cr-translate-bar" id="crTranslateBar" style="display:none">
@@ -4227,7 +4248,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
      ═══════════════════════════════════════════════════════════════ -->
 <button class="cr-a11y-toggle" id="crA11yBtn" data-action="toggleA11yPanel" aria-label="Accessibility options" title="Accessibility options">♿</button>
 <div class="cr-a11y-panel" id="crA11yPanel" role="dialog" aria-label="Accessibility settings">
-  <h3>⚙️ Accessibility</h3>
+  <div class="cr-a11y-header"><h3>Accessibility</h3><button type="button" data-action="toggleA11yPanel" aria-label="Close accessibility settings" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;color:rgba(255,255,255,.85)">✕</button></div>
   
   <div class="cr-a11y-option">
     <label>Text Size</label>
@@ -4310,7 +4331,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 <!-- GLOSSARY PANEL -->
 <div class="cr-glossary-panel" id="crGlossaryPanel">
   <div class="cr-glossary-header">
-    <h3>📖 Key Terms</h3>
+    <h3>Key Terms</h3>
     <button data-action="toggleGlossary" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px">✕</button>
   </div>
   <input class="cr-glossary-search" id="crGlossarySearch" placeholder="Search terms..." type="text">
@@ -4321,7 +4342,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 <button class="cr-refs-btn" id="crRefsBtn" data-action="toggleReferences" aria-label="References" title="References">📚</button>
 <div class="cr-refs-panel" id="crRefsPanel">
   <div class="cr-refs-header">
-    <h3>📚 References</h3>
+    <h3>References</h3>
     <button data-action="toggleReferences" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close references">✕</button>
   </div>
   <div class="cr-refs-list" id="crRefsList"></div>
@@ -5504,6 +5525,11 @@ function renderCurrentSection() {
 
   // Reader header carries section tabs/context that don't exist pre-Begin — same exclusion as the footer nav.
   if (readerHeader) readerHeader.style.display = onOverview ? 'none' : 'flex';
+  // Canon: no section navigation before Begin. On mobile the topbar's hamburger
+  // opens the Contents drawer, so the topbar hides on the overview too; the
+  // learner-initiated "Preview syllabus" link is the sanctioned way to peek.
+  const topbar = document.getElementById('crTopbar');
+  if (topbar) topbar.style.display = onOverview ? 'none' : '';
   // Reading state always shows the normal Aa tool group, not the opener's Contents/Save & exit pair.
   const toolsNormal = document.getElementById('crReaderToolsNormal');
   const toolsOpener = document.getElementById('crReaderToolsOpener');
@@ -9082,26 +9108,26 @@ function buildTitlePageOverview() {
 
   let h = '';
 
-  // Hero card: eyebrow, H1, subtitle, metadata pills, description, intended-for
-  h += '<div style="background:var(--cr-navy);border:1px solid var(--cr-navy);border-radius:14px;padding:24px 30px;margin-bottom:20px">';
-  h += '<div style="font-family:' + uiFont + ';font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#B8CBD9;margin-bottom:8px">Continuing Education · Course Overview</div>';
+  // Hero card (mockup 11a): white card, eyebrow → H1 → italic subtitle → pill row
+  // → hairline → description prose → intended-for. One card, per canon — the
+  // earlier navy hero and split-out description card were off-canon.
+  h += '<div style="background:#FFFFFF;border:1px solid #E2E2BE;border-radius:14px;padding:36px 40px;margin-bottom:20px">';
+  h += '<div style="font-family:' + uiFont + ';font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#A83350;margin-bottom:10px">Continuing Education · Course Overview</div>';
   if (title) {
-    h += '<h1 style="font-family:var(--cr-font-display);font-weight:600;font-size:28px;line-height:1.2;color:#FFFFFF;max-width:28ch;margin:0 0 6px">' + esc(title) + '</h1>';
+    h += '<h1 style="font-family:var(--cr-font-display);font-weight:600;font-size:38px;line-height:1.15;color:#6B1D34;max-width:24ch;margin:0 0 8px">' + esc(title) + '</h1>';
   }
   if (subtitle) {
-    h += '<p style="font-family:var(--cr-font-display);font-style:italic;font-weight:400;font-size:16px;color:#B8CBD9;margin:0 0 12px">' + esc(subtitle) + '</p>';
+    h += '<p style="font-family:var(--cr-font-display);font-style:italic;font-weight:400;font-size:18px;color:#284157;margin:0 0 14px">' + esc(subtitle) + '</p>';
   }
 
-  h += '<div style="margin:0">';
-  if (ceHours) h += pill(ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : ''), 'rgba(212,168,85,0.22)', 'rgba(212,168,85,0.4)', '#F9E7C2');
-  if (hrsLabel) h += pill('~' + hrsLabel, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
-  if (level) h += pill(esc(level), 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
-  h += '</div>';
+  h += '<div style="margin:0 0 4px">';
+  if (ceHours) h += pill(ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : ''), '#F9F0DB', '#F3E0B5', '#6B4A25');
+  if (hrsLabel) h += pill('~' + hrsLabel, '#F8F7F4', '#E5E0D8', '#4b5563');
+  if (level) h += pill(esc(level), '#F8F7F4', '#E5E0D8', '#4b5563');
   h += '</div>';
 
-  // Description / intended-for card — outside the hero, on the plain page background
   if (description || instructor || audience.length) {
-    h += '<div style="background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px;padding:24px;margin-bottom:20px">';
+    h += '<div style="border-top:1px solid #F0EDE8;margin-top:16px;padding-top:16px">';
     if (description) {
       h += '<p style="max-width:70ch;margin:0 0 10px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
     }
@@ -9113,6 +9139,7 @@ function buildTitlePageOverview() {
     }
     h += '</div>';
   }
+  h += '</div>';
 
   // Two-column row: objectives / accreditation
   h += '<div style="display:flex;gap:18px;margin:24px 0;flex-wrap:wrap">';
@@ -9142,8 +9169,11 @@ function buildTitlePageOverview() {
   h += '<div style="font-family:var(--cr-font-display);font-weight:600;font-size:23px;color:#4A1524">Ready to begin?'
      + '<div style="font-family:' + uiFont + ';font-weight:400;font-size:14px;color:#6B7280;margin-top:6px">'
      + 'Course content, section navigation, and handouts unlock once you begin.</div></div>';
+  h += '<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">';
+  h += '<button type="button" style="background:none;border:none;cursor:pointer;font-family:' + uiFont + ';font-weight:700;font-size:13.5px;color:#4A7C59;padding:0" data-action="toggleSidebar">Preview syllabus</button>';
   h += '<button class="cr-btn cr-btn-primary" style="font-family:' + uiFont + ';font-weight:700;font-size:15.5px;'
      + 'padding:16px 32px;border-radius:11px;box-shadow:0 2px 10px rgba(107,29,52,.24)" data-action="goToSection" data-idx="1">Begin Course →</button>';
+  h += '</div>';
   h += '</div>';
 
   course.sections.unshift({
