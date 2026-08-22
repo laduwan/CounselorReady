@@ -1478,6 +1478,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   display: flex; flex-direction: column;
 }
 .cr-refs-panel.open { transform: translateX(0); }
+/* Desktop only (same 1024px breakpoint the sticky reader-header itself uses, see
+   .cr-reader-header's own media rule): start both side panels below the header
+   instead of at top:0, so the header's tab row — which opens/closes these same
+   panels — stays clickable while a panel is open, instead of being covered by it. */
+@media (min-width: 1025px) {
+  .cr-refs-panel, .cr-supp-drawer { top: 72px; }
+}
 .cr-refs-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 20px; border-bottom: 1px solid var(--cr-border);
@@ -1488,6 +1495,78 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font-size: 0.9em; line-height: 1.5; margin: 0 0 14px;
   padding-left: 1.4em; text-indent: -1.4em; color: var(--cr-text);
 }
+
+/* Retired: floating circle tool cluster (bottom-right). Accessibility is reachable
+   via the reader-header "Aa" tool (toggleA11yPanel); References via the reader-header
+   "References" tab (setReaderTab). Buttons stay in the DOM — other code still looks
+   them up by id — just hidden so their old floating position doesn't ship. */
+#crA11yBtn, #crRefsBtn { display: none; }
+
+/* ═══════════════════════════════════════════════════════════════
+   SUPPLEMENTAL DRAWER (mockup 13b) — bound to course.resources[] plus
+   any resources/deliverables blocks embedded in section contentBlocks.
+   440px minimum per spec: a narrower slide-out can't show a PDF, a
+   video, or a template without degrading to a filename list.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-reader-tab-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px; margin-left: 4px;
+  border-radius: 8px; background: #D4A855; color: #4A1524;
+  font: 900 9.5px/16px 'Lato', system-ui, sans-serif;
+}
+.cr-supp-drawer {
+  position: fixed; top: 0; right: -460px; bottom: 0;
+  width: 440px; max-width: 92vw;
+  background: #FFFFFF;
+  border-left: 1px solid #E5E0D8;
+  box-shadow: -14px 0 34px rgba(40,65,87,.1);
+  z-index: 56;
+  transition: right var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-supp-drawer.open { right: 0; }
+.cr-supp-header { padding: 22px 24px 16px; border-bottom: 1px solid #F0EDE8; flex-shrink: 0; }
+.cr-supp-eyebrow {
+  font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; text-transform: uppercase;
+  color: #A67936; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.cr-supp-close { flex-shrink: 0; background: none; border: none; cursor: pointer; font-size: 20px; color: #9CA3AF; line-height: 1; padding: 2px 6px; border-radius: 6px; }
+.cr-supp-close:hover { background: #F0EDE8; }
+.cr-supp-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 21px; color: #4A1524; margin: 4px 0 14px; }
+.cr-supp-filters { display: flex; gap: 8px; }
+.cr-supp-filter {
+  font: 700 11px/1 'Lato', system-ui, sans-serif; padding: 6px 12px; border-radius: 20px;
+  border: 1px solid #E5E0D8; background: #FBFAF6; color: #6B7280; cursor: pointer;
+}
+.cr-supp-filter.active { background: #FDF5F6; border-color: #F5D0D6; color: #6B1D34; }
+.cr-supp-body { flex: 1; overflow-y: auto; padding: 10px 20px; }
+.cr-supp-row { display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 10px; }
+.cr-supp-row-icon {
+  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+  background: #F0F4F7; color: #284157;
+}
+.cr-supp-row-main { flex: 1; min-width: 0; }
+.cr-supp-row-title { font: 400 13.5px/1.3 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-supp-row-meta { font: 700 11px/1.4 'Lato', system-ui, sans-serif; margin-top: 2px; }
+.cr-supp-row.unsaved .cr-supp-row-meta { color: #A67936; }
+.cr-supp-row.saved .cr-supp-row-meta { color: #6B7280; }
+.cr-supp-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #D4A855; margin-right: 6px; }
+.cr-supp-check {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%; background: #4A7C59; color: #fff; font-size: 10px; margin-right: 6px;
+}
+.cr-supp-save-btn { font: 700 11.5px/1 'Lato', system-ui, sans-serif; padding: 7px 14px; border-radius: 8px; border: none; background: #6B1D34; color: #fff; cursor: pointer; flex-shrink: 0; }
+.cr-supp-open-link { font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; text-decoration: none; flex-shrink: 0; padding: 7px 4px; }
+.cr-supp-footer { padding: 16px 20px; border-top: 1px solid #F0EDE8; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.cr-supp-footer-note { font: 400 12px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-supp-save-all { font: 700 13px/1 'Lato', system-ui, sans-serif; padding: 10px 16px; border-radius: 9px; border: none; background: #4A7C59; color: #fff; cursor: pointer; flex-shrink: 0; }
+.cr-supp-empty { text-align: center; color: #9CA3AF; font: 400 13px/1.6 'Lato', system-ui, sans-serif; padding: 40px 20px; }
+/* Lesson stays visible but dims while the drawer is open, per spec — retention, not layout. */
+#crApp[data-active-tab="supplemental"] .cr-reading-column,
+#crApp[data-active-tab="supplemental"] #crOpenerArea { opacity: .45; transition: opacity var(--cr-transition); }
+@media (max-width: 640px) { .cr-supp-drawer { width: 100vw; max-width: 100vw; right: -100vw; } }
+
 .cr-glossary-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--cr-border);
@@ -3993,7 +4072,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <span style="flex:1"></span>
       <button type="button" class="cr-reader-tab active" data-action="setReaderTab" data-tab="lesson">Lesson</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
-      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental</button>
+      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
       <span id="crReaderToolsNormal" style="display:contents">
         <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
       </span>
@@ -4136,6 +4215,20 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
     <button data-action="toggleReferences" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close references">✕</button>
   </div>
   <div class="cr-refs-list" id="crRefsList"></div>
+</div>
+
+<!-- SUPPLEMENTAL DRAWER (mockup 13b) — opened via the reader-header "Supplemental" tab -->
+<div class="cr-supp-drawer" id="crSuppDrawer">
+  <div class="cr-supp-header">
+    <div class="cr-supp-eyebrow"><span id="crSuppEyebrow">SUPPLEMENTAL</span><button type="button" class="cr-supp-close" data-action="closeSupplemental" aria-label="Close supplemental">✕</button></div>
+    <div class="cr-supp-title">Take these into session</div>
+    <div class="cr-supp-filters" id="crSuppFilters">
+      <button type="button" class="cr-supp-filter active" data-action="setSupplementalFilter" data-filter="section">This section</button>
+      <button type="button" class="cr-supp-filter" data-action="setSupplementalFilter" data-filter="course">Whole course</button>
+    </div>
+  </div>
+  <div class="cr-supp-body" id="crSuppBody"></div>
+  <div class="cr-supp-footer" id="crSuppFooter"></div>
 </div>
 
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
@@ -4615,6 +4708,7 @@ function loadCourse(data) {
   restoreProgress();
   buildGlossary();
   buildReferences();
+  updateSupplementalBadge();
   initTranslation();
   buildSectionNav();
   renderCurrentSection();
@@ -5092,14 +5186,27 @@ function toggleReadAloud() {
 
 function toggleTTS() { toggleReadAloud(); }
 
-// Reader header tab group. References/Supplemental just flag the active tab for now —
-// the actual drawer wiring is a separate, future task.
+// Reader header tab group. Lesson closes both drawers; References opens the existing
+// references panel; Supplemental opens the drawer built in the SUPPLEMENTAL DRAWER
+// section below.
 function setReaderTab(tab) {
   const app = document.getElementById('crApp');
   if (app) app.setAttribute('data-active-tab', tab);
   document.querySelectorAll('.cr-reader-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
+  const refsPanel = document.getElementById('crRefsPanel');
+  const suppDrawer = document.getElementById('crSuppDrawer');
+  if (tab === 'supplemental') {
+    if (refsPanel) refsPanel.classList.remove('open');
+    if (suppDrawer) { suppDrawer.classList.add('open'); renderSupplementalDrawer(); }
+  } else if (tab === 'references') {
+    if (suppDrawer) suppDrawer.classList.remove('open');
+    if (refsPanel) refsPanel.classList.add('open');
+  } else {
+    if (refsPanel) refsPanel.classList.remove('open');
+    if (suppDrawer) suppDrawer.classList.remove('open');
+  }
 }
 
 function getTTSVolume() {
@@ -5336,6 +5443,11 @@ function renderCurrentSection() {
   restoreHighlights();
   const _toolbar = document.getElementById('crToolbar');
   if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
+  // "This section" pool depends on currentSectionIndex — refresh if the drawer is open,
+  // and keep the tab badge (whole-course unsaved count) current either way.
+  const _suppDrawer = document.getElementById('crSuppDrawer');
+  if (_suppDrawer && _suppDrawer.classList.contains('open')) renderSupplementalDrawer();
+  else updateSupplementalBadge();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8371,6 +8483,138 @@ function buildReferences() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SUPPLEMENTAL DRAWER (mockup 13b) — "This section" pulls items from
+// resources/deliverables blocks in the current section's contentBlocks;
+// "Whole course" adds the flat course.resources[] list. Save state
+// persists per learner per course via saveState/loadState (localStorage).
+// ═══════════════════════════════════════════════════════════════
+let crSuppFilter = 'section';
+
+function crSupplementalPool(scope) {
+  const items = [];
+  const seen = new Set();
+  function add(r, sectionIdx) {
+    if (!r || (!r.title && !r.url)) return;
+    const key = (r.url || r.title || '') + '|' + sectionIdx;
+    if (seen.has(key)) return;
+    seen.add(key);
+    items.push(Object.assign({}, r, { _sectionIdx: sectionIdx }));
+  }
+  (course?.sections || []).forEach((sec, si) => {
+    if (scope === 'section' && si !== currentSectionIndex) return;
+    (sec.contentBlocks || []).forEach(b => {
+      if ((b.type === 'resources' || b.type === 'deliverables') && Array.isArray(b.resources)) {
+        b.resources.forEach(r => add(r, si));
+      }
+    });
+  });
+  if (scope !== 'section') {
+    (course?.resources || []).forEach(r => add(r, -1));
+  }
+  return items;
+}
+
+function crSupplementalItemKey(item) {
+  return item.url || item.title || '';
+}
+
+function crSupplementalState() {
+  return loadState('supplemental') || {};
+}
+
+function crSupplementalIcon(type) {
+  const map = { pdf: '📄', docx: '📃', doc: '📃', worksheet: '📝', template: '📝', pptx: '📊', xlsx: '📊', video: '🎬', website: '🌐', link: '🔗', book: '📚' };
+  return map[(type || '').toLowerCase()] || '📎';
+}
+
+function updateSupplementalBadge() {
+  const badge = document.getElementById('crSuppBadge');
+  if (!badge) return;
+  const state = crSupplementalState();
+  const unsaved = crSupplementalPool('course').filter(item => state[crSupplementalItemKey(item)] !== 'saved').length;
+  if (unsaved > 0) { badge.textContent = String(unsaved); badge.style.display = 'inline-flex'; }
+  else { badge.style.display = 'none'; }
+}
+
+function closeSupplemental() {
+  setReaderTab('lesson');
+}
+
+function setSupplementalFilter(filter) {
+  crSuppFilter = filter === 'course' ? 'course' : 'section';
+  document.querySelectorAll('.cr-supp-filter').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.filter === crSuppFilter);
+  });
+  renderSupplementalDrawer();
+}
+
+function renderSupplementalDrawer() {
+  const body = document.getElementById('crSuppBody');
+  const footer = document.getElementById('crSuppFooter');
+  const eyebrow = document.getElementById('crSuppEyebrow');
+  if (!body || !footer) return;
+
+  const state = crSupplementalState();
+  const items = crSupplementalPool(crSuppFilter);
+  const allItems = crSupplementalPool('course');
+  const unsavedCount = allItems.filter(item => state[crSupplementalItemKey(item)] !== 'saved').length;
+
+  if (eyebrow) eyebrow.textContent = 'SUPPLEMENTAL' + (unsavedCount > 0 ? ' · ' + unsavedCount + ' NOT YET SAVED' : '');
+
+  const sectionFilterBtn = document.querySelector('.cr-supp-filter[data-filter="section"]');
+  if (sectionFilterBtn) sectionFilterBtn.textContent = 'This section ' + crSupplementalPool('section').length;
+  const courseFilterBtn = document.querySelector('.cr-supp-filter[data-filter="course"]');
+  if (courseFilterBtn) courseFilterBtn.textContent = 'Whole course ' + allItems.length;
+
+  if (!items.length) {
+    body.innerHTML = '<div class="cr-supp-empty">No supplemental items ' + (crSuppFilter === 'section' ? 'for this section.' : 'for this course yet.') + '</div>';
+  } else {
+    body.innerHTML = items.map(item => {
+      const key = crSupplementalItemKey(item);
+      const saved = state[key] === 'saved';
+      return '<div class="cr-supp-row ' + (saved ? 'saved' : 'unsaved') + '">'
+        + '<div class="cr-supp-row-icon">' + crSupplementalIcon(item.type) + '</div>'
+        + '<div class="cr-supp-row-main">'
+        + '<div class="cr-supp-row-title">' + esc(item.title || 'Resource') + '</div>'
+        + '<div class="cr-supp-row-meta">' + (saved
+            ? '<span class="cr-supp-check">✓</span>Saved'
+            : '<span class="cr-supp-dot"></span>' + esc((item.type || 'link').toUpperCase()) + ' · not saved yet')
+        + '</div></div>'
+        + (saved
+            ? '<a class="cr-supp-open-link" href="' + esc(item.url || '#') + '" target="_blank" rel="noopener">Open</a>'
+            : '<button type="button" class="cr-supp-save-btn" data-action="saveSupplementalItem" data-key="' + esc(key) + '">Save</button>')
+        + '</div>';
+    }).join('');
+  }
+
+  if (unsavedCount > 0) {
+    footer.innerHTML = '<span class="cr-supp-footer-note">' + unsavedCount + ' item' + (unsavedCount !== 1 ? 's' : '') + ' still unsaved. We\'ll remind you at the checkpoint.</span>'
+      + '<button type="button" class="cr-supp-save-all" data-action="saveAllSupplemental">Save all</button>';
+  } else {
+    footer.innerHTML = '<span class="cr-supp-footer-note">All caught up.</span>';
+  }
+
+  updateSupplementalBadge();
+}
+
+function saveSupplementalItem(key) {
+  if (!key) return;
+  const item = crSupplementalPool('course').find(it => crSupplementalItemKey(it) === key);
+  const state = crSupplementalState();
+  state[key] = 'saved';
+  saveState('supplemental', state);
+  if (item && item.url) window.open(item.url, '_blank', 'noopener');
+  renderSupplementalDrawer();
+}
+
+function saveAllSupplemental() {
+  const state = crSupplementalState();
+  crSupplementalPool('course').forEach(item => { state[crSupplementalItemKey(item)] = 'saved'; });
+  saveState('supplemental', state);
+  renderSupplementalDrawer();
+}
+
+// ═══════════════════════════════════════════════════════════════
 // FEATURE: LEARNING OBJECTIVES TRACKER
 // ═══════════════════════════════════════════════════════════════
 let checkedObjectives = new Set();
@@ -8871,6 +9115,10 @@ document.addEventListener('click', function(e) {
     // ─── New Features ───
     case 'toggleGlossary': toggleGlossary(); break;
     case 'toggleReferences': toggleReferences(); break;
+    case 'closeSupplemental': closeSupplemental(); break;
+    case 'setSupplementalFilter': setSupplementalFilter(el.dataset.filter); break;
+    case 'saveSupplementalItem': saveSupplementalItem(el.dataset.key); break;
+    case 'saveAllSupplemental': saveAllSupplemental(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
