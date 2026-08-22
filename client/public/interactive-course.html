@@ -414,14 +414,22 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 /* — MAIN CONTENT — */
 /* .cr-main spans the full content track (so the reader header/footer bars can too);
-   only .cr-reading-column below is capped at 640px, matching the mockup's own
-   proportions (chrome bars wider than the centered reading text). */
+   only .cr-reading-column below is capped, matching the mockup's own proportions
+   (chrome bars wider than the centered reading text). */
 .cr-main {
   margin: 0 auto;
   padding: 40px 32px 80px;
   width: 100%;
 }
-.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
+/* The mockup's own artboard was only ever previewed at a ~920px-wide viewport,
+   where its 640px column reads as ~70% of the screen. A flat 640px cap matches
+   that number but reads as a much narrower, more heavily-margined strip on a
+   real wide desktop (50% or less at 1280-1920px). Scale with viewport instead:
+   70vw keeps the mockup's tested proportion, floored at the mockup's literal
+   640px (so it never goes narrower), capped at 860px (this file's own prior
+   reading-column width, before this pass) so lines don't get too long to
+   track on very wide monitors. */
+.cr-reading-column { max-width: clamp(640px, 70vw, 860px); margin: 0 auto; width: 100%; }
 @media (max-width: 640px) { .cr-main { padding: 20px 16px 60px; } }
 
 /* — ACCESSIBILITY PANEL — */
@@ -1270,6 +1278,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 5px 9px; cursor: pointer;
 }
 @media (max-width: 1024px) { .cr-reader-header { display: none; } }
+/* On desktop the reader header's References/Supplemental tabs now open these same
+   drawers (see setReaderTab()/crdOpen*), so the floating edge tabs would be a
+   redundant second entry point. Keep them on mobile, where the header is hidden
+   and they're the only way in. */
+@media (min-width: 1025px) { .crd-tab { display: none !important; } }
 
 /* ═══════════════════════════════════════════════════════════════
    SECTION OPENER
@@ -5099,6 +5112,24 @@ function setReaderTab(tab) {
   if (app) app.setAttribute('data-active-tab', tab);
   document.querySelectorAll('.cr-reader-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  // Drive the existing References/Resources drawers (crd* system) rather than
+  // duplicating them — see the exports at the end of that IIFE.
+  if (typeof window.crdCloseReferences === 'function') window.crdCloseReferences();
+  if (typeof window.crdCloseSupplemental === 'function') window.crdCloseSupplemental();
+  if (tab === 'references' && typeof window.crdOpenReferences === 'function') window.crdOpenReferences();
+  if (tab === 'supplemental' && typeof window.crdOpenSupplemental === 'function') window.crdOpenSupplemental();
+}
+
+// Called when a drawer is dismissed via its own X/overlay (not via the reader-tab
+// click) so the header's Lesson tab re-activates instead of staying stuck on a
+// closed drawer's tab. Intentionally does not call setReaderTab() itself — that
+// would call back into the drawer close functions and recurse.
+function crdSyncReaderTabToLesson() {
+  const app = document.getElementById('crApp');
+  if (app) app.setAttribute('data-active-tab', 'lesson');
+  document.querySelectorAll('.cr-reader-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === 'lesson');
   });
 }
 
@@ -9239,14 +9270,20 @@ function dismissNPS() {
   function closeR() { document.getElementById('crdRO').classList.remove('open'); document.getElementById('crdRP').classList.remove('open'); }
   function openS() { renderRes(); document.getElementById('crdSO').classList.add('open'); document.getElementById('crdSP').classList.add('open'); }
   function closeS() { document.getElementById('crdSO').classList.remove('open'); document.getElementById('crdSP').classList.remove('open'); }
+  // Only the drawer's own X/overlay dismissal syncs the header tab back to Lesson —
+  // setReaderTab() already sets the tab it's switching TO itself, and calls the plain
+  // closeR/closeS above first (to close whichever drawer was open) without this sync,
+  // so switching tabs doesn't fight itself back to 'lesson'.
+  function closeRAndSyncTab() { closeR(); if (typeof window.crdSyncReaderTabToLesson === 'function') window.crdSyncReaderTabToLesson(); }
+  function closeSAndSyncTab() { closeS(); if (typeof window.crdSyncReaderTabToLesson === 'function') window.crdSyncReaderTabToLesson(); }
 
   // ── Events ──
   tabR.addEventListener('click', openR);
   tabS.addEventListener('click', openS);
-  document.getElementById('crdRX').addEventListener('click', closeR);
-  document.getElementById('crdSX').addEventListener('click', closeS);
-  document.getElementById('crdRO').addEventListener('click', closeR);
-  document.getElementById('crdSO').addEventListener('click', closeS);
+  document.getElementById('crdRX').addEventListener('click', closeRAndSyncTab);
+  document.getElementById('crdSX').addEventListener('click', closeSAndSyncTab);
+  document.getElementById('crdRO').addEventListener('click', closeRAndSyncTab);
+  document.getElementById('crdSO').addEventListener('click', closeSAndSyncTab);
   document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeR(); closeS(); } });
 
   // ── Fetch data from API using slug in URL ──
@@ -9287,6 +9324,14 @@ function dismissNPS() {
     if (app && app.style.display === 'grid') { clearInterval(poll); init(); }
   }, 300);
   setTimeout(function() { clearInterval(poll); }, 30000);
+
+  // Exposed so the reader-header's Lesson/References/Supplemental tabs (setReaderTab(),
+  // defined outside this IIFE) can drive these same drawers instead of the floating
+  // edge tabs duplicating them.
+  window.crdOpenReferences = openR;
+  window.crdCloseReferences = closeR;
+  window.crdOpenSupplemental = openS;
+  window.crdCloseSupplemental = closeS;
 })();
 </script>
 <script src="shareWidget.js"></script>
