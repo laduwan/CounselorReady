@@ -417,10 +417,13 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    proportions (chrome bars wider than the centered reading text). */
 .cr-main {
   margin: 0 auto;
-  padding: 40px 32px 80px;
+  /* No padding of its own: the reader header and footer bars span the full page
+     width edge-to-edge (as in the mockup), and the section opener runs full-bleed.
+     The reading column below carries the canvas padding instead. */
+  padding: 0;
   width: 100%;
 }
-.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
+.cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
 /* Per the design canvas, the reading column occupies 70% of the screen — the 640px
    in the mockup spec is 70% of its ~915px artboard, i.e. proportional, not fixed.
    Applied on desktop only (70vw of a phone would be a sliver); capped at 1360px so
@@ -1295,7 +1298,10 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    SECTION OPENER
    ═══════════════════════════════════════════════════════════════ */
 .cr-opener-panel {
-  margin: -40px -32px;
+  /* .cr-main no longer pads the content area, so the panel is naturally
+     full-bleed — the old negative margins that escaped that padding would
+     now overflow the viewport. */
+  margin: 0;
   padding: 56px 34px;
   border-radius: 0;
   display: flex;
