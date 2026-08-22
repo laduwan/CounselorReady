@@ -423,10 +423,14 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 0;
   width: 100%;
 }
+/* DRIFT_FIXES §1 (bundle 4): two constraints at once. The COLUMN is fixed at
+   640px (~70 chars at 17.5px Lato) and the APP FRAME is capped at 1040px so the
+   column occupies ~70% of what surrounds it — the mockup's proportion. Capping
+   only the column produced a ribbon on wide monitors; widening the column to
+   70vw produced 120-char lines. The frame is capped and the column is fixed;
+   never reintroduce a viewport-relative column width. */
+#crApp { max-width: 1040px; margin-inline: auto; width: 100%; }
 .cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
-/* 640px is a fixed line-length decision (~70 characters at 17.5px Lato), not a
-   fraction of the mockup canvas — do not reintroduce a vw-based override here.
-   Wide-screen breathing room comes from margin around the column, never width. */
 /* Exam layout (11f) uses a two-column question + progress rail and needs more room
    than a prose line-length column. */
 .cr-reading-column:has(.cr-exam-header) { max-width: 940px; }
@@ -1421,9 +1425,23 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-nav-buttons {
   display: flex; justify-content: space-between; align-items: center;
   padding: 14px 28px;
-  border-top: 1px solid #E5E0D8;
+  border-top: 1px solid #E2E2BE;
   background: #FFFFFF;
   position: sticky; bottom: 0; z-index: 28;
+}
+/* Footer buttons name their destinations (ELEMENT_INVENTORY §2): prev is
+   outlined and titled with the previous page, continue is hunter and titled
+   with the next page. */
+#crPrevBtn {
+  background: #FFFFFF; border: 1px solid #E2E2BE; border-radius: 10px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13px;
+  color: #4b5563; padding: 12px 18px; min-height: 44px;
+}
+#crNextBtn {
+  background: #4A7C59; border: none; border-radius: 10px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13.5px;
+  color: #FFFFFF; padding: 13px 24px; min-height: 44px;
+  box-shadow: none;
 }
 #crPrevBtn {
   border: 1px solid #E5E0D8; background: #FFFFFF;
@@ -1537,6 +1555,43 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-glossary-panel.open { transform: translateX(0); }
 
+/* Highlights + Notes drawers (reading-page tools per ELEMENT_INVENTORY §1) —
+   same 440px side-drawer family as References/Supplemental/Key terms. */
+.cr-hl-panel, .cr-notes-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 440px; max-width: 92vw; /* canon: no sub-440px side panels */
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-hl-panel.open, .cr-notes-panel.open { transform: translateX(0); }
+.cr-hl-item {
+  background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 10px;
+  padding: 12px 14px; margin-bottom: 10px;
+}
+.cr-hl-item-text { font: 400 13.5px/1.55 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-hl-item-note { font: 400 12px/1.5 'Lato', system-ui, sans-serif; color: #7A5C24; margin-top: 6px; }
+.cr-hl-item-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.cr-hl-item-sec { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; color: #9CA3AF; }
+.cr-hl-item-remove {
+  margin-left: auto; background: none; border: none; cursor: pointer; padding: 0;
+  font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; min-height: 32px;
+}
+.cr-hl-item-remove:hover { color: var(--cr-burgundy); }
+.cr-hl-empty { font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-notes-area {
+  width: 100%; min-height: 180px; resize: vertical;
+  border: 1.5px solid var(--cr-border); border-radius: 10px;
+  padding: 14px; font: 400 14px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C;
+}
+.cr-notes-area:focus { border-color: var(--cr-navy); outline: none; }
+.cr-notes-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #6B7280; margin: 0 0 8px; }
+.cr-notes-saved { font: 400 11.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
+.cr-notes-other { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 18px; }
+
 /* References drawer — mirrors glossary, burgundy accent */
 .cr-refs-btn {
   position: fixed; bottom: 24px; right: 148px;
@@ -1567,7 +1622,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    instead of at top:0, so the header's tab row — which opens/closes these same
    panels — stays clickable while a panel is open, instead of being covered by it. */
 @media (min-width: 1025px) {
-  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel { top: 72px; }
+  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel, .cr-hl-panel, .cr-notes-panel { top: 72px; }
 }
 .cr-refs-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -2416,8 +2471,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   line-height: 1.75;
   color: var(--cr-text-body);
   margin: 0 0 1.2em;
-  /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
-     the old 680px per-paragraph cap silently re-narrowed the column. */
+  /* Width comes from .cr-reading-column (frame capped at 1040px, column fixed at
+     640px per DRIFT_FIXES §1) — the old 680px per-paragraph cap silently
+     re-narrowed the column. */
 }
 
 .cr-prose p:last-child,
@@ -2643,8 +2699,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   .cr-prose,
   .cr-block[data-block-type="text"],
   .cr-block[data-block-type="imageText"] {
-    /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
-       the old 720px cap here silently re-narrowed the column. */
+    /* Width comes from .cr-reading-column (frame capped at 1040px, column fixed at
+       640px per DRIFT_FIXES §1) — the old 720px cap here silently re-narrowed
+       the column. */
     margin-left: auto;
     margin-right: auto;
   }
@@ -4496,16 +4553,19 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
       <span style="flex:1"></span>
+      <!-- ELEMENT_INVENTORY §1/§4: reading page tools are Aa · Highlights · Notes;
+           Save & exit belongs to the opener/boundary group only; Contents is not a
+           reading-page control (the tab group + boundary screens cover navigation;
+           the drawer remains reachable from the mobile topbar hamburger).
+           Key terms is a deliberate deviation: hidden unless the course defines
+           glossary terms — removing it would strand the glossary feature. -->
       <span id="crReaderToolsNormal" style="display:contents">
         <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
-        <!-- Hidden until buildGlossary() finds terms — mirrors the old floating 📖 button's visibility rule. -->
+        <button type="button" class="cr-reader-tool" data-action="toggleHlPanel">Highlights</button>
+        <button type="button" class="cr-reader-tool" data-action="toggleNotesPanel">Notes</button>
         <button type="button" class="cr-reader-tool" id="crGlossaryTool" data-action="toggleGlossary" style="display:none">Key terms</button>
-        <!-- Now that the sidebar is off-canvas at every width, this is the desktop
-             route to section nav / downloads / progress during reading. -->
-        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
       </span>
       <span id="crReaderToolsOpener" style="display:none">
-        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
         <button type="button" class="cr-reader-tool" data-action="saveAndExit">Save &amp; exit</button>
       </span>
     </div>
@@ -4532,10 +4592,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
     <!-- Navigation — same full-width reasoning as the header above. -->
     <div class="cr-nav-buttons" id="crNavButtons">
-      <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="prevSection">← Previous</button>
+      <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="footerPrev">← Previous</button>
       <span id="crPageIndicator" style="font-size:0.85em;color:var(--cr-text-muted)"></span>
       <span id="crReadTimeLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#9CA3AF;white-space:nowrap"></span>
-      <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="nextSection">Next →</button>
+      <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="footerNext">Next →</button>
     </div>
   </main>
 </div>
@@ -4633,6 +4693,24 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   </div>
   <input class="cr-glossary-search" id="crGlossarySearch" placeholder="Search terms..." type="text">
   <div class="cr-glossary-list" id="crGlossaryList"></div>
+</div>
+
+<!-- HIGHLIGHTS PANEL (reader-header "Highlights" tool) -->
+<div class="cr-hl-panel" id="crHlPanel" role="dialog" aria-label="Highlights">
+  <div class="cr-refs-header">
+    <h3 style="color:var(--cr-navy)">Highlights</h3>
+    <button data-action="toggleHlPanel" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close">✕</button>
+  </div>
+  <div class="cr-refs-list" id="crHlList"></div>
+</div>
+
+<!-- NOTES PANEL (reader-header "Notes" tool) -->
+<div class="cr-notes-panel" id="crNotesPanel" role="dialog" aria-label="Notes">
+  <div class="cr-refs-header">
+    <h3 style="color:var(--cr-navy)">Notes</h3>
+    <button data-action="toggleNotesPanel" style="width:36px;height:36px;border:none;background:none;cursor:pointer;font-size:18px;min-height:36px;min-width:36px" aria-label="Close">✕</button>
+  </div>
+  <div class="cr-refs-list" id="crNotesBody"></div>
 </div>
 
 <!-- REFERENCES BUTTON + PANEL -->
@@ -5617,6 +5695,12 @@ function renderSectionCheckpoint(si) {
   if (openerArea) { openerArea.style.display = 'none'; openerArea.innerHTML = ''; }
   const readerHeader = document.getElementById('crReaderHeader');
   if (readerHeader) readerHeader.style.display = 'flex';
+  // Boundary screens carry the Save & exit tool group (ELEMENT_INVENTORY §4) —
+  // a natural stopping point, unlike mid-reading.
+  const cpToolsNormal = document.getElementById('crReaderToolsNormal');
+  const cpToolsOpener = document.getElementById('crReaderToolsOpener');
+  if (cpToolsNormal) cpToolsNormal.style.display = 'none';
+  if (cpToolsOpener) cpToolsOpener.style.display = 'contents';
 
   const navSections = course.sections.filter(s => !s._isOverview);
   const displayNum = navSections.indexOf(section) + 1;
@@ -5663,7 +5747,8 @@ function renderSectionCheckpoint(si) {
   h += '</div>';
   h += '<div class="cr-cp-meta">' + stats.pages + ' page' + (stats.pages !== 1 ? 's' : '') + ' · ' + stats.minutes + ' min'
      + (checks.length ? ' · ' + answered + ' of ' + checks.length + ' check' + (checks.length !== 1 ? 's' : '') : '')
-     + (suppAll.length ? ' · ' + suppSaved + ' of ' + suppAll.length + ' saved' : '') + '</div>';
+     + (suppAll.length ? ' · ' + suppSaved + ' of ' + suppAll.length + ' saved' : '')
+     + (crNotesCount(si) ? ' · ' + crNotesCount(si) + ' note' + (crNotesCount(si) !== 1 ? 's' : '') : '') + '</div>';
   if (carry.length) {
     h += '<div class="cr-cp-hairline"></div>';
     h += '<div class="cr-cp-label">THINGS TO REMEMBER</div>';
@@ -5828,7 +5913,131 @@ function closeSidebar() {
 // ═══════════════════════════════════════════════════════════════
 // ACCESSIBILITY
 // ═══════════════════════════════════════════════════════════════
+// ── Highlights & Notes drawers (reader-header tools, ELEMENT_INVENTORY §1).
+// The mockups specify the controls; drawer behavior follows the established
+// 440px side-drawer pattern (References / Supplemental / Key terms).
+function crCloseSideDrawers(except) {
+  ['crHlPanel', 'crNotesPanel', 'crGlossaryPanel', 'crRefsPanel', 'crA11yPanel'].forEach(id => {
+    if (id !== except) document.getElementById(id)?.classList.remove('open');
+  });
+}
+
+function toggleHlPanel() {
+  const panel = document.getElementById('crHlPanel');
+  const opening = !panel.classList.contains('open');
+  crCloseSideDrawers('crHlPanel');
+  if (opening) { buildHlPanel(); panel.classList.add('open'); }
+  else panel.classList.remove('open');
+}
+
+function buildHlPanel() {
+  const list = document.getElementById('crHlList');
+  const all = loadState('highlights') || highlights || [];
+  if (!all.length) {
+    list.innerHTML = '<p class="cr-hl-empty">Nothing highlighted yet. Select any passage in the lesson and choose Highlight.</p>';
+    return;
+  }
+  const navSections = course.sections.filter(s => !s._isOverview);
+  let h = '';
+  all.forEach(hl => {
+    const sec = course.sections[hl.sectionIndex];
+    const num = sec && !sec._isOverview ? navSections.indexOf(sec) + 1 : null;
+    h += '<div class="cr-hl-item">'
+      + '<div class="cr-hl-item-text">' + esc(hl.text) + '</div>'
+      + (hl.note ? '<div class="cr-hl-item-note">' + esc(hl.note) + '</div>' : '')
+      + '<div class="cr-hl-item-meta">'
+      + (num ? '<span class="cr-hl-item-sec">SECTION ' + num + '</span>' : '')
+      + '<button type="button" class="cr-hl-item-remove" data-action="hlRemoveItem" data-hl="' + esc(hl.id) + '">Remove</button>'
+      + '</div></div>';
+  });
+  list.innerHTML = h;
+}
+
+function hlRemoveItem(id) {
+  highlights = (loadState('highlights') || highlights || []).filter(h => h.id !== id);
+  saveState('highlights', highlights);
+  const el = document.querySelector('[data-hl-id="' + id + '"]');
+  if (el) {
+    const parent = el.parentNode;
+    while (el.firstChild) parent.insertBefore(el.firstChild, el);
+    parent.removeChild(el);
+  }
+  buildHlPanel();
+}
+
+function crNotesState() { return loadState('notes') || {}; }
+
+// "N notes" for a section (boundary stats line): the section notepad plus any
+// highlight-attached notes in that section.
+function crNotesCount(si) {
+  const notes = crNotesState();
+  let n = notes[si] && String(notes[si]).trim() ? 1 : 0;
+  n += (loadState('highlights') || []).filter(h => h.sectionIndex === si && h.note).length;
+  return n;
+}
+
+function toggleNotesPanel() {
+  const panel = document.getElementById('crNotesPanel');
+  const opening = !panel.classList.contains('open');
+  crCloseSideDrawers('crNotesPanel');
+  if (opening) { buildNotesPanel(); panel.classList.add('open'); }
+  else panel.classList.remove('open');
+}
+
+function buildNotesPanel() {
+  const body = document.getElementById('crNotesBody');
+  const navSections = course.sections.filter(s => !s._isOverview);
+  const sec = course.sections[currentSectionIndex];
+  const num = sec && !sec._isOverview ? navSections.indexOf(sec) + 1 : null;
+  const notes = crNotesState();
+  let h = '<div class="cr-notes-label">' + (num ? 'YOUR NOTES · SECTION ' + num : 'YOUR NOTES') + '</div>';
+  h += '<textarea class="cr-notes-area" id="crNotesArea" placeholder="Write anything you want to keep from this section…">' + esc(notes[currentSectionIndex] || '') + '</textarea>';
+  h += '<div class="cr-notes-saved" id="crNotesSaved">Saved automatically</div>';
+  const others = Object.keys(notes).filter(k => Number(k) !== currentSectionIndex && String(notes[k] || '').trim());
+  if (others.length) h += '<div class="cr-notes-other">' + others.length + ' other section' + (others.length !== 1 ? 's have' : ' has') + ' notes — they reappear when you visit those sections.</div>';
+  body.innerHTML = h;
+  const area = document.getElementById('crNotesArea');
+  if (area) area.addEventListener('input', () => {
+    const s = crNotesState();
+    s[currentSectionIndex] = area.value;
+    saveState('notes', s);
+    const lbl = document.getElementById('crNotesSaved');
+    if (lbl) lbl.textContent = 'Saved';
+  });
+}
+
+// Title for a block-page: sectionDivider title on that page, else its first
+// heading — used by the footer's destination-naming buttons (ELEMENT_INVENTORY §2).
+function crBlockPageTitle(section, pageIdx) {
+  const blocks = (section.contentBlocks || []).slice(pageIdx * BLOCK_PAGE_SIZE, (pageIdx + 1) * BLOCK_PAGE_SIZE);
+  for (const b of blocks) {
+    if (b.type === 'sectionDivider' && b.title) return String(b.title).replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+    if (b.type === 'text' && b.content) {
+      const m = String(b.content).match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+      if (m) return m[1].replace(/<[^>]+>/g, '').replace(/^\d[\d.]*\s*[—–-]\s*/, '').trim();
+    }
+  }
+  return null;
+}
+
+// Footer buttons page within the section first, then hand off (the in-content
+// pager is retired — the footer is the only pagination control, as in 12a).
+function footerPrev() {
+  if (currentView === 'assessment') { prevSection(); return; }
+  if (currentBlockPage > 0) prevBlockPage();
+  else prevSection();
+}
+
+function footerNext() {
+  if (currentView === 'assessment') return;
+  const blocks = course.sections[currentSectionIndex]?.contentBlocks || [];
+  const totalPages = Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE));
+  if (currentBlockPage < totalPages - 1) nextBlockPage();
+  else nextSection();
+}
+
 function toggleA11yPanel() {
+  crCloseSideDrawers('crA11yPanel');
   document.getElementById('crA11yPanel').classList.toggle('open');
 }
 
@@ -6039,19 +6248,8 @@ function renderCurrentSection() {
     if (el) area.appendChild(el);
   });
 
-  // Within-section pager — only when the section spans more than one page.
-  if (totalBlockPages > 1) {
-    const pager = document.createElement('div');
-    pager.className = 'cr-block-pager';
-    pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding-top:16px;border-top:1px solid var(--cr-border)';
-    pager.innerHTML = `
-      <button type="button" data-action="prevBlockPage" ${currentBlockPage === 0 ? 'disabled' : ''}
-        style="padding:8px 16px;border:1.5px solid var(--cr-border);border-radius:8px;background:#fff;color:var(--cr-navy);font-size:0.83rem;font-weight:700;cursor:${currentBlockPage === 0 ? 'default' : 'pointer'};opacity:${currentBlockPage === 0 ? '0.5' : '1'}">← Previous</button>
-      <span style="font-size:0.83rem;color:var(--cr-text-muted)">Page ${currentBlockPage + 1} of ${totalBlockPages}</span>
-      <button type="button" data-action="nextBlockPage" ${currentBlockPage >= totalBlockPages - 1 ? 'disabled' : ''}
-        style="padding:8px 16px;border:none;border-radius:8px;background:var(--cr-burgundy);color:#fff;font-size:0.83rem;font-weight:700;cursor:${currentBlockPage >= totalBlockPages - 1 ? 'default' : 'pointer'};opacity:${currentBlockPage >= totalBlockPages - 1 ? '0.5' : '1'}">More →</button>`;
-    area.appendChild(pager);
-  }
+  // In-content pager retired (ELEMENT_INVENTORY §2): the sticky footer is the
+  // only pagination control, exactly as in mockup 12a.
 
   // References now live in the collapsible References drawer (buildReferences()),
   // not inline. Intentionally not appended to the section body.
@@ -6080,20 +6278,35 @@ function renderCurrentSection() {
     navBtns.style.display = 'none';
   } else {
     navBtns.style.display = 'flex';
-    document.getElementById('crPrevBtn').style.visibility = currentSectionIndex > 0 ? 'visible' : 'hidden';
     const hasAssessment = course.assessment?.questions?.length > 0;
 
     // Page indicator excludes overview
     const navSections = course.sections.filter(s => !s._isOverview);
     const navIdx = navSections.indexOf(section) + 1;
 
-    if (isLast) {
-      document.getElementById('crNextBtn').textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
+    // Footer buttons NAME THEIR DESTINATIONS (ELEMENT_INVENTORY §2). Prev is
+    // hidden on a section's first page — crossing a boundary backwards happens
+    // from the boundary's Review link, not here.
+    const prevBtn = document.getElementById('crPrevBtn');
+    prevBtn.style.visibility = currentBlockPage > 0 ? 'visible' : 'hidden';
+    if (currentBlockPage > 0) {
+      let pt = crBlockPageTitle(section, currentBlockPage - 1) || ('Page ' + currentBlockPage);
+      if (pt.length > 30) pt = pt.slice(0, 30) + '…';
+      prevBtn.textContent = '← ' + pt;
+    }
+
+    const nextBtn = document.getElementById('crNextBtn');
+    if (currentBlockPage < totalBlockPages - 1) {
+      let nt = crBlockPageTitle(section, currentBlockPage + 1) || ('Page ' + (currentBlockPage + 2));
+      if (nt.length > 30) nt = nt.slice(0, 30) + '…';
+      nextBtn.textContent = 'Continue: ' + nt + ' →';
+    } else if (isLast) {
+      nextBtn.textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
     } else {
       const nextSec = navSections[navIdx];
       let nextTitle = nextSec?.title || '';
       if (nextTitle.length > 30) nextTitle = nextTitle.slice(0, 30) + '…';
-      document.getElementById('crNextBtn').textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Next →';
+      nextBtn.textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Continue →';
     }
 
     // Page dots: one per block-page WITHIN THE CURRENT SECTION (matches the mockup's
@@ -6116,12 +6329,11 @@ function renderCurrentSection() {
       readTimeEl.textContent = '~' + mins + ' min read · autosaved';
     }
 
-    // Reader-header page label: "Section X of Y" (+ within-section block-page count when paginated)
+    // Reader-header position label: "Section 2 · page 3 of 9" (ELEMENT_INVENTORY §1 —
+    // the section COUNT lives on the boundary screens, never here).
     const readerLabel = document.getElementById('crReaderPageLabel');
     if (readerLabel) {
-      let label = 'Section ' + navIdx + ' of ' + navSections.length;
-      if (totalBlockPages > 1) label += ' · page ' + (currentBlockPage + 1) + ' of ' + totalBlockPages;
-      readerLabel.textContent = label;
+      readerLabel.textContent = 'Section ' + navIdx + ' · page ' + (currentBlockPage + 1) + ' of ' + totalBlockPages;
     }
   }
   document.getElementById('crTopbarSection').textContent = section.title || 'Section ' + (currentSectionIndex + 1);
@@ -10271,6 +10483,11 @@ document.addEventListener('click', function(e) {
     case 'prevSection': prevSection(); break;
     case 'nextSection': nextSection(); break;
     case 'prevBlockPage': prevBlockPage(); break;
+    case 'footerPrev': footerPrev(); break;
+    case 'footerNext': footerNext(); break;
+    case 'toggleHlPanel': toggleHlPanel(); break;
+    case 'toggleNotesPanel': toggleNotesPanel(); break;
+    case 'hlRemoveItem': hlRemoveItem(el.dataset.hl); break;
     case 'nextBlockPage': nextBlockPage(); break;
     case 'goToSection': goToSection(idx); break;
     case 'startSection': sectionSubState = 'reading'; renderCurrentSection(); break;
