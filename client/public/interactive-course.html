@@ -1432,7 +1432,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    boundary (mockup 20a).
    ═══════════════════════════════════════════════════════════════ */
 .cr-opener-canvas { padding: 34px 34px 40px; display: flex; justify-content: center; }
-.cr-opener-col { width: 100%; max-width: 640px; }
+.cr-opener-col { width: 100%; max-width: 704px; }
+/* Same KE'S RULING as the reading column: the mockup artboard is a picture of
+   PROPORTIONS, not pixel sizes — in a real window the opener/boundary columns
+   scale to 70% of the page, like the prose. */
+@media (min-width: 1025px) { .cr-opener-col { max-width: min(70vw, 1360px); } }
 .cr-opener-panel {
   border-radius: 16px;
   padding: 38px 34px 34px;
@@ -1936,7 +1940,8 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
    Pastel fills never license pastel type — the review card's type
    stays on the dark tokens (#3D6A4A / #5C7466 / #2B4133 / #33453A).
    ═══════════════════════════════════════════════════════════════ */
-.cr-cp { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.cr-cp { max-width: 704px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 1025px) { .cr-cp { max-width: min(70vw, 1360px); } }
 .cr-cp-review { background: #F1F6F2; border: 1px solid #D8E6DC; border-radius: 14px; padding: 22px 24px; }
 .cr-cp-review-head { display: flex; align-items: center; gap: 12px; }
 .cr-cp-check { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #C5DCCB; color: #3D6A4A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
