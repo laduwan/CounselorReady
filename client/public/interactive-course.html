@@ -1567,6 +1567,69 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 #crApp[data-active-tab="supplemental"] #crOpenerArea { opacity: .45; transition: opacity var(--cr-transition); }
 @media (max-width: 640px) { .cr-supp-drawer { width: 100vw; max-width: 100vw; right: -100vw; } }
 
+/* ═══════════════════════════════════════════════════════════════
+   KNOWLEDGE CHECK MODAL (mockup 14a/14b) — knowledgeCheck-typed blocks
+   render as a centered popout over the reading page instead of inline.
+   Not scored. The page underneath stays mounted, dimmed + blurred.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-kcm-stage {
+  display: none; position: fixed; inset: 0; z-index: 92;
+  overflow-y: auto; padding: 38px 20px 52px;
+  background: rgba(74, 21, 36, .34);
+}
+.cr-kcm-stage.open { display: flex; align-items: flex-start; justify-content: center; }
+.cr-kcm-modal {
+  width: 612px; max-width: 100%;
+  background: #FFFFFF; border-radius: 16px;
+  box-shadow: 0 24px 60px rgba(74, 21, 36, .34);
+  overflow: hidden;
+}
+.cr-kcm-header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: var(--cr-burgundy); }
+.cr-kcm-header.correct { background: #4A7C59; }
+.cr-kcm-header.incorrect { background: #DC2626; }
+.cr-kcm-headtext { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .17em; color: #EBA9B5; }
+.cr-kcm-header.correct .cr-kcm-headtext, .cr-kcm-header.incorrect .cr-kcm-headtext { color: rgba(255,255,255,.85); }
+.cr-kcm-scored { font: 400 11px/1 'Lato', system-ui, sans-serif; color: #DD768A; flex: 1; }
+.cr-kcm-header.correct .cr-kcm-scored, .cr-kcm-header.incorrect .cr-kcm-scored { color: rgba(255,255,255,.7); }
+.cr-kcm-close { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 13px; line-height: 1; }
+.cr-kcm-body { padding: 28px 30px; }
+.cr-kcm-stem { font-family: var(--cr-font-display); font-weight: 400; font-size: 21px; line-height: 1.5; color: #2C2C2C; margin-bottom: 22px; }
+.cr-kcm-options { display: flex; flex-direction: column; gap: 9px; }
+.cr-kcm-option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: 10px; background: #FBFAF6; border: 1px solid #E5E0D8; cursor: pointer; }
+.cr-kcm-option:hover:not(.cr-kcm-locked) { border-color: #D8D2C6; }
+.cr-kcm-option-letter { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #D8D2C6; color: #6B7280; font: 700 11px/1 'Lato', system-ui, sans-serif; }
+.cr-kcm-option-text { font: 400 15px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; padding-top: 1px; }
+.cr-kcm-option.picked { border-color: var(--cr-burgundy); background: #FDF5F6; }
+.cr-kcm-option.picked .cr-kcm-option-letter { background: var(--cr-burgundy); border-color: var(--cr-burgundy); color: #fff; }
+.cr-kcm-option.dim { opacity: .55; }
+.cr-kcm-option.right { border-color: #4A7C59; background: #F3F6F4; }
+.cr-kcm-option.right .cr-kcm-option-text { font-weight: 700; color: #2B4133; }
+.cr-kcm-option.right .cr-kcm-option-letter { background: #4A7C59; border-color: #4A7C59; color: #fff; }
+.cr-kcm-option.wrong { border-color: #DC2626; background: #FEF2F2; }
+.cr-kcm-option.wrong .cr-kcm-option-text { font-weight: 700; color: #991B1B; }
+.cr-kcm-option.wrong .cr-kcm-option-letter { background: #DC2626; border-color: #DC2626; color: #fff; }
+.cr-kcm-rationale { margin-top: 18px; padding: 16px 18px; border-radius: 11px; background: #F3F6F4; border: 1px solid #C8D7CC; }
+.cr-kcm-rationale.incorrect { background: #FEF2F2; border-color: #FECACA; }
+.cr-kcm-rationale-label { font: 900 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .05em; color: #3D6A4A; margin-bottom: 6px; text-transform: uppercase; }
+.cr-kcm-rationale.incorrect .cr-kcm-rationale-label { color: #B91C1C; }
+.cr-kcm-rationale-body { font: 400 15px/1.7 'Lato', system-ui, sans-serif; color: #2B4133; }
+.cr-kcm-rationale.incorrect .cr-kcm-rationale-body { color: #7F1D1D; }
+.cr-kcm-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 30px; border-top: 1px solid #F0EDE8; }
+.cr-kcm-footer-note { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-kcm-footer-link { background: none; border: none; cursor: pointer; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; padding: 0; }
+.cr-kcm-check-btn { font: 700 13.5px/1 'Lato', system-ui, sans-serif; padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer; background: var(--cr-burgundy); color: #fff; }
+.cr-kcm-check-btn:disabled { background: #E5E0D8; color: #B0A89E; cursor: default; }
+.cr-kcm-back-btn { font: 700 13.5px/1 'Lato', system-ui, sans-serif; padding: 11px 20px; border-radius: 9px; border: none; cursor: pointer; background: #4A7C59; color: #fff; }
+/* Reading area dims + blurs behind the modal, per spec */
+body.cr-kcm-open .cr-reading-column,
+body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: opacity var(--cr-transition), filter var(--cr-transition); }
+/* Left inline where the knowledgeCheck block would have rendered */
+.cr-kcm-marker { margin: 20px 0; padding: 12px 16px; border-radius: 10px; font: 700 12.5px/1.5 'Lato', system-ui, sans-serif; }
+.cr-kcm-marker.pending { cursor: pointer; background: #FDF5F6; border: 1px solid #F5D0D6; color: #6B1D34; }
+.cr-kcm-marker.pending:hover { background: #FAE8EB; }
+.cr-kcm-marker.done { background: #F3F6F4; border: 1px solid #C8D7CC; color: #3D6A4A; }
+.cr-kcm-marker.skipped { background: #F9F0DB; border: 1px solid #F3E0B5; color: #6B4A25; }
+
 .cr-glossary-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--cr-border);
@@ -2835,12 +2898,30 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-callout-ethics .cr-callout-title { color: #8C6A1F; }
 
 
-/* — Variant: CLINICAL — */
+/* — Variant: CLINICAL ("Clinical pearl", mockup 12a) — a full card with a honey tag
+   chip, not the left-border-accent treatment the other variants share. */
 .cr-callout-clinical {
-  border-left-color: var(--cr-navy, #284157);
-  background: rgba(40, 65, 87, 0.05);
+  border: 1px solid #F3E0B5;
+  border-radius: 14px;
+  background: #FDF9F0;
+  padding: 22px 26px;
+  font-family: 'Lato', system-ui, sans-serif;
+  box-shadow: none;
 }
-.cr-callout-clinical .cr-callout-title { color: var(--cr-navy, #284157); }
+.cr-callout-clinical .cr-callout-title {
+  display: inline-flex; width: auto;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-weight: 900; font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+  color: #4A1524; background: #D4A855;
+  padding: 4px 10px; border-radius: 20px;
+  margin: 0 0 12px;
+}
+.cr-callout-clinical .cr-callout-icon { display: none; }
+.cr-callout-clinical .cr-callout-body,
+.cr-callout-clinical p {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 16px; line-height: 1.72; color: #4A1524;
+}
 
 
 /* — Variant: TIP — */
@@ -4231,6 +4312,24 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   <div class="cr-supp-footer" id="crSuppFooter"></div>
 </div>
 
+<!-- KNOWLEDGE CHECK MODAL (mockup 14a/14b) — opens over the reading page when a
+     knowledgeCheck block is reached; the page stays mounted, dimmed, behind it. -->
+<div class="cr-kcm-stage" id="crKcmStage">
+  <div class="cr-kcm-modal" id="crKcmModal" role="dialog" aria-modal="true" aria-label="Knowledge check">
+    <div class="cr-kcm-header" id="crKcmHeader">
+      <span class="cr-kcm-headtext" id="crKcmHeadText">KNOWLEDGE CHECK</span>
+      <span class="cr-kcm-scored" id="crKcmScored">Not scored</span>
+      <button type="button" class="cr-kcm-close" data-action="skipKnowledgeCheck" aria-label="Close">✕</button>
+    </div>
+    <div class="cr-kcm-body">
+      <div class="cr-kcm-stem" id="crKcmStem"></div>
+      <div class="cr-kcm-options" id="crKcmOptions"></div>
+      <div class="cr-kcm-rationale" id="crKcmRationale" style="display:none"></div>
+    </div>
+    <div class="cr-kcm-footer" id="crKcmFooter"></div>
+  </div>
+</div>
+
 <!-- HIGHLIGHT TOOLBAR (appears on text selection) -->
 <div class="cr-highlight-toolbar" id="crHighlightToolbar">
   <button data-action="highlightSelection" title="Highlight">🖍️</button>
@@ -5345,7 +5444,9 @@ function renderCurrentSection() {
   const pageBlocks = blocks.slice(pageStart, pageStart + BLOCK_PAGE_SIZE);
   pageBlocks.forEach((block, localIndex) => {
     const i = pageStart + localIndex;
-    const el = renderBlock(block, i);
+    // knowledgeCheck blocks render as a popout modal (mockup 14a/14b), not inline —
+    // leave a small marker where the block sits so the layout doesn't jump.
+    const el = block.type === 'knowledgeCheck' ? renderKnowledgeCheckMarker(block, i) : renderBlock(block, i);
     if (el) area.appendChild(el);
   });
 
@@ -5448,6 +5549,11 @@ function renderCurrentSection() {
   const _suppDrawer = document.getElementById('crSuppDrawer');
   if (_suppDrawer && _suppDrawer.classList.contains('open')) renderSupplementalDrawer();
   else updateSupplementalBadge();
+
+  // Open the first unresolved knowledge check on this page, if any. Guarded on
+  // crKcmCurrent so a re-render triggered while the modal is already open (or mid
+  // answer) doesn't reset it.
+  if (section && !section._isOverview && !crKcmCurrent) crKcAutoOpen();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -8615,6 +8721,182 @@ function saveAllSupplemental() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// KNOWLEDGE CHECK MODAL (mockup 14a/14b) — knowledgeCheck-typed blocks render as a
+// centered popout over the reading page instead of inline. Not scored. State
+// persists per learner per course via saveState/loadState, matching the mockup's
+// knowledgeCheckResponses{ id: {answer, correct, skipped} }.
+// ═══════════════════════════════════════════════════════════════
+let crKcmCurrent = null; // { sectionIndex, blockIndex, questionIndex, picked, resolved, correct }
+
+function crKcState() { return loadState('kcResponses') || {}; }
+function crKcSaveState(state) { saveState('kcResponses', state); }
+function crKcKey(si, bi, qi) { return 'sec' + si + '-b' + bi + '-q' + qi; }
+
+function crKcSectionChecks(sectionIndex) {
+  const section = course?.sections?.[sectionIndex];
+  const list = [];
+  (section?.contentBlocks || []).forEach((b, bi) => {
+    if (b.type !== 'knowledgeCheck') return;
+    (b.questions || []).forEach((q, qi) => list.push({ blockIndex: bi, questionIndex: qi }));
+  });
+  return list;
+}
+
+function crKcCorrectIndex(question) {
+  if (typeof question.correctAnswer === 'number') return question.correctAnswer;
+  const found = Array.isArray(question.options) ? question.options.findIndex(o => typeof o === 'object' && o.isCorrect) : -1;
+  return found >= 0 ? found : 0;
+}
+
+function renderKnowledgeCheckMarker(block, blockIndex) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cr-block';
+  wrap.dataset.blockType = 'knowledgeCheck';
+  const state = crKcState();
+  const questions = block.questions || [];
+  let html = '';
+  questions.forEach((q, qi) => {
+    const rec = state[crKcKey(currentSectionIndex, blockIndex, qi)];
+    if (rec && rec.skipped) {
+      html += '<div class="cr-kcm-marker skipped">Knowledge check skipped — it’ll come back at the section checkpoint.</div>';
+    } else if (rec) {
+      html += '<div class="cr-kcm-marker done">✓ Knowledge check answered</div>';
+    } else {
+      html += '<div class="cr-kcm-marker pending" data-action="openKnowledgeCheck" data-sec="' + currentSectionIndex + '" data-block="' + blockIndex + '" data-q="' + qi + '">Knowledge check</div>';
+    }
+  });
+  wrap.innerHTML = html;
+  return wrap;
+}
+
+function crKcAutoOpen() {
+  const container = document.getElementById('crContentArea');
+  const pendingMarker = container && container.querySelector('.cr-kcm-marker.pending');
+  if (!pendingMarker) return;
+  openKnowledgeCheck(parseInt(pendingMarker.dataset.sec, 10), parseInt(pendingMarker.dataset.block, 10), parseInt(pendingMarker.dataset.q, 10));
+}
+
+function openKnowledgeCheck(sectionIndex, blockIndex, questionIndex) {
+  const question = course?.sections?.[sectionIndex]?.contentBlocks?.[blockIndex]?.questions?.[questionIndex];
+  if (!question) return;
+  crKcmCurrent = { sectionIndex, blockIndex, questionIndex, picked: null, resolved: false, correct: undefined };
+  document.body.classList.add('cr-kcm-open');
+  document.getElementById('crKcmStage').classList.add('open');
+  renderKcmModal();
+}
+
+function closeKnowledgeCheck() {
+  document.body.classList.remove('cr-kcm-open');
+  document.getElementById('crKcmStage').classList.remove('open');
+  crKcmCurrent = null;
+}
+
+// Re-renders the page (refreshing markers) then chains into the next unresolved
+// check on it, if any — matches "Answer to continue" moving through multiple checks.
+function backToReadingFromKnowledgeCheck() {
+  closeKnowledgeCheck();
+  renderCurrentSection();
+}
+
+function skipKnowledgeCheck() {
+  if (!crKcmCurrent) return;
+  const { sectionIndex, blockIndex, questionIndex } = crKcmCurrent;
+  const state = crKcState();
+  state[crKcKey(sectionIndex, blockIndex, questionIndex)] = { skipped: true };
+  crKcSaveState(state);
+  backToReadingFromKnowledgeCheck();
+}
+
+function pickKnowledgeCheckOption(idx) {
+  if (!crKcmCurrent || crKcmCurrent.resolved) return;
+  crKcmCurrent.picked = idx;
+  renderKcmModal();
+}
+
+function submitKnowledgeCheck() {
+  if (!crKcmCurrent || crKcmCurrent.picked === null || crKcmCurrent.resolved) return;
+  const { sectionIndex, blockIndex, questionIndex, picked } = crKcmCurrent;
+  const question = course.sections[sectionIndex].contentBlocks[blockIndex].questions[questionIndex];
+  const correct = picked === crKcCorrectIndex(question);
+  crKcmCurrent.resolved = true;
+  crKcmCurrent.correct = correct;
+  const state = crKcState();
+  state[crKcKey(sectionIndex, blockIndex, questionIndex)] = { answer: picked, correct: correct };
+  crKcSaveState(state);
+  renderKcmModal();
+}
+
+function retryKnowledgeCheck() {
+  if (!crKcmCurrent) return;
+  crKcmCurrent.resolved = false;
+  crKcmCurrent.picked = null;
+  crKcmCurrent.correct = undefined;
+  renderKcmModal();
+}
+
+function renderKcmModal() {
+  if (!crKcmCurrent) return;
+  const { sectionIndex, blockIndex, questionIndex, picked, resolved, correct } = crKcmCurrent;
+  const question = course.sections[sectionIndex].contentBlocks[blockIndex].questions[questionIndex];
+  const options = (question.options || []).map(o => typeof o === 'string' ? o : (o.text || ''));
+  const correctI = crKcCorrectIndex(question);
+
+  const checks = crKcSectionChecks(sectionIndex);
+  const ordinal = checks.findIndex(c => c.blockIndex === blockIndex && c.questionIndex === questionIndex) + 1;
+  const total = checks.length;
+
+  const header = document.getElementById('crKcmHeader');
+  const headText = document.getElementById('crKcmHeadText');
+  const scoredEl = document.getElementById('crKcmScored');
+  const stem = document.getElementById('crKcmStem');
+  const optionsEl = document.getElementById('crKcmOptions');
+  const rationaleEl = document.getElementById('crKcmRationale');
+  const footer = document.getElementById('crKcmFooter');
+
+  header.className = 'cr-kcm-header' + (resolved ? (correct ? ' correct' : ' incorrect') : '');
+  headText.textContent = resolved
+    ? (correct ? 'CORRECT' : 'INCORRECT') + ' · CHECK ' + ordinal + ' OF ' + total
+    : 'KNOWLEDGE CHECK ' + ordinal + ' OF ' + total;
+  scoredEl.textContent = resolved ? '' : 'Not scored';
+
+  stem.textContent = question.question || '';
+
+  optionsEl.innerHTML = options.map((opt, i) => {
+    let cls = 'cr-kcm-option';
+    if (!resolved) { if (picked === i) cls += ' picked'; }
+    else if (i === correctI) cls += ' right';
+    else if (i === picked) cls += ' wrong';
+    else cls += ' dim';
+    if (resolved) cls += ' cr-kcm-locked';
+    return '<div class="' + cls + '"' + (resolved ? '' : ' data-action="pickKnowledgeCheckOption" data-idx="' + i + '"') + '>'
+      + '<span class="cr-kcm-option-letter">' + String.fromCharCode(65 + i) + '</span>'
+      + '<span class="cr-kcm-option-text">' + esc(opt) + '</span></div>';
+  }).join('');
+
+  if (resolved) {
+    rationaleEl.className = 'cr-kcm-rationale' + (correct ? '' : ' incorrect');
+    rationaleEl.style.display = 'block';
+    rationaleEl.innerHTML = '<div class="cr-kcm-rationale-label">WHY ' + String.fromCharCode(65 + correctI) + '</div>'
+      + '<div class="cr-kcm-rationale-body">' + esc(question.explanation || '') + '</div>';
+  } else {
+    rationaleEl.style.display = 'none';
+  }
+
+  if (!resolved) {
+    footer.innerHTML = '<span class="cr-kcm-footer-note">Answer to continue · or <button type="button" class="cr-kcm-footer-link" data-action="skipKnowledgeCheck">skip</button> and it returns at the checkpoint</span>'
+      + '<button type="button" class="cr-kcm-check-btn" data-action="submitKnowledgeCheck"' + (picked === null ? ' disabled' : '') + '>Check answer</button>';
+  } else if (correct) {
+    footer.innerHTML = '<span class="cr-kcm-footer-link" style="cursor:default">Add a note</span>'
+      + '<span class="cr-kcm-footer-note">Saved to your section summary</span>'
+      + '<button type="button" class="cr-kcm-back-btn" data-action="backToReadingFromKnowledgeCheck">Back to reading →</button>';
+  } else {
+    footer.innerHTML = '<button type="button" class="cr-kcm-footer-link" data-action="retryKnowledgeCheck">Try again</button>'
+      + '<span class="cr-kcm-footer-note"></span>'
+      + '<button type="button" class="cr-kcm-back-btn" data-action="backToReadingFromKnowledgeCheck">Back to reading →</button>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // FEATURE: LEARNING OBJECTIVES TRACKER
 // ═══════════════════════════════════════════════════════════════
 let checkedObjectives = new Set();
@@ -9119,6 +9401,12 @@ document.addEventListener('click', function(e) {
     case 'setSupplementalFilter': setSupplementalFilter(el.dataset.filter); break;
     case 'saveSupplementalItem': saveSupplementalItem(el.dataset.key); break;
     case 'saveAllSupplemental': saveAllSupplemental(); break;
+    case 'openKnowledgeCheck': openKnowledgeCheck(parseInt(el.dataset.sec, 10), parseInt(el.dataset.block, 10), parseInt(el.dataset.q, 10)); break;
+    case 'pickKnowledgeCheckOption': pickKnowledgeCheckOption(idx); break;
+    case 'submitKnowledgeCheck': submitKnowledgeCheck(); break;
+    case 'retryKnowledgeCheck': retryKnowledgeCheck(); break;
+    case 'skipKnowledgeCheck': skipKnowledgeCheck(); break;
+    case 'backToReadingFromKnowledgeCheck': backToReadingFromKnowledgeCheck(); break;
     case 'toggleObjective': toggleObjective(idx); break;
     case 'highlightSelection': highlightSelection(); break;
     case 'annotateSelection': annotateSelection(); break;
