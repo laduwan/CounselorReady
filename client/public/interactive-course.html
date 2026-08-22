@@ -1668,10 +1668,12 @@ body.cr-kcm-open .cr-reading-column,
 body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: opacity var(--cr-transition), filter var(--cr-transition); }
 /* Multi-select (multiSelect blocks): square markers signal checkbox semantics. */
 .cr-kcm-option.multi .cr-kcm-option-letter { border-radius: 6px; }
-/* Left inline where the knowledgeCheck block would have rendered */
-.cr-kcm-marker { margin: 20px 0; padding: 12px 16px; border-radius: 10px; font: 700 12.5px/1.5 'Lato', system-ui, sans-serif; }
-.cr-kcm-marker.pending { cursor: pointer; background: #FDF5F6; border: 1px solid #F5D0D6; color: #6B1D34; }
-.cr-kcm-marker.pending:hover { background: #FAE8EB; }
+/* The check's presence in the reading flow: an expandable pill. Pending is the
+   tap target that pops the modal; done is a quiet receipt. */
+.cr-kcm-marker { margin: 20px 0; padding: 13px 22px; border-radius: 999px; font: 700 13px/1.4 'Lato', system-ui, sans-serif; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.cr-kcm-marker.pending { cursor: pointer; background: #FDF5F6; border: 1.5px solid #F5D0D6; color: #6B1D34; transition: background var(--cr-transition), border-color var(--cr-transition); }
+.cr-kcm-marker.pending:hover { background: #FAE8EB; border-color: #DD768A; }
+.cr-kcm-marker.pending .cr-kcm-marker-cta { color: #8B2542; white-space: nowrap; }
 .cr-kcm-marker.done { background: #F3F6F4; border: 1px solid #C8D7CC; color: #3D6A4A; }
 .cr-kcm-marker.skipped { background: #F9F0DB; border: 1px solid #F3E0B5; color: #6B4A25; }
 
@@ -5445,12 +5447,12 @@ function renderSectionCheckpoint(si) {
 
   const checks = crKcSectionChecks(si);
   const kcState = crKcState();
+  // Unanswered = never tapped OR closed without answering — both resurface here.
   let answered = 0, correct = 0; const skippedChecks = [];
   checks.forEach(c => {
     const rec = kcState[crKcKey(si, c.blockIndex, c.questionIndex)];
-    if (!rec) return;
-    if (rec.skipped) skippedChecks.push(c);
-    else { answered++; if (rec.correct) correct++; }
+    if (rec && !rec.skipped) { answered++; if (rec.correct) correct++; }
+    else skippedChecks.push(c);
   });
 
   let carry = [];
@@ -5479,7 +5481,7 @@ function renderSectionCheckpoint(si) {
   if (skippedChecks.length) {
     const first = skippedChecks[0];
     h += '<div class="cr-cp-skipped">'
-      + '<span class="cr-cp-skipped-text">You skipped ' + skippedChecks.length + ' knowledge check' + (skippedChecks.length !== 1 ? 's' : '') + ' in this section — they\'re not scored, but they\'re worth a minute.</span>'
+      + '<span class="cr-cp-skipped-text">' + skippedChecks.length + ' knowledge check' + (skippedChecks.length !== 1 ? 's are' : ' is') + ' still unanswered in this section — not scored, but worth a minute.</span>'
       + '<button type="button" class="cr-cp-skipped-btn" data-action="openKnowledgeCheck" data-sec="' + si + '" data-block="' + first.blockIndex + '" data-q="' + first.questionIndex + '">Answer now</button>'
       + '</div>';
   }
@@ -5937,10 +5939,9 @@ function renderCurrentSection() {
   if (_suppDrawer && _suppDrawer.classList.contains('open')) renderSupplementalDrawer();
   else updateSupplementalBadge();
 
-  // Open the first unresolved knowledge check on this page, if any. Guarded on
-  // crKcmCurrent so a re-render triggered while the modal is already open (or mid
-  // answer) doesn't reset it.
-  if (section && !section._isOverview && !crKcmCurrent) crKcAutoOpen();
+  // Checks do NOT auto-open (Ke's ruling): the pending pill in the reading flow
+  // is the invitation, tapping it pops the modal. Unanswered checks resurface at
+  // the section checkpoint.
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -9283,23 +9284,15 @@ function renderKnowledgeCheckMarker(block, blockIndex) {
   let html = '';
   questions.forEach((q, qi) => {
     const rec = state[crKcKey(currentSectionIndex, blockIndex, qi)];
-    if (rec && rec.skipped) {
-      html += '<div class="cr-kcm-marker skipped">Knowledge check skipped — it’ll come back at the section checkpoint.</div>';
-    } else if (rec) {
+    if (rec && !rec.skipped) {
       html += '<div class="cr-kcm-marker done">✓ Knowledge check answered</div>';
     } else {
-      html += '<div class="cr-kcm-marker pending" data-action="openKnowledgeCheck" data-sec="' + currentSectionIndex + '" data-block="' + blockIndex + '" data-q="' + qi + '">Knowledge check</div>';
+      html += '<div class="cr-kcm-marker pending" role="button" tabindex="0" data-action="openKnowledgeCheck" data-sec="' + currentSectionIndex + '" data-block="' + blockIndex + '" data-q="' + qi + '">'
+        + '<span>Knowledge check · not scored</span><span class="cr-kcm-marker-cta">Answer →</span></div>';
     }
   });
   wrap.innerHTML = html;
   return wrap;
-}
-
-function crKcAutoOpen() {
-  const container = document.getElementById('crContentArea');
-  const pendingMarker = container && container.querySelector('.cr-kcm-marker.pending');
-  if (!pendingMarker) return;
-  openKnowledgeCheck(parseInt(pendingMarker.dataset.sec, 10), parseInt(pendingMarker.dataset.block, 10), parseInt(pendingMarker.dataset.q, 10));
 }
 
 function openKnowledgeCheck(sectionIndex, blockIndex, questionIndex) {
@@ -9325,11 +9318,10 @@ function backToReadingFromKnowledgeCheck() {
 }
 
 function skipKnowledgeCheck() {
+  // With tap-to-open pills there is no forced flow to escape: closing just
+  // closes. The pill stays pending, and the checkpoint resurfaces every
+  // unanswered check (tapped-away or never-tapped alike).
   if (!crKcmCurrent) return;
-  const { sectionIndex, blockIndex, questionIndex } = crKcmCurrent;
-  const state = crKcState();
-  state[crKcKey(sectionIndex, blockIndex, questionIndex)] = { skipped: true };
-  crKcSaveState(state);
   backToReadingFromKnowledgeCheck();
 }
 
@@ -9422,7 +9414,7 @@ function renderKcmModal() {
   }
 
   if (!resolved) {
-    footer.innerHTML = '<span class="cr-kcm-footer-note">Answer to continue · or <button type="button" class="cr-kcm-footer-link" data-action="skipKnowledgeCheck">skip</button> and it returns at the checkpoint</span>'
+    footer.innerHTML = '<span class="cr-kcm-footer-note">Not scored · <button type="button" class="cr-kcm-footer-link" data-action="skipKnowledgeCheck">close</button> and it waits at the checkpoint</span>'
       + '<button type="button" class="cr-kcm-check-btn" data-action="submitKnowledgeCheck"' + (picked.length === 0 ? ' disabled' : '') + '>Check answer</button>';
   } else if (correct) {
     footer.innerHTML = '<span class="cr-kcm-footer-link" style="cursor:default">Add a note</span>'
@@ -9987,6 +9979,7 @@ document.addEventListener('click', function(e) {
     case 'saveSupplementalItem': saveSupplementalItem(el.dataset.key); break;
     case 'saveAllSupplemental': saveAllSupplemental(); break;
     case 'openKnowledgeCheck': openKnowledgeCheck(parseInt(el.dataset.sec, 10), parseInt(el.dataset.block, 10), parseInt(el.dataset.q, 10)); break;
+    // (pending check pills are also keyboard-activatable — see the keydown bridge below the dispatcher)
     case 'pickKnowledgeCheckOption': pickKnowledgeCheckOption(idx); break;
     case 'submitKnowledgeCheck': submitKnowledgeCheck(); break;
     case 'retryKnowledgeCheck': retryKnowledgeCheck(); break;
@@ -10018,6 +10011,15 @@ document.addEventListener('click', function(e) {
       }
       break;
   }
+});
+
+// Keyboard bridge: pending check pills (role=button) activate on Enter/Space.
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const pill = e.target.closest ? e.target.closest('.cr-kcm-marker.pending') : null;
+  if (!pill) return;
+  e.preventDefault();
+  openKnowledgeCheck(parseInt(pill.dataset.sec, 10), parseInt(pill.dataset.block, 10), parseInt(pill.dataset.q, 10));
 });
 
 // Handle file input change (can't use click delegation for onchange)
