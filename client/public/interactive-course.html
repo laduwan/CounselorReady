@@ -1233,14 +1233,59 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-assessment-result.failed .score { color: var(--cr-danger); }
 
 /* ═══════════════════════════════════════════════════════════════
+   READER HEADER (desktop only)
+   ═══════════════════════════════════════════════════════════════ */
+.cr-reader-header {
+  display: flex; align-items: center; gap: 16px;
+  background: #FFFFFF;
+  padding: 13px 28px;
+  border-bottom: 1px solid #E5E0D8;
+  position: sticky; top: 0; z-index: 29;
+}
+.cr-reader-header > * { flex: none; white-space: nowrap; }
+.cr-reader-tab {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 12px; font-weight: 400;
+  color: #6B7280; background: none;
+  border: none; border-radius: 8px;
+  padding: 6px 12px; cursor: pointer;
+}
+.cr-reader-tab.active {
+  background: #FDF5F6; font-weight: 700; color: #6B1D34;
+}
+.cr-reader-tool {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: #6B7280; background: none;
+  border: 1px solid #E5E0D8; border-radius: 8px;
+  padding: 6px 10px; cursor: pointer;
+}
+@media (max-width: 1024px) { .cr-reader-header { display: none; } }
+
+/* ═══════════════════════════════════════════════════════════════
    NAVIGATION BUTTONS
    ═══════════════════════════════════════════════════════════════ */
 .cr-nav-buttons {
   display: flex; justify-content: space-between; align-items: center;
-  padding-top: 32px;
-  margin-top: 32px;
-  border-top: 1px solid var(--cr-border);
+  padding: 14px 28px;
+  border-top: 1px solid #E5E0D8;
+  background: #FFFFFF;
+  position: sticky; bottom: 0; z-index: 28;
 }
+#crPrevBtn {
+  border: 1px solid #E5E0D8; background: #FFFFFF;
+  border-radius: 11px; padding: 10px 18px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 12px;
+  color: #6B7280;
+}
+#crPrevBtn:hover { border-color: var(--cr-burgundy); color: var(--cr-burgundy); }
+#crNextBtn {
+  background: var(--cr-green); color: #FFFFFF; border-radius: 11px;
+  padding: 10px 22px;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 13px;
+  box-shadow: 0 2px 10px rgba(74,124,89,.24);
+}
+#crPageIndicator { display: flex; align-items: center; gap: 5px; }
 .cr-btn {
   padding: 12px 28px;
   border: none; border-radius: 10px;
@@ -3839,6 +3884,16 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
   <!-- MAIN CONTENT -->
   <main class="cr-main" id="cr-content" role="main">
+    <!-- Desktop reader header (hidden on mobile; hidden on the Course Overview screen) -->
+    <div class="cr-reader-header" id="crReaderHeader">
+      <span style="font-family:var(--cr-font-display);font-weight:700;font-size:15px"><span style="color:var(--cr-burgundy)">Counselor</span><span style="color:var(--cr-green)">Ready</span></span><sup style="font-size:8px;vertical-align:super">™</sup>
+      <span id="crReaderPageLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:12.5px;color:#6B7280"></span>
+      <span style="flex:1"></span>
+      <button type="button" class="cr-reader-tab active" data-action="setReaderTab" data-tab="lesson">Lesson</button>
+      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
+      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental</button>
+      <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
+    </div>
     <!-- Section toolbar -->
     <div class="cr-toolbar" id="crToolbar" style="display:none">
       <button class="cr-toolbar-btn" data-action="printSection">🖨️ Print Section</button>
@@ -4826,6 +4881,16 @@ function toggleReadAloud() {
 
 function toggleTTS() { toggleReadAloud(); }
 
+// Reader header tab group. References/Supplemental just flag the active tab for now —
+// the actual drawer wiring is a separate, future task.
+function setReaderTab(tab) {
+  const app = document.getElementById('crApp');
+  if (app) app.setAttribute('data-active-tab', tab);
+  document.querySelectorAll('.cr-reader-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+}
+
 function getTTSVolume() {
   const el = document.getElementById('crTTSVolume');
   return el ? parseFloat(el.value) : 0.8;
@@ -4981,7 +5046,11 @@ function renderCurrentSection() {
   // Update navigation buttons
   const onOverview = section._isOverview;
   const navBtns = document.getElementById('crNavButtons');
-  
+  const readerHeader = document.getElementById('crReaderHeader');
+
+  // Reader header carries section tabs/context that don't exist pre-Begin — same exclusion as the footer nav.
+  if (readerHeader) readerHeader.style.display = onOverview ? 'none' : 'flex';
+
   if (onOverview) {
     // Hide standard nav on overview — the "Let's Begin" button is in the content
     navBtns.style.display = 'none';
@@ -4989,15 +5058,38 @@ function renderCurrentSection() {
     navBtns.style.display = 'flex';
     document.getElementById('crPrevBtn').style.visibility = currentSectionIndex > 0 ? 'visible' : 'hidden';
     const hasAssessment = course.assessment?.questions?.length > 0;
-    document.getElementById('crNextBtn').textContent = isLast ? (hasAssessment ? 'Take Assessment →' : '✓ Complete') : 'Next →';
-    
+
     // Page indicator excludes overview
     const navSections = course.sections.filter(s => !s._isOverview);
     const navIdx = navSections.indexOf(section) + 1;
-    document.getElementById('crPageIndicator').textContent = `${navIdx || currentSectionIndex} / ${navSections.length}`;
+
+    if (isLast) {
+      document.getElementById('crNextBtn').textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
+    } else {
+      const nextSec = navSections[navIdx];
+      let nextTitle = nextSec?.title || '';
+      if (nextTitle.length > 30) nextTitle = nextTitle.slice(0, 30) + '…';
+      document.getElementById('crNextBtn').textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Next →';
+    }
+
+    // Page dots: completed (green) / current (burgundy pill) / upcoming (grey)
+    const dotsEl = document.getElementById('crPageIndicator');
+    dotsEl.innerHTML = navSections.map((s, i) => {
+      const pos = i + 1;
+      if (pos < navIdx) return '<span style="width:8px;height:8px;border-radius:50%;background:var(--cr-green);display:inline-block"></span>';
+      if (pos === navIdx) return '<span style="width:22px;height:8px;border-radius:4px;background:var(--cr-burgundy);display:inline-block"></span>';
+      return '<span style="width:8px;height:8px;border-radius:50%;background:#E5E0D8;display:inline-block"></span>';
+    }).join('');
   }
   document.getElementById('crTopbarSection').textContent = section.title || 'Section ' + (currentSectionIndex + 1);
-  
+
+  const readerLabel = document.getElementById('crReaderPageLabel');
+  if (readerLabel) {
+    const sectionNum = currentSectionIndex + 1;
+    const totalSections = course.sections.length;
+    readerLabel.textContent = 'Section ' + sectionNum + ' of ' + totalSections;
+  }
+
   // Keyboard drag support
   setTimeout(addKeyboardDragSupport, 100);
   
@@ -8525,6 +8617,7 @@ document.addEventListener('click', function(e) {
     case 'toggleSidebar': toggleSidebar(); break;
     case 'closeSidebar': closeSidebar(); break;
     case 'toggleTTS': toggleTTS(); break;
+    case 'setReaderTab': setReaderTab(el.dataset.tab); break;
     
     // ─── Accessibility ───
     case 'toggleA11yPanel': toggleA11yPanel(); break;
