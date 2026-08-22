@@ -1488,7 +1488,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    instead of at top:0, so the header's tab row — which opens/closes these same
    panels — stays clickable while a panel is open, instead of being covered by it. */
 @media (min-width: 1025px) {
-  .cr-refs-panel, .cr-supp-drawer { top: 72px; }
+  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel { top: 72px; }
 }
 .cr-refs-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -1503,9 +1503,20 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 /* Retired: floating circle tool cluster (bottom-right). Accessibility is reachable
    via the reader-header "Aa" tool (toggleA11yPanel); References via the reader-header
-   "References" tab (setReaderTab). Buttons stay in the DOM — other code still looks
-   them up by id — just hidden so their old floating position doesn't ship. */
-#crA11yBtn, #crRefsBtn { display: none; }
+   "References" tab (setReaderTab); the glossary via the reader-header "Key terms"
+   tool (toggleGlossary — the floating 📖 was overlapping the footer's next button).
+   Buttons stay in the DOM — other code still looks them up by id — just hidden so
+   their old floating positions don't ship. !important beats the .visible class and
+   any inline display the old code sets. */
+#crA11yBtn, #crRefsBtn, #crGlossaryBtn { display: none !important; }
+
+/* Retired: the legacy right-edge vertical "References"/"Resources" tab widget (the
+   self-contained script near the end of this file). Both destinations now live in
+   the reader header — References tab and Supplemental drawer — so the edge tabs
+   only duplicate them and break the mockup's clean right edge. The widget's JS sets
+   display:block inline after its fetch, hence !important. Panels/overlays are only
+   reachable through these tabs, so hiding the tabs retires the whole widget. */
+#crdTabR, #crdTabS { display: none !important; }
 
 /* ═══════════════════════════════════════════════════════════════
    SUPPLEMENTAL DRAWER (mockup 13b) — bound to course.resources[] plus
@@ -4165,6 +4176,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
       <span id="crReaderToolsNormal" style="display:contents">
         <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
+        <!-- Hidden until buildGlossary() finds terms — mirrors the old floating 📖 button's visibility rule. -->
+        <button type="button" class="cr-reader-tool" id="crGlossaryTool" data-action="toggleGlossary" style="display:none">Key terms</button>
         <!-- Now that the sidebar is off-canvas at every width, this is the desktop
              route to section nav / downloads / progress during reading. -->
         <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
@@ -8554,6 +8567,8 @@ function buildGlossary() {
   
   if (glossaryTerms.length > 0) {
     document.getElementById('crGlossaryBtn').classList.add('visible');
+    const headerTool = document.getElementById('crGlossaryTool');
+    if (headerTool) headerTool.style.display = '';
     renderGlossaryList();
   }
 }
