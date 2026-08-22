@@ -2698,25 +2698,41 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       Pure CSS via ::before on .cr-block[data-block-type=...].
    ═══════════════════════════════════════════════════════════════ */
 
-/* Canon (design handoff token table): violet is the engagement-block family —
-   "Scenario tree, engagement blocks" — #7C3AED / #5B21B6 / #F4F0FE / #DDD0FB.
-   Each interactive block gets the violet card wrapper + a violet type label.
-   multipleChoice/multiSelect are absent: they render as popout-check markers now. */
+/* Canon (Interactive Blocks section, mockups 15a–15j): the ten types share ONLY a
+   white card at 14px radius with the CATEGORY border and a small chip label — the
+   accent signals the category, the LAYOUT signals the task. Do not converge the
+   forms. Groups: engagement = violet (#7C3AED/#F4F0FE/#DDD0FB/#4C1D95),
+   assessment = burgundy (#6B1D34/#FDF5F6/#F5D0D6), content = hunter
+   (#4A7C59/#F3F6F4/#C8D7CC). (An earlier pass used one violet tint card for all —
+   explicitly overruled: a learner must tell a card sort from a timeline at a glance.) */
 .cr-block[data-block-type="scenarioTree"],
 .cr-block[data-block-type="cardSort"],
-.cr-block[data-block-type="matching"],
 .cr-block[data-block-type="flashcardDeck"],
 .cr-block[data-block-type="sequencing"],
 .cr-block[data-block-type="hotspot"],
 .cr-block[data-block-type="timeline"],
 .cr-block[data-block-type="fillInBlank"],
 .cr-block[data-block-type="reflection"] {
-  background: #F4F0FE;
-  border: 1px solid #DDD0FB;
+  background: #FFFFFF;
+  border: 1px solid #DDD0FB; /* engagement · violet */
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.cr-block[data-block-type="matching"],
+.cr-block[data-block-type="multiSelect"] {
+  background: #FFFFFF;
+  border: 1px solid #F5D0D6; /* assessment · burgundy */
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.cr-block[data-block-type="accordion"] {
+  background: #FFFFFF;
+  border: 1px solid #C8D7CC; /* content · hunter */
   border-radius: 14px;
   padding: 20px 24px;
 }
 
+/* Category chip labels (multiSelect renders its own chip inside the block) */
 .cr-block[data-block-type="scenarioTree"]::before,
 .cr-block[data-block-type="cardSort"]::before,
 .cr-block[data-block-type="matching"]::before,
@@ -2725,18 +2741,21 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="hotspot"]::before,
 .cr-block[data-block-type="timeline"]::before,
 .cr-block[data-block-type="fillInBlank"]::before,
-.cr-block[data-block-type="reflection"]::before {
-  display: block;
+.cr-block[data-block-type="reflection"]::before,
+.cr-block[data-block-type="accordion"]::before {
+  display: inline-block;
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #5B21B6;
+  padding: 4px 9px;
+  border-radius: 5px;
   margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #DDD0FB;
+  background: #F4F0FE; color: #4C1D95; /* engagement default */
 }
+.cr-block[data-block-type="matching"]::before { background: #FDF5F6; color: #6B1D34; }
+.cr-block[data-block-type="accordion"]::before { background: #F3F6F4; color: #2B4133; }
 
 .cr-block[data-block-type="scenarioTree"]::before    { content: "Scenario"; }
 .cr-block[data-block-type="cardSort"]::before        { content: "Card sort"; }
@@ -2747,6 +2766,49 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="timeline"]::before        { content: "Timeline"; }
 .cr-block[data-block-type="fillInBlank"]::before     { content: "Fill in the blanks"; }
 .cr-block[data-block-type="reflection"]::before      { content: "Reflection"; }
+.cr-block[data-block-type="accordion"]::before       { content: "Expand for detail"; }
+
+/* ── Multi-Select (mockup 15j / 18b): INLINE assessment card. Square checkboxes
+   (never circles) say "more than one" before a word is read; partial credit,
+   no penalty for a wrong pick. Checked state keeps four DISTINCT row states. ── */
+.cr-msel-chip { display: inline-block; font: 900 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; padding: 4px 9px; border-radius: 5px; background: #FDF5F6; color: #6B1D34; margin-bottom: 12px; }
+.cr-msel-prompt { font-family: var(--cr-font-display); font-weight: 400; font-size: 19px; line-height: 1.5; color: #2C2C2C; margin-bottom: 4px; }
+.cr-msel-meta { font: 400 12px/1 'Lato', system-ui, sans-serif; color: #6B7280; margin-bottom: 14px; }
+.cr-msel-options { display: flex; flex-direction: column; gap: 8px; }
+.cr-msel-option { display: flex; align-items: flex-start; gap: 12px; padding: 12px 15px; border-radius: 10px; background: #FBFAF6; border: 1px solid #E5E0D8; cursor: pointer; }
+.cr-msel-box { flex-shrink: 0; width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid #D8D2C6; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; margin-top: 1px; }
+.cr-msel-option-text { font: 400 15px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-msel-option.selected { border: 2px solid var(--cr-burgundy); background: #FDF5F6; padding: 11px 14px; }
+.cr-msel-option.selected .cr-msel-option-text { font-weight: 700; color: #6B1D34; }
+.cr-msel-option.selected .cr-msel-box { background: var(--cr-burgundy); border-color: var(--cr-burgundy); }
+.cr-msel-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 14px; flex-wrap: wrap; }
+.cr-msel-rule { font: 400 11.5px/1.4 'Lato', system-ui, sans-serif; color: #9CA3AF; }
+.cr-msel-check-btn { font: 700 13px/1 'Lato', system-ui, sans-serif; padding: 10px 18px; border-radius: 9px; border: none; cursor: pointer; background: var(--cr-burgundy); color: #fff; }
+.cr-msel-check-btn:disabled { background: #E5E0D8; color: #B0A89E; cursor: default; }
+/* Checked-state rows (18b) — four distinct states, never collapsed */
+.cr-msel-option.locked { cursor: default; }
+.cr-msel-option.state-correct { border: 2px solid #4A7C59; background: #fff; padding: 11px 14px; }
+.cr-msel-option.state-correct .cr-msel-box { background: #4A7C59; border-color: #4A7C59; }
+.cr-msel-option.state-picked-wrong { border: 2px solid #DC2626; background: #FEF2F2; padding: 11px 14px; }
+.cr-msel-option.state-picked-wrong .cr-msel-box { background: #DC2626; border-color: #DC2626; }
+.cr-msel-option.state-missed { border: 2px dashed #4A7C59; background: #fff; padding: 11px 14px; }
+.cr-msel-option.state-missed .cr-msel-box { border-color: #4A7C59; background: #fff; }
+.cr-msel-option.state-dim { opacity: .55; }
+.cr-msel-tag { font: 900 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; margin-left: auto; flex-shrink: 0; padding-top: 4px; }
+.cr-msel-option.state-correct .cr-msel-tag { color: #3D6A4A; }
+.cr-msel-option.state-picked-wrong .cr-msel-tag { color: #B91C1C; }
+.cr-msel-option.state-missed .cr-msel-tag { color: #3D6A4A; }
+.cr-msel-scorebar { margin-top: 14px; padding: 10px 14px; border-radius: 9px; background: #F9F0DB; border: 1px solid #F3E0B5; font: 700 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B4A25; }
+.cr-msel-panel { margin-top: 10px; padding: 14px 16px; border-radius: 11px; }
+.cr-msel-panel.hunter { background: #F3F6F4; border: 1px solid #C8D7CC; }
+.cr-msel-panel.error { background: #FEF2F2; border: 1px solid #FECACA; }
+.cr-msel-panel-label { font: 900 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 6px; }
+.cr-msel-panel.hunter .cr-msel-panel-label { color: #3D6A4A; }
+.cr-msel-panel.error .cr-msel-panel-label { color: #B91C1C; }
+.cr-msel-panel-body { font: 400 14.5px/1.65 'Lato', system-ui, sans-serif; }
+.cr-msel-panel.hunter .cr-msel-panel-body { color: #2B4133; }
+.cr-msel-panel.error .cr-msel-panel-body { color: #7F1D1D; }
+.cr-msel-retry { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; }
 
 
 /* Flatten the scenario tree's gradient banner */
@@ -5850,10 +5912,10 @@ function renderCurrentSection() {
   const pageBlocks = blocks.slice(pageStart, pageStart + BLOCK_PAGE_SIZE);
   pageBlocks.forEach((block, localIndex) => {
     const i = pageStart + localIndex;
-    // Knowledge-check-shaped blocks (knowledgeCheck, multipleChoice, multiSelect)
-    // render as a popout modal (mockup 14a/14b), not inline — leave a small marker
-    // where the block sits so the layout doesn't jump.
-    const isCheck = block.type === 'knowledgeCheck' || block.type === 'multipleChoice' || block.type === 'multiSelect';
+    // Single-answer checks (knowledgeCheck, multipleChoice) render as popout-modal
+    // pills (mockup 14a/14b). multiSelect is NOT here: per mockup 15j it is an
+    // inline assessment card with square checkboxes and partial credit.
+    const isCheck = block.type === 'knowledgeCheck' || block.type === 'multipleChoice';
     const el = isCheck ? renderKnowledgeCheckMarker(block, i) : renderBlock(block, i);
     if (el) area.appendChild(el);
   });
@@ -6507,8 +6569,117 @@ function submitMC(id, correctIdx) {
   srAnnounce(selected === correctIdx ? 'Correct!' : 'Incorrect. The correct answer is shown.');
 }
 
-// ─── MULTI SELECT ───
+// ─── MULTI SELECT (mockup 15j / 18b) ───
+// Inline assessment card: square checkboxes, "SELECT ALL THAT APPLY" chip,
+// partial credit with no penalty for a wrong pick. Checked state (18b) keeps
+// four distinct row states — correct / you-picked(wrong) / missed / untouched.
+// Answers persist to crKcState under the same key the checkpoint counts, so
+// checkpoint stats and the resurface card keep working unchanged.
+function crMselHtml(block, blockIndex) {
+  const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  const correctIdxs = (block.options || []).map((o, i) => typeof o === 'object' && o.isCorrect ? i : -1).filter(i => i >= 0);
+  const rec = crKcState()[crKcKey(currentSectionIndex, blockIndex, 0)];
+  const answered = !!(rec && !rec.skipped && Array.isArray(rec.answer));
+
+  let h = '<div class="cr-msel" data-block="' + blockIndex + '">';
+  h += '<div class="cr-msel-chip">Select all that apply</div>';
+  h += '<div class="cr-msel-prompt">' + esc(block.question || '') + '</div>';
+  h += '<div class="cr-msel-meta">' + correctIdxs.length + ' correct of ' + options.length + '</div>';
+
+  if (!answered) {
+    h += '<div class="cr-msel-options">';
+    options.forEach((opt, i) => {
+      h += '<div class="cr-msel-option" role="checkbox" aria-checked="false" tabindex="0" data-action="mselToggle" data-block="' + blockIndex + '" data-idx="' + i + '">'
+        + '<span class="cr-msel-box"></span><span class="cr-msel-option-text">' + esc(opt) + '</span></div>';
+    });
+    h += '</div>';
+    h += '<div class="cr-msel-footer"><span class="cr-msel-rule">Partial credit · no penalty for a wrong pick</span>'
+      + '<button type="button" class="cr-msel-check-btn" disabled data-action="mselSubmit" data-block="' + blockIndex + '">Check answer</button></div>';
+  } else {
+    const picked = new Set(rec.answer);
+    const correctSet = new Set(correctIdxs);
+    const missed = [], overpicked = [];
+    let hits = 0;
+    h += '<div class="cr-msel-options">';
+    options.forEach((opt, i) => {
+      let cls = 'cr-msel-option locked', tag = '', box = '';
+      if (correctSet.has(i) && picked.has(i)) { cls += ' state-correct'; tag = 'CORRECT'; box = '✓'; hits++; }
+      else if (picked.has(i)) { cls += ' state-picked-wrong'; tag = 'YOU PICKED'; box = '✕'; overpicked.push(opt); }
+      else if (correctSet.has(i)) { cls += ' state-missed'; tag = 'MISSED THIS'; missed.push(opt); }
+      else { cls += ' state-dim'; }
+      h += '<div class="' + cls + '"><span class="cr-msel-box">' + box + '</span>'
+        + '<span class="cr-msel-option-text">' + esc(opt) + '</span>'
+        + (tag ? '<span class="cr-msel-tag">' + tag + '</span>' : '') + '</div>';
+    });
+    h += '</div>';
+    h += '<div class="cr-msel-scorebar">' + hits + ' / ' + correctIdxs.length + ' · partial credit'
+      + (overpicked.length ? ' · no penalty for the extra' : '') + '</div>';
+    if (missed.length) {
+      h += '<div class="cr-msel-panel hunter"><div class="cr-msel-panel-label">What you missed</div>'
+        + '<div class="cr-msel-panel-body">' + missed.map(esc).join(' · ')
+        + (block.explanation && !overpicked.length ? '<br>' + esc(block.explanation) : '') + '</div></div>';
+    }
+    if (overpicked.length) {
+      h += '<div class="cr-msel-panel error"><div class="cr-msel-panel-label">Why the extra pick doesn\'t belong</div>'
+        + '<div class="cr-msel-panel-body">' + overpicked.map(esc).join(' · ')
+        + (block.explanation ? '<br>' + esc(block.explanation) : '') + '</div></div>';
+    }
+    if (!missed.length && !overpicked.length && block.explanation) {
+      h += '<div class="cr-msel-panel hunter"><div class="cr-msel-panel-label">Why these</div>'
+        + '<div class="cr-msel-panel-body">' + esc(block.explanation) + '</div></div>';
+    }
+    h += '<div class="cr-msel-footer"><span class="cr-msel-rule">Saved to your section summary</span>'
+      + '<button type="button" class="cr-msel-retry" data-action="mselRetry" data-block="' + blockIndex + '">Try again</button></div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+function crMselHost(blockIndex) {
+  return document.querySelector('.cr-block[data-block-type="multiSelect"] .cr-msel[data-block="' + blockIndex + '"]')?.parentElement || null;
+}
+
+function mselToggle(blockIndex, idx, el) {
+  el.classList.toggle('selected');
+  el.setAttribute('aria-checked', el.classList.contains('selected') ? 'true' : 'false');
+  const host = el.closest('.cr-msel');
+  const btn = host && host.querySelector('.cr-msel-check-btn');
+  if (btn) btn.disabled = host.querySelectorAll('.cr-msel-option.selected').length === 0;
+}
+
+function mselSubmit(blockIndex) {
+  const block = course?.sections?.[currentSectionIndex]?.contentBlocks?.[blockIndex];
+  if (!block) return;
+  const host = crMselHost(blockIndex);
+  if (!host) return;
+  const picks = [...host.querySelectorAll('.cr-msel-option.selected')].map(o => parseInt(o.dataset.idx, 10)).sort((a, b) => a - b);
+  if (!picks.length) return;
+  const correctIdxs = (block.options || []).map((o, i) => typeof o === 'object' && o.isCorrect ? i : -1).filter(i => i >= 0);
+  const full = picks.length === correctIdxs.length && picks.every((v, i) => v === correctIdxs[i]);
+  const state = crKcState();
+  state[crKcKey(currentSectionIndex, blockIndex, 0)] = { answer: picks, correct: full };
+  crKcSaveState(state);
+  host.innerHTML = crMselHtml(block, blockIndex);
+  srAnnounce(full ? 'All correct.' : 'Checked — see what was missed below.');
+}
+
+function mselRetry(blockIndex) {
+  const block = course?.sections?.[currentSectionIndex]?.contentBlocks?.[blockIndex];
+  const host = crMselHost(blockIndex);
+  if (!block || !host) return;
+  const state = crKcState();
+  delete state[crKcKey(currentSectionIndex, blockIndex, 0)];
+  crKcSaveState(state);
+  host.innerHTML = crMselHtml(block, blockIndex);
+}
+
 function renderMultiSelect(wrap, block, blockIndex) {
+  wrap.innerHTML = crMselHtml(block, blockIndex);
+  return wrap;
+}
+
+// ─── MULTI SELECT (legacy inline renderer — superseded by 15j above; kept for reference) ───
+function renderMultiSelectLegacy(wrap, block, blockIndex) {
   const id = `ms-${currentSectionIndex}-${blockIndex}`;
   const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
   const correctIdxs = (block.options || []).map((o, i) => typeof o === 'object' && o.isCorrect ? i : -1).filter(i => i >= 0);
@@ -9983,6 +10154,9 @@ document.addEventListener('click', function(e) {
     case 'examFlag': examFlagToggle(); break;
     case 'checkpointContinue': checkpointContinue(); break;
     case 'checkpointReview': checkpointReview(); break;
+    case 'mselToggle': mselToggle(parseInt(el.dataset.block, 10), parseInt(el.dataset.idx, 10), el); break;
+    case 'mselSubmit': mselSubmit(parseInt(el.dataset.block, 10)); break;
+    case 'mselRetry': mselRetry(parseInt(el.dataset.block, 10)); break;
     
     // ─── Sidebar / UI ───
     case 'toggleSidebar': toggleSidebar(); break;
@@ -10048,13 +10222,21 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Keyboard bridge: pending check pills (role=button) activate on Enter/Space.
+// Keyboard bridge: pending check pills (role=button) activate on Enter/Space;
+// multi-select checkbox rows (role=checkbox) toggle the same way.
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Enter' && e.key !== ' ') return;
   const pill = e.target.closest ? e.target.closest('.cr-kcm-marker.pending') : null;
-  if (!pill) return;
-  e.preventDefault();
-  openKnowledgeCheck(parseInt(pill.dataset.sec, 10), parseInt(pill.dataset.block, 10), parseInt(pill.dataset.q, 10));
+  if (pill) {
+    e.preventDefault();
+    openKnowledgeCheck(parseInt(pill.dataset.sec, 10), parseInt(pill.dataset.block, 10), parseInt(pill.dataset.q, 10));
+    return;
+  }
+  const mselRow = e.target.closest ? e.target.closest('.cr-msel-option[data-action="mselToggle"]') : null;
+  if (mselRow) {
+    e.preventDefault();
+    mselToggle(parseInt(mselRow.dataset.block, 10), parseInt(mselRow.dataset.idx, 10), mselRow);
+  }
 });
 
 // Handle file input change (can't use click delegation for onchange)
