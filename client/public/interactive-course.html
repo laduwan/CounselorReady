@@ -1341,6 +1341,29 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #B6CBD8; min-height: 44px;
 }
 .cr-fail-quiet:hover { text-decoration: underline; }
+.cr-fail-integrity {
+  margin: 18px auto 0; max-width: 52ch;
+  padding: 11px 14px; border-radius: 9px;
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+  font: 400 12px/1.55 'Lato', system-ui, sans-serif; color: #D3E0E8;
+}
+/* 17b — attempts exhausted: burgundy banner; red is confined to the
+   renewal-impact panel. */
+.cr-assessment-result.exhausted { border: none; background: var(--cr-burgundy); color: #FFFFFF; }
+.cr-assessment-result.exhausted .score { color: #FFFFFF; }
+.cr-exhausted-kept { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; text-align: left; }
+@media (max-width: 560px) { .cr-exhausted-kept { grid-template-columns: 1fr; } }
+.cr-exhausted-kept-col {
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 10px; padding: 14px 16px;
+  font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #FBEDF0;
+}
+.cr-exhausted-kept-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #F5CBD5; margin-bottom: 7px; }
+.cr-exhausted-impact {
+  margin-top: 14px; padding: 13px 16px; border-radius: 10px;
+  background: #FEF2F2; border: 1px solid #DC2626;
+  font: 700 13px/1.55 'Lato', system-ui, sans-serif; color: #991B1B; text-align: left;
+}
 .cr-assessment-result h3 {
   font-family: var(--cr-font-display);
   font-size: 1.8em; font-weight: 700;
@@ -8489,13 +8512,27 @@ function renderAssessmentResult() {
       html += `<p class="cr-fail-note">Missing on an attempt is an ordinary part of CE. A focused review before attempt ${assessmentState.attempts + 1} is usually what closes the gap.</p>`;
       html += `<button type="button" class="cr-fail-retry" data-action="retryAssessment">Retake exam →</button>`;
       html += `<button type="button" class="cr-fail-quiet" data-action="prevSection">Review the course first</button>`;
+      html += `<div class="cr-fail-integrity">Per NBCC integrity requirements, individual answers are not shown. Your next attempt uses a new question order.</div>`;
+      html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
+      html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
+      html += '</div>';
     } else {
-      html += `<p class="cr-fail-gap">You needed ${passing}%, and all ${maxAttempts} attempts are used.</p>`;
-      html += `<p class="cr-fail-note">Your reading progress and saved items are kept. Contact your course provider about re-enrollment.</p>`;
+      // 17b — all attempts used: burgundy banner with the warning confined to
+      // the renewal-impact panel; the learner's work is framed as kept.
+      html = `<div class="cr-assessment-result exhausted">
+        <div class="cr-fail-clock" aria-hidden="true">⚠</div>
+        <div class="cr-fail-eyebrow" style="color:#F5CBD5">${maxAttempts > 1 ? 'ALL ' + (CR_OPENER_ORDINALS[maxAttempts - 1] || maxAttempts) + ' ATTEMPTS USED' : 'NO ATTEMPTS REMAINING'}</div>
+        <div class="score">${failCorrect !== null ? failCorrect + ' of ' + failTotalQs + ' correct — ' + score + '%' : score + '%'}</div>
+        <div class="cr-exhausted-kept">
+          <div class="cr-exhausted-kept-col"><div class="cr-exhausted-kept-label">WHAT IS KEPT</div>Reading progress, notes, highlights, and saved supplemental items.</div>
+          <div class="cr-exhausted-kept-col"><div class="cr-exhausted-kept-label">WHAT IS NOT</div>CE hours for this course — they issue only on a passing attempt.</div>
+        </div>
+        <div class="cr-exhausted-impact">These CE hours are not counted toward renewal. Your credential standing is otherwise unchanged.</div>
+        <p class="cr-fail-note" style="color:#F3D3DA">Contact your course provider from your dashboard about re-enrollment options.</p>
+        <button type="button" class="cr-fail-quiet" style="color:#F5CBD5" data-action="saveAndExit">Back to dashboard</button>
+        <div style="margin-top:24px;font-size:10px;color:#EBA9B5;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>
+      </div>`;
     }
-    html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
-    html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
-    html += '</div>';
     area.innerHTML = html;
     document.getElementById('crNavButtons').style.display = 'none';
     return;
