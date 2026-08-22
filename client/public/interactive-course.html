@@ -423,7 +423,16 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
      The reading column below carries the canvas padding instead. */
   padding: 0;
   width: 100%;
+  /* The footer bar caps the BOTTOM of the window even on short pages: the main
+     area fills the viewport and the content region grows, so the sticky bar's
+     natural position is the window bottom (it still sticks while scrolling
+     long pages). Without this, a short page left the bar floating mid-screen. */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
+.cr-main > .cr-reading-column, .cr-main > #crOpenerArea { flex: 1 0 auto; }
+.cr-nav-buttons { margin-top: auto; }
 /* ══ KE'S RULING — FINAL, overrides every design doc ══
    The reading column is 70% OF THE PAGE (the viewport), not of any frame or
    mockup card. Ke has rejected narrower treatments three times: fixed 640px
