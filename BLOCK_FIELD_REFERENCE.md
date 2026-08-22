@@ -1,6 +1,6 @@
 # BLOCK FIELD REFERENCE (Tier 1 — GENERATED, DO NOT HAND-EDIT)
 
-> Source hash `0753e5452ead` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
+> Source hash `105515a640ae` (sha256 of interactive-course.html, first 12) by `server/src/scripts/generateBlockFieldReference.js`.
 > **Source of truth:** the `renderX()` functions in `client/public/interactive-course.html`.
 > Field names below are extracted from `block.<field>` reads in those functions.
 > If a seed or the builder writes a field NOT listed here, the viewer ignores it
@@ -76,11 +76,7 @@ word count unaffected, but renders blank.
 | `question` | prose (word-counted) |
 
 ### `multiSelect`  ·  renders via `renderMultiSelect()`
-| field | classification |
-|---|---|
-| `explanation` | data |
-| `options` | data |
-| `question` | prose (word-counted) |
+_No direct `block.X` reads (may use helpers — inspect manually)._
 
 ### `matching`  ·  renders via `renderMatching()`
 | field | classification |

@@ -424,13 +424,12 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   width: 100%;
 }
 .cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; padding: 42px 32px 36px; }
-/* Per the design canvas, the reading column occupies 70% of the screen — the 640px
-   in the mockup spec is 70% of its ~915px artboard, i.e. proportional, not fixed.
-   Applied on desktop only (70vw of a phone would be a sliver); capped at 1360px so
-   ultrawide monitors don't produce unreadable line lengths. */
-@media (min-width: 1025px) {
-  .cr-reading-column { max-width: min(70vw, 1360px); }
-}
+/* 640px is a fixed line-length decision (~70 characters at 17.5px Lato), not a
+   fraction of the mockup canvas — do not reintroduce a vw-based override here.
+   Wide-screen breathing room comes from margin around the column, never width. */
+/* Exam layout (11f) uses a two-column question + progress rail and needs more room
+   than a prose line-length column. */
+.cr-reading-column:has(.cr-exam-header) { max-width: 940px; }
 /* Page title (mockup 12a): replaces the pink section-divider card the viewer used
    to inject when a section has no sectionDivider block of its own. */
 .cr-page-title {
@@ -518,7 +517,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border: none; background: none;
   border-radius: 6px; font-size: 12px;
   cursor: pointer; font-weight: 500;
-  min-height: 32px; min-width: 0;
+  min-height: 44px; min-width: 0; /* touch minimum, measured per control */
   color: var(--cr-text-secondary);
   transition: all var(--cr-transition);
 }
@@ -654,18 +653,19 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   overflow: hidden;
   transition: border-color var(--cr-transition);
 }
-.cr-accordion-item:hover { border-color: var(--cr-navy-light); }
+.cr-accordion-item:hover { border-color: #C8D7CC; }
+/* Accordion is a CONTENT block — hunter accents, never navy (DRIFT_FIXES §7). */
 .cr-accordion-trigger {
   width: 100%; padding: 16px 20px;
-  background: var(--cr-navy-faded);
+  background: #F3F6F4;
   border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
   font-size: 0.95em; font-weight: 600;
-  color: var(--cr-navy);
+  color: var(--cr-hunter, #4A7C59);
   text-align: left;
   transition: background var(--cr-transition);
 }
-.cr-accordion-trigger:hover { background: var(--cr-navy-faded); filter: brightness(0.97); }
+.cr-accordion-trigger:hover { background: #F3F6F4; filter: brightness(0.97); }
 .cr-accordion-trigger .cr-chevron {
   transition: transform var(--cr-transition);
   font-size: 18px;
@@ -730,10 +730,10 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   background: var(--cr-burgundy);
   color: #fff;
 }
-.cr-kc-option.correct { border-color: var(--cr-success); background: #F0FFF4; }
+.cr-kc-option.correct { border-color: var(--cr-success); background: #F3F6F4; }
 .cr-kc-option.correct .cr-kc-radio,
 .cr-kc-option.correct .cr-kc-check { border-color: var(--cr-success); background: var(--cr-success); }
-.cr-kc-option.incorrect { border-color: var(--cr-danger); background: #FFF5F5; }
+.cr-kc-option.incorrect { border-color: var(--cr-danger); background: #FEF2F2; }
 .cr-kc-option.incorrect .cr-kc-radio,
 .cr-kc-option.incorrect .cr-kc-check { border-color: var(--cr-danger); background: var(--cr-danger); }
 .cr-kc-explanation {
@@ -788,7 +788,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-matching-term.selected { border-color: var(--cr-burgundy); box-shadow: 0 0 0 3px rgba(107,29,52,0.15); }
 .cr-matching-def.selected { border-color: var(--cr-navy); box-shadow: 0 0 0 3px rgba(40,65,87,0.15); }
 .cr-matching-term.matched, .cr-matching-def.matched {
-  border-color: var(--cr-success); background: #F0FFF4; opacity: 0.7;
+  border-color: var(--cr-success); background: #F3F6F4; opacity: 0.7;
   cursor: default; pointer-events: none;
 }
 
@@ -943,8 +943,8 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-cardsort-card:active { cursor: grabbing; opacity: 0.7; }
 .cr-cardsort-card:hover { border-color: var(--cr-gold); }
-.cr-cardsort-card.correct { border-color: var(--cr-success); background: #F0FFF4; }
-.cr-cardsort-card.incorrect { border-color: var(--cr-danger); background: #FFF5F5; }
+.cr-cardsort-card.correct { border-color: var(--cr-success); background: #F3F6F4; }
+.cr-cardsort-card.incorrect { border-color: var(--cr-danger); background: #FEF2F2; }
 
 /* ═══════════════════════════════════════════════════════════════
    SEQUENCING
@@ -966,15 +966,17 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; flex-shrink: 0;
 }
+/* Up/down are distinct actions: each gets its own ≥44px box, side by side —
+   stacking two 44px buttons would make the row ~92px tall (DRIFT_FIXES §4). */
 .cr-sequencing-item .cr-seq-arrows {
-  display: flex; flex-direction: column; gap: 2px; margin-left: auto;
+  display: flex; flex-direction: row; gap: 6px; margin-left: auto;
 }
 .cr-sequencing-item .cr-seq-arrows button {
-  width: 28px; height: 28px; min-height: 28px; min-width: 28px;
-  border: 1px solid var(--cr-border); border-radius: 4px;
+  width: 44px; height: 44px; min-height: 44px; min-width: 44px;
+  border: 1px solid var(--cr-border); border-radius: 8px;
   background: var(--cr-surface); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1049,16 +1051,18 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 /* ═══════════════════════════════════════════════════════════════
    REFLECTION
    ═══════════════════════════════════════════════════════════════ */
+/* Reflection is an ENGAGEMENT block — navy accents, never hunter
+   (DRIFT_FIXES §7). The engagement shell carries the card border. */
 .cr-reflection {
-  background: var(--cr-green-faded);
-  border: 1px solid var(--cr-green);
+  background: #F0F4F7;
+  border: 1px solid #DCE5EC;
   border-radius: var(--cr-radius);
   padding: 24px; margin-bottom: 24px;
 }
 .cr-reflection-prompt {
   font-family: var(--cr-font-display);
   font-size: 1.1em; font-weight: 600;
-  color: var(--cr-green);
+  color: var(--cr-navy);
   margin-bottom: 16px;
   display: flex; align-items: center; gap: 10px;
 }
@@ -1071,7 +1075,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   resize: vertical;
   transition: border-color var(--cr-transition);
 }
-.cr-reflection textarea:focus { border-color: var(--cr-green); }
+.cr-reflection textarea:focus { border-color: var(--cr-navy); }
 .cr-reflection-count {
   font-size: 0.8em; color: var(--cr-text-muted);
   margin-top: 6px; text-align: right;
@@ -1258,7 +1262,33 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border: 2px solid var(--cr-border);
 }
 .cr-assessment-result.passed { border-color: var(--cr-hunter); background: #F3F6F4; }
-.cr-assessment-result.failed { border-color: var(--cr-danger); }
+/* A failed attempt with retries left is NAVY, never red (mockup 17a) — missing on
+   attempt 1 is ordinary in CE. Red is reserved for 17b, all attempts exhausted. */
+.cr-assessment-result.failed { border: none; background: var(--cr-navy); color: #FFFFFF; }
+.cr-assessment-result.failed h3 { color: #FFFFFF; }
+.cr-fail-clock {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(255,255,255,0.16); color: #FFFFFF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin: 0 auto 14px;
+}
+.cr-fail-eyebrow {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: #C3D5E0; margin-bottom: 6px;
+}
+.cr-fail-gap { font: 400 14px/1.6 'Lato', system-ui, sans-serif; color: #D3E0E8; margin-top: 12px; }
+.cr-fail-note { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #B6CBD8; margin-top: 8px; }
+.cr-fail-retry {
+  margin-top: 20px; font: 700 14.5px/1 'Lato', system-ui, sans-serif;
+  padding: 14px 28px; border: none; border-radius: 11px;
+  background: #D4A855; color: #4A1524; cursor: pointer; min-height: 44px;
+}
+.cr-fail-quiet {
+  display: block; margin: 14px auto 0; background: none; border: none; cursor: pointer;
+  font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #B6CBD8; min-height: 44px;
+}
+.cr-fail-quiet:hover { text-decoration: underline; }
 .cr-assessment-result h3 {
   font-family: var(--cr-font-display);
   font-size: 1.8em; font-weight: 700;
@@ -1280,7 +1310,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font-family: var(--cr-font-display);
 }
 .cr-assessment-result.passed .score { color: var(--cr-hunter); }
-.cr-assessment-result.failed .score { color: var(--cr-danger); }
+.cr-assessment-result.failed .score { color: #FFFFFF; }
 
 /* ═══════════════════════════════════════════════════════════════
    READER HEADER (desktop only)
@@ -1319,67 +1349,71 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 @media (max-width: 1024px) { .cr-reader-header { display: none; } }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION OPENER
+   SECTION OPENER (mockup 20b) — a contained, lifted card on the
+   eggshell canvas, never a full-bleed color slab. Standalone opener
+   renders for section 1 only; later sections open inside the merged
+   boundary (mockup 20a).
    ═══════════════════════════════════════════════════════════════ */
-.cr-opener-panel {
-  /* .cr-main no longer pads the content area, so the panel is naturally
-     full-bleed — the old negative margins that escaped that padding would
-     now overflow the viewport. */
-  margin: 0;
-  padding: 56px 34px;
-  border-radius: 0;
-  display: flex;
-  justify-content: center;
-  min-height: calc(100vh - 200px);
-}
+.cr-opener-canvas { padding: 34px 34px 40px; display: flex; justify-content: center; }
 .cr-opener-col { width: 100%; max-width: 640px; }
+.cr-opener-panel {
+  border-radius: 16px;
+  padding: 38px 34px 34px;
+  /* background + box-shadow set inline from the section color rotation */
+}
+.cr-opener-rule { width: 38px; height: 3px; border-radius: 2px; background: #D4A855; }
+.cr-opener-eyebrow-row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; margin-top: 18px; }
 .cr-opener-eyebrow {
-  font-family: 'Lato', system-ui, sans-serif;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 14px;
+  font: 700 10px/1.4 'Lato', system-ui, sans-serif;
+  letter-spacing: 0.19em; text-transform: uppercase;
+  /* color set inline: #F5CBD5 on burgundy, #C3D5E0 on navy — solid palette
+     values, never white at 70% alpha (AA on the card fill) */
+}
+.cr-opener-pill {
+  padding: 3px 9px; border-radius: 20px;
+  background: rgba(255,255,255,0.14);
+  font: 700 9.5px/1.4 'Lato', system-ui, sans-serif; letter-spacing: 0.08em;
 }
 .cr-opener-title {
   font-family: var(--cr-font-display);
-  font-weight: 600; font-size: 42px; line-height: 1.15;
-  color: #FFFFFF; max-width: 22ch;
-  margin: 0 0 18px;
+  font-weight: 600; font-size: 34px; line-height: 1.18;
+  color: #FFFFFF; max-width: 23ch;
+  margin: 13px 0 0;
 }
 .cr-opener-intro {
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 17px; line-height: 1.75;
-  color: rgba(255,255,255,0.8);
-  max-width: 60ch;
-  margin: 0 0 24px;
+  font-size: 15.5px; line-height: 1.72;
+  max-width: 62ch;
+  margin: 13px 0 0;
 }
-.cr-opener-topics { margin-bottom: 32px; }
+.cr-opener-topics { display: flex; flex-direction: column; gap: 7px; margin-top: 20px; }
 .cr-opener-topic {
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: 11px;
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 15px; color: #FFFFFF;
-  margin-bottom: 12px;
+  font-size: 14px;
 }
 .cr-opener-topic-num {
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 21px; height: 21px; border-radius: 50%;
   background: rgba(255,255,255,0.14);
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 700; flex-shrink: 0;
+  font-size: 10.5px; font-weight: 700; flex-shrink: 0; color: #FFFFFF;
 }
-.cr-opener-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.cr-opener-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 26px; }
 .cr-opener-start {
-  background: #D4A855; color: #4A1524;
-  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 15.5px;
-  padding: 16px 32px; border: none; border-radius: 11px;
-  box-shadow: 0 2px 10px rgba(212,168,85,.24);
+  background: #FFFFFF; color: #6B1D34;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 14.5px;
+  padding: 14px 28px; border: none; border-radius: 11px;
+  min-height: 44px;
   cursor: pointer;
 }
 .cr-opener-review {
   background: none; border: none; cursor: pointer;
-  font-family: 'Lato', system-ui, sans-serif; font-size: 13px;
-  color: rgba(255,255,255,0.7);
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 12.5px;
+  min-height: 44px; padding: 0;
   text-decoration: none;
 }
 .cr-opener-review:hover { text-decoration: underline; }
+@media (max-width: 640px) { .cr-opener-canvas { padding: 20px 16px 32px; } }
 
 /* ═══════════════════════════════════════════════════════════════
    NAVIGATION BUTTONS
@@ -1768,46 +1802,55 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 @media (max-width: 900px) { .cr-exam-body { flex-direction: column; } .cr-exam-rail { width: 100%; position: static; } }
 
 /* ═══════════════════════════════════════════════════════════════
-   SECTION CHECKPOINT (mockup 11e) — ends a section: summarize, then
-   hand off. Also where skipped knowledge checks and unsaved
-   Supplemental items resurface. 640px centered column.
+   SECTION BOUNDARY (mockup 20a) — one screen closes a section and
+   opens the next: pastel review card, honey unsaved band, then the
+   next section's lifted color card. 640px centered column.
+   Pastel fills never license pastel type — the review card's type
+   stays on the dark tokens (#3D6A4A / #5C7466 / #2B4133 / #33453A).
    ═══════════════════════════════════════════════════════════════ */
-/* Fills the reading column (70% of screen) like the exam does — the spec's 640px
-   is the mockup artboard's proportional column, not a fixed cap (same correction
-   as the reading page). */
-.cr-cp { margin: 0 auto; }
-.cr-cp-head { text-align: center; margin-bottom: 26px; }
-.cr-cp-check { width: 48px; height: 48px; border-radius: 50%; background: #4A7C59; color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
-.cr-cp-eyebrow { font: 700 10.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #3D6A4A; margin-bottom: 10px; }
-.cr-cp-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 32px; line-height: 1.2; color: #2C2C2C; margin: 0 0 8px; }
-.cr-cp-meta { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #6B7280; }
-.cr-cp-card { background: #FFFFFF; border: 1px solid #E2E2BE; border-radius: 14px; padding: 22px 26px; margin-bottom: 18px; }
-.cr-cp-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #6B7280; }
-.cr-cp-item { display: flex; gap: 10px; font: 400 15px/1.65 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 10px; }
-.cr-cp-dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #D4A855; margin-top: 9px; }
-.cr-cp-skipped { background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 14px; padding: 18px 24px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.cr-cp-skipped-text { font: 400 14px/1.5 'Lato', system-ui, sans-serif; color: #6B4A25; }
-.cr-cp-skipped-btn { font: 700 12.5px/1 'Lato', system-ui, sans-serif; padding: 10px 16px; border-radius: 9px; border: none; background: #D4A855; color: #4A1524; cursor: pointer; flex-shrink: 0; }
-.cr-cp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-.cr-cp-stat { background: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 14px; padding: 20px 24px; }
-.cr-cp-stat-num { font-family: var(--cr-font-display); font-weight: 600; font-size: 34px; color: #6B1D34; line-height: 1; }
-.cr-cp-stat-label { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 6px; }
-.cr-cp-stat-action { display: inline-block; margin-top: 8px; background: none; border: none; cursor: pointer; padding: 0; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #A67936; }
-.cr-cp-next { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-.cr-cp-next-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 21px; color: #4A1524; margin: 6px 0 4px; }
-.cr-cp-next-meta { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
-.cr-cp-next-btn { font: 700 14px/1 'Lato', system-ui, sans-serif; padding: 14px 24px; border-radius: 10px; border: none; background: var(--cr-burgundy); color: #fff; cursor: pointer; box-shadow: 0 2px 10px rgba(107,29,52,.24); flex-shrink: 0; }
-.cr-cp-util { display: flex; gap: 22px; align-items: center; justify-content: center; margin-top: 6px; font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; }
-.cr-cp-util button { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-cp { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.cr-cp-review { background: #F1F6F2; border: 1px solid #D8E6DC; border-radius: 14px; padding: 22px 24px; }
+.cr-cp-review-head { display: flex; align-items: center; gap: 12px; }
+.cr-cp-check { flex: none; width: 24px; height: 24px; border-radius: 50%; background: #C5DCCB; color: #3D6A4A; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.cr-cp-review-titles { flex: 1; min-width: 0; }
+.cr-cp-eyebrow { font: 700 9.5px/1.4 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #3D6A4A; }
+.cr-cp-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 18px; line-height: 1.25; color: #2B4133; margin: 4px 0 0; }
+.cr-cp-review-link { flex: none; background: none; border: none; cursor: pointer; padding: 0; font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #3D6A4A; min-height: 44px; }
+.cr-cp-review-link:hover { text-decoration: underline; }
+.cr-cp-meta { font: 400 11.5px/1.5 'Lato', system-ui, sans-serif; color: #5C7466; margin-top: 9px; padding-left: 36px; }
+.cr-cp-hairline { height: 1px; background: #DDE9E0; margin: 16px 0 14px; }
+.cr-cp-label { font: 700 9.5px/1.4 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #3D6A4A; }
+.cr-cp-items { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+.cr-cp-item { display: flex; gap: 11px; font: 400 14px/1.6 'Lato', system-ui, sans-serif; color: #33453A; }
+.cr-cp-dot { flex: none; width: 5px; height: 5px; border-radius: 50%; background: #E2C98F; margin-top: 7px; }
+/* Honey band — unsaved Supplemental items and skipped knowledge checks resurface
+   here. Actions hold #7A5C24 (5.95:1 on the pastel fill). */
+.cr-cp-band { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-radius: 12px; background: #FDFAF2; border: 1px solid #EDE0C4; flex-wrap: wrap; }
+.cr-cp-band-badge { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #EBD9A8; display: flex; align-items: center; justify-content: center; font: 700 11px/1 'Lato', system-ui, sans-serif; color: #7A5C24; }
+.cr-cp-band-text { flex: 1; min-width: 200px; font: 400 13px/1.5 'Lato', system-ui, sans-serif; color: #7A5C24; }
+.cr-cp-band-btn { flex: none; background: none; border: none; cursor: pointer; padding: 0; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #7A5C24; min-height: 44px; }
+.cr-cp-band-btn:hover { text-decoration: underline; }
+/* Next-section card — lighter tint of the rotation color, lifted; background and
+   shadow set inline from the rotation map. */
+.cr-cp-nextcard { border-radius: 16px; padding: 30px 32px 28px; margin-top: 6px; }
+.cr-cp-nextcard .cr-opener-rule { margin-bottom: 16px; }
+.cr-cp-nextcard .cr-opener-eyebrow-row { margin-top: 0; }
+.cr-cp-next-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 30px; line-height: 1.2; color: #fff; max-width: 24ch; margin: 11px 0 0; }
+.cr-cp-next-intro { font: 400 15px/1.7 'Lato', system-ui, sans-serif; margin: 11px 0 0; max-width: 62ch; }
+.cr-cp-nextcard .cr-opener-topics { margin-top: 18px; }
+.cr-cp-nextcard .cr-opener-actions { margin-top: 24px; }
+.cr-cp-next-btn { font: 700 14.5px/1 'Lato', system-ui, sans-serif; padding: 14px 28px; border-radius: 11px; border: none; background: #D4A855; color: #4A1524; cursor: pointer; min-height: 44px; flex-shrink: 0; }
+.cr-cp-quiet { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; min-height: 44px; }
+.cr-cp-quiet:hover { text-decoration: underline; }
+.cr-cp-util { display: flex; gap: 22px; align-items: center; justify-content: center; font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; }
+.cr-cp-util button { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; min-height: 44px; }
 .cr-cp-util button:hover { color: #4A7C59; }
-@media (max-width: 560px) { .cr-cp-stats { grid-template-columns: 1fr; } }
 
 /* ═══════════════════════════════════════════════════════════════
    PASS → EVALUATION → CERTIFICATE (mockup 11g) — the passed result:
    hunter banner, evaluation gate, locked certificate preview,
    take-with-you row. The failed result keeps its existing screen.
    ═══════════════════════════════════════════════════════════════ */
-/* Same proportional-width correction as .cr-cp above. */
 .cr-pass { margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 .cr-pass-banner { background: #4A7C59; border-radius: 14px; padding: 42px 34px; text-align: center; color: #fff; }
 .cr-pass-check { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px; }
@@ -2373,8 +2416,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   line-height: 1.75;
   color: var(--cr-text-body);
   margin: 0 0 1.2em;
-  /* Width comes from .cr-reading-column (70% of screen per the design canvas) —
-     the old 680px per-paragraph cap silently re-narrowed wider columns. */
+  /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
+     the old 680px per-paragraph cap silently re-narrowed the column. */
 }
 
 .cr-prose p:last-child,
@@ -2600,8 +2643,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   .cr-prose,
   .cr-block[data-block-type="text"],
   .cr-block[data-block-type="imageText"] {
-    /* Width comes from .cr-reading-column (70% of screen per the design canvas) —
-       the old 720px cap here silently re-narrowed wider columns. */
+    /* Width comes from .cr-reading-column (fixed 640px line length per DRIFT_FIXES §1) —
+       the old 720px cap here silently re-narrowed the column. */
     margin-left: auto;
     margin-right: auto;
   }
@@ -2698,13 +2741,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       Pure CSS via ::before on .cr-block[data-block-type=...].
    ═══════════════════════════════════════════════════════════════ */
 
-/* Canon (Interactive Blocks section, mockups 15a–15j): the ten types share ONLY a
-   white card at 14px radius with the CATEGORY border and a small chip label — the
-   accent signals the category, the LAYOUT signals the task. Do not converge the
-   forms. Groups: engagement = violet (#7C3AED/#F4F0FE/#DDD0FB/#4C1D95),
-   assessment = burgundy (#6B1D34/#FDF5F6/#F5D0D6), content = hunter
-   (#4A7C59/#F3F6F4/#C8D7CC). (An earlier pass used one violet tint card for all —
-   explicitly overruled: a learner must tell a card sort from a timeline at a glance.) */
+/* Canon (Interactive Blocks section, mockups 15a–15j + DRIFT_FIXES §7b): the ten
+   types share ONLY a white card at 14px radius with the CATEGORY border and a small
+   chip label — the accent signals the category, the LAYOUT signals the task. Do not
+   converge the forms. Learner blocks use three brand colors only:
+   engagement = navy (#284157/#F0F4F7/#DCE5EC/#1F344A), assessment = burgundy
+   (#6B1D34/#FDF5F6/#F5D0D6), content = hunter (#4A7C59/#F3F6F4/#C8D7CC).
+   Violet and cyan are builder-side taxonomy hues and never appear in learner UI. */
 .cr-block[data-block-type="scenarioTree"],
 .cr-block[data-block-type="cardSort"],
 .cr-block[data-block-type="flashcardDeck"],
@@ -2714,7 +2757,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="fillInBlank"],
 .cr-block[data-block-type="reflection"] {
   background: #FFFFFF;
-  border: 1px solid #DDD0FB; /* engagement · violet */
+  border: 1px solid #DCE5EC; /* engagement · navy */
   border-radius: 14px;
   padding: 20px 24px;
 }
@@ -2752,7 +2795,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   padding: 4px 9px;
   border-radius: 5px;
   margin-bottom: 12px;
-  background: #F4F0FE; color: #4C1D95; /* engagement default */
+  background: #F0F4F7; color: #1F344A; /* engagement default · navy */
 }
 .cr-block[data-block-type="matching"]::before { background: #FDF5F6; color: #6B1D34; }
 .cr-block[data-block-type="accordion"]::before { background: #F3F6F4; color: #2B4133; }
@@ -3544,9 +3587,11 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-alert-supervisor {
-  background: #F5F3FF;
-  border-color: #7C3AED;
-  color: #4C1D95;
+  /* Violet is builder-side only (DRIFT_FIXES §7b) — darker navy saturation
+     step keeps this distinct from the .cr-alert-document navy. */
+  background: #DCE5EC;
+  border-color: #1F344A;
+  color: #1F344A;
 }
 
 .cr-alert-legal {
@@ -3801,7 +3846,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-reflection textarea:focus {
-  border-bottom-color: var(--cr-hunter, #4A7C59) !important;
+  border-bottom-color: var(--cr-navy, #284157) !important; /* engagement accent */
   border-bottom-width: 2px !important;
 }
 
@@ -5358,7 +5403,11 @@ function goToSection(i) {
   buildSectionNav();
 
   const section = course.sections[i];
-  if (!alreadyVisited && section && !section._isOverview) {
+  // Standalone opener is section 1 only (mockup 20b) — later sections are
+  // opened by the merged boundary screen (20a), so entering them goes
+  // straight to the reading page.
+  const openerDisplayNum = i - course.sections.filter((s, idx) => idx < i && s._isOverview).length + 1;
+  if (!alreadyVisited && section && !section._isOverview && openerDisplayNum === 1) {
     sectionSubState = 'opener';
     renderSectionOpener(i);
   } else {
@@ -5374,10 +5423,66 @@ function goToSection(i) {
 
 const CR_OPENER_COLORS = ['#6B1D34', '#284157', '#4A7C59', '#8B2542'];
 const CR_OPENER_ORDINALS = ['ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN','ELEVEN','TWELVE'];
+// Card treatment per rotation color (mockups 20a/20b): a lighter tint of the
+// section color carries the card, with solid pastel type tokens — never
+// white-at-alpha — so every string holds AA on its fill. Hunter and
+// burgundy-mid tints are derived the same one-step-lighter way as the two
+// tints present in the mockups (#7A2A41, #33566E).
+const CR_OPENER_CARD = {
+  '#6B1D34': { bg: '#7A2A41', shadow: '0 3px 18px rgba(107,29,52,.16)', eyebrow: '#F5CBD5', intro: '#F3D3DA', topic: '#FBEDF0', quiet: '#F5CBD5' },
+  '#284157': { bg: '#33566E', shadow: '0 3px 16px rgba(40,65,87,.14)',  eyebrow: '#C3D5E0', intro: '#D3E0E8', topic: '#EAF1F5', quiet: '#B6CBD8' },
+  '#4A7C59': { bg: '#578667', shadow: '0 3px 16px rgba(74,124,89,.14)', eyebrow: '#D3E4D8', intro: '#DEEAE2', topic: '#EDF4EF', quiet: '#CFE0D4' },
+  '#8B2542': { bg: '#98324F', shadow: '0 3px 18px rgba(139,37,66,.16)', eyebrow: '#F5CBD5', intro: '#F3D3DA', topic: '#FBEDF0', quiet: '#F5CBD5' }
+};
+
+// Up to 3 topics for a section card: sectionDivider block titles, else headings
+// pulled from text blocks. Shared by the standalone opener (20b) and the merged
+// boundary's next-section card (20a).
+function crSectionTopics(section) {
+  const blocks = section?.contentBlocks || [];
+  let topics = blocks.filter(b => b.type === 'sectionDivider' && b.title).map(b => b.title).slice(0, 3);
+  if (!topics.length) {
+    blocks.forEach(b => {
+      if (topics.length >= 3 || b.type !== 'text' || !b.content) return;
+      const m = String(b.content).match(/<h[23][^>]*>(.*?)<\/h[23]>/i);
+      if (m) topics.push(m[1].replace(/<[^>]+>/g, '').trim());
+    });
+  }
+  return topics;
+}
+
+// The next-section card shared by 20a and 20b: honey rule, eyebrow row with a
+// page/time pill, title, intro, numbered topics, actions. `opts` controls the
+// two variants: { titleClass, introClass, eyebrowText, pillText, actionsHtml }.
+function crOpenerCardHtml(section, color, opts) {
+  const card = CR_OPENER_CARD[color] || CR_OPENER_CARD['#6B1D34'];
+  const topics = crSectionTopics(section);
+  let h = '<div class="' + (opts.panelClass || 'cr-opener-panel') + '" style="background:' + card.bg + ';box-shadow:' + card.shadow + '">';
+  h += '<div class="cr-opener-rule"></div>';
+  h += '<div class="cr-opener-eyebrow-row">';
+  h += '<span class="cr-opener-eyebrow" style="color:' + card.eyebrow + '">' + opts.eyebrowText + '</span>';
+  if (opts.pillText) h += '<span class="cr-opener-pill" style="color:' + card.eyebrow + '">' + opts.pillText + '</span>';
+  h += '</div>';
+  h += '<h1 class="' + (opts.titleClass || 'cr-opener-title') + '">' + esc(opts.title) + '</h1>';
+  if (section && section.description) {
+    h += '<p class="' + (opts.introClass || 'cr-opener-intro') + '" style="color:' + card.intro + '">'
+       + (typeof mdInlineParse === 'function' ? mdInlineParse(section.description) : esc(section.description)) + '</p>';
+  }
+  if (topics.length) {
+    h += '<div class="cr-opener-topics">';
+    topics.forEach((t, idx) => {
+      h += '<div class="cr-opener-topic" style="color:' + card.topic + '"><span class="cr-opener-topic-num">' + (idx + 1) + '</span><span>' + esc(t) + '</span></div>';
+    });
+    h += '</div>';
+  }
+  h += '<div class="cr-opener-actions">' + opts.actionsHtml + '</div>';
+  h += '</div>';
+  return h;
+}
 
 function renderSectionOpener(i) {
   const section = course.sections[i];
-  const area = document.getElementById('crOpenerArea'); // full .cr-main width, not the 640px reading column
+  const area = document.getElementById('crOpenerArea'); // full .cr-main width; the canvas div centers the 640px column
   const readingColumn = document.querySelector('.cr-reading-column');
   const readerHeader = document.getElementById('crReaderHeader');
   const navBtns = document.getElementById('crNavButtons');
@@ -5386,7 +5491,7 @@ function renderSectionOpener(i) {
   const toolsOpener = document.getElementById('crReaderToolsOpener');
   if (readingColumn) readingColumn.style.display = 'none';
   if (area) area.style.display = 'block';
-  if (readerHeader) readerHeader.style.display = 'flex'; // header stays visible on the opener (mockup 11b)
+  if (readerHeader) readerHeader.style.display = 'flex'; // header stays visible on the opener (mockup 20b)
   if (toolsNormal) toolsNormal.style.display = 'none';
   if (toolsOpener) toolsOpener.style.display = 'contents';
   if (navBtns) navBtns.style.display = 'none';
@@ -5398,55 +5503,42 @@ function renderSectionOpener(i) {
   const displayNum = i - overviewCount + 1; // 1-based content-section number (excludes the synthesized overview)
   const color = CR_OPENER_COLORS[(displayNum - 1) % CR_OPENER_COLORS.length];
   const ordinal = CR_OPENER_ORDINALS[displayNum - 1] || String(displayNum);
+  const navSections = course.sections.filter(s => !s._isOverview);
+  const totalSections = navSections.length;
+  const totalOrdinal = CR_OPENER_ORDINALS[totalSections - 1] || String(totalSections);
 
   const blocks = section.contentBlocks || [];
   const pageCount = blocks.length;
   const minutes = Math.ceil(pageCount * 3);
 
-  let title = (section.title || 'Section ' + displayNum).replace(/^Section\s+\d+\s*[:—–-]\s*/i, '').trim();
+  let title = (section.title || 'Section ' + displayNum).replace(/^Section\s+(?:\d+|One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|Eleven|Twelve)\s*[:—–-]\s*/i, '').trim();
   if (!title) title = 'Section ' + displayNum;
 
-  // Up to 3 topics: sectionDivider block titles, else headings pulled from text blocks.
-  let topics = blocks.filter(b => b.type === 'sectionDivider' && b.title).map(b => b.title).slice(0, 3);
-  if (!topics.length) {
-    blocks.forEach(b => {
-      if (topics.length >= 3 || b.type !== 'text' || !b.content) return;
-      const m = String(b.content).match(/<h[23][^>]*>(.*?)<\/h[23]>/i);
-      if (m) topics.push(m[1].replace(/<[^>]+>/g, '').trim());
-    });
+  // Section 1 opens with "Start reading" and steps quietly back to the
+  // overview; a defensive later-section render keeps the review link.
+  const hasOverviewBefore = i > 0 && course.sections[i - 1] && course.sections[i - 1]._isOverview;
+  const card = CR_OPENER_CARD[color] || CR_OPENER_CARD['#6B1D34'];
+  let actions = '<button type="button" class="cr-opener-start" style="color:' + color + '" data-action="startSection">'
+    + (displayNum === 1 ? 'Start reading →' : 'Start section ' + displayNum + ' →') + '</button>';
+  if (displayNum > 1) {
+    actions += '<button type="button" class="cr-opener-review" style="color:' + card.quiet + '" data-action="reviewPrevSection">Review section ' + (displayNum - 1) + '</button>';
+  } else if (hasOverviewBefore) {
+    actions += '<button type="button" class="cr-opener-review" style="color:' + card.quiet + '" data-action="reviewPrevSection">Back to overview</button>';
   }
 
-  const showReview = displayNum > 1;
-
-  let html = '<div class="cr-opener-panel" style="background:' + color + '">';
-  html += '<div class="cr-opener-col">';
-  html += '<div class="cr-opener-eyebrow">SECTION ' + ordinal + ' · ' + minutes + ' MINUTES · ' + pageCount + ' PAGE' + (pageCount !== 1 ? 'S' : '') + '</div>';
-  html += '<h1 class="cr-opener-title">' + esc(title) + '</h1>';
-  if (section.description) {
-    html += '<p class="cr-opener-intro">' + (typeof mdInlineParse === 'function' ? mdInlineParse(section.description) : esc(section.description)) + '</p>';
-  }
-  if (topics.length) {
-    html += '<div class="cr-opener-topics">';
-    topics.forEach((t, idx) => {
-      html += '<div class="cr-opener-topic"><span class="cr-opener-topic-num">' + (idx + 1) + '</span><span>' + esc(t) + '</span></div>';
-    });
-    html += '</div>';
-  }
-  html += '<div class="cr-opener-actions">';
-  html += '<button type="button" class="cr-opener-start" data-action="startSection">Start section ' + displayNum + ' →</button>';
-  if (showReview) {
-    html += '<button type="button" class="cr-opener-review" data-action="reviewPrevSection">Review section ' + (displayNum - 1) + '</button>';
-  }
-  html += '</div>';
+  let html = '<div class="cr-opener-canvas"><div class="cr-opener-col">';
+  html += crOpenerCardHtml(section, color, {
+    eyebrowText: 'SECTION ' + ordinal + ' · OF ' + totalOrdinal,
+    pillText: pageCount + ' PAGE' + (pageCount !== 1 ? 'S' : '') + ' · ' + minutes + ' MIN',
+    title: title,
+    actionsHtml: actions
+  });
   html += '</div></div>';
 
   area.innerHTML = html;
 
   const readerLabel = document.getElementById('crReaderPageLabel');
-  if (readerLabel) {
-    const totalPages = Math.max(1, Math.ceil(blocks.length / BLOCK_PAGE_SIZE));
-    readerLabel.textContent = 'Section ' + displayNum + ' · page 1 of ' + totalPages;
-  }
+  if (readerLabel) readerLabel.textContent = 'Section ' + displayNum + ' of ' + totalSections + ' · starting';
 }
 
 function saveAndExit() {
@@ -5545,7 +5637,7 @@ function renderSectionCheckpoint(si) {
   (section.contentBlocks || []).forEach(b => {
     if (b.type === 'keyTakeaway') carry.push(...(b.takeaways || b.items || []));
   });
-  carry = carry.slice(0, 4);
+  carry = carry.slice(0, 3);
 
   const suppState = crSupplementalState();
   const suppAll = crSupplementalPool('section');
@@ -5555,62 +5647,85 @@ function renderSectionCheckpoint(si) {
   const nextSec = navSections[displayNum]; // section after this one, if any
   const hasAssessment = course.assessment?.questions?.length > 0;
 
+  let title = (section.title || 'Section ' + displayNum).replace(/^Section\s+(?:\d+|One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|Eleven|Twelve)\s*[:—–-]\s*/i, '').trim();
+  if (!title) title = 'Section ' + displayNum;
+
+  // ── Closing band: pastel review card (mockup 20a) ──
   let h = '<div class="cr-cp">';
-  h += '<div class="cr-cp-head">';
-  h += '<div class="cr-cp-check">✓</div>';
-  h += '<div class="cr-cp-eyebrow">SECTION ' + ordinal + ' COMPLETE</div>';
-  h += '<h2 class="cr-cp-title">' + esc(section.title || 'Section ' + displayNum) + '</h2>';
-  h += '<div class="cr-cp-meta">' + stats.pages + ' page' + (stats.pages !== 1 ? 's' : '') + ' · ' + stats.minutes + ' minutes'
-     + (checks.length ? ' · ' + answered + ' of ' + checks.length + ' checks answered' : '') + '</div>';
+  h += '<div class="cr-cp-review">';
+  h += '<div class="cr-cp-review-head">';
+  h += '<span class="cr-cp-check" aria-hidden="true">✓</span>';
+  h += '<div class="cr-cp-review-titles">';
+  h += '<div class="cr-cp-eyebrow">SECTION ' + ordinal + ' · COMPLETE</div>';
+  h += '<div class="cr-cp-title">' + esc(title) + '</div>';
   h += '</div>';
-
-  if (skippedChecks.length) {
-    const first = skippedChecks[0];
-    h += '<div class="cr-cp-skipped">'
-      + '<span class="cr-cp-skipped-text">' + skippedChecks.length + ' knowledge check' + (skippedChecks.length !== 1 ? 's are' : ' is') + ' still unanswered in this section — not scored, but worth a minute.</span>'
-      + '<button type="button" class="cr-cp-skipped-btn" data-action="openKnowledgeCheck" data-sec="' + si + '" data-block="' + first.blockIndex + '" data-q="' + first.questionIndex + '">Answer now</button>'
-      + '</div>';
-  }
-
+  h += '<button type="button" class="cr-cp-review-link" data-action="checkpointReview">Review</button>';
+  h += '</div>';
+  h += '<div class="cr-cp-meta">' + stats.pages + ' page' + (stats.pages !== 1 ? 's' : '') + ' · ' + stats.minutes + ' min'
+     + (checks.length ? ' · ' + answered + ' of ' + checks.length + ' check' + (checks.length !== 1 ? 's' : '') : '')
+     + (suppAll.length ? ' · ' + suppSaved + ' of ' + suppAll.length + ' saved' : '') + '</div>';
   if (carry.length) {
-    h += '<div class="cr-cp-card"><div class="cr-cp-label">WHAT TO CARRY FORWARD</div>';
+    h += '<div class="cr-cp-hairline"></div>';
+    h += '<div class="cr-cp-label">THINGS TO REMEMBER</div>';
+    h += '<div class="cr-cp-items">';
     carry.forEach(item => { h += '<div class="cr-cp-item"><span class="cr-cp-dot"></span><span>' + esc(item) + '</span></div>'; });
     h += '</div>';
   }
+  h += '</div>';
 
-  if (checks.length || suppAll.length) {
-    h += '<div class="cr-cp-stats">';
-    if (checks.length) {
-      h += '<div class="cr-cp-stat"><div class="cr-cp-stat-num">' + correct + '<span style="font-size:18px;color:#9CA3AF">/' + checks.length + '</span></div>'
-        + '<div class="cr-cp-stat-label">Knowledge checks correct</div></div>';
-    }
-    if (suppAll.length) {
-      h += '<div class="cr-cp-stat"><div class="cr-cp-stat-num">' + suppSaved + '<span style="font-size:18px;color:#9CA3AF">/' + suppAll.length + '</span></div>'
-        + '<div class="cr-cp-stat-label">Supplemental items saved</div>'
-        + (suppUnsaved ? '<button type="button" class="cr-cp-stat-action" data-action="setReaderTab" data-tab="supplemental">' + suppUnsaved + ' not saved yet — open Supplemental</button>' : '')
-        + '</div>';
-    }
-    h += '</div>';
+  // ── Honey bands: outstanding items resurface between the two zones ──
+  if (skippedChecks.length) {
+    const first = skippedChecks[0];
+    h += '<div class="cr-cp-band">'
+      + '<span class="cr-cp-band-badge">' + skippedChecks.length + '</span>'
+      + '<span class="cr-cp-band-text">' + skippedChecks.length + ' knowledge check' + (skippedChecks.length !== 1 ? 's are' : ' is') + ' still unanswered in this section — not scored, but worth a minute.</span>'
+      + '<button type="button" class="cr-cp-band-btn" data-action="openKnowledgeCheck" data-sec="' + si + '" data-block="' + first.blockIndex + '" data-q="' + first.questionIndex + '">Answer now</button>'
+      + '</div>';
+  }
+  if (suppUnsaved > 0) {
+    h += '<div class="cr-cp-band">'
+      + '<span class="cr-cp-band-badge">' + suppUnsaved + '</span>'
+      + '<span class="cr-cp-band-text">' + suppUnsaved + ' supplemental item' + (suppUnsaved !== 1 ? 's' : '') + ' from this section ' + (suppUnsaved !== 1 ? 'are' : 'is') + ' still unsaved.</span>'
+      + '<button type="button" class="cr-cp-band-btn" data-action="setReaderTab" data-tab="supplemental">Save them</button>'
+      + '</div>';
   }
 
+  // ── Opening zone: the next section's lifted color card (or the exam) ──
   if (nextSec) {
+    const nextDisplayNum = displayNum + 1;
+    const nextColor = CR_OPENER_COLORS[(nextDisplayNum - 1) % CR_OPENER_COLORS.length];
+    const nextCard = CR_OPENER_CARD[nextColor] || CR_OPENER_CARD['#6B1D34'];
     const nextStats = crSectionStats(nextSec);
-    h += '<div class="cr-cp-card cr-cp-next"><div>'
-      + '<div class="cr-cp-label">UP NEXT · SECTION ' + (CR_ORDINAL_WORDS[displayNum] || String(displayNum + 1)) + '</div>'
-      + '<div class="cr-cp-next-title">' + esc(nextSec.title || '') + '</div>'
-      + '<div class="cr-cp-next-meta">' + nextStats.pages + ' page' + (nextStats.pages !== 1 ? 's' : '') + ' · ~' + nextStats.minutes + ' min'
-      + (nextStats.checks ? ' · ' + nextStats.checks + ' knowledge check' + (nextStats.checks !== 1 ? 's' : '') : '') + '</div>'
-      + '</div><button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Start section ' + (displayNum + 1) + ' →</button></div>';
+    let nextTitle = (nextSec.title || 'Section ' + nextDisplayNum).replace(/^Section\s+(?:\d+|One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|Eleven|Twelve)\s*[:—–-]\s*/i, '').trim();
+    if (!nextTitle) nextTitle = 'Section ' + nextDisplayNum;
+    const actions = '<button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Start section ' + nextDisplayNum + ' →</button>'
+      + '<button type="button" class="cr-cp-quiet" style="color:' + nextCard.quiet + '" data-action="saveAndExit">Take a break — progress saved</button>';
+    h += crOpenerCardHtml(nextSec, nextColor, {
+      panelClass: 'cr-cp-nextcard',
+      titleClass: 'cr-cp-next-title',
+      introClass: 'cr-cp-next-intro',
+      eyebrowText: 'UP NEXT · SECTION ' + (CR_ORDINAL_WORDS[nextDisplayNum - 1] || String(nextDisplayNum)),
+      pillText: nextStats.pages + ' PAGE' + (nextStats.pages !== 1 ? 'S' : '') + ' · ' + nextStats.minutes + ' MIN',
+      title: nextTitle,
+      actionsHtml: actions
+    });
   } else if (hasAssessment) {
-    h += '<div class="cr-cp-card cr-cp-next"><div>'
-      + '<div class="cr-cp-label">UP NEXT · FINAL ASSESSMENT</div>'
-      + '<div class="cr-cp-next-title">Show what you\'ve learned</div>'
-      + '<div class="cr-cp-next-meta">' + (course.assessment.questions.length) + ' questions · ' + (course.assessment.passingScore || 75) + '% to pass · no time limit</div>'
-      + '</div><button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Take the final assessment →</button></div>';
+    const examColor = '#6B1D34';
+    const examCard = CR_OPENER_CARD[examColor];
+    const actions = '<button type="button" class="cr-cp-next-btn" data-action="checkpointContinue">Take the final assessment →</button>'
+      + '<button type="button" class="cr-cp-quiet" style="color:' + examCard.quiet + '" data-action="saveAndExit">Take a break — progress saved</button>';
+    h += crOpenerCardHtml(null, examColor, {
+      panelClass: 'cr-cp-nextcard',
+      titleClass: 'cr-cp-next-title',
+      introClass: 'cr-cp-next-intro',
+      eyebrowText: 'UP NEXT · FINAL ASSESSMENT',
+      pillText: course.assessment.questions.length + ' QUESTIONS · ' + (course.assessment.passingScore || 75) + '% TO PASS',
+      title: 'Show what you\'ve learned',
+      actionsHtml: actions
+    });
   }
 
   h += '<div class="cr-cp-util">'
-    + '<button type="button" data-action="checkpointReview">Review section ' + displayNum + '</button>'
     + '<button type="button" data-action="printSection">Print this section</button>'
     + '<span>Progress saved</span>'
     + '</div>';
@@ -5618,6 +5733,10 @@ function renderSectionCheckpoint(si) {
 
   area.innerHTML = h;
   document.getElementById('crNavButtons').style.display = 'none';
+
+  const readerLabel = document.getElementById('crReaderPageLabel');
+  if (readerLabel) readerLabel.textContent = 'Section ' + displayNum + ' complete · ' + displayNum + ' of ' + navSections.length;
+
   saveProgress();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -6392,7 +6511,7 @@ const ALERT_STYLES = {
   mandatory:  { icon: '🚨',  label: 'Mandatory Report',    bg: '#FEF2F2',              border: '#DC2626',         text: '#991B1B'  },
   donot:      { icon: '⛔',  label: 'Do Not',              bg: '#FEF2F2',              border: '#DC2626',         text: '#991B1B'  },
   document:   { icon: '📋',  label: 'Must Document',       bg: 'var(--cr-navy-faded)', border: 'var(--cr-navy)',  text: 'var(--cr-navy)' },
-  supervisor: { icon: '👁️',  label: 'Supervisor Required', bg: '#F5F3FF',              border: '#7C3AED',         text: '#4C1D95'  },
+  supervisor: { icon: '👁️',  label: 'Supervisor Required', bg: '#DCE5EC',              border: '#1F344A',         text: '#1F344A'  },
   legal:      { icon: '⚖️',  label: 'Legal Exposure',      bg: '#FEF2F2',              border: '#7F1D1D',         text: '#7F1D1D'  },
   protocol:   { icon: '🔴',  label: 'Protocol Required',   bg: '#FFF7ED',              border: '#EA580C',         text: '#C2410C'  },
 };
@@ -7007,8 +7126,8 @@ function renderSequencing(wrap, block, blockIndex) {
         <span class="cr-seq-num">${i + 1}</span>
         <span style="flex:1">${esc(s.text)}</span>
         <div class="cr-seq-arrows">
-          <button data-action="seqMove" data-target="${id}" data-dir="-1" aria-label="Move up" style="min-height:${isMobile ? 44 : 28}px;min-width:${isMobile ? 44 : 28}px;font-size:${isMobile ? 18 : 14}px">▲</button>
-          <button data-action="seqMove" data-target="${id}" data-dir="1" aria-label="Move down" style="min-height:${isMobile ? 44 : 28}px;min-width:${isMobile ? 44 : 28}px;font-size:${isMobile ? 18 : 14}px">▼</button>
+          <button data-action="seqMove" data-target="${id}" data-dir="-1" aria-label="Move up">▲</button>
+          <button data-action="seqMove" data-target="${id}" data-dir="1" aria-label="Move down">▼</button>
         </div>
       </div>`).join('')}
     </div>
@@ -7040,7 +7159,7 @@ function seqCheck(id) {
   items.forEach((item, i) => {
     const correct = parseInt(item.dataset.order) === i + 1;
     item.style.borderColor = correct ? 'var(--cr-success)' : 'var(--cr-danger)';
-    item.style.background = correct ? '#F0FFF4' : '#FFF5F5';
+    item.style.background = correct ? '#F3F6F4' : '#FEF2F2';
     if (!correct) allCorrect = false;
   });
   
@@ -7767,16 +7886,31 @@ function renderAssessmentResult() {
   const ceHoursEarned = course.ceHours || course.ceuHours || 0;
 
   if (!passed) {
-    // Failed attempt — existing screen, unchanged.
+    // Failed attempt (mockup 17a): with retries left this screen is NAVY, never
+    // red — missing on attempt 1 is ordinary in CE. The per-section diagnosis
+    // (score bars / THE PATTERN / derived review pages) and the 17b exhausted
+    // screen are follow-up builds. NBCC constraint: never reveal per-question
+    // answers here.
+    const failTotalQs = course.assessment?.questions?.length || 0;
+    const failCorrect = failTotalQs ? Math.round(score / 100 * failTotalQs) : null;
+    const failNeeded = failTotalQs ? Math.ceil(passing * failTotalQs / 100) : null;
+    const failGap = (failNeeded !== null && failCorrect !== null) ? Math.max(1, failNeeded - failCorrect) : null;
+    const attemptsLeft = maxAttempts - assessmentState.attempts;
     let html = `<div class="cr-assessment-result failed">
-      <h3>Not Quite</h3>
-      <div class="score">${score}%</div>
-      <p style="color:var(--cr-text-secondary);margin-top:12px">You needed ${passing}% to pass.</p>
-      <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">Attempt ${assessmentState.attempts} of ${maxAttempts}</p>`;
-    if (assessmentState.attempts < maxAttempts) {
-      html += `<button class="cr-btn cr-btn-primary" style="margin-top:20px" data-action="retryAssessment">Try Again</button>`;
+      <div class="cr-fail-clock" aria-hidden="true">🕐</div>
+      <div class="cr-fail-eyebrow">NOT YET — ATTEMPT ${assessmentState.attempts} OF ${maxAttempts}</div>
+      <div class="score">${failCorrect !== null ? failCorrect + ' of ' + failTotalQs + ' correct — ' + score + '%' : score + '%'}</div>`;
+    if (attemptsLeft > 0) {
+      html += `<p class="cr-fail-gap">${failGap !== null ? (failGap === 1 ? 'One more correct answer' : failGap + ' more correct answers') + ' would have passed — ' + passing + '% is the bar.' : 'You need ' + passing + '% to pass.'}</p>`;
+      html += `<p class="cr-fail-note">Missing on an attempt is an ordinary part of CE. A focused review before attempt ${assessmentState.attempts + 1} is usually what closes the gap.</p>`;
+      html += `<button type="button" class="cr-fail-retry" data-action="retryAssessment">Retake exam →</button>`;
+      html += `<button type="button" class="cr-fail-quiet" data-action="prevSection">Review the course first</button>`;
+    } else {
+      html += `<p class="cr-fail-gap">You needed ${passing}%, and all ${maxAttempts} attempts are used.</p>`;
+      html += `<p class="cr-fail-note">Your reading progress and saved items are kept. Contact your course provider about re-enrollment.</p>`;
     }
-    html += '<div style="margin-top:24px;font-size:10px;color:var(--cr-text-muted);text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
+    html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
+    html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
     html += '</div>';
     area.innerHTML = html;
     document.getElementById('crNavButtons').style.display = 'none';
