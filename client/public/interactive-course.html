@@ -414,7 +414,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 
 /* — MAIN CONTENT — */
 .cr-main {
-  max-width: 860px;
+  max-width: 640px;
   margin: 0 auto;
   padding: 40px 32px 80px;
   width: 100%;
@@ -515,7 +515,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-card:hover { border-color: var(--cr-burgundy-light); }
 
-.cr-block { margin-bottom: 28px; }
+.cr-block { margin-bottom: 22px; }
 
 /* Prose / Rich text */
 .cr-prose {
@@ -1895,8 +1895,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="imageText"] .cr-imageText-text,
 .cr-block[data-block-type="text"] > div {
   font-family: var(--cr-font-serif);
-  font-size: 17px;
-  line-height: 1.75;
+  font-size: 17.5px;
+  line-height: 1.82;
+  text-wrap: pretty;
   color: var(--cr-text-body);
 }
 
@@ -2663,6 +2664,26 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(107, 29, 52, 0.05);
 }
 .cr-callout-key .cr-callout-title { color: var(--cr-burgundy, #6B1D34); }
+
+
+/* — Clinical pearl treatment for TIP / KEY (card, not accent-bar) — */
+.cr-callout-tip,
+.cr-callout-key {
+  background: #FDF9F0;
+  border: 1px solid #F3E0B5;
+  border-left: 1px solid #F3E0B5;
+  border-radius: 14px;
+  padding: 22px 26px;
+}
+.cr-callout-tip .cr-callout-label,
+.cr-callout-key .cr-callout-label {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #4A1524;
+}
 
 
 /* — Variant: DONOT — */
