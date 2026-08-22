@@ -1174,18 +1174,31 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    ASSESSMENT
    ═══════════════════════════════════════════════════════════════ */
 .cr-assessment-header {
-  text-align: center;
-  padding: 32px;
+  text-align: left;
+  padding: 18px 30px;
   margin-bottom: 32px;
+  background: var(--cr-burgundy);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+}
+.cr-assessment-eyebrow {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase;
+  color: #EBA9B5; margin-bottom: 4px;
 }
 .cr-assessment-header h2 {
   font-family: var(--cr-font-display);
-  font-size: 2em; font-weight: 700;
-  color: var(--cr-burgundy);
+  font-size: 1.3em; font-weight: 600;
+  color: #FFFFFF;
 }
 .cr-assessment-progress {
-  display: flex; align-items: center; justify-content: center; gap: 16px;
-  margin-top: 16px; font-size: 0.9em; color: var(--cr-text-muted);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.cr-assessment-pill {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+  color: #FFFFFF; background: rgba(255,255,255,0.14);
+  padding: 5px 12px; border-radius: 20px; white-space: nowrap;
 }
 .cr-assessment-result {
   text-align: center;
@@ -1194,18 +1207,29 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-radius: var(--cr-radius);
   border: 2px solid var(--cr-border);
 }
-.cr-assessment-result.passed { border-color: var(--cr-success); }
+.cr-assessment-result.passed { border-color: var(--cr-hunter); background: #F3F6F4; }
 .cr-assessment-result.failed { border-color: var(--cr-danger); }
 .cr-assessment-result h3 {
   font-family: var(--cr-font-display);
   font-size: 1.8em; font-weight: 700;
   margin-bottom: 8px;
 }
+.cr-assessment-eyebrow-pass {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--cr-hunter); margin-bottom: 6px;
+}
+.cr-assessment-check-circle {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(74,124,89,0.16); color: var(--cr-hunter);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 14px;
+}
 .cr-assessment-result .score {
   font-size: 3em; font-weight: 900;
   font-family: var(--cr-font-display);
 }
-.cr-assessment-result.passed .score { color: var(--cr-success); }
+.cr-assessment-result.passed .score { color: var(--cr-hunter); }
 .cr-assessment-result.failed .score { color: var(--cr-danger); }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -4891,10 +4915,10 @@ function renderCurrentSection() {
     </div>`;
   }
   
-  // Section title if no sectionDivider block
+  // Section title if no sectionDivider block (the overview's own hero card already carries this)
   const blocks = section.contentBlocks || [];
   const hasDivider = blocks.some(b => b.type === 'sectionDivider');
-  if (!hasDivider && section.title) {
+  if (!hasDivider && section.title && !section._isOverview) {
     area.innerHTML += `<div class="cr-section-divider">
       <div class="cr-section-divider-number">${currentSectionIndex + 1}</div>
       <div><h2>${esc(section.title)}</h2></div>
@@ -6396,25 +6420,23 @@ function renderAssessment() {
   
   if (qs.length === 0) {
     area.innerHTML = `<div class="cr-assessment-header">
-      <h2>Final Assessment</h2>
-      <p style="color:var(--cr-text-muted);margin-top:12px">Assessment coming soon.</p>
+      <div><div class="cr-assessment-eyebrow">Final Assessment</div><h2>${esc(course.title || '')}</h2></div>
+      <p style="color:#EBA9B5;font-family:'Lato',system-ui,sans-serif;font-size:0.85em">Assessment coming soon.</p>
     </div>`;
     return;
   }
-  
+
   if (assessmentState.submitted) {
     renderAssessmentResult();
     return;
   }
-  
+
   let html = `<div class="cr-assessment-header">
-    <h2>Final Assessment</h2>
+    <div><div class="cr-assessment-eyebrow">Final Assessment</div><h2>${esc(course.title || '')}</h2></div>
     <div class="cr-assessment-progress">
-      <span>${qs.length} questions</span>
-      <span>•</span>
-      <span>Passing: ${passingScore}%</span>
-      <span>•</span>
-      <span>Attempts: ${assessmentState.attempts}/${maxAttempts}</span>
+      <span class="cr-assessment-pill">To pass: ${passingScore}%</span>
+      <span class="cr-assessment-pill">Attempt: ${assessmentState.attempts} of ${maxAttempts}</span>
+      <span class="cr-assessment-pill">No time limit</span>
     </div>
   </div>`;
   
@@ -6535,8 +6557,12 @@ function renderAssessmentResult() {
   const passed = score >= passing;
   const maxAttempts = course.assessment?.maxAttempts || 3;
   
+  const ceHoursEarned = course.ceHours || course.ceuHours || 0;
+
   let html = `<div class="cr-assessment-result ${passed ? 'passed' : 'failed'}">
-    <h3>${passed ? '🎉 Congratulations!' : '📝 Not Quite'}</h3>
+    ${passed ? '<div class="cr-assessment-check-circle">✓</div>' : ''}
+    ${passed ? `<div class="cr-assessment-eyebrow-pass">Passed${ceHoursEarned ? ' · ' + ceHoursEarned + ' CE Hour' + (ceHoursEarned !== 1 ? 's' : '') + ' earned' : ''}</div>` : ''}
+    <h3>${passed ? 'Congratulations!' : 'Not Quite'}</h3>
     <div class="score">${score}%</div>
     <p style="color:var(--cr-text-secondary);margin-top:12px">
       ${passed ? 'You have passed the assessment.' : `You needed ${passing}% to pass.`}
@@ -6656,13 +6682,11 @@ function renderEvaluation() {
   const area = document.getElementById('crContentArea');
   const ceHours = course.ceHours || 1;
 
-  let html = `<div style="max-width:600px;margin:0 auto;padding:20px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--cr-burgundy)">
-      <span style="font-size:1.3rem">📋</span>
-      <div>
-        <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy)">Course Evaluation</h3>
-        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">Required for NBCC-approved CE credit · ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</p>
-      </div>
+  let html = `<div style="max-width:600px;margin:0 auto;padding:24px;background:#FFFFFF;border:1px solid #F3E0B5;border-radius:14px">
+    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #F0EDE8">
+      <div style="font-family:'Lato',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#A67936;margin-bottom:6px">One step left</div>
+      <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:600;font-size:1.4rem;color:var(--cr-navy)">The course evaluation</h3>
+      <p style="margin:6px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">NBCC requires it before the certificate issues · ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</p>
     </div>
 
     <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:20px">
@@ -6818,13 +6842,11 @@ function renderAttestation() {
   const ceHours = course.ceHours || 1;
   const presenter = 'Kejuiana Johnson, MA, LPC, NCC, CPCS, BC-TMH';
 
-  let html = `<div style="max-width:600px;margin:0 auto;padding:20px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:2px solid var(--cr-burgundy)">
-      <span style="font-size:1.3rem">✍️</span>
-      <div>
-        <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy)">Attestation Statement</h3>
-        <p style="margin:2px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">Required for NBCC-approved CE certificates</p>
-      </div>
+  let html = `<div style="max-width:600px;margin:0 auto;padding:24px;background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px">
+    <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #F0EDE8">
+      <div style="font-family:'Lato',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--cr-burgundy);margin-bottom:6px">Final step</div>
+      <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:600;font-size:1.4rem;color:var(--cr-navy)">Attestation statement</h3>
+      <p style="margin:6px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">Required for NBCC-approved CE certificates</p>
     </div>
 
     <div style="background:var(--cr-navy-faded);border:1.5px solid var(--cr-navy);border-radius:10px;padding:20px;margin-bottom:20px">
@@ -6962,23 +6984,24 @@ function downloadCertificate() {
       a.click();
       document.body.removeChild(a);
 
-      area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center">
-        <div style="font-size:3rem;margin-bottom:16px">🎓</div>
-        <h3 style="font-family:var(--cr-font-display);font-weight:700;color:var(--cr-navy);margin-bottom:4px">Certificate Ready!</h3>
+      area.innerHTML = `<div style="max-width:500px;margin:0 auto;padding:40px;text-align:center;background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px">
+        <div class="cr-assessment-check-circle">✓</div>
+        <div style="display:inline-block;font-family:'Lato',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#3D6A4A;background:#E3EBE5;padding:5px 14px;border-radius:20px;margin-bottom:14px">Certificate Issued</div>
+        <h3 style="font-family:var(--cr-font-display);font-weight:600;font-size:1.5rem;color:var(--cr-navy);margin-bottom:4px">Certificate ready</h3>
         <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:20px">
           ${esc(course.title || '')} · ${course.ceHours || 1} CE Hour${(course.ceHours || 1) !== 1 ? 's' : ''}
         </p>
 
         <a href="${esc(fileUrl)}" download="CounselorReady_Certificate.pdf"
           style="display:inline-flex;align-items:center;gap:8px;padding:14px 28px;background:var(--cr-burgundy);color:#fff;
-          font-weight:700;font-size:0.95rem;border-radius:10px;text-decoration:none;transition:background 0.15s"
+          font-weight:700;font-family:'Lato',system-ui,sans-serif;font-size:0.95rem;border-radius:11px;text-decoration:none;transition:background 0.15s;box-shadow:0 2px 10px rgba(107,29,52,.24)"
           onmouseover="this.style.background='var(--cr-burgundy-light)'"
           onmouseout="this.style.background='var(--cr-burgundy)'">
-          📥 Download Certificate (PDF)
+          Download Certificate (PDF)
         </a>
 
-        <div style="margin-top:24px;padding:16px;background:var(--cr-green-faded);border:1px solid var(--cr-green);border-radius:10px;text-align:left">
-          <p style="font-size:0.83rem;color:var(--cr-green);font-weight:700;margin:0 0 6px">✅ What happens next:</p>
+        <div style="margin-top:24px;padding:16px;background:#F3F6F4;border:1px solid #C8D7CC;border-radius:11px;text-align:left">
+          <p style="font-family:'Lato',system-ui,sans-serif;font-size:9.5px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#3D6A4A;margin:0 0 8px">What happens next</p>
           <ul style="margin:0;padding-left:18px;font-size:0.82rem;color:var(--cr-text-secondary);line-height:1.6">
             <li>Your CE hours have been recorded in your account</li>
             <li>The certificate has been saved to your Credentials dashboard</li>
@@ -8139,40 +8162,94 @@ function buildTitlePageOverview() {
 
   const ceHours = course.ceHours || course.ceuHours || 0;
   const mins = ceHours ? Math.round(ceHours * 60) : 0;
+  const hrsLabel = mins ? (Math.round(mins / 60 * 10) / 10) + ' hr' : '';
   const objectives = Array.isArray(course.objectives) ? course.objectives : [];
   const areas = Array.isArray(course.nbccContentAreas) ? course.nbccContentAreas : [];
   const instructor = course.instructor || '';
   const approvalNo = course.approvalNumber || '7760';
   const approvalBody = course.approvingBody || 'NBCC';
+  const level = course.level || '';
+  const audience = Array.isArray(course.targetAudience) ? course.targetAudience : [];
+  const description = course.description || '';
+  const uiFont = "'Lato',system-ui,sans-serif";
+
+  const pill = (label, bg, border, color) =>
+    '<span style="display:inline-flex;align-items:center;font-family:' + uiFont + ';font-weight:700;font-size:11px;letter-spacing:0.03em;'
+    + 'padding:5px 12px;border-radius:20px;background:' + bg + ';border:1px solid ' + border + ';color:' + color + ';margin:0 8px 8px 0">' + label + '</span>';
+
+  const title = course.title || '';
+  const subtitle = course.subtitle || '';
 
   let h = '';
-  h += '<div style="font-family:var(--cr-font-sans);font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--cr-gold,#B8903A);font-weight:700;margin-bottom:10px">'
-     + 'Continuing Education' + (ceHours ? ' · ' + ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : '') : '') + '</div>';
-  if (instructor) {
-    h += '<p style="font-family:var(--cr-font-sans);font-size:13px;color:var(--cr-text-secondary);margin:0 0 18px">' + esc(instructor) + '</p>';
+
+  // Hero card: eyebrow, H1, subtitle, metadata pills, description, intended-for
+  h += '<div style="background:var(--cr-navy);border:1px solid var(--cr-navy);border-radius:14px;padding:24px 30px;margin-bottom:20px">';
+  h += '<div style="font-family:' + uiFont + ';font-size:10.5px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:#B8CBD9;margin-bottom:8px">Continuing Education · Course Overview</div>';
+  if (title) {
+    h += '<h1 style="font-family:var(--cr-font-display);font-weight:600;font-size:28px;line-height:1.2;color:#FFFFFF;max-width:28ch;margin:0 0 6px">' + esc(title) + '</h1>';
   }
-  if (mins) {
-    h += '<div style="display:inline-block;background:var(--cr-navy-faded);border-radius:8px;padding:8px 12px;margin-bottom:18px">'
-       + '<span style="font-family:var(--cr-font-sans);font-size:12px;color:var(--cr-navy)"><strong>Estimated time:</strong> ~' + Math.round(mins / 60 * 10) / 10 + ' hr</span></div>';
+  if (subtitle) {
+    h += '<p style="font-family:var(--cr-font-display);font-style:italic;font-weight:400;font-size:16px;color:#B8CBD9;margin:0 0 12px">' + esc(subtitle) + '</p>';
   }
+
+  h += '<div style="margin:0">';
+  if (ceHours) h += pill(ceHours + ' CE Hour' + (ceHours !== 1 ? 's' : ''), 'rgba(212,168,85,0.22)', 'rgba(212,168,85,0.4)', '#F9E7C2');
+  if (hrsLabel) h += pill('~' + hrsLabel, 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
+  if (level) h += pill(esc(level), 'rgba(255,255,255,0.12)', 'rgba(255,255,255,0.24)', '#FFFFFF');
+  h += '</div>';
+  h += '</div>';
+
+  // Description / intended-for card — outside the hero, on the plain page background
+  if (description || instructor || audience.length) {
+    h += '<div style="background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px;padding:24px;margin-bottom:20px">';
+    if (description) {
+      h += '<p style="max-width:70ch;margin:0 0 10px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(description) : esc(description)) + '</p>';
+    }
+    if (instructor) {
+      h += '<p style="font-family:' + uiFont + ';font-size:13px;color:#6B7280;margin:0 0 6px">Instructor: ' + esc(instructor) + '</p>';
+    }
+    if (audience.length) {
+      h += '<p style="font-family:' + uiFont + ';font-size:13px;color:#6B7280;margin:0"><strong style="color:#4b5563">Intended for:</strong> ' + audience.map(esc).join(', ') + '</p>';
+    }
+    h += '</div>';
+  }
+
+  // Two-column row: objectives / accreditation
+  h += '<div style="display:flex;gap:18px;margin:24px 0;flex-wrap:wrap">';
+  h += '<div style="flex:1.4 1 320px;background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px;padding:24px">';
+  h += '<div style="font-family:var(--cr-font-display);font-weight:600;font-size:19px;color:var(--cr-burgundy);margin-bottom:14px">Learning Objectives</div>';
   if (objectives.length) {
-    h += '<h2>Learning Objectives</h2><ol style="padding-left:1.2em">';
-    objectives.forEach(o => h += '<li style="margin-bottom:6px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(o) : esc(o)) + '</li>');
-    h += '</ol>';
+    h += '<ul style="padding-left:1.1em;margin:0">';
+    objectives.forEach(o => h += '<li style="margin-bottom:8px">' + (typeof mdInlineParse === 'function' ? mdInlineParse(o) : esc(o)) + '</li>');
+    h += '</ul>';
   }
+  h += '</div>';
+
+  h += '<div style="flex:1 1 240px;background:#F0F4F7;border:1px solid #DCE5EC;border-radius:14px;padding:24px">';
+  h += '<div style="font-family:var(--cr-font-display);font-weight:600;font-size:19px;color:var(--cr-navy);margin-bottom:14px">Accreditation</div>';
+  h += '<p style="font-family:' + uiFont + ';font-size:14px;line-height:1.6;color:#2C2C2C;margin:0 0 10px">'
+     + esc(approvalBody) + ' ACEP Provider #' + esc(approvalNo) + '. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of this program.</p>';
   if (areas.length) {
-    h += '<h2>NBCC Content Areas</h2><p style="color:var(--cr-text-secondary)">' + areas.map(a => esc(typeof a === 'string' ? a : (a.name || a.area || ''))).filter(Boolean).join(' · ') + '</p>';
+    h += '<p style="font-family:' + uiFont + ';font-size:12px;color:#6B7280;margin:0"><strong>NBCC Content Areas:</strong> '
+       + areas.map(a => esc(typeof a === 'string' ? a : (a.name || a.area || ''))).filter(Boolean).join(' · ') + '</p>';
   }
-  h += '<div style="margin-top:24px;padding:14px 16px;background:var(--cr-navy-faded);border-radius:var(--cr-radius);font-family:var(--cr-font-sans);font-size:12px;line-height:1.5;color:var(--cr-text-secondary)">'
-     + esc(approvalBody) + ' ACEP Provider #' + esc(approvalNo) + '. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of this program.</div>';
-  h += '<div style="text-align:center;margin-top:30px">'
-     + '<button class="cr-btn cr-btn-primary" style="font-size:1.1em;padding:14px 40px" data-action="goToSection" data-idx="1">Begin Course →</button></div>';
+  h += '</div>';
+  h += '</div>';
+
+  // Begin gate card — button sits below objectives/accreditation, never in the hero
+  h += '<div style="display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;'
+     + 'background:#FFFFFF;border:1px solid #E5E0D8;border-radius:14px;padding:24px;margin-top:24px">';
+  h += '<div style="font-family:var(--cr-font-display);font-weight:600;font-size:23px;color:#4A1524">Ready to begin?'
+     + '<div style="font-family:' + uiFont + ';font-weight:400;font-size:14px;color:#6B7280;margin-top:6px">'
+     + 'Course content, section navigation, and handouts unlock once you begin.</div></div>';
+  h += '<button class="cr-btn cr-btn-primary" style="font-family:' + uiFont + ';font-weight:700;font-size:15.5px;'
+     + 'padding:16px 32px;border-radius:11px;box-shadow:0 2px 10px rgba(107,29,52,.24)" data-action="goToSection" data-idx="1">Begin Course →</button>';
+  h += '</div>';
 
   course.sections.unshift({
     title: 'Course Overview',
     _isOverview: true,
     contentBlocks: [
-      { type: 'sectionDivider', title: course.title, sectionNumber: '', subtitle: 'Course Overview' },
       { type: 'text', content: h }
     ]
   });
@@ -8665,7 +8742,8 @@ function dismissNPS() {
     .crd-tab {
       position: fixed; right: 0; z-index: 80;
       writing-mode: vertical-rl; text-orientation: mixed;
-      padding: 16px 10px; font-size: 13px; font-weight: 700;
+      padding: 16px 10px; font-size: 12px; font-weight: 700;
+      font-family: 'Lato', system-ui, sans-serif;
       letter-spacing: 0.06em; cursor: pointer;
       border: none; border-radius: 8px 0 0 8px;
       box-shadow: -2px 2px 8px rgba(0,0,0,0.12);
@@ -8701,7 +8779,7 @@ function dismissNPS() {
     }
     .crd-hdr h3 {
       font-family: var(--cr-font-display,Georgia,serif);
-      font-size: 1.2em; font-weight: 700; margin: 0;
+      font-size: 1.3em; font-weight: 600; margin: 0;
     }
     .crd-x {
       background: none; border: none; cursor: pointer;
@@ -8713,24 +8791,29 @@ function dismissNPS() {
     .crd-ref {
       padding-left: 2em; text-indent: -2em;
       margin-bottom: 0.8em; font-size: 0.9em;
+      font-family: 'Lato', system-ui, sans-serif;
       line-height: 1.6; color: var(--cr-text-secondary,#5A5A5A);
     }
     .crd-ref em { font-style: italic; }
     .crd-ri {
       display: flex; align-items: center; gap: 12px;
-      padding: 10px 0; border-bottom: 1px solid var(--cr-border,#E2DFD8);
+      padding: 13px 10px; border-radius: 10px;
+      border-bottom: 1px solid var(--cr-border,#E2DFD8);
+      font-family: 'Lato', system-ui, sans-serif;
+      transition: background 0.15s ease;
     }
+    .crd-ri:hover { background: rgba(40,65,87,0.04); }
     .crd-ri:last-child { border-bottom: none; }
     .crd-ri-icon {
-      width: 36px; height: 36px; border-radius: 8px;
+      width: 30px; height: 30px; border-radius: 8px;
       background: var(--cr-navy,#284157); color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-size: 14px; flex-shrink: 0;
     }
     .crd-ri-info { flex: 1; }
-    .crd-ri-info a { font-weight: 600; color: var(--cr-navy,#284157); display: block; }
+    .crd-ri-info a { font-weight: 700; font-size: 13.5px; color: var(--cr-navy,#284157); display: block; }
     .crd-ri-info .crd-ft {
-      font-size: 0.8em; color: var(--cr-text-muted,#8A8A8A);
+      font-size: 11px; color: var(--cr-text-muted,#8A8A8A);
       text-transform: uppercase; letter-spacing: 0.05em;
     }
     @media(max-width:640px) {
