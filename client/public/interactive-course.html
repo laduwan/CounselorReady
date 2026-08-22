@@ -246,30 +246,27 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    ═══════════════════════════════════════════════════════════════ */
 .cr-layout {
   display: grid;
-  grid-template-columns: var(--cr-sidebar-width) 1fr;
+  grid-template-columns: 1fr;
   min-height: 100vh;
-}
-@media (max-width: 1024px) {
-  .cr-layout { grid-template-columns: 1fr; }
 }
 
 /* — SIDEBAR — */
+/* Retired as persistent chrome (mockup canon: no left course rail in any variant).
+   The former ≤1024px off-canvas treatment is now the behavior at every width:
+   hidden until opened via the Contents tool (reading header) or the hamburger
+   (mobile topbar). All contents — section nav, progress, downloads, translate —
+   are unchanged inside it. */
 .cr-sidebar {
-  position: sticky; top: 0; height: 100vh;
+  position: fixed; inset: 0; width: 300px;
+  transform: translateX(-100%);
+  transition: transform var(--cr-transition);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.15);
   background: var(--cr-surface);
   border-right: 1px solid var(--cr-border);
   display: flex; flex-direction: column;
   overflow: hidden; z-index: 40;
 }
-@media (max-width: 1024px) {
-  .cr-sidebar {
-    position: fixed; inset: 0; width: 300px;
-    transform: translateX(-100%);
-    transition: transform var(--cr-transition);
-    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
-  }
-  .cr-sidebar.open { transform: translateX(0); }
-}
+.cr-sidebar.open { transform: translateX(0); }
 
 /* Sidebar header — burgundy gradient */
 .cr-sidebar-header {
@@ -422,6 +419,14 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   width: 100%;
 }
 .cr-reading-column { max-width: 640px; margin: 0 auto; width: 100%; }
+/* Page title (mockup 12a): replaces the pink section-divider card the viewer used
+   to inject when a section has no sectionDivider block of its own. */
+.cr-page-title {
+  font-family: var(--cr-font-display);
+  font-weight: 600; font-size: 32px; line-height: 1.2;
+  color: #6B1D34; text-wrap: pretty;
+  margin: 0 0 18px;
+}
 @media (max-width: 640px) { .cr-main { padding: 20px 16px 60px; } }
 
 /* — ACCESSIBILITY PANEL — */
@@ -2105,12 +2110,12 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   --cr-navy:     #284157;
 
   /* Surfaces */
-  --cr-bg-content:   #FAF7F2;     /* refined off-white, replaces #F5F5DC */
+  --cr-bg-content:   transparent; /* mockup canon: prose sits directly on the eggshell canvas — the Phase-1 off-white (#FAF7F2) content panel is retired */
   --cr-bg-card:      #FFFFFF;
   --cr-bg-sidebar:   #6B1D34;
 
   /* Text */
-  --cr-text-body:  #2A2620;
+  --cr-text-body:  #2C2C2C;  /* mockup Ink */
   --cr-text-muted: rgba(40, 65, 87, 0.55);
   --cr-text-quiet: rgba(40, 65, 87, 0.4);
 
@@ -2119,7 +2124,11 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   --cr-border-subtle:   rgba(40, 65, 87, 0.12);
 
   /* Type */
-  --cr-font-serif:   'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  /* Mockup canon: two families only — Cormorant (display) + Lato (body). The
+     Phase-1 serif-body experiment (Iowan Old Style stack) is retired; the var
+     name is kept so its many consumers below don't all need touching. Heading
+     rules that should read as display type point at --cr-font-display instead. */
+  --cr-font-serif:   'Lato', system-ui, sans-serif;
   --cr-font-display: 'Cormorant Garamond', Georgia, serif;
   --cr-font-sans:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
 
@@ -2207,9 +2216,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-prose h2,
 .cr-block h2,
 .cr-block[data-block-type="text"] h2 {
-  font-family: var(--cr-font-serif);
+  font-family: var(--cr-font-display);
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--cr-burgundy);
   line-height: 1.3;
   letter-spacing: -0.005em;
@@ -2256,9 +2265,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider h2,
 .cr-section-divider .cr-section-title,
 .cr-divider-title {
-  font-family: var(--cr-font-serif);
+  font-family: var(--cr-font-display);
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--cr-burgundy) !important;
   line-height: 1.3;
   margin: 0;
@@ -2287,9 +2296,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-references h2 {
-  font-family: var(--cr-font-serif);
+  font-family: var(--cr-font-display);
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--cr-navy);
   margin: 0 0 18px;
 }
@@ -2438,7 +2447,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: transparent !important;
   border-radius: 0 !important;
   display: inline-block;
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-family: var(--cr-font-display);
   font-style: italic;
   font-weight: 400;
   font-size: 64px;
@@ -2469,7 +2478,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-section-divider p {
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-family: var(--cr-font-display);
   font-style: italic;
   font-size: 17px;
   color: var(--cr-text-secondary);
@@ -2576,7 +2585,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border: 1px solid var(--cr-border) !important;
   border-radius: 4px !important;
   background: #fff !important;
-  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-family: 'Lato', system-ui, sans-serif !important;
   font-size: 14px !important;
   padding: 8px 12px !important;
 }
@@ -2653,7 +2662,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-accordion-body p {
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-family: 'Lato', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.7;
 }
@@ -2673,7 +2682,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 }
 
 .cr-kc-question {
-  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-family: var(--cr-font-display) !important; /* mockup: question stems are Cormorant 400 */
   font-size: 18px !important;
   font-weight: 500 !important;
   color: var(--cr-text-body, #1F2937) !important;
@@ -2699,7 +2708,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   cursor: pointer;
   background: transparent !important;
   transition: background 0.15s ease, color 0.15s ease;
-  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-family: 'Lato', system-ui, sans-serif !important;
   font-size: 16px !important;
   line-height: 1.5;
   min-height: 48px;
@@ -2780,7 +2789,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   background: rgba(74, 124, 89, 0.06) !important;
   border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
   border-radius: 0 !important;
-  font-family: 'Iowan Old Style', 'Charter', Georgia, serif;
+  font-family: 'Lato', system-ui, sans-serif;
   font-size: 15px;
   line-height: 1.6;
   color: var(--cr-text-body, #1F2937);
@@ -2808,7 +2817,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-left: 4px solid var(--cr-burgundy);
   border-radius: var(--cr-radius);
   background: var(--cr-tint-burg);
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif;
+  font-family: 'Lato', system-ui, sans-serif;
   font-size: 16px;
   line-height: 1.65;
   max-width: 720px;
@@ -3398,7 +3407,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* Question — editorial, body color, slight letterspacing */
 .cr-kc-question {
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-family: var(--cr-font-display) !important; /* mockup: question stems are Cormorant 400 */
   font-size: 17.5px !important;
   font-weight: 500 !important;
   letter-spacing: 0.005em !important;
@@ -3474,7 +3483,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 
 /* Prompt — italic serif pull-quote, navy, no emoji */
 .cr-reflection-prompt {
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-family: var(--cr-font-display) !important; /* display pull-quote — Cormorant */
   font-size: 19px !important;
   font-style: italic !important;
   font-weight: 400 !important;
@@ -3494,7 +3503,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-bottom: 1.5px solid var(--cr-border, #C4BCAB) !important;
   border-radius: 0 !important;
   padding: 12px 4px !important;
-  font-family: 'Iowan Old Style', 'Charter', 'Source Serif Pro', Georgia, serif !important;
+  font-family: 'Lato', system-ui, sans-serif !important;
   font-size: 16px !important;
   line-height: 1.65 !important;
   color: var(--cr-text-body, #1F2937) !important;
@@ -3543,7 +3552,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border: none !important;
   border-left: 2px solid var(--cr-hunter, #4A7C59) !important;
   border-radius: 0 !important;
-  font-family: 'Iowan Old Style', 'Charter', Georgia, serif !important;
+  font-family: 'Lato', system-ui, sans-serif !important;
   font-size: 14.5px !important;
   font-style: italic !important;
   line-height: 1.6 !important;
@@ -4156,6 +4165,9 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
       <span id="crReaderToolsNormal" style="display:contents">
         <button type="button" class="cr-reader-tool" data-action="toggleA11yPanel">Aa</button>
+        <!-- Now that the sidebar is off-canvas at every width, this is the desktop
+             route to section nav / downloads / progress during reading. -->
+        <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
       </span>
       <span id="crReaderToolsOpener" style="display:none">
         <button type="button" class="cr-reader-tool" data-action="toggleSidebar">Contents</button>
@@ -5424,14 +5436,14 @@ function renderCurrentSection() {
     </div>`;
   }
   
-  // Section title if no sectionDivider block (the overview's own hero card already carries this)
+  // Section title if no sectionDivider block (the overview's own hero card already
+  // carries this). Rendered as the mockup's Cormorant page title on bare canvas —
+  // the pink divider card here was part of the old look. Authored sectionDivider
+  // BLOCKS still render through renderSectionDivider, unchanged.
   const blocks = section.contentBlocks || [];
   const hasDivider = blocks.some(b => b.type === 'sectionDivider');
   if (!hasDivider && section.title && !section._isOverview) {
-    area.innerHTML += `<div class="cr-section-divider">
-      <div class="cr-section-divider-number">${currentSectionIndex + 1}</div>
-      <div><h2>${esc(section.title)}</h2></div>
-    </div>`;
+    area.innerHTML += `<h2 class="cr-page-title">${esc(section.title)}</h2>`;
   }
   
   // Render each block (paginated within the section). The real block index
