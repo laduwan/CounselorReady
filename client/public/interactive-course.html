@@ -4915,10 +4915,10 @@ function renderCurrentSection() {
     </div>`;
   }
   
-  // Section title if no sectionDivider block
+  // Section title if no sectionDivider block (the overview's own hero card already carries this)
   const blocks = section.contentBlocks || [];
   const hasDivider = blocks.some(b => b.type === 'sectionDivider');
-  if (!hasDivider && section.title) {
+  if (!hasDivider && section.title && !section._isOverview) {
     area.innerHTML += `<div class="cr-section-divider">
       <div class="cr-section-divider-number">${currentSectionIndex + 1}</div>
       <div><h2>${esc(section.title)}</h2></div>
