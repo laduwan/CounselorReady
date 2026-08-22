@@ -1263,6 +1263,66 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 @media (max-width: 1024px) { .cr-reader-header { display: none; } }
 
 /* ═══════════════════════════════════════════════════════════════
+   SECTION OPENER
+   ═══════════════════════════════════════════════════════════════ */
+.cr-opener-panel {
+  margin: -40px -32px;
+  padding: 56px 34px;
+  border-radius: 0;
+  display: flex;
+  justify-content: center;
+  min-height: calc(100vh - 200px);
+}
+.cr-opener-col { width: 100%; max-width: 640px; }
+.cr-opener-eyebrow {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.17em; text-transform: uppercase;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 14px;
+}
+.cr-opener-title {
+  font-family: var(--cr-font-display);
+  font-weight: 600; font-size: 42px; line-height: 1.15;
+  color: #FFFFFF; max-width: 22ch;
+  margin: 0 0 18px;
+}
+.cr-opener-intro {
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 17px; line-height: 1.75;
+  color: rgba(255,255,255,0.8);
+  max-width: 60ch;
+  margin: 0 0 24px;
+}
+.cr-opener-topics { margin-bottom: 32px; }
+.cr-opener-topic {
+  display: flex; align-items: center; gap: 14px;
+  font-family: 'Lato', system-ui, sans-serif;
+  font-size: 15px; color: #FFFFFF;
+  margin-bottom: 12px;
+}
+.cr-opener-topic-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.14);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.cr-opener-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.cr-opener-start {
+  background: #D4A855; color: #4A1524;
+  font-family: 'Lato', system-ui, sans-serif; font-weight: 700; font-size: 15.5px;
+  padding: 16px 32px; border: none; border-radius: 11px;
+  box-shadow: 0 2px 10px rgba(212,168,85,.24);
+  cursor: pointer;
+}
+.cr-opener-review {
+  background: none; border: none; cursor: pointer;
+  font-family: 'Lato', system-ui, sans-serif; font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+}
+.cr-opener-review:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════════════════════════════════
    NAVIGATION BUTTONS
    ═══════════════════════════════════════════════════════════════ */
 .cr-nav-buttons {
@@ -4080,6 +4140,7 @@ let currentBlockPage = 0;
 let completedSections = new Set();
 let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
+let sectionSubState = 'reading'; // 'opener' | 'reading' — shown before a section's content on first entry
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
 let certPipelineState = { assessmentSaved: false, evaluationDone: false, attestationDone: false };
 let ttsActive = false;
@@ -4730,16 +4791,90 @@ function detectModuleGroups() {
 function goToSection(i) {
   if (currentView === 'assessment') currentView = 'section';
   completedSections.add(currentSectionIndex);
+  const alreadyVisited = visitedSections.has(i); // must read before marking visited below
   visitedSections.add(i);
   currentSectionIndex = i;
   window.__crCurrentSectionIndex = i; // [Stage 5f] expose for retrieval popup
   currentBlockPage = 0; // reset within-section pagination on section change
   buildSectionNav();
-  renderCurrentSection();
+
+  const section = course.sections[i];
+  if (!alreadyVisited && section && !section._isOverview) {
+    sectionSubState = 'opener';
+    renderSectionOpener(i);
+  } else {
+    sectionSubState = 'reading';
+    renderCurrentSection();
+  }
+
   updateProgress();
   closeSidebar();
   window.scrollTo({ top: 0, behavior: 'smooth' });
   srAnnounce('Now viewing: ' + (course.sections[i]?.title || 'Section ' + (i + 1)));
+}
+
+const CR_OPENER_COLORS = ['#6B1D34', '#284157', '#4A7C59', '#8B2542'];
+const CR_OPENER_ORDINALS = ['ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE','TEN','ELEVEN','TWELVE'];
+
+function renderSectionOpener(i) {
+  const section = course.sections[i];
+  const area = document.getElementById('crContentArea');
+  const readerHeader = document.getElementById('crReaderHeader');
+  const navBtns = document.getElementById('crNavButtons');
+  const toolbar = document.getElementById('crToolbar');
+  if (readerHeader) readerHeader.style.display = 'none';
+  if (navBtns) navBtns.style.display = 'none';
+  if (toolbar) toolbar.style.display = 'none'; // restored by renderCurrentSection() once reading begins
+
+  // Content-section-relative number, excluding the synthesized overview — same
+  // convention makeNavItem() already uses for its display number.
+  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+  const displayNum = i - overviewCount + 1; // 1-based content-section number (excludes the synthesized overview)
+  const color = CR_OPENER_COLORS[(displayNum - 1) % CR_OPENER_COLORS.length];
+  const ordinal = CR_OPENER_ORDINALS[displayNum - 1] || String(displayNum);
+
+  const blocks = section.contentBlocks || [];
+  const pageCount = blocks.length;
+  const minutes = Math.ceil(pageCount * 3);
+
+  let title = (section.title || 'Section ' + displayNum).replace(/^Section\s+\d+\s*[:—–-]\s*/i, '').trim();
+  if (!title) title = 'Section ' + displayNum;
+
+  // Up to 3 topics: sectionDivider block titles, else headings pulled from text blocks.
+  let topics = blocks.filter(b => b.type === 'sectionDivider' && b.title).map(b => b.title).slice(0, 3);
+  if (!topics.length) {
+    blocks.forEach(b => {
+      if (topics.length >= 3 || b.type !== 'text' || !b.content) return;
+      const m = String(b.content).match(/<h[23][^>]*>(.*?)<\/h[23]>/i);
+      if (m) topics.push(m[1].replace(/<[^>]+>/g, '').trim());
+    });
+  }
+
+  const showReview = displayNum > 1;
+
+  let html = '<div class="cr-opener-panel" style="background:' + color + '">';
+  html += '<div class="cr-opener-col">';
+  html += '<div class="cr-opener-eyebrow">SECTION ' + ordinal + ' · ' + minutes + ' MINUTES · ' + pageCount + ' PAGE' + (pageCount !== 1 ? 'S' : '') + '</div>';
+  html += '<h1 class="cr-opener-title">' + esc(title) + '</h1>';
+  if (section.description) {
+    html += '<p class="cr-opener-intro">' + (typeof mdInlineParse === 'function' ? mdInlineParse(section.description) : esc(section.description)) + '</p>';
+  }
+  if (topics.length) {
+    html += '<div class="cr-opener-topics">';
+    topics.forEach((t, idx) => {
+      html += '<div class="cr-opener-topic"><span class="cr-opener-topic-num">' + (idx + 1) + '</span><span>' + esc(t) + '</span></div>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="cr-opener-actions">';
+  html += '<button type="button" class="cr-opener-start" data-action="startSection">Start section ' + displayNum + ' →</button>';
+  if (showReview) {
+    html += '<button type="button" class="cr-opener-review" data-action="reviewPrevSection">Review section ' + (displayNum - 1) + '</button>';
+  }
+  html += '</div>';
+  html += '</div></div>';
+
+  area.innerHTML = html;
 }
 
 function prevSection() {
@@ -8606,6 +8741,8 @@ document.addEventListener('click', function(e) {
     case 'prevBlockPage': prevBlockPage(); break;
     case 'nextBlockPage': nextBlockPage(); break;
     case 'goToSection': goToSection(idx); break;
+    case 'startSection': sectionSubState = 'reading'; renderCurrentSection(); break;
+    case 'reviewPrevSection': goToSection(currentSectionIndex - 1); break;
     case 'showAssessment': showAssessment(); break;
     
     // ─── Assessment ───
