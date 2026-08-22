@@ -1738,7 +1738,10 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
    hand off. Also where skipped knowledge checks and unsaved
    Supplemental items resurface. 640px centered column.
    ═══════════════════════════════════════════════════════════════ */
-.cr-cp { max-width: 640px; margin: 0 auto; }
+/* Fills the reading column (70% of screen) like the exam does — the spec's 640px
+   is the mockup artboard's proportional column, not a fixed cap (same correction
+   as the reading page). */
+.cr-cp { margin: 0 auto; }
 .cr-cp-head { text-align: center; margin-bottom: 26px; }
 .cr-cp-check { width: 48px; height: 48px; border-radius: 50%; background: #4A7C59; color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; }
 .cr-cp-eyebrow { font: 700 10.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #3D6A4A; margin-bottom: 10px; }
@@ -1770,7 +1773,8 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
    hunter banner, evaluation gate, locked certificate preview,
    take-with-you row. The failed result keeps its existing screen.
    ═══════════════════════════════════════════════════════════════ */
-.cr-pass { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+/* Same proportional-width correction as .cr-cp above. */
+.cr-pass { margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 .cr-pass-banner { background: #4A7C59; border-radius: 14px; padding: 42px 34px; text-align: center; color: #fff; }
 .cr-pass-check { width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 16px; }
 .cr-pass-eyebrow { font: 700 10.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #E3EBE5; margin-bottom: 12px; }
