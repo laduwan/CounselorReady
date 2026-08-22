@@ -1667,6 +1667,72 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 .cr-kcm-marker.done { background: #F3F6F4; border: 1px solid #C8D7CC; color: #3D6A4A; }
 .cr-kcm-marker.skipped { background: #F9F0DB; border: 1px solid #F3E0B5; color: #6B4A25; }
 
+/* ═══════════════════════════════════════════════════════════════
+   FINAL ASSESSMENT (mockup 11f) — one question per screen, graded,
+   no rationale during the attempt; 250px right rail with progress,
+   5-column question grid, legend, and the gated Submit.
+   ═══════════════════════════════════════════════════════════════ */
+.cr-exam-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+  background: var(--cr-burgundy); border-radius: 14px; padding: 18px 30px;
+}
+.cr-exam-eyebrow { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .17em; color: #EBA9B5; margin-bottom: 6px; }
+.cr-exam-title { font-family: var(--cr-font-display); font-weight: 600; font-size: 21px; color: #FFFFFF; }
+.cr-exam-header-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.cr-exam-hpill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 400 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .08em; color: #EBA9B5;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); padding: 7px 12px; border-radius: 20px;
+}
+.cr-exam-hpill strong { font: 700 12px/1 'Lato', system-ui, sans-serif; color: #FFFFFF; letter-spacing: 0; }
+.cr-exam-body { display: flex; gap: 22px; align-items: flex-start; margin-top: 22px; }
+.cr-exam-main { flex: 1; min-width: 0; }
+.cr-exam-qlabel { font: 700 10.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #6B7280; margin-bottom: 12px; }
+.cr-exam-card { background: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 15px; padding: 30px 34px; }
+.cr-exam-stem { font-family: var(--cr-font-display); font-weight: 400; font-size: 22px; line-height: 1.5; color: #2C2C2C; max-width: 52ch; margin-bottom: 22px; }
+.cr-exam-options { display: flex; flex-direction: column; gap: 9px; }
+.cr-exam-option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: 10px; background: #FBFAF6; border: 1px solid #E5E0D8; cursor: pointer; }
+.cr-exam-option:hover { border-color: #D8D2C6; }
+.cr-exam-option.selected { border: 2px solid var(--cr-burgundy); background: #FDF5F6; padding: 12px 15px; }
+.cr-exam-option.selected .cr-exam-opt-text { font-weight: 700; color: #6B1D34; }
+.cr-exam-option.selected .cr-exam-letter { background: var(--cr-burgundy); border-color: var(--cr-burgundy); color: #fff; }
+.cr-exam-letter {
+  flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1px solid #D8D2C6; color: #6B7280;
+  font: 700 11px/1 'Lato', system-ui, sans-serif;
+}
+.cr-exam-opt-text { font: 400 15px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; padding-top: 1px; }
+.cr-exam-actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; }
+.cr-exam-prev { font: 700 13px/1 'Lato', system-ui, sans-serif; padding: 11px 18px; border-radius: 9px; border: 1.5px solid #E5E0D8; background: #fff; color: var(--cr-navy); cursor: pointer; }
+.cr-exam-prev:disabled { opacity: .45; cursor: default; }
+.cr-exam-flag { font: 700 13px/1 'Lato', system-ui, sans-serif; padding: 11px 18px; border-radius: 9px; border: 1px solid #F3E0B5; background: #F9F0DB; color: #6B4A25; cursor: pointer; }
+.cr-exam-flag.on { background: #EACD86; border-color: #EACD86; color: #4A1524; }
+.cr-exam-next { font: 700 13.5px/1 'Lato', system-ui, sans-serif; padding: 11px 20px; border-radius: 9px; border: none; background: var(--cr-burgundy); color: #fff; cursor: pointer; margin-left: auto; }
+.cr-exam-next:disabled { opacity: .45; cursor: default; }
+.cr-exam-rail { width: 250px; flex: none; background: #FFFFFF; border: 1px solid #E5E0D8; border-radius: 15px; padding: 24px; position: sticky; top: 86px; }
+.cr-exam-rail-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #6B7280; margin-bottom: 8px; }
+.cr-exam-rail-count { font-family: var(--cr-font-display); font-weight: 600; font-size: 30px; color: #2C2C2C; line-height: 1; }
+.cr-exam-rail-count span { font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-exam-bar { height: 6px; border-radius: 3px; background: #FAE8EB; margin: 10px 0 0; overflow: hidden; }
+.cr-exam-bar-fill { height: 100%; background: #4A7C59; border-radius: 3px; }
+.cr-exam-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.cr-exam-cell { aspect-ratio: 1; padding: 0; min-width: 0; border-radius: 7px; font: 700 11.5px/1 'Lato', system-ui, sans-serif; cursor: pointer; border: 1px solid #E5E0D8; background: #F8F7F4; color: #6B7280; }
+.cr-exam-cell.answered { background: #E3EBE5; border-color: #C8D7CC; color: #2B4133; }
+.cr-exam-cell.flagged { background: #F9F0DB; border-color: #EACD86; color: #6B4A25; }
+.cr-exam-cell.current { background: var(--cr-burgundy); border-color: var(--cr-burgundy); color: #fff; }
+.cr-exam-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 10px; font: 400 10.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
+.cr-exam-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 4px; }
+.cr-exam-legend i.answered { background: #E3EBE5; border: 1px solid #C8D7CC; }
+.cr-exam-legend i.flagged { background: #F9F0DB; border: 1px solid #EACD86; }
+.cr-exam-legend i.unanswered { background: #F8F7F4; border: 1px solid #E5E0D8; }
+.cr-exam-rail-bottom { margin-top: 16px; border-top: 1px solid #F0EDE8; padding-top: 14px; }
+.cr-exam-autosave { font: 400 11.5px/1.5 'Lato', system-ui, sans-serif; color: #284157; background: #F0F4F7; border: 1px solid #DCE5EC; border-radius: 9px; padding: 10px 12px; margin-bottom: 12px; }
+.cr-exam-submit { width: 100%; font: 700 13.5px/1 'Lato', system-ui, sans-serif; padding: 12px; border: none; border-radius: 9px; background: var(--cr-burgundy); color: #fff; cursor: pointer; }
+.cr-exam-submit:disabled { background: #E5E0D8; color: #B0A89E; cursor: default; }
+.cr-exam-submit-note { text-align: center; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
+@media (max-width: 900px) { .cr-exam-body { flex-direction: column; } .cr-exam-rail { width: 100%; position: static; } }
+
 .cr-glossary-header {
   padding: 16px 20px;
   border-bottom: 1px solid var(--cr-border);
@@ -4442,6 +4508,9 @@ let visitedSections = new Set([0]); // First section always visited
 let currentView = 'section'; // 'section' | 'assessment'
 let sectionSubState = 'reading'; // 'opener' | 'reading' — shown before a section's content on first entry
 let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
+// Exam view state (mockup 11f): which question is on screen + flag-for-review.
+// Presentation only — scoring still reads assessmentState.answers as before.
+let examView = { current: 0, flagged: [] };
 let certPipelineState = { assessmentSaved: false, evaluationDone: false, attestationDone: false };
 let ttsActive = false;
 let ttsUtterance = null;
@@ -5235,6 +5304,16 @@ function showAssessment() {
   }
   currentView = 'assessment';
   completedSections.add(currentSectionIndex);
+  // Resume an autosaved in-progress attempt (only when nothing is answered yet
+  // this session and no attempt has been submitted).
+  if (!assessmentState.submitted && Object.keys(assessmentState.answers).length === 0) {
+    const draft = loadState('examDraft');
+    if (draft && draft.answers && Object.keys(draft.answers).length > 0) {
+      assessmentState.answers = draft.answers;
+      examView.flagged = Array.isArray(draft.flagged) ? draft.flagged : [];
+      examView.current = typeof draft.current === 'number' ? draft.current : 0;
+    }
+  }
   renderAssessment();
   updateProgress();
   buildSectionNav();
@@ -7033,11 +7112,16 @@ function renderAssessment() {
   const qs = course.assessment?.questions || [];
   const passingScore = course.assessment?.passingScore || 75;
   const maxAttempts = course.assessment?.maxAttempts || 3;
-  
+
+  // The exam brings its own chrome (mockup 11f) — the lesson reader header's
+  // tabs/tools don't apply here. renderCurrentSection restores it on exit.
+  const readerHeader = document.getElementById('crReaderHeader');
+  if (readerHeader) readerHeader.style.display = 'none';
+
   if (qs.length === 0) {
-    area.innerHTML = `<div class="cr-assessment-header">
-      <div><div class="cr-assessment-eyebrow">Final Assessment</div><h2>${esc(course.title || '')}</h2></div>
-      <p style="color:#EBA9B5;font-family:'Lato',system-ui,sans-serif;font-size:0.85em">Assessment coming soon.</p>
+    area.innerHTML = `<div class="cr-exam-header">
+      <div><div class="cr-exam-eyebrow">FINAL ASSESSMENT</div><div class="cr-exam-title">${esc(course.title || '')}</div></div>
+      <p style="color:#EBA9B5;font-family:'Lato',system-ui,sans-serif;font-size:0.85em;margin:0">Assessment coming soon.</p>
     </div>`;
     return;
   }
@@ -7047,51 +7131,98 @@ function renderAssessment() {
     return;
   }
 
-  let html = `<div class="cr-assessment-header">
-    <div><div class="cr-assessment-eyebrow">Final Assessment</div><h2>${esc(course.title || '')}</h2></div>
-    <div class="cr-assessment-progress">
-      <span class="cr-assessment-pill">To pass: ${passingScore}%</span>
-      <span class="cr-assessment-pill">Attempt: ${assessmentState.attempts} of ${maxAttempts}</span>
-      <span class="cr-assessment-pill">No time limit</span>
+  if (examView.current >= qs.length) examView.current = qs.length - 1;
+  if (examView.current < 0) examView.current = 0;
+  const i = examView.current;
+  const q = qs[i];
+  const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  const selected = assessmentState.answers[i];
+  const answeredCount = Object.keys(assessmentState.answers).length;
+  const allAnswered = answeredCount === qs.length;
+  const flagged = new Set(examView.flagged);
+  const attemptDisplay = Math.min(assessmentState.attempts + 1, maxAttempts);
+
+  let html = `<div class="cr-exam-header">
+    <div><div class="cr-exam-eyebrow">FINAL ASSESSMENT</div><div class="cr-exam-title">${esc(course.title || '')}</div></div>
+    <div class="cr-exam-header-pills">
+      <span class="cr-exam-hpill"><span>TO PASS</span><strong>${passingScore}%</strong></span>
+      <span class="cr-exam-hpill"><span>ATTEMPT</span><strong>${attemptDisplay} of ${maxAttempts}</strong></span>
+      <span class="cr-exam-hpill"><strong>No time limit</strong></span>
     </div>
   </div>`;
-  
-  qs.forEach((q, i) => {
-    const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
-    const selected = assessmentState.answers[i];
-    
-    html += `<div class="cr-kc" style="border-left-color:var(--cr-gold)">
-      <div class="cr-kc-question">${i + 1}. ${esc(q.question || '')}</div>
-      <div class="cr-kc-options">
-        ${options.map((opt, j) => `<div class="cr-kc-option ${selected === j ? 'selected' : ''}" 
-          data-action="assessmentSelect" data-q="${i}" data-opt="${j}">
-          <span class="cr-kc-radio"></span>
-          <span>${esc(opt)}</span>
-        </div>`).join('')}
-      </div>
-    </div>`;
-  });
-  
-  const allAnswered = Object.keys(assessmentState.answers).length === qs.length;
-  html += `<div style="text-align:center;margin-top:32px">
-    <button class="cr-btn cr-btn-success" style="font-size:1.1em;padding:14px 40px" 
-      data-action="submitAssessment" ${allAnswered ? '' : 'disabled'}>
-      Submit Assessment
-    </button>
-    <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
-      ${allAnswered ? 'Ready to submit' : `${Object.keys(assessmentState.answers).length}/${qs.length} answered`}
-    </p>
+
+  html += `<div class="cr-exam-body"><div class="cr-exam-main">`;
+  html += `<div class="cr-exam-qlabel">QUESTION ${i + 1} OF ${qs.length}</div>`;
+  // Graded attempt: stem + options only — no rationale (that's knowledge-check-only).
+  html += `<div class="cr-exam-card">
+    <div class="cr-exam-stem">${esc(q.question || '')}</div>
+    <div class="cr-exam-options">
+      ${options.map((opt, j) => `<div class="cr-exam-option ${selected === j ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${j}">
+        <span class="cr-exam-letter">${String.fromCharCode(65 + j)}</span>
+        <span class="cr-exam-opt-text">${esc(opt)}</span>
+      </div>`).join('')}
+    </div>
   </div>`;
-  
+  html += `<div class="cr-exam-actions">
+    <button type="button" class="cr-exam-prev" data-action="examPrev" ${i === 0 ? 'disabled' : ''}>← Previous</button>
+    <button type="button" class="cr-exam-flag ${flagged.has(i) ? 'on' : ''}" data-action="examFlag">${flagged.has(i) ? 'Flagged for review' : 'Flag for review'}</button>
+    <button type="button" class="cr-exam-next" data-action="examNext" ${i === qs.length - 1 ? 'disabled' : ''}>Next question →</button>
+  </div></div>`;
+
+  html += `<aside class="cr-exam-rail">
+    <div class="cr-exam-rail-label">PROGRESS</div>
+    <div class="cr-exam-rail-count">${answeredCount} <span>of ${qs.length} answered</span></div>
+    <div class="cr-exam-bar"><div class="cr-exam-bar-fill" style="width:${Math.round(answeredCount / qs.length * 100)}%"></div></div>
+    <div class="cr-exam-rail-label" style="margin-top:20px">QUESTIONS</div>
+    <div class="cr-exam-grid">
+      ${qs.map((_, j) => {
+        let cls = 'cr-exam-cell';
+        if (j === i) cls += ' current';
+        else if (flagged.has(j)) cls += ' flagged';
+        else if (assessmentState.answers[j] !== undefined) cls += ' answered';
+        return `<button type="button" class="${cls}" data-action="examJump" data-idx="${j}" aria-label="Go to question ${j + 1}">${j + 1}</button>`;
+      }).join('')}
+    </div>
+    <div class="cr-exam-legend">
+      <span><i class="answered"></i>Answered</span><span><i class="flagged"></i>Flagged</span><span><i class="unanswered"></i>Unanswered</span>
+    </div>
+    <div class="cr-exam-rail-bottom">
+      <div class="cr-exam-autosave">Answers save as you go — you can leave and finish later.</div>
+      <button type="button" class="cr-exam-submit" data-action="submitAssessment" ${allAnswered ? '' : 'disabled'}>Submit assessment</button>
+      ${allAnswered ? '' : `<div class="cr-exam-submit-note">${qs.length - answeredCount} unanswered</div>`}
+    </div>
+  </aside></div>`;
+
   area.innerHTML = html;
-  
-  // Hide nav buttons for assessment
   document.getElementById('crNavButtons').style.display = 'none';
+}
+
+// Autosave the in-progress attempt (answers, flags, position) per learner per course.
+function examPersistDraft() {
+  saveState('examDraft', { answers: assessmentState.answers, flagged: examView.flagged, current: examView.current });
+}
+
+function examGoTo(idx) {
+  const qs = course.assessment?.questions || [];
+  if (idx < 0 || idx >= qs.length) return;
+  examView.current = idx;
+  examPersistDraft();
+  renderAssessment();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function examFlagToggle() {
+  const i = examView.current;
+  const at = examView.flagged.indexOf(i);
+  if (at >= 0) examView.flagged.splice(at, 1); else examView.flagged.push(i);
+  examPersistDraft();
+  renderAssessment();
 }
 
 function assessmentSelect(qIdx, optIdx) {
   if (assessmentState.submitted) return;
   assessmentState.answers[qIdx] = optIdx;
+  examPersistDraft();
   renderAssessment();
 }
 
@@ -7287,6 +7418,8 @@ function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
+  examView = { current: 0, flagged: [] };
+  saveState('examDraft', null);
   renderAssessment();
 }
 
@@ -9468,6 +9601,10 @@ document.addEventListener('click', function(e) {
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
     case 'submitAssessment': submitAssessment(); break;
     case 'retryAssessment': retryAssessment(); break;
+    case 'examPrev': examGoTo(examView.current - 1); break;
+    case 'examNext': examGoTo(examView.current + 1); break;
+    case 'examJump': examGoTo(parseInt(el.dataset.idx, 10)); break;
+    case 'examFlag': examFlagToggle(); break;
     
     // ─── Sidebar / UI ───
     case 'toggleSidebar': toggleSidebar(); break;
