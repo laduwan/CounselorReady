@@ -157,9 +157,21 @@
   ).join('\n            <span style="color:rgba(255,255,255,0.2)">&middot;</span>\n            ');
 
   const footerHTML = `
+  <style>
+    /* Below this width the 3-column footer row (brand / NBCC badge / link
+       columns) was wrapping its pieces independently instead of together —
+       the link columns kept hugging the right edge on their own line while
+       the brand block stayed left, producing a staggered, "crooked" layout.
+       Force a clean single-column stack instead. */
+    @media (max-width: 860px) {
+      .cr-ftr-top { flex-direction: column !important; align-items: stretch !important; }
+      .cr-ftr-badge { min-width: 0 !important; width: 100% !important; box-sizing: border-box !important; }
+      .cr-ftr-links { justify-content: flex-start !important; width: 100% !important; box-sizing: border-box !important; }
+    }
+  </style>
   <footer style="background:#3B0F1D;margin-top:2rem">
     <div style="max-width:1280px;margin:0 auto;padding:40px 24px 28px;font-family:'Lato',Calibri,sans-serif">
-      <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-bottom:28px">
+      <div class="cr-ftr-top" style="display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;margin-bottom:28px">
         <div style="flex:1;min-width:220px">
           <div class="font-display" style="font-size:24px;font-weight:700;margin-bottom:8px">
             <span style="color:#D0768A">Counselor</span><span style="color:#4A7C59">Ready</span>&trade;
@@ -167,7 +179,7 @@
           <div class="font-display" style="font-size:13px;color:#D4A855;letter-spacing:0.15em;font-weight:500;margin-bottom:12px">LEARN. LICENSE. LEAD.&trade;</div>
           <p style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.75);max-width:280px;margin:0">The continuing education platform built by a counselor, for counselors. Track credentials, complete courses, stay audit-ready.</p>
         </div>
-        <div style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 20px;min-width:260px">
+        <div class="cr-ftr-badge" style="display:flex;align-items:center;gap:16px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px 20px;min-width:260px">
           <div style="width:64px;height:64px;background:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
             <img src="/images/logo/nbcc-acep-logo.jpg" alt="NBCC Approved Continuing Education Provider" style="width:56px;height:56px;object-fit:contain" onerror="this.onerror=null;this.src='/images/nbcc-provider-badge.jpg'">
           </div>
@@ -176,7 +188,7 @@
             <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px">ACEP #7760 &middot; GAITP LLC</div>
           </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:24px;flex:1;min-width:200px;justify-content:flex-end">
+        <div class="cr-ftr-links" style="display:flex;flex-wrap:wrap;gap:24px;flex:1;min-width:200px;justify-content:flex-end">
           <div>
             <h4 style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#D4A855;margin:0 0 10px">Platform</h4>
             <a href="/courses.html" style="display:block;font-size:12px;color:rgba(255,255,255,0.75);text-decoration:none;padding:3px 0;transition:color .15s" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.75)'">Browse courses</a>
