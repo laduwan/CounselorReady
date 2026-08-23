@@ -1864,7 +1864,9 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-kcm-stage {
   display: none; position: fixed; inset: 0; z-index: 92;
   overflow-y: auto; padding: 38px 20px 52px;
-  background: rgba(74, 21, 36, .34);
+  /* Neutral dark scrim — the old burgundy rgba(74,21,36,.34) composited over
+     eggshell into a pinkish-tangerine wash (Ke). Charcoal dims without tinting. */
+  background: rgba(24, 28, 33, .45);
 }
 .cr-kcm-stage.open { display: flex; align-items: flex-start; justify-content: center; }
 .cr-kcm-modal {
