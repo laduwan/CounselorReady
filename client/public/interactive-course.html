@@ -1701,6 +1701,55 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   display: flex; flex-direction: column;
 }
 .cr-hl-panel.open, .cr-notes-panel.open { transform: translateX(0); }
+
+/* Print & download drawer (mockup 2b) — 460px, burgundy header */
+.cr-pdl-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 460px; max-width: 92vw;
+  background: var(--cr-surface);
+  border-left: 1px solid var(--cr-border);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  z-index: 55; transform: translateX(100%);
+  transition: transform var(--cr-transition);
+  display: flex; flex-direction: column;
+}
+.cr-pdl-panel.open { transform: translateX(0); }
+.cr-pdl-head { background: #6B1D34; padding: 22px 26px; flex-shrink: 0; position: relative; }
+.cr-pdl-eyebrow { font: 700 10px/1.4 'Lato', system-ui, sans-serif; letter-spacing: .19em; color: #F5CBD5; }
+.cr-pdl-title { font: 600 25px/1.2 var(--cr-font-display); color: #fff; margin-top: 6px; }
+.cr-pdl-sub { font: 400 12.5px/1.6 'Lato', system-ui, sans-serif; color: #F5CBD5; margin-top: 6px; }
+.cr-pdl-close { position: absolute; top: 14px; right: 14px; background: none; border: none; cursor: pointer; font-size: 18px; color: #F5CBD5; min-width: 36px; min-height: 36px; }
+.cr-pdl-body { padding: 24px 26px; display: flex; flex-direction: column; gap: 22px; background: #fff; overflow-y: auto; }
+.cr-pdl-group-label { font: 700 10.5px/1.4 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #284157; }
+.cr-pdl-rows { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
+.cr-pdl-row { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #E5E3DC; border-radius: 11px; }
+.cr-pdl-row.primary { border-color: #E2E2BE; background: #FBFAF6; }
+.cr-pdl-row.locked { opacity: .65; }
+.cr-pdl-ico { width: 34px; height: 34px; flex: none; border-radius: 8px; background: #F0EFEA; border: 1px solid #E5E3DC; display: flex; align-items: center; justify-content: center; color: #4b5563; font-size: 15px; }
+.cr-pdl-row.primary .cr-pdl-ico { background: #FDF5F6; border-color: #F5D0D6; color: #6B1D34; }
+.cr-pdl-row-main { min-width: 0; }
+.cr-pdl-row-title { font: 700 14px/1.3 'Lato', system-ui, sans-serif; color: #2C2C2C; }
+.cr-pdl-row-sub { font: 400 12px/1.4 'Lato', system-ui, sans-serif; color: #4b5563; margin-top: 3px; }
+.cr-pdl-btn { margin-left: auto; flex: none; padding: 9px 15px; border-radius: 8px; border: 1px solid #E2E2BE; background: #fff; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #4b5563; cursor: pointer; min-height: 40px; }
+.cr-pdl-btn.primary { background: #6B1D34; border-color: #6B1D34; color: #fff; }
+a.cr-pdl-btn { text-decoration: none; display: inline-flex; align-items: center; }
+.cr-pdl-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; font: 400 13.5px/1.4 'Lato', system-ui, sans-serif; color: #2C2C2C; min-height: 36px; }
+/* Print scope: when a full-course print is running, only the print container shows */
+#crPrintAll { display: none; }
+@media print {
+  body[data-print-scope="full"] .cr-layout, body[data-print-scope="full"] .cr-topbar { display: none !important; }
+  body[data-print-scope="full"] #crPrintAll { display: block !important; font-family: var(--cr-font-serif); color: #111; }
+  #crPrintAll h1 { font-family: var(--cr-font-display); font-size: 22pt; margin: 18pt 0 8pt; page-break-after: avoid; }
+  #crPrintAll h2 { font-size: 15pt; margin: 12pt 0 6pt; page-break-after: avoid; }
+  #crPrintAll h3 { font-size: 12.5pt; margin: 10pt 0 5pt; page-break-after: avoid; }
+  body[data-print-scope="full"] .cr-pdl-panel, body[data-print-scope="full"] .cr-refs-panel,
+  body[data-print-scope="full"] .cr-supp-drawer, body[data-print-scope="full"] .cr-hl-panel,
+  body[data-print-scope="full"] .cr-notes-panel, body[data-print-scope="full"] .cr-a11y-panel,
+  body[data-print-scope="full"] .cr-glossary-panel { display: none !important; }
+  #crPrintAll p, #crPrintAll li { font-size: 11pt; line-height: 1.6; }
+  #crPrintAll .cr-print-note { font-style: italic; color: #444; }
+  body[data-print-highlights="false"] .cr-highlight { background: none !important; box-shadow: none !important; }
+}
 .cr-hl-item {
   background: #FDF9F0; border: 1px solid #F3E0B5; border-radius: 10px;
   padding: 12px 14px; margin-bottom: 10px;
@@ -1755,7 +1804,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    instead of at top:0, so the header's tab row — which opens/closes these same
    panels — stays clickable while a panel is open, instead of being covered by it. */
 @media (min-width: 1025px) {
-  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel, .cr-hl-panel, .cr-notes-panel { top: 72px; }
+  .cr-refs-panel, .cr-supp-drawer, .cr-glossary-panel, .cr-hl-panel, .cr-notes-panel, .cr-pdl-panel { top: 72px; }
 }
 .cr-refs-header {
   display: flex; align-items: center; justify-content: space-between;
@@ -4872,6 +4921,18 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   <div class="cr-refs-list" id="crNotesBody"></div>
 </div>
 
+<!-- PRINT & DOWNLOAD PANEL (mockup 2b) -->
+<div class="cr-pdl-panel" id="crPdlPanel" role="dialog" aria-label="Print and download">
+  <div class="cr-pdl-head">
+    <div class="cr-pdl-eyebrow" id="crPdlEyebrow"></div>
+    <div class="cr-pdl-title">Print &amp; download</div>
+    <div class="cr-pdl-sub">Everything an auditor or a board reviewer might ask for.</div>
+    <button type="button" class="cr-pdl-close" data-action="togglePdlPanel" aria-label="Close">✕</button>
+  </div>
+  <div class="cr-pdl-body" id="crPdlBody"></div>
+</div>
+<div id="crPrintAll" aria-hidden="true"></div>
+
 <!-- REFERENCES BUTTON + PANEL -->
 <button class="cr-refs-btn" id="crRefsBtn" data-action="toggleReferences" aria-label="References" title="References">📚</button>
 <div class="cr-refs-panel" id="crRefsPanel">
@@ -5970,7 +6031,7 @@ function renderSectionCheckpoint(si) {
   }
 
   h += '<div class="cr-cp-util">'
-    + '<button type="button" data-action="printSection">Print this section</button>'
+    + '<button type="button" data-action="togglePdlPanel">Print &amp; download</button>'
     + '<span>Progress saved</span>'
     + '</div>';
   h += '</div>';
@@ -6076,7 +6137,7 @@ function closeSidebar() {
 // The mockups specify the controls; drawer behavior follows the established
 // 440px side-drawer pattern (References / Supplemental / Key terms).
 function crCloseSideDrawers(except) {
-  ['crHlPanel', 'crNotesPanel', 'crGlossaryPanel', 'crRefsPanel', 'crA11yPanel'].forEach(id => {
+  ['crHlPanel', 'crNotesPanel', 'crGlossaryPanel', 'crRefsPanel', 'crA11yPanel', 'crPdlPanel'].forEach(id => {
     if (id !== except) document.getElementById(id)?.classList.remove('open');
   });
 }
@@ -11031,6 +11092,184 @@ function exportPDF() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PRINT & DOWNLOAD DRAWER (mockup 2b) — opened from the section
+// boundary util. Every row is an honest client-side action: print
+// flows, real Blob downloads, and dashboard links for records only
+// the backend can produce. No fake downloads.
+// ═══════════════════════════════════════════════════════════════
+let crPdlOpts = { highlights: true, references: true };
+
+function togglePdlPanel() {
+  const p = document.getElementById('crPdlPanel');
+  if (!p) return;
+  const willOpen = !p.classList.contains('open');
+  crCloseSideDrawers('crPdlPanel');
+  if (willOpen) buildPdlPanel();
+  p.classList.toggle('open', willOpen);
+}
+
+function crPdlRow(o) {
+  const cls = 'cr-pdl-row' + (o.primary ? ' primary' : '') + (o.locked ? ' locked' : '');
+  let btn;
+  if (o.locked) {
+    btn = '<button type="button" class="cr-pdl-btn" disabled>' + o.btn + '</button>';
+  } else if (o.href) {
+    btn = '<a class="cr-pdl-btn' + (o.primary ? ' primary' : '') + '" href="' + o.href + '">' + o.btn + '</a>';
+  } else {
+    btn = '<button type="button" class="cr-pdl-btn' + (o.primary ? ' primary' : '') + '" data-action="' + o.action + '">' + o.btn + '</button>';
+  }
+  return '<div class="' + cls + '">'
+    + '<div class="cr-pdl-ico" aria-hidden="true">' + o.ico + '</div>'
+    + '<div class="cr-pdl-row-main">'
+    + '<div class="cr-pdl-row-title">' + o.title + '</div>'
+    + '<div class="cr-pdl-row-sub">' + o.sub + '</div>'
+    + '</div>' + btn + '</div>';
+}
+
+function buildPdlPanel() {
+  const eyebrow = document.getElementById('crPdlEyebrow');
+  if (eyebrow) {
+    const bits = [];
+    if (course && course.courseCode) bits.push(course.courseCode);
+    const hrs = course && (course.ceHours || course.ceuHours);
+    if (hrs) bits.push(hrs + ' CE HOURS');
+    eyebrow.textContent = bits.join(' \u00b7 ').toUpperCase();
+  }
+  const body = document.getElementById('crPdlBody');
+  if (!body) return;
+  const passing = (course && course.assessment && course.assessment.passingScore) || 75;
+  const certReady = !!(assessmentState.submitted && assessmentState.score >= passing);
+  const sec = course && course.sections && course.sections[currentSectionIndex];
+  const secTitle = (sec && sec.title) ? sec.title : 'Current section';
+
+  let h = '<div><div class="cr-pdl-group-label">COURSE MATERIAL</div><div class="cr-pdl-rows">';
+  h += crPdlRow({ primary: true, ico: '\u2399', title: 'Full course PDF', sub: 'Every section, formatted for print \u2014 use your browser\u2019s \u201cSave as PDF.\u201d', btn: 'Download', action: 'crPrintFull' });
+  h += crPdlRow({ ico: '\ud83d\udcc4', title: 'This section only', sub: esc(secTitle), btn: 'PDF', action: 'printSection' });
+  h += crPdlRow({ ico: '\u2261', title: 'Course text', sub: 'Plain-text transcript of the full course.', btn: '.txt', action: 'downloadCourseText' });
+  h += crPdlRow({ ico: '{\u2009}', title: 'Course data', sub: 'The complete course structure as JSON.', btn: '.json', action: 'downloadCourseJSON' });
+  h += '</div></div>';
+
+  h += '<div><div class="cr-pdl-group-label">YOUR RECORD</div><div class="cr-pdl-rows">';
+  if (certReady) {
+    h += crPdlRow({ primary: true, ico: '\ud83c\udf93', title: 'Certificate of completion', sub: 'Issued to your dashboard.', btn: 'Open', href: '/dashboard.html' });
+  } else {
+    h += crPdlRow({ locked: true, ico: '\ud83d\udd12', title: 'Certificate of completion', sub: 'Unlocks when you pass the final assessment.', btn: 'Locked' });
+  }
+  h += crPdlRow({ ico: '\ud83d\uddc2', title: 'CE transcript', sub: 'All earned CE hours, in your dashboard.', btn: 'Open', href: '/dashboard.html' });
+  h += crPdlRow({ ico: '\ud83d\udee1', title: 'Audit packet', sub: 'Certificates and completion records for a board audit \u2014 from your dashboard.', btn: 'Open', href: '/dashboard.html' });
+  h += '</div></div>';
+
+  h += '<div><div class="cr-pdl-group-label">PRINT OPTIONS</div><div class="cr-pdl-rows">';
+  h += '<div class="cr-pdl-opt"><span>Include my highlights &amp; notes</span><div class="cr-toggle' + (crPdlOpts.highlights ? ' on' : '') + '" data-action="crPdlToggleOpt" data-opt="highlights" role="switch" aria-checked="' + crPdlOpts.highlights + '" tabindex="0" aria-label="Include my highlights and notes"></div></div>';
+  h += '<div class="cr-pdl-opt"><span>Include references</span><div class="cr-toggle' + (crPdlOpts.references ? ' on' : '') + '" data-action="crPdlToggleOpt" data-opt="references" role="switch" aria-checked="' + crPdlOpts.references + '" tabindex="0" aria-label="Include references"></div></div>';
+  h += '</div></div>';
+  body.innerHTML = h;
+}
+
+function crPdlToggleOpt(opt, el) {
+  if (!(opt in crPdlOpts)) return;
+  crPdlOpts[opt] = !crPdlOpts[opt];
+  if (el) { el.classList.toggle('on', crPdlOpts[opt]); el.setAttribute('aria-checked', crPdlOpts[opt]); }
+  if (opt === 'highlights') {
+    // Applies to the in-place section print too, via the print CSS.
+    document.body.setAttribute('data-print-highlights', crPdlOpts.highlights ? 'true' : 'false');
+  }
+}
+
+// Block types that can't exist on paper — printed as a pointer back online.
+const CR_PRINT_INTERACTIVE = { accordion:1, multipleChoice:1, multiSelect:1, matching:1, flashcardDeck:1, scenarioTree:1, cardSort:1, sequencing:1, timeline:1, hotspot:1, knowledgeCheck:1, quiz:1, fillInBlank:1, reflection:1, video:1, videoEmbed:1 };
+
+function crPrintFull() {
+  if (!course) return;
+  const host = document.getElementById('crPrintAll');
+  if (!host) return;
+  let h = '<h1>' + esc(course.title || '') + '</h1>';
+  const meta = [];
+  if (course.courseCode) meta.push(esc(course.courseCode));
+  const hrs = course.ceHours || course.ceuHours;
+  if (hrs) meta.push(hrs + ' CE hours');
+  if (meta.length) h += '<p class="cr-print-note">' + meta.join(' \u00b7 ') + '</p>';
+  if (course.objectives && course.objectives.length) {
+    h += '<h2>Learning objectives</h2><ol>';
+    course.objectives.forEach(o => { h += '<li>' + esc(o) + '</li>'; });
+    h += '</ol>';
+  }
+  (course.sections || []).forEach((section, si) => {
+    h += '<h2>Section ' + (si + 1) + ': ' + esc(section.title || '') + '</h2>';
+    (section.contentBlocks || []).forEach(block => {
+      switch (block.type) {
+        case 'sectionDivider':
+          break; // the section header above already covers it
+        case 'text':
+          h += '<div>' + parseCalloutSyntax(block.content || block.textContent || '', block.callouts) + '</div>';
+          break;
+        case 'imageText':
+          if (block.title) h += '<h3>' + esc(block.title) + '</h3>';
+          h += '<div>' + parseCalloutSyntax(block.content || '', block.callouts) + '</div>';
+          break;
+        case 'callout':
+          h += '<p><strong>' + esc(block.title || 'Note') + ':</strong> ' + esc(stripHtml(block.content || '')) + '</p>';
+          break;
+        case 'keyTakeaway': {
+          const items = block.takeaways || block.items || [];
+          h += '<p><strong>' + esc(block.title || 'Key takeaways') + '</strong></p>';
+          if (block.content) h += '<div>' + block.content + '</div>';
+          if (items.length) {
+            h += '<ul>';
+            items.forEach(t => { h += '<li>' + esc(typeof t === 'string' ? t : (t.text || '')) + '</li>'; });
+            h += '</ul>';
+          }
+          break;
+        }
+        case 'references':
+        case 'resources':
+          break; // course-level references print as the appendix below
+        default:
+          if (CR_PRINT_INTERACTIVE[block.type]) {
+            h += '<p class="cr-print-note">[Interactive activity \u2014 ' + esc(block.title || block.question || block.type) + ' \u2014 complete online]</p>';
+          }
+      }
+    });
+  });
+  if (crPdlOpts.references && course.references && course.references.length) {
+    h += '<h2>References</h2><ul>';
+    course.references.forEach(r => {
+      const cite = r.citation || ((r.author || '') + ' (' + (r.year || '') + '). ' + (r.title || '') + '. ' + (r.source || ''));
+      h += '<li>' + esc(cite) + '</li>';
+    });
+    h += '</ul>';
+  }
+  if (crPdlOpts.highlights) {
+    const hls = loadState('highlights') || highlights || [];
+    const notes = crNotesState();
+    const hasNotes = Object.keys(notes).some(k => (notes[k] || '').trim());
+    if (hls.length || hasNotes) {
+      h += '<h2>My highlights &amp; notes</h2>';
+      (course.sections || []).forEach((section, si) => {
+        const secHls = hls.filter(x => x.sectionIndex === si);
+        const secNote = (notes[si] || '').trim();
+        if (!secHls.length && !secNote) return;
+        h += '<h3>Section ' + (si + 1) + ': ' + esc(section.title || '') + '</h3><ul>';
+        secHls.forEach(x => { h += '<li>\u201c' + esc(x.text || '') + '\u201d' + (x.note ? ' \u2014 ' + esc(x.note) : '') + '</li>'; });
+        if (secNote) h += '<li><em>Section note:</em> ' + esc(secNote) + '</li>';
+        h += '</ul>';
+      });
+    }
+  }
+  host.innerHTML = h;
+  document.body.setAttribute('data-print-scope', 'full');
+  window.print();
+}
+
+window.addEventListener('afterprint', function() {
+  if (document.body.getAttribute('data-print-scope') === 'full') {
+    document.body.removeAttribute('data-print-scope');
+    const host = document.getElementById('crPrintAll');
+    if (host) host.innerHTML = '';
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
 // FEATURE: TRANSLATION — lives in the Aa drawer. The old initTranslation()
 // was never called and its sidebar host was retired, so the control had
 // vanished; wired here via delegation instead.
@@ -11181,6 +11420,9 @@ document.addEventListener('click', function(e) {
     case 'removeHighlight': removeHighlight(); break;
     case 'printSection': printSection(); break;
     case 'exportPDF': exportPDF(); break;
+    case 'togglePdlPanel': togglePdlPanel(); break;
+    case 'crPrintFull': crPrintFull(); break;
+    case 'crPdlToggleOpt': crPdlToggleOpt(el.dataset.opt, el); break;
     case 'ttsPause': ttsPause(); break;
     case 'ttsStop': ttsStop(); break;
     case 'ttsRestart': ttsRestart(); break;
