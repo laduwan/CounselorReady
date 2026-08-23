@@ -8505,7 +8505,8 @@ function renderAssessment() {
   const area = document.getElementById('crContentArea');
   const qs = course.assessment?.questions || [];
   const passingScore = course.assessment?.passingScore || 75;
-  const maxAttempts = course.assessment?.maxAttempts || 3;
+  // KE'S RULING: courses have UNLIMITED attempts — the three-attempt cap was
+  // an invention, never product policy. Attempts display as a plain count.
 
   // The exam brings its own chrome (mockup 11f) — the lesson reader header's
   // tabs/tools don't apply here. renderCurrentSection restores it on exit.
@@ -8534,13 +8535,13 @@ function renderAssessment() {
   const answeredCount = Object.keys(assessmentState.answers).length;
   const allAnswered = answeredCount === qs.length;
   const flagged = new Set(examView.flagged);
-  const attemptDisplay = Math.min(assessmentState.attempts + 1, maxAttempts);
+  const attemptDisplay = assessmentState.attempts + 1;
 
   let html = `<div class="cr-exam-header">
     <div><div class="cr-exam-eyebrow">FINAL ASSESSMENT</div><div class="cr-exam-title">${esc(course.title || '')}</div></div>
     <div class="cr-exam-header-pills">
       <span class="cr-exam-hpill"><span>TO PASS</span><strong>${passingScore}%</strong></span>
-      <span class="cr-exam-hpill"><span>ATTEMPT</span><strong>${attemptDisplay} of ${maxAttempts}</strong></span>
+      <span class="cr-exam-hpill"><span>ATTEMPT</span><strong>${attemptDisplay}</strong></span>
       <span class="cr-exam-hpill"><strong>No time limit</strong></span>
     </div>
   </div>`;
@@ -8696,7 +8697,7 @@ function renderAssessmentResult() {
   const score = assessmentState.score;
   const passing = course.assessment?.passingScore || 75;
   const passed = score >= passing;
-  const maxAttempts = course.assessment?.maxAttempts || 3;
+  // Unlimited attempts (KE'S RULING) — no cap, no exhausted state.
   
   const ceHoursEarned = course.ceHours || course.ceuHours || 0;
 
@@ -8710,10 +8711,10 @@ function renderAssessmentResult() {
     const failCorrect = failTotalQs ? Math.round(score / 100 * failTotalQs) : null;
     const failNeeded = failTotalQs ? Math.ceil(passing * failTotalQs / 100) : null;
     const failGap = (failNeeded !== null && failCorrect !== null) ? Math.max(1, failNeeded - failCorrect) : null;
-    const attemptsLeft = maxAttempts - assessmentState.attempts;
+    const attemptsLeft = 1; // unlimited — the retry path is always open
     let html = `<div class="cr-assessment-result failed">
       <div class="cr-fail-clock" aria-hidden="true">🕐</div>
-      <div class="cr-fail-eyebrow">NOT YET — ATTEMPT ${assessmentState.attempts} OF ${maxAttempts}</div>
+      <div class="cr-fail-eyebrow">NOT YET — ATTEMPT ${assessmentState.attempts}</div>
       <div class="score">${failCorrect !== null ? failCorrect + ' of ' + failTotalQs + ' correct — ' + score + '%' : score + '%'}</div>`;
     if (attemptsLeft > 0) {
       html += `<p class="cr-fail-gap">${failGap !== null ? (failGap === 1 ? 'One more correct answer' : failGap + ' more correct answers') + ' would have passed — ' + passing + '% is the bar.' : 'You need ' + passing + '% to pass.'}</p>`;
@@ -8729,7 +8730,7 @@ function renderAssessmentResult() {
       // the renewal-impact panel; the learner's work is framed as kept.
       html = `<div class="cr-assessment-result exhausted">
         <div class="cr-fail-clock" aria-hidden="true">⚠</div>
-        <div class="cr-fail-eyebrow" style="color:#F5CBD5">${maxAttempts > 1 ? 'ALL ' + (CR_OPENER_ORDINALS[maxAttempts - 1] || maxAttempts) + ' ATTEMPTS USED' : 'NO ATTEMPTS REMAINING'}</div>
+        <div class="cr-fail-eyebrow" style="color:#F5CBD5">NO ATTEMPTS REMAINING</div>
         <div class="score">${failCorrect !== null ? failCorrect + ' of ' + failTotalQs + ' correct — ' + score + '%' : score + '%'}</div>
         <div class="cr-exhausted-kept">
           <div class="cr-exhausted-kept-col"><div class="cr-exhausted-kept-label">WHAT IS KEPT</div>Reading progress, notes, highlights, and saved supplemental items.</div>
@@ -8759,7 +8760,7 @@ function renderAssessmentResult() {
     <div class="cr-pass-check">✓</div>
     <div class="cr-pass-eyebrow">PASSED${ceHoursEarned ? ' · ' + ceHoursEarned + ' CE HOUR' + (ceHoursEarned !== 1 ? 'S' : '') + ' EARNED' : ''}</div>
     <div class="cr-pass-score">${correctCount !== null ? correctCount + ' of ' + totalQs + ' correct — ' + score + '%' : score + '%'}</div>
-    <div class="cr-pass-sub">Attempt ${assessmentState.attempts} of ${maxAttempts} · ${passing}% required to pass</div>
+    <div class="cr-pass-sub">Attempt ${assessmentState.attempts} · ${passing}% required to pass</div>
   </div>`;
 
   if (token) {
