@@ -74,9 +74,12 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* Text Size Levels */
-[data-text-size="small"] { --cr-font-size-base: 15px; }
-[data-text-size="medium"] { --cr-font-size-base: 17px; }
-[data-text-size="large"] { --cr-font-size-base: 21px; }
+/* The setting lives on <body>, but html { font-size } resolves the variable at
+   the html level — so the var must be set on :root via :has(), or the control
+   does nothing (it never worked before this fix). */
+:root:has(body[data-text-size="small"]) { --cr-font-size-base: 15px; }
+:root:has(body[data-text-size="medium"]) { --cr-font-size-base: 17px; }
+:root:has(body[data-text-size="large"]) { --cr-font-size-base: 21px; }
 
 /* Line Spacing */
 [data-line-spacing="compact"] { --cr-line-height: 1.4; }
@@ -86,8 +89,8 @@
 /* Dyslexia Font */
 [data-dyslexia="true"] {
   --cr-font-body: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
-  --cr-font-size-base: 18px;
 }
+:root:has(body[data-dyslexia="true"]) { --cr-font-size-base: 18px; }
 
 /* High Contrast */
 [data-high-contrast="true"] {
@@ -450,7 +453,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
    to inject when a section has no sectionDivider block of its own. */
 .cr-page-title {
   font-family: var(--cr-font-display);
-  font-weight: 600; font-size: 32px; line-height: 1.2;
+  font-weight: 600; font-size: 1.88rem; line-height: 1.2;
   color: #6B1D34; text-wrap: pretty;
   margin: 0 0 18px;
 }
@@ -569,7 +572,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 /* Mockup 12a: reading-page titles are Cormorant 600 32px/1.2 (opener titles are the
    42px ones). Authored top-level headings inside text blocks are page titles. */
-.cr-prose h1 { font-family: var(--cr-font-display); font-size: 32px; line-height: 1.2; font-weight: 600; color: var(--cr-burgundy); }
+.cr-prose h1 { font-family: var(--cr-font-display); font-size: 1.88rem; line-height: 1.2; font-weight: 600; color: var(--cr-burgundy); }
 
 /* Page eyebrow (mockup 12a): the numbered honey label above a page title, e.g.
    "2.3 — CROSSINGS AND VIOLATIONS". Authored headings matching "N.N — Label" are
@@ -589,7 +592,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-block .cr-prose .cr-page-eyebrow + h2,
 .cr-block .cr-prose .cr-page-eyebrow + h3 {
   font-family: var(--cr-font-display);
-  font-size: 32px; line-height: 1.2; font-weight: 600;
+  font-size: 1.88rem; line-height: 1.2; font-weight: 600;
   color: var(--cr-burgundy);
 }
 .cr-prose h2 { font-family: var(--cr-font-display); font-size: 1.75rem; font-weight: 600; color: var(--cr-navy); }
@@ -1851,12 +1854,12 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-kcm-header.correct .cr-kcm-scored, .cr-kcm-header.incorrect .cr-kcm-scored { color: rgba(255,255,255,.7); }
 .cr-kcm-close { flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%; border: none; cursor: pointer; background: rgba(255,255,255,.16); color: #fff; font-size: 13px; line-height: 1; }
 .cr-kcm-body { padding: 28px 30px; }
-.cr-kcm-stem { font-family: var(--cr-font-display); font-weight: 400; font-size: 21px; line-height: 1.5; color: #2C2C2C; margin-bottom: 22px; }
+.cr-kcm-stem { font-family: var(--cr-font-display); font-weight: 400; font-size: 1.24rem; line-height: 1.5; color: #2C2C2C; margin-bottom: 22px; }
 .cr-kcm-options { display: flex; flex-direction: column; gap: 9px; }
 .cr-kcm-option { display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px; border-radius: 10px; background: #FBFAF6; border: 1px solid #E5E0D8; cursor: pointer; }
 .cr-kcm-option:hover:not(.cr-kcm-locked) { border-color: #D8D2C6; }
 .cr-kcm-option-letter { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #fff; border: 1px solid #D8D2C6; color: #6B7280; font: 700 11px/1 'Lato', system-ui, sans-serif; }
-.cr-kcm-option-text { font: 400 15px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; padding-top: 1px; }
+.cr-kcm-option-text { font: 400 0.88rem/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; padding-top: 1px; }
 .cr-kcm-option.picked { border-color: var(--cr-burgundy); background: #FDF5F6; }
 .cr-kcm-option.picked .cr-kcm-option-letter { background: var(--cr-burgundy); border-color: var(--cr-burgundy); color: #fff; }
 .cr-kcm-option.dim { opacity: .55; }
@@ -1870,7 +1873,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-kcm-rationale.incorrect { background: #FEF2F2; border-color: #FECACA; }
 .cr-kcm-rationale-label { font: 900 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .05em; color: #3D6A4A; margin-bottom: 6px; text-transform: uppercase; }
 .cr-kcm-rationale.incorrect .cr-kcm-rationale-label { color: #B91C1C; }
-.cr-kcm-rationale-body { font: 400 15px/1.7 'Lato', system-ui, sans-serif; color: #2B4133; }
+.cr-kcm-rationale-body { font: 400 0.88rem/1.7 'Lato', system-ui, sans-serif; color: #2B4133; }
 .cr-kcm-rationale.incorrect .cr-kcm-rationale-body { color: #7F1D1D; }
 .cr-kcm-footer { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 30px; border-top: 1px solid #F0EDE8; }
 .cr-kcm-footer-note { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #6B7280; }
@@ -2560,7 +2563,10 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="imageText"] .cr-imageText-text,
 .cr-block[data-block-type="text"] > div {
   font-family: var(--cr-font-serif);
-  font-size: 17.5px;
+  /* rem so the Aa text-size control (html { font-size: var(--cr-font-size-base) })
+     actually scales the lesson — hard px froze it (Ke: "textsizing doesnt do
+     anything"). 1rem = 17px at the medium setting. */
+  font-size: 1.03rem;
   line-height: 1.82;
   text-wrap: pretty;
   color: var(--cr-text-body);
@@ -2570,7 +2576,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="text"] p,
 .cr-block[data-block-type="imageText"] p {
   font-family: var(--cr-font-serif);
-  font-size: 17px;
+  font-size: 1rem;
   line-height: 1.75;
   color: var(--cr-text-body);
   margin: 0 0 1.2em;
@@ -2617,7 +2623,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block h2,
 .cr-block[data-block-type="text"] h2 {
   font-family: var(--cr-font-display);
-  font-size: 24px;
+  font-size: 1.41rem;
   font-weight: 600;
   color: var(--cr-burgundy);
   line-height: 1.3;
@@ -2629,7 +2635,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block h3,
 .cr-block[data-block-type="text"] h3 {
   font-family: var(--cr-font-serif);
-  font-size: 19px;
+  font-size: 1.12rem;
   font-weight: 500;
   color: var(--cr-hunter);
   line-height: 1.35;
@@ -2640,7 +2646,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block h4,
 .cr-block[data-block-type="text"] h4 {
   font-family: var(--cr-font-serif);
-  font-size: 17px;
+  font-size: 1rem;
   font-weight: 500;
   color: var(--cr-navy);
   line-height: 1.4;
@@ -2881,7 +2887,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-section-divider p {
   font-family: var(--cr-font-display);
   font-style: italic;
-  font-size: 17px;
+  font-size: 1rem;
   color: var(--cr-text-secondary);
   line-height: 1.5;
   margin: 0;
@@ -3242,7 +3248,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border: 1px solid #C8D7CC !important;
   border-radius: 10px !important;
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 15px;
+  font-size: 0.88rem;
   line-height: 1.6;
   color: var(--cr-text-body, #1F2937);
 }
@@ -3271,7 +3277,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border-radius: 14px;
   background: var(--cr-tint-burg);
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 0.94rem;
   line-height: 1.65;
   break-inside: avoid;
   box-shadow: 0 1px 0 var(--cr-border-subtle);
@@ -3380,7 +3386,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-callout-clinical .cr-callout-body,
 .cr-callout-clinical p {
   font-family: 'Lato', system-ui, sans-serif;
-  font-size: 16px; line-height: 1.72; color: #4A1524;
+  font-size: 0.94rem; line-height: 1.72; color: #4A1524;
 }
 
 
@@ -3860,7 +3866,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 /* Question — editorial, body color, slight letterspacing */
 .cr-kc-question {
   font-family: var(--cr-font-display) !important; /* mockup: question stems are Cormorant 400 */
-  font-size: 17.5px !important;
+  font-size: 1.03rem !important;
   font-weight: 500 !important;
   letter-spacing: 0.005em !important;
   color: var(--cr-text-body, #1F2937) !important;
@@ -4004,7 +4010,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   border: 1px solid #C8D7CC !important;
   border-radius: 10px !important;
   font-family: 'Lato', system-ui, sans-serif !important;
-  font-size: 14.5px !important;
+  font-size: 0.85rem !important;
   font-style: italic !important;
   line-height: 1.6 !important;
   color: var(--cr-text-body, #1F2937) !important;
@@ -4325,14 +4331,13 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
   margin-top: 4px !important;
 }
 
-/* ---- Callouts: crisp card, hairline + colored left accent, sans micro-label ---- */
+/* ---- Callouts: crisp card, sans micro-label. Full border, no left accent bar
+        (DRIFT §10) — the variant border-colors from the section above show
+        through on all four sides. ---- */
 .cr-callout {
-  border-top: 1px solid var(--cr-border, #E0DACE) !important;
-  border-right: 1px solid var(--cr-border, #E0DACE) !important;
-  border-bottom: 1px solid var(--cr-border, #E0DACE) !important;
-  border-left-width: 3px !important;
-  border-left-style: solid !important;
-  border-radius: 10px !important;
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-radius: 14px !important;
   box-shadow: none !important;
   padding: 14px 16px !important;
 }
