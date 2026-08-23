@@ -92,6 +92,19 @@
 }
 :root:has(body[data-dyslexia="true"]) { --cr-font-size-base: 18px; }
 
+/* Letter / word spacing (inherits from body) */
+[data-letter-spacing="wide"] { letter-spacing: 0.04em; }
+[data-letter-spacing="wider"] { letter-spacing: 0.08em; }
+[data-word-spacing="wide"] { word-spacing: 0.12em; }
+[data-word-spacing="wider"] { word-spacing: 0.24em; }
+
+/* Always-underlined links */
+[data-underline-links="true"] a { text-decoration: underline !important; }
+
+/* Background tint — High Contrast (below) still overrides to white */
+[data-bg-tint="paper"] { --cr-bg: #FFFFFF; }
+[data-bg-tint="warm"] { --cr-bg: #FAF1E0; }
+
 /* High Contrast */
 [data-high-contrast="true"] {
   --cr-text: #000000;
@@ -4463,7 +4476,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 </script>
 <script src="/js/cr-gtag.js"></script>
 </head>
-<body data-text-size="medium" data-line-spacing="normal" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false">
+<body data-text-size="medium" data-line-spacing="normal" data-letter-spacing="normal" data-word-spacing="normal" data-underline-links="false" data-bg-tint="eggshell" data-dyslexia="false" data-high-contrast="false" data-dark-mode="false" data-reduced-motion="false" data-enhanced-focus="false" data-reading-guide="false">
 
 <!-- Skip Link -->
 <a href="#cr-content" class="cr-skip-link">Skip to course content</a>
@@ -4576,22 +4589,8 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
         <span>Export as PDF</span>
       </button>
     </div>
-    <!-- Translation -->
-    <div class="cr-translate-bar" id="crTranslateBar" style="display:none">
-      <span>🌐</span>
-      <select id="crLangSelect" data-action="noop">
-        <option value="">Original</option>
-        <option value="es">Español</option>
-        <option value="fr">Français</option>
-        <option value="zh">中文</option>
-        <option value="ko">한국어</option>
-        <option value="ar">العربية</option>
-        <option value="pt">Português</option>
-        <option value="vi">Tiếng Việt</option>
-        <option value="ht">Kreyòl Ayisyen</option>
-        <option value="so">Soomaali</option>
-      </select>
-    </div>
+    <!-- Translation moved to the Aa accessibility drawer — the sidebar it lived
+         in was retired as persistent chrome, which had stranded it. -->
     <!-- Copyright -->
     <div style="padding:10px 20px;font-size:9px;color:var(--cr-text-muted);text-align:center;border-top:1px solid var(--cr-border);line-height:1.4">
       <span style="font-weight:700">CReady™ Viewer</span><br>
@@ -4704,6 +4703,54 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
       <button data-action="setSetting" data-setting="line-spacing" data-value="normal" data-val="normal" class="active">Normal</button>
       <button data-action="setSetting" data-setting="line-spacing" data-value="relaxed" data-val="relaxed">Relaxed</button>
     </div>
+  </div>
+
+  <div class="cr-a11y-option">
+    <label>Letter Spacing</label>
+    <div class="cr-segment" data-setting="letter-spacing">
+      <button data-action="setSetting" data-setting="letter-spacing" data-value="normal" data-val="normal" class="active">Normal</button>
+      <button data-action="setSetting" data-setting="letter-spacing" data-value="wide" data-val="wide">Wide</button>
+      <button data-action="setSetting" data-setting="letter-spacing" data-value="wider" data-val="wider">Wider</button>
+    </div>
+  </div>
+
+  <div class="cr-a11y-option">
+    <label>Word Spacing</label>
+    <div class="cr-segment" data-setting="word-spacing">
+      <button data-action="setSetting" data-setting="word-spacing" data-value="normal" data-val="normal" class="active">Normal</button>
+      <button data-action="setSetting" data-setting="word-spacing" data-value="wide" data-val="wide">Wide</button>
+      <button data-action="setSetting" data-setting="word-spacing" data-value="wider" data-val="wider">Wider</button>
+    </div>
+  </div>
+
+  <div class="cr-a11y-option">
+    <label>Background</label>
+    <div class="cr-segment" data-setting="bg-tint">
+      <button data-action="setSetting" data-setting="bg-tint" data-value="eggshell" data-val="eggshell" class="active">Eggshell</button>
+      <button data-action="setSetting" data-setting="bg-tint" data-value="paper" data-val="paper">Paper</button>
+      <button data-action="setSetting" data-setting="bg-tint" data-value="warm" data-val="warm">Warm</button>
+    </div>
+  </div>
+
+  <div class="cr-a11y-option">
+    <label>Underline Links</label>
+    <div class="cr-toggle" id="toggle-underline-links" data-action="toggleBool" data-setting="underline-links" role="switch" aria-checked="false" tabindex="0"></div>
+  </div>
+
+  <div class="cr-a11y-option">
+    <label>Translate</label>
+    <select id="crLangSelect" style="min-height:44px;border:1.5px solid var(--cr-border);border-radius:8px;padding:0 10px;background:#fff;font-size:13px;max-width:170px">
+      <option value="">Original (English)</option>
+      <option value="es">Español</option>
+      <option value="fr">Français</option>
+      <option value="zh">中文</option>
+      <option value="ko">한국어</option>
+      <option value="ar">العربية</option>
+      <option value="pt">Português</option>
+      <option value="vi">Tiếng Việt</option>
+      <option value="ht">Kreyòl Ayisyen</option>
+      <option value="so">Soomaali</option>
+    </select>
   </div>
   
   <div class="cr-a11y-option">
@@ -5320,7 +5367,7 @@ function loadCourse(data) {
   buildGlossary();
   buildReferences();
   updateSupplementalBadge();
-  initTranslation();
+  // Translation select is wired by delegation (see FEATURE: TRANSLATION).
   buildSectionNav();
   renderCurrentSection();
 
@@ -10880,24 +10927,19 @@ function exportPDF() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FEATURE: TRANSLATION (Google Translate Widget)
+// FEATURE: TRANSLATION — lives in the Aa drawer. The old initTranslation()
+// was never called and its sidebar host was retired, so the control had
+// vanished; wired here via delegation instead.
 // ═══════════════════════════════════════════════════════════════
-function initTranslation() {
-  document.getElementById('crTranslateBar').style.display = 'flex';
-  
-  const select = document.getElementById('crLangSelect');
-  select.addEventListener('change', function() {
-    const lang = this.value;
-    if (!lang) {
-      // Reset to original
-      location.reload();
-      return;
-    }
-    // Use Google Translate
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.id === 'crLangSelect') {
+    const lang = e.target.value;
+    if (!lang) return;
     const gtUrl = `https://translate.google.com/translate?sl=en&tl=${lang}&u=${encodeURIComponent(location.href)}`;
     window.open(gtUrl, '_blank');
-  });
-}
+    e.target.value = ''; // the reader stays on the original; the translation opens beside it
+  }
+});
 
 // ═══════════════════════════════════════════════════════════════
 // FEATURE: ACCORDION DEEP-DIVES (parser integration)
