@@ -837,13 +837,27 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-fc-deck { position: relative; margin-top: 16px; }
 .cr-fc-layer-b { position: absolute; top: 8px; left: 14px; right: 14px; height: 100%; border-radius: 12px; background: #DCE5EC; }
 .cr-fc-layer-a { position: absolute; top: 4px; left: 7px; right: 7px; height: 100%; border-radius: 12px; background: #E9EFF4; border: 1px solid #DCE5EC; }
+/* KE'S TWEAK: the face card genuinely FLIPS (rotateY) — the drift doc's
+   "no 3D flip" is overruled; the stacked-deck look and self-rating stay. */
+.cr-fc-flipwrap { perspective: 1000px; position: relative; }
 .cr-flashcard {
-  position: relative; background: #fff; border: 1px solid #B8CBD9; border-radius: 12px;
-  padding: 30px 28px; min-height: 150px;
-  display: flex; flex-direction: column; justify-content: center; text-align: center;
+  position: relative; min-height: 170px;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
   cursor: pointer;
-  animation: cr-mount-soft 0.18s ease; /* each flip/advance re-mounts the face */
+  animation: cr-mount-soft 0.18s ease; /* advancing to the next card */
 }
+.cr-flashcard.flipped { transform: rotateY(180deg); }
+.cr-fc-face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background: #fff; border: 1px solid #B8CBD9; border-radius: 12px;
+  padding: 30px 28px; overflow-y: auto;
+  display: flex; flex-direction: column; justify-content: center; text-align: center;
+}
+.cr-fc-face.back { transform: rotateY(180deg); }
+@media (prefers-reduced-motion: reduce) { .cr-flashcard { transition: none; } }
+[data-reduced-motion="true"] .cr-flashcard { transition: none; }
 @keyframes cr-mount-soft {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
@@ -6185,6 +6199,12 @@ function toggleA11yPanel() {
 
 function setSetting(setting, value) {
   document.body.setAttribute('data-' + setting, value);
+  // Belt-and-braces: apply the base size directly too, so text sizing works
+  // even in browsers without :root:has() support.
+  if (setting === 'text-size') {
+    const px = { small: '15px', medium: '17px', large: '21px' }[value];
+    if (px) document.documentElement.style.fontSize = px;
+  }
   // Update segment buttons
   const seg = document.querySelector(`.cr-segment[data-setting="${setting}"]`);
   if (seg) {
@@ -6196,6 +6216,9 @@ function toggleBool(setting) {
   const current = document.body.getAttribute('data-' + setting) === 'true';
   const newVal = !current;
   document.body.setAttribute('data-' + setting, newVal);
+  if (setting === 'dyslexia') {
+    document.documentElement.style.fontSize = newVal ? '18px' : ({ small: '15px', medium: '17px', large: '21px' }[document.body.getAttribute('data-text-size')] || '17px');
+  }
   const toggle = document.getElementById('toggle-' + setting);
   if (toggle) {
     toggle.classList.toggle('on', newVal);
@@ -6464,11 +6487,23 @@ function renderCurrentSection() {
     const prevBtn = document.getElementById('crPrevBtn');
     const nextBtn = document.getElementById('crNextBtn');
     try {
-      prevBtn.style.visibility = currentBlockPage > 0 ? 'visible' : 'hidden';
+      // KE'S RULING: the back option is ALWAYS present on the left — the
+      // inventory's "hidden on a section's first page" stranded learners whose
+      // sections open right at page 1. Page >= 2 goes back a page; page 1 goes
+      // back to the previous section (or the course overview).
+      prevBtn.style.visibility = 'visible';
       if (currentBlockPage > 0) {
         let pt = crBlockPageTitle(section, currentBlockPage - 1) || ('Page ' + currentBlockPage);
         if (pt.length > 30) pt = pt.slice(0, 30) + '…';
         prevBtn.textContent = '← ' + pt;
+      } else if (currentSectionIndex > 0) {
+        const prevSec = course.sections[currentSectionIndex - 1];
+        let pl = prevSec?._isOverview ? 'Overview' : ((prevSec?.title || 'Previous section').replace(/^Section\s+(?:\d+|One|Two|Three|Four|Five|Six|Seven|Eight|Nine|Ten|Eleven|Twelve)\s*[:—–-]\s*/i, '').trim() || 'Previous section');
+        if (pl.length > 30) pl = pl.slice(0, 30) + '…';
+        prevBtn.textContent = '← ' + pl;
+      } else {
+        prevBtn.textContent = '← ' + ((course.title || 'Overview').length > 30 ? (course.title || 'Overview').slice(0, 30) + '…' : (course.title || 'Overview'));
+        prevBtn.style.visibility = course.sections[0]?._isOverview || currentSectionIndex > 0 ? 'visible' : 'hidden';
       }
       if (currentBlockPage < totalBlockPages - 1) {
         let nt = crBlockPageTitle(section, currentBlockPage + 1) || ('Page ' + (currentBlockPage + 2));
@@ -7367,14 +7402,19 @@ function fcRender(id) {
     <div class="cr-fc-deck">
       <div class="cr-fc-layer-b"></div>
       <div class="cr-fc-layer-a"></div>
-      <div class="cr-flashcard" data-action="fcFlip" data-target="${id}" role="button" tabindex="0" aria-label="${front ? 'Reveal the definition' : 'Back to the term'}">
-        ${front
-          ? `<div class="cr-fc-eyebrow">TERM</div>
-             <div class="cr-fc-term">${esc(card.front)}</div>
-             <div class="cr-fc-hint">Tap to reveal the definition</div>`
-          : `<div class="cr-fc-eyebrow">DEFINITION</div>
-             <div class="cr-fc-def">${esc(card.back)}</div>
-             <div class="cr-fc-quote">“${esc(card.front)}”</div>`}
+      <div class="cr-fc-flipwrap">
+        <div class="cr-flashcard${front ? '' : ' flipped'}" data-action="fcFlip" data-target="${id}" role="button" tabindex="0" aria-label="${front ? 'Reveal the definition' : 'Back to the term'}">
+          <div class="cr-fc-face front">
+            <div class="cr-fc-eyebrow">TERM</div>
+            <div class="cr-fc-term">${esc(card.front)}</div>
+            <div class="cr-fc-hint">Tap to reveal the definition</div>
+          </div>
+          <div class="cr-fc-face back">
+            <div class="cr-fc-eyebrow">DEFINITION</div>
+            <div class="cr-fc-def">${esc(card.back)}</div>
+            <div class="cr-fc-quote">“${esc(card.front)}”</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="cr-fc-footer">
@@ -7392,7 +7432,13 @@ function fcRender(id) {
 function fcFlip(id) {
   const el = document.getElementById(id);
   el._fc.side = el._fc.side === 'front' ? 'back' : 'front';
-  fcRender(id);
+  const card = el.querySelector('.cr-flashcard');
+  if (card) {
+    card.classList.toggle('flipped', el._fc.side === 'back');
+    card.setAttribute('aria-label', el._fc.side === 'back' ? 'Back to the term' : 'Reveal the definition');
+  } else {
+    fcRender(id);
+  }
   srAnnounce(el._fc.side === 'back' ? 'Definition shown.' : 'Term shown.');
 }
 
@@ -7779,10 +7825,10 @@ function csmReset(id) {
 function renderSequencing(wrap, block, blockIndex) {
   const id = `seq-${currentSectionIndex}-${blockIndex}`;
   const steps = [...(block.steps || [])].sort(() => Math.random() - 0.5);
-  // Drag is available whenever a fine pointer exists (mouse/trackpad) — a
-  // touch-capable laptop keeps its rich drag. Arrows are ALWAYS present as
-  // the additive touch/keyboard path, never a replacement (mockup 15d + 19b).
-  const canDrag = window.matchMedia('(any-pointer: fine)').matches;
+  // Draggable is ALWAYS set — pointer-detection heuristics misfire on some
+  // machines and silently killed drag for Ke. Browsers without HTML5 drag just
+  // ignore the attribute; arrows remain the additive touch/keyboard path.
+  const canDrag = true;
 
   let html = `<div id="${id}">
     ${block.instructions ? `<p style="font-size:0.9em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.instructions)}</p>` : ''}
