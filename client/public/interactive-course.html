@@ -6462,25 +6462,30 @@ function renderCurrentSection() {
     // hidden on a section's first page — crossing a boundary backwards happens
     // from the boundary's Review link, not here.
     const prevBtn = document.getElementById('crPrevBtn');
-    prevBtn.style.visibility = currentBlockPage > 0 ? 'visible' : 'hidden';
-    if (currentBlockPage > 0) {
-      let pt = crBlockPageTitle(section, currentBlockPage - 1) || ('Page ' + currentBlockPage);
-      if (pt.length > 30) pt = pt.slice(0, 30) + '…';
-      prevBtn.textContent = '← ' + pt;
-    }
-
     const nextBtn = document.getElementById('crNextBtn');
-    if (currentBlockPage < totalBlockPages - 1) {
-      let nt = crBlockPageTitle(section, currentBlockPage + 1) || ('Page ' + (currentBlockPage + 2));
-      if (nt.length > 30) nt = nt.slice(0, 30) + '…';
-      nextBtn.textContent = 'Continue: ' + nt + ' →';
-    } else if (isLast) {
-      nextBtn.textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
-    } else {
-      const nextSec = navSections[navIdx];
-      let nextTitle = nextSec?.title || '';
-      if (nextTitle.length > 30) nextTitle = nextTitle.slice(0, 30) + '…';
-      nextBtn.textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Continue →';
+    try {
+      prevBtn.style.visibility = currentBlockPage > 0 ? 'visible' : 'hidden';
+      if (currentBlockPage > 0) {
+        let pt = crBlockPageTitle(section, currentBlockPage - 1) || ('Page ' + currentBlockPage);
+        if (pt.length > 30) pt = pt.slice(0, 30) + '…';
+        prevBtn.textContent = '← ' + pt;
+      }
+      if (currentBlockPage < totalBlockPages - 1) {
+        let nt = crBlockPageTitle(section, currentBlockPage + 1) || ('Page ' + (currentBlockPage + 2));
+        if (nt.length > 30) nt = nt.slice(0, 30) + '…';
+        nextBtn.textContent = 'Continue: ' + nt + ' →';
+      } else if (isLast) {
+        nextBtn.textContent = hasAssessment ? 'Take Assessment →' : '✓ Complete';
+      } else {
+        const nextSec = navSections[navIdx];
+        let nextTitle = nextSec?.title || '';
+        if (nextTitle.length > 30) nextTitle = nextTitle.slice(0, 30) + '…';
+        nextBtn.textContent = nextTitle ? `Continue: ${nextTitle} →` : 'Continue →';
+      }
+    } catch (labelErr) {
+      // A title-derivation failure must never take the progress row down with it.
+      console.warn('[CReady] footer label derivation failed:', labelErr);
+      nextBtn.textContent = 'Continue →';
     }
 
     // Page dots: one per block-page WITHIN THE CURRENT SECTION (matches the mockup's
@@ -6496,10 +6501,12 @@ function renderCurrentSection() {
     if (hasAssessment) dotsHtml += '<span style="width:8px;height:8px;border-radius:50%;background:#F3E0B5;display:inline-block"></span>';
     dotsEl.innerHTML = dotsHtml;
 
-    // Reading-time + autosave label
+    // Reading-time + autosave label — for THIS PAGE, as in the mockup's
+    // "~3 min read · autosaved" (it previously showed the whole section's time).
     const readTimeEl = document.getElementById('crReadTimeLabel');
     if (readTimeEl) {
-      const mins = Math.max(1, Math.ceil((section.contentBlocks || []).length * 3));
+      const pageBlockCount = Math.min(BLOCK_PAGE_SIZE, (section.contentBlocks || []).length - currentBlockPage * BLOCK_PAGE_SIZE);
+      const mins = Math.max(1, Math.ceil(pageBlockCount * 3));
       readTimeEl.textContent = '~' + mins + ' min read · autosaved';
     }
 
