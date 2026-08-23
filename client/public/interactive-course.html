@@ -1405,6 +1405,37 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
   font: 400 12px/1.55 'Lato', system-ui, sans-serif; color: #D3E0E8;
 }
+/* Per-section diagnosis (mockup 17a) — bars, THE PATTERN, and the review-section
+   list. Only rendered when the exam's questions carry a sectionIndex; legacy
+   exams without it fall back to the plain gap/note copy above. */
+.cr-fail-diagnosis { margin-top: 22px; text-align: left; max-width: 52ch; margin-left: auto; margin-right: auto; }
+.cr-fail-diagnosis-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #C3D5E0; margin-bottom: 10px; }
+.cr-fail-section-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cr-fail-section-name { flex: 0 0 auto; width: 30%; font: 700 12px/1.3 'Lato', system-ui, sans-serif; color: #E5EDF2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cr-fail-section-track { flex: 1 1 auto; height: 8px; border-radius: 5px; background: rgba(255,255,255,0.14); overflow: hidden; }
+.cr-fail-section-fill { height: 100%; border-radius: 5px; }
+.cr-fail-section-fill.strong { background: var(--cr-hunter); }
+.cr-fail-section-fill.mid { background: var(--cr-gold); }
+.cr-fail-section-fill.weak { background: #D0768A; }
+.cr-fail-section-frac { flex: 0 0 auto; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #D3E0E8; min-width: 34px; text-align: right; }
+.cr-fail-pattern {
+  margin-top: 14px; padding: 13px 16px; border-radius: 10px;
+  background: rgba(107,29,52,0.28); border: 1px solid rgba(107,29,52,0.5);
+  font: 400 12.5px/1.6 'Lato', system-ui, sans-serif; color: #F3D3DA;
+}
+.cr-fail-pattern strong { color: #FBEDF0; }
+.cr-fail-review { margin-top: 16px; }
+.cr-fail-review-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 14px; border-radius: 9px; margin-bottom: 7px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+}
+.cr-fail-review-text { font: 400 12.5px/1.4 'Lato', system-ui, sans-serif; color: #E5EDF2; }
+.cr-fail-review-text strong { color: #FFFFFF; }
+.cr-fail-review-btn {
+  flex: none; font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #284157;
+  background: #D4A855; border: none; border-radius: 7px; padding: 8px 12px; cursor: pointer; min-height: 34px;
+}
 /* 17b — attempts exhausted: burgundy banner; red is confined to the
    renewal-impact panel. */
 .cr-assessment-result.exhausted { border: none; background: var(--cr-burgundy); color: #FFFFFF; }
@@ -5039,7 +5070,7 @@ let sectionSubState = 'reading'; // 'opener' | 'reading' — shown before a sect
 // Section checkpoint (mockup 11e): advancing past a content section routes
 // through its checkpoint screen once, not straight into the next section.
 let crCheckpointShown = false;
-let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0 };
+let assessmentState = { answers: {}, submitted: false, score: null, attempts: 0, perQuestionCorrect: null };
 // Exam view state (mockup 11f): which question is on screen + flag-for-review.
 // Presentation only — scoring still reads assessmentState.answers as before.
 let examView = { current: 0, flagged: [] };
@@ -8685,7 +8716,8 @@ function assessmentSelect(qIdx, optIdx) {
 async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
-  
+  const perQuestionCorrect = [];
+
   qs.forEach((q, i) => {
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
@@ -8693,9 +8725,12 @@ async function submitAssessment() {
       const idx = q.options.findIndex(o => typeof o === 'object' && o.isCorrect);
       if (idx >= 0) correctIdx = idx;
     }
-    if (assessmentState.answers[i] === correctIdx) correct++;
+    const isCorrect = assessmentState.answers[i] === correctIdx;
+    perQuestionCorrect.push(isCorrect);
+    if (isCorrect) correct++;
   });
-  
+  assessmentState.perQuestionCorrect = perQuestionCorrect;
+
   const score = Math.round((correct / qs.length) * 100);
   assessmentState.submitted = true;
   assessmentState.score = score;
@@ -8753,6 +8788,70 @@ async function submitAssessment() {
 
 }
 
+// Per-section miss breakdown (mockup 17a) — only renders when the exam's
+// questions carry a sectionIndex; legacy exams without it are unaffected.
+function crFailDiagnosis() {
+  const qs = course.assessment?.questions || [];
+  const pc = assessmentState.perQuestionCorrect;
+  if (!Array.isArray(pc) || !pc.length) return null;
+  const bySection = new Map();
+  qs.forEach((q, i) => {
+    if (typeof q.sectionIndex !== 'number') return;
+    const rec = bySection.get(q.sectionIndex) || { correct: 0, total: 0 };
+    rec.total++;
+    if (pc[i]) rec.correct++;
+    bySection.set(q.sectionIndex, rec);
+  });
+  if (!bySection.size) return null;
+
+  const rows = [...bySection.entries()].map(([si, rec]) => {
+    const section = course.sections && course.sections[si];
+    const pct = rec.total ? rec.correct / rec.total : 0;
+    const tier = pct >= 0.8 ? 'strong' : pct >= 0.5 ? 'mid' : 'weak';
+    return {
+      sectionIndex: si,
+      title: (section && section.title) || ('Section ' + (si + 1)),
+      correct: rec.correct, total: rec.total, pct, tier,
+      misses: rec.total - rec.correct
+    };
+  }).sort((a, b) => a.sectionIndex - b.sectionIndex);
+
+  const weakest = [...rows].sort((a, b) => a.pct - b.pct || b.misses - a.misses)[0];
+  const reviewList = [...rows].filter(r => r.misses > 0)
+    .sort((a, b) => b.misses - a.misses || a.pct - b.pct).slice(0, 3);
+
+  return { rows, weakest, reviewList };
+}
+
+function crFailDiagnosisHtml() {
+  const diag = crFailDiagnosis();
+  if (!diag) return '';
+  let h = '<div class="cr-fail-diagnosis"><div class="cr-fail-diagnosis-label">WHERE THE MISSES ARE</div>';
+  diag.rows.forEach(r => {
+    h += '<div class="cr-fail-section-row">'
+      + '<div class="cr-fail-section-name">' + esc(r.title) + '</div>'
+      + '<div class="cr-fail-section-track"><div class="cr-fail-section-fill ' + r.tier + '" style="width:' + Math.round(r.pct * 100) + '%"></div></div>'
+      + '<div class="cr-fail-section-frac">' + r.correct + '/' + r.total + '</div>'
+      + '</div>';
+  });
+  if (diag.weakest && diag.weakest.misses > 0) {
+    h += '<div class="cr-fail-pattern">Most of what you missed clusters in <strong>' + esc(diag.weakest.title)
+      + '</strong> (' + diag.weakest.correct + ' of ' + diag.weakest.total + ' correct). Revisiting that section is the fastest way to close the gap.</div>';
+  }
+  if (diag.reviewList.length) {
+    h += '<div class="cr-fail-review">';
+    diag.reviewList.forEach(r => {
+      h += '<div class="cr-fail-review-item">'
+        + '<div class="cr-fail-review-text"><strong>' + esc(r.title) + '</strong> — ' + r.misses + ' missed here</div>'
+        + '<button type="button" class="cr-fail-review-btn" data-action="goToSection" data-idx="' + r.sectionIndex + '">Re-read section</button>'
+        + '</div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
 function renderAssessmentResult() {
   const area = document.getElementById('crContentArea');
   const score = assessmentState.score;
@@ -8780,9 +8879,10 @@ function renderAssessmentResult() {
     if (attemptsLeft > 0) {
       html += `<p class="cr-fail-gap">${failGap !== null ? (failGap === 1 ? 'One more correct answer' : failGap + ' more correct answers') + ' would have passed — ' + passing + '% is the bar.' : 'You need ' + passing + '% to pass.'}</p>`;
       html += `<p class="cr-fail-note">Missing on an attempt is an ordinary part of CE. A focused review before attempt ${assessmentState.attempts + 1} is usually what closes the gap.</p>`;
+      html += crFailDiagnosisHtml();
+      html += `<div class="cr-fail-integrity">Per NBCC integrity requirements, individual answers are not shown. Your next attempt uses a new question order.</div>`;
       html += `<button type="button" class="cr-fail-retry" data-action="retryAssessment">Retake exam →</button>`;
       html += `<button type="button" class="cr-fail-quiet" data-action="prevSection">Review the course first</button>`;
-      html += `<div class="cr-fail-integrity">Per NBCC integrity requirements, individual answers are not shown. Your next attempt uses a new question order.</div>`;
       html += `<p class="cr-fail-note">Progress and CE hours are unaffected until you pass.</p>`;
       html += '<div style="margin-top:24px;font-size:10px;color:#B6CBD8;text-align:center">Powered by CReady™ Viewer · © 2026 GAITP LLC · NBCC ACEP #7760</div>';
       html += '</div>';
@@ -8943,6 +9043,7 @@ function retryAssessment() {
   assessmentState.submitted = false;
   assessmentState.answers = {};
   assessmentState.score = null;
+  assessmentState.perQuestionCorrect = null;
   examView = { current: 0, flagged: [] };
   saveState('examDraft', null);
   renderAssessment();
