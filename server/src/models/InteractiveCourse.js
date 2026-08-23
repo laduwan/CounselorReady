@@ -349,7 +349,11 @@ const CourseSchema = new mongoose.Schema({
         text: String,
         isCorrect: Boolean
       }],
-      explanation: String
+      explanation: String,
+      // Optional: index into course.sections[] this question was drawn from.
+      // Powers the per-section miss breakdown on a failed attempt (mockup 17a).
+      // Omitted on older/legacy exams — the diagnosis UI degrades gracefully.
+      sectionIndex: Number
     }],
     attemptsAllowed: { type: Number, default: 3 },
     shuffleQuestions: { type: Boolean, default: true },
