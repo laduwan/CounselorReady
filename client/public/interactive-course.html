@@ -594,7 +594,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   font-family: 'Lato', system-ui, sans-serif;
   font-size: 10.5px; font-weight: 700;
   letter-spacing: .19em; text-transform: uppercase;
-  color: #A67936;
+  color: #7A5C24;
   margin: 0 0 11px;
 }
 .cr-page-eyebrow + h1, .cr-page-eyebrow + h2, .cr-page-eyebrow + h3 { margin-top: 0 !important; }
@@ -864,11 +864,11 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 @media (prefers-reduced-motion: reduce) { .cr-flashcard, .cr-tl-detail { animation: none !important; } }
 [data-reduced-motion="true"] .cr-flashcard, [data-reduced-motion="true"] .cr-tl-detail { animation: none !important; }
-.cr-fc-eyebrow { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #5C82A0; }
+.cr-fc-eyebrow { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #41627C; }
 .cr-fc-term { font: 600 27px/1.25 var(--cr-font-display); color: #1F344A; margin-top: 10px; }
 .cr-fc-def { font: 400 15.5px/1.65 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 10px; }
-.cr-fc-hint { font: 400 12px/1.4 'Lato', system-ui, sans-serif; color: #5C82A0; margin-top: 14px; }
-.cr-fc-quote { font: 400 12px/1.4 'Lato', system-ui, sans-serif; font-style: italic; color: #5C82A0; margin-top: 14px; }
+.cr-fc-hint { font: 400 12px/1.4 'Lato', system-ui, sans-serif; color: #41627C; margin-top: 14px; }
+.cr-fc-quote { font: 400 12px/1.4 'Lato', system-ui, sans-serif; font-style: italic; color: #41627C; margin-top: 14px; }
 .cr-fc-footer { display: flex; align-items: center; gap: 9px; margin-top: 16px; flex-wrap: wrap; }
 .cr-fc-backbtn { flex: none; padding: 10px 16px; border-radius: 9px; border: 1px solid #DCE5EC; background: #fff; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #1F344A; cursor: pointer; min-height: 44px; }
 .cr-fc-flipbtn { flex: none; padding: 10px 20px; border-radius: 9px; border: none; background: #284157; color: #fff; font: 700 12.5px/1 'Lato', system-ui, sans-serif; cursor: pointer; min-height: 44px; }
@@ -948,7 +948,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-cs-legend-row { display: flex; align-items: center; gap: 11px; font: 400 13px/1.4 'Lato', system-ui, sans-serif; color: #4A3E22; }
 .cr-cs-key { flex: none; padding: 3px 8px; border-radius: 5px; background: #fff; border: 1px solid #EACD86; font: 700 10.5px/1.4 ui-monospace, Menlo, monospace; color: #7A5C24; }
 .cr-cs-tray { margin-top: 16px; padding: 14px; border: 1px dashed #B8CBD9; border-radius: 11px; background: #F7FAFC; }
-.cr-cs-tray-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #5C82A0; }
+.cr-cs-tray-label { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #41627C; }
 .cr-cardsort-pool { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; min-height: 20px; }
 .cr-cardsort-card {
   display: inline-flex; align-items: center; gap: 8px;
@@ -1010,7 +1010,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   box-shadow: 0 3px 12px rgba(40,65,87,.13); padding: 22px 18px; min-height: 104px;
   display: flex; align-items: center; justify-content: center; text-align: center;
 }
-.cr-csm-cardnum { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #5C82A0; }
+.cr-csm-cardnum { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #41627C; }
 .cr-csm-cardtext { font: 400 16.5px/1.5 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 9px; }
 .cr-csm-hint { font: 400 11px/1 'Lato', system-ui, sans-serif; color: #41627C; margin-top: 13px; text-align: center; }
 .cr-csm-bins { display: flex; flex-direction: column; gap: 9px; margin-top: 10px; }
@@ -1036,6 +1036,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   border-radius: 10px;
   cursor: grab;
   transition: all var(--cr-transition);
+  box-shadow: 0 2px 6px rgba(40,65,87,.1);
 }
 .cr-sequencing-item:active { cursor: grabbing; box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
 .cr-sequencing-item .cr-seq-num {
@@ -1084,7 +1085,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-tl-node.visited .cr-tl-dot { background: #284157; border: 3px solid #F0F4F7; }
 .cr-tl-node.active { top: 5px; gap: 7px; }
 .cr-tl-node.active .cr-tl-dot { width: 22px; height: 22px; background: #284157; border: 4px solid #fff; box-shadow: 0 3px 12px rgba(31,52,74,.32); }
-.cr-tl-label { font: 400 10.5px/1.2 'Lato', system-ui, sans-serif; color: #5C82A0; white-space: nowrap; }
+.cr-tl-label { font: 400 10.5px/1.2 'Lato', system-ui, sans-serif; color: #41627C; white-space: nowrap; }
 .cr-tl-node.visited .cr-tl-label { color: #41627C; }
 .cr-tl-node.active .cr-tl-label { font: 700 11px/1.2 'Lato', system-ui, sans-serif; color: #1F344A; }
 .cr-tl-detail { background: #fff; border: 1px solid #B8CBD9; border-radius: 11px; padding: 20px 22px; animation: cr-mount-soft 0.18s ease; }
@@ -1144,7 +1145,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   box-shadow: 0 12px 30px rgba(31,52,74,.24);
   padding: 14px 16px; z-index: 5;
 }
-.cr-hs-popover-eyebrow { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #5C82A0; }
+.cr-hs-popover-eyebrow { font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .14em; color: #41627C; }
 .cr-hs-popover-title { font: 700 13px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; margin-top: 5px; }
 .cr-hs-popover-body { font: 400 12.5px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 5px; }
 .cr-hs-popover-close { position: absolute; top: 6px; right: 6px; background: none; border: none; cursor: pointer; font-size: 13px; color: #6B7280; min-width: 32px; min-height: 32px; }
@@ -1154,7 +1155,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-hs-srbadge { flex: none; padding: 3px 8px; border-radius: 5px; background: #F0F4F7; font: 700 9px/1 'Lato', system-ui, sans-serif; letter-spacing: .08em; color: #284157; }
 .cr-hs-textlist-rows { display: flex; flex-direction: column; gap: 9px; margin-top: 12px; }
 .cr-hs-textrow { display: flex; gap: 10px; font: 400 13px/1.6 'Lato', system-ui, sans-serif; color: #2C2C2C; }
-.cr-hs-textrow-num { flex: none; font: 700 11px/1.6 ui-monospace, Menlo, monospace; color: #5C82A0; }
+.cr-hs-textrow-num { flex: none; font: 700 11px/1.6 ui-monospace, Menlo, monospace; color: #41627C; }
 .cr-hs-textrow-label { font-weight: 700; color: #1F344A; }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1707,7 +1708,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-hl-item-text { font: 400 13.5px/1.55 'Lato', system-ui, sans-serif; color: #2C2C2C; }
 .cr-hl-item-note { font: 400 12px/1.5 'Lato', system-ui, sans-serif; color: #7A5C24; margin-top: 6px; }
 .cr-hl-item-meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-.cr-hl-item-sec { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; color: #9CA3AF; }
+.cr-hl-item-sec { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .1em; color: #7A5C24; }
 .cr-hl-item-remove {
   margin-left: auto; background: none; border: none; cursor: pointer; padding: 0;
   font: 700 11.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; min-height: 32px;
@@ -1721,7 +1722,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 }
 .cr-notes-area:focus { border-color: var(--cr-navy); outline: none; }
 .cr-notes-label { font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .13em; color: #6B7280; margin: 0 0 8px; }
-.cr-notes-saved { font: 400 11.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
+.cr-notes-saved { font: 400 11.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 8px; }
 .cr-notes-other { font: 400 12.5px/1.5 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 18px; }
 
 /* References drawer — mirrors glossary, burgundy accent */
@@ -1816,7 +1817,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-supp-header { padding: 22px 24px 16px; border-bottom: 1px solid #F0EDE8; flex-shrink: 0; }
 .cr-supp-eyebrow {
   font: 700 10px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; text-transform: uppercase;
-  color: #A67936; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  color: #7A5C24; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 .cr-supp-close { flex-shrink: 0; background: none; border: none; cursor: pointer; font-size: 20px; color: #9CA3AF; line-height: 1; padding: 2px 6px; border-radius: 6px; }
 .cr-supp-close:hover { background: #F0EDE8; }
@@ -1837,7 +1838,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-supp-row-main { flex: 1; min-width: 0; }
 .cr-supp-row-title { font: 400 13.5px/1.3 'Lato', system-ui, sans-serif; color: #2C2C2C; }
 .cr-supp-row-meta { font: 700 11px/1.4 'Lato', system-ui, sans-serif; margin-top: 2px; }
-.cr-supp-row.unsaved .cr-supp-row-meta { color: #A67936; }
+.cr-supp-row.unsaved .cr-supp-row-meta { color: #7A5C24; }
 .cr-supp-row.saved .cr-supp-row-meta { color: #6B7280; }
 .cr-supp-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #D4A855; margin-right: 6px; }
 .cr-supp-check {
@@ -1985,7 +1986,7 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 .cr-exam-autosave { font: 400 11.5px/1.5 'Lato', system-ui, sans-serif; color: #284157; background: #F0F4F7; border: 1px solid #DCE5EC; border-radius: 9px; padding: 10px 12px; margin-bottom: 12px; }
 .cr-exam-submit { width: 100%; font: 700 13.5px/1 'Lato', system-ui, sans-serif; padding: 12px; border: none; border-radius: 9px; background: var(--cr-burgundy); color: #fff; cursor: pointer; }
 .cr-exam-submit:disabled { background: #E5E0D8; color: #B0A89E; cursor: default; }
-.cr-exam-submit-note { text-align: center; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; margin-top: 8px; }
+.cr-exam-submit-note { text-align: center; font: 400 11px/1 'Lato', system-ui, sans-serif; color: #6B7280; margin-top: 8px; }
 @media (max-width: 900px) { .cr-exam-body { flex-direction: column; } .cr-exam-rail { width: 100%; position: static; } }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2014,7 +2015,7 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 /* Honey band — unsaved Supplemental items and skipped knowledge checks resurface
    here. Actions hold #7A5C24 (5.95:1 on the pastel fill). */
 .cr-cp-band { display: flex; align-items: center; gap: 12px; padding: 13px 18px; border-radius: 12px; background: #FDFAF2; border: 1px solid #EDE0C4; flex-wrap: wrap; }
-.cr-cp-band-badge { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #EBD9A8; display: flex; align-items: center; justify-content: center; font: 700 11px/1 'Lato', system-ui, sans-serif; color: #7A5C24; }
+.cr-cp-band-badge { flex: none; width: 20px; height: 20px; border-radius: 50%; background: #EBD9A8; display: flex; align-items: center; justify-content: center; font: 700 11px/1 'Lato', system-ui, sans-serif; color: #4A1524; }
 .cr-cp-band-text { flex: 1; min-width: 200px; font: 400 13px/1.5 'Lato', system-ui, sans-serif; color: #7A5C24; }
 .cr-cp-band-btn { flex: none; background: none; border: none; cursor: pointer; padding: 0; font: 700 12px/1 'Lato', system-ui, sans-serif; color: #7A5C24; min-height: 44px; }
 .cr-cp-band-btn:hover { text-decoration: underline; }
@@ -2030,8 +2031,8 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 .cr-cp-next-btn { font: 700 14.5px/1 'Lato', system-ui, sans-serif; padding: 14px 28px; border-radius: 11px; border: none; background: #D4A855; color: #4A1524; cursor: pointer; min-height: 44px; flex-shrink: 0; }
 .cr-cp-quiet { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; min-height: 44px; }
 .cr-cp-quiet:hover { text-decoration: underline; }
-.cr-cp-util { display: flex; gap: 22px; align-items: center; justify-content: center; font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #9CA3AF; }
-.cr-cp-util button { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #6B7280; min-height: 44px; }
+.cr-cp-util { display: flex; gap: 22px; align-items: center; justify-content: center; font: 400 12.5px/1 'Lato', system-ui, sans-serif; color: #4b5563; }
+.cr-cp-util button { background: none; border: none; cursor: pointer; padding: 0; font: 700 12.5px/1 'Lato', system-ui, sans-serif; color: #4b5563; min-height: 44px; }
 .cr-cp-util button:hover { color: #4A7C59; }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -2941,6 +2942,11 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
    engagement = navy (#284157/#F0F4F7/#DCE5EC/#1F344A), assessment = burgundy
    (#6B1D34/#FDF5F6/#F5D0D6), content = hunter (#4A7C59/#F3F6F4/#C8D7CC).
    Violet and cyan are builder-side taxonomy hues and never appear in learner UI. */
+/* §9b (bundle 5): a block sits on its CATEGORY TINT with a category-hued
+   shadow and 40px of air — white cards are the FIGURE treatment, and paragraph
+   spacing makes a block read as a paragraph. (The mockups' 856px-vs-640px width
+   break is not applied: Ke's ruling makes the whole column proportional to the
+   page, so prose and blocks share it.) */
 .cr-block[data-block-type="scenarioTree"],
 .cr-block[data-block-type="cardSort"],
 .cr-block[data-block-type="flashcardDeck"],
@@ -2949,23 +2955,29 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
 .cr-block[data-block-type="timeline"],
 .cr-block[data-block-type="fillInBlank"],
 .cr-block[data-block-type="reflection"] {
-  background: #FFFFFF;
+  background: #F0F4F7;
   border: 1px solid #DCE5EC; /* engagement · navy */
-  border-radius: 14px;
-  padding: 20px 24px;
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin: 40px 0;
+  box-shadow: 0 2px 14px rgba(40,65,87,.09);
 }
 .cr-block[data-block-type="matching"],
 .cr-block[data-block-type="multiSelect"] {
-  background: #FFFFFF;
+  background: #FDF5F6;
   border: 1px solid #F5D0D6; /* assessment · burgundy */
-  border-radius: 14px;
-  padding: 20px 24px;
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin: 40px 0;
+  box-shadow: 0 2px 14px rgba(107,29,52,.09);
 }
 .cr-block[data-block-type="accordion"] {
-  background: #FFFFFF;
+  background: #F3F6F4;
   border: 1px solid #C8D7CC; /* content · hunter */
-  border-radius: 14px;
-  padding: 20px 24px;
+  border-radius: 16px;
+  padding: 24px 26px;
+  margin: 40px 0;
+  box-shadow: 0 2px 14px rgba(74,124,89,.09);
 }
 
 /* Category chip labels (multiSelect renders its own chip inside the block) */
@@ -4688,7 +4700,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
     <div class="cr-nav-buttons" id="crNavButtons">
       <button class="cr-btn cr-btn-secondary" id="crPrevBtn" data-action="footerPrev">← Previous</button>
       <span id="crPageIndicator" style="font-size:0.85em;color:var(--cr-text-muted)"></span>
-      <span id="crReadTimeLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#9CA3AF;white-space:nowrap"></span>
+      <span id="crReadTimeLabel" style="font-family:'Lato',system-ui,sans-serif;font-size:11px;color:#6B7280;white-space:nowrap"></span>
       <button class="cr-btn cr-btn-primary" id="crNextBtn" data-action="footerNext">Next →</button>
     </div>
   </main>
@@ -7543,10 +7555,10 @@ function stChoose(id, nextNode, btn) {
 // Bin tint rotation (mockups 15c/16d/19a): bins alternate brand tints so each
 // bin reads as its own place. Hunter, navy, burgundy, honey.
 const CR_CS_BIN_TINTS = [
-  { bg: '#F3F6F4', border: '#C8D7CC', text: '#2B4133', count: '#7BA88C' },
-  { bg: '#DCE5EC', border: '#B8CBD9', text: '#1F344A', count: '#5C82A0' },
+  { bg: '#F3F6F4', border: '#C8D7CC', text: '#2B4133', count: '#3D6A4A' },
+  { bg: '#DCE5EC', border: '#B8CBD9', text: '#1F344A', count: '#41627C' },
   { bg: '#FDF5F6', border: '#F5D0D6', text: '#6B1D34', count: '#A83350' },
-  { bg: '#FDF9F0', border: '#F3E0B5', text: '#7A5C24', count: '#A67936' }
+  { bg: '#FDF9F0', border: '#F3E0B5', text: '#7A5C24', count: '#7A5C24' }
 ];
 const CR_CS_HANDLE_SVG = '<svg class="cr-cs-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"></path></svg>';
 
@@ -8878,7 +8890,7 @@ function renderEvaluation() {
 
   let html = `<div style="max-width:600px;margin:0 auto;padding:24px;background:#FFFFFF;border:1px solid #F3E0B5;border-radius:14px">
     <div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #F0EDE8">
-      <div style="font-family:'Lato',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#A67936;margin-bottom:6px">One step left</div>
+      <div style="font-family:'Lato',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#7A5C24;margin-bottom:6px">One step left</div>
       <h3 style="margin:0;font-family:var(--cr-font-display);font-weight:600;font-size:1.4rem;color:var(--cr-navy)">The course evaluation</h3>
       <p style="margin:6px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">NBCC requires it before the certificate issues · ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</p>
     </div>
@@ -10730,8 +10742,8 @@ function buildTitlePageOverview() {
   // Exit row (stands in for the mockup top bar's "My Courses" breadcrumb — the
   // overview's way OUT of the course pre-Begin) + ACEP badge on the right.
   h += '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">';
-  h += '<a href="/dashboard.html" style="font-family:' + uiFont + ';font-weight:700;font-size:13px;color:#4A7C59;text-decoration:none">← My Courses</a>';
-  h += '<span style="font-family:' + uiFont + ';font-weight:700;font-size:10.5px;letter-spacing:0.08em;color:#4A7C59">NBCC ACEP #' + esc(approvalNo) + '</span>';
+  h += '<a href="/dashboard.html" style="font-family:' + uiFont + ';font-weight:700;font-size:13px;color:#3D6A4A;text-decoration:none">← My Courses</a>';
+  h += '<span style="font-family:' + uiFont + ';font-weight:700;font-size:10.5px;letter-spacing:0.08em;color:#3D6A4A">NBCC ACEP #' + esc(approvalNo) + '</span>';
   h += '</div>';
 
   // Hero card (mockup 11a): white card, eyebrow → H1 → italic subtitle → pill row
