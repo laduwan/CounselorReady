@@ -1916,6 +1916,9 @@ body.cr-kcm-open #crOpenerArea { opacity: .4; filter: blur(1.5px); transition: o
 .cr-kcm-option.multi .cr-kcm-option-letter { border-radius: 6px; }
 /* The check's presence in the reading flow: an expandable pill. Pending is the
    tap target that pops the modal; done is a quiet receipt. */
+.cr-kcm-sentinel { height: 1px; margin: 0; }
+/* Pill styles retained only for safety — pills are no longer rendered (checks
+   auto-pop from their sentinel per Ke's tweak). */
 .cr-kcm-marker { margin: 20px 0; padding: 13px 22px; border-radius: 999px; font: 700 13px/1.4 'Lato', system-ui, sans-serif; display: flex; align-items: center; justify-content: space-between; gap: 14px; }
 .cr-kcm-marker.pending { cursor: pointer; background: #FDF5F6; border: 1.5px solid #F5D0D6; color: #6B1D34; transition: background var(--cr-transition), border-color var(--cr-transition); }
 .cr-kcm-marker.pending:hover { background: #FAE8EB; border-color: #DD768A; }
@@ -6576,6 +6579,7 @@ function renderCurrentSection() {
   saveProgress();
   renderObjectivesTracker();
   restoreHighlights();
+  crKcAutoPopInit();
   const _toolbar = document.getElementById('crToolbar');
   if (_toolbar) _toolbar.style.display = (section && !section._isOverview && currentView === 'section') ? 'flex' : 'none';
   // "This section" pool depends on currentSectionIndex — refresh if the drawer is open,
@@ -10414,6 +10418,11 @@ function crKcQuestion(si, bi, qi) {
 }
 
 function renderKnowledgeCheckMarker(block, blockIndex) {
+  // KE'S TWEAK: no embedded pill. An unanswered check leaves an invisible
+  // sentinel at its place in the argument; when the learner scrolls to it the
+  // modal pops up on its own (once per session — closing it without answering
+  // resurfaces at the section boundary's "Answer now", never as a nag loop).
+  // Answered checks leave no inline trace; the boundary carries the tally.
   const wrap = document.createElement('div');
   wrap.className = 'cr-block';
   wrap.dataset.blockType = block.type;
@@ -10423,15 +10432,42 @@ function renderKnowledgeCheckMarker(block, blockIndex) {
   let html = '';
   questions.forEach((q, qi) => {
     const rec = state[crKcKey(currentSectionIndex, blockIndex, qi)];
-    if (rec && !rec.skipped) {
-      html += '<div class="cr-kcm-marker done">✓ Knowledge check answered</div>';
-    } else {
-      html += '<div class="cr-kcm-marker pending" role="button" tabindex="0" data-action="openKnowledgeCheck" data-sec="' + currentSectionIndex + '" data-block="' + blockIndex + '" data-q="' + qi + '">'
-        + '<span>Knowledge check · not scored</span><span class="cr-kcm-marker-cta">Answer →</span></div>';
+    if (!rec || rec.skipped) {
+      html += '<div class="cr-kcm-sentinel" aria-hidden="true" data-sec="' + currentSectionIndex + '" data-block="' + blockIndex + '" data-q="' + qi + '"></div>';
     }
   });
   wrap.innerHTML = html;
+  if (!html) wrap.style.display = 'none';
   return wrap;
+}
+
+// ── Auto-popup wiring: one modal at a time, each check prompts at most once
+// per session, and never while another modal is already open. ──
+const crKcPrompted = new Set();
+let crKcAutoObserver = null;
+
+function crKcAutoPopInit() {
+  if (crKcAutoObserver) { crKcAutoObserver.disconnect(); crKcAutoObserver = null; }
+  const sentinels = [...document.querySelectorAll('.cr-kcm-sentinel')];
+  if (!sentinels.length || typeof IntersectionObserver === 'undefined') return;
+  crKcAutoObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) crKcMaybeAutoOpen(en.target); });
+  }, { rootMargin: '0px 0px -20% 0px' });
+  sentinels.forEach(s => crKcAutoObserver.observe(s));
+}
+
+function crKcMaybeAutoOpen(sent) {
+  if (document.body.classList.contains('cr-kcm-open')) return;
+  const si = parseInt(sent.dataset.sec, 10), bi = parseInt(sent.dataset.block, 10), qi = parseInt(sent.dataset.q, 10);
+  const key = crKcKey(si, bi, qi);
+  if (crKcPrompted.has(key)) return;
+  const rec = crKcState()[key];
+  if (rec && !rec.skipped) return;
+  crKcPrompted.add(key);
+  setTimeout(() => {
+    if (document.body.classList.contains('cr-kcm-open')) { crKcPrompted.delete(key); return; }
+    openKnowledgeCheck(si, bi, qi);
+  }, 350);
 }
 
 function openKnowledgeCheck(sectionIndex, blockIndex, questionIndex) {
