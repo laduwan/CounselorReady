@@ -826,7 +826,14 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   padding: 30px 28px; min-height: 150px;
   display: flex; flex-direction: column; justify-content: center; text-align: center;
   cursor: pointer;
+  animation: cr-mount-soft 0.18s ease; /* each flip/advance re-mounts the face */
 }
+@keyframes cr-mount-soft {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) { .cr-flashcard, .cr-tl-detail { animation: none !important; } }
+[data-reduced-motion="true"] .cr-flashcard, [data-reduced-motion="true"] .cr-tl-detail { animation: none !important; }
 .cr-fc-eyebrow { font: 700 9.5px/1 'Lato', system-ui, sans-serif; letter-spacing: .15em; color: #5C82A0; }
 .cr-fc-term { font: 600 27px/1.25 var(--cr-font-display); color: #1F344A; margin-top: 10px; }
 .cr-fc-def { font: 400 15.5px/1.65 'Lato', system-ui, sans-serif; color: #2C2C2C; margin-top: 10px; }
@@ -1007,6 +1014,15 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   color: #fff; display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 700; flex-shrink: 0;
 }
+.cr-seq-handle { flex: none; width: 13px; height: 13px; color: #9CA3AF; cursor: grab; }
+/* Dragged row lifts (mockup 15d): 2px navy border, deep shadow, 6px shift;
+   a 3px insertion bar shows where it will land. */
+.cr-sequencing-item.lifted {
+  border: 2px solid var(--cr-navy) !important;
+  box-shadow: 0 8px 20px rgba(31,52,74,.2);
+  transform: translateX(6px);
+}
+.cr-seq-insertbar { height: 3px; border-radius: 2px; background: #DCE5EC; margin: 4px 0; }
 /* Up/down are distinct actions: each gets its own ≥44px box, side by side —
    stacking two 44px buttons would make the row ~92px tall (DRIFT_FIXES §4). */
 .cr-sequencing-item .cr-seq-arrows {
@@ -1041,7 +1057,7 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
 .cr-tl-label { font: 400 10.5px/1.2 'Lato', system-ui, sans-serif; color: #5C82A0; white-space: nowrap; }
 .cr-tl-node.visited .cr-tl-label { color: #41627C; }
 .cr-tl-node.active .cr-tl-label { font: 700 11px/1.2 'Lato', system-ui, sans-serif; color: #1F344A; }
-.cr-tl-detail { background: #fff; border: 1px solid #B8CBD9; border-radius: 11px; padding: 20px 22px; }
+.cr-tl-detail { background: #fff; border: 1px solid #B8CBD9; border-radius: 11px; padding: 20px 22px; animation: cr-mount-soft 0.18s ease; }
 .cr-tl-detail-head { display: flex; align-items: baseline; gap: 11px; flex-wrap: wrap; }
 .cr-tl-year { font: 600 25px/1.1 var(--cr-font-display); color: #1F344A; }
 .cr-tl-headline { font: 700 12.5px/1.4 'Lato', system-ui, sans-serif; color: #1F344A; }
@@ -7153,7 +7169,7 @@ function renderMatching(wrap, block, blockIndex) {
   
   let html = `<div class="cr-matching" id="${id}">
     ${block.matchingInstructions ? `<p class="cr-matching-instructions">${esc(block.matchingInstructions)}</p>` : ''}
-    ${('ontouchstart' in window) ? '<p style="font-size:0.8em;color:var(--cr-gold);margin-bottom:8px">📱 Tap a term, then tap its matching definition</p>' : ''}
+    ${(window.matchMedia('(pointer: coarse)').matches && !window.matchMedia('(any-pointer: fine)').matches) ? '<p style="font-size:0.8em;color:var(--cr-gold);margin-bottom:8px">📱 Tap a term, then tap its matching definition</p>' : ''}
     <div class="cr-matching-grid">
       <div>
         <p style="font-weight:700;font-size:0.8em;text-transform:uppercase;color:var(--cr-burgundy);margin-bottom:8px">Terms</p>
@@ -7672,13 +7688,16 @@ function csmReset(id) {
 function renderSequencing(wrap, block, blockIndex) {
   const id = `seq-${currentSectionIndex}-${blockIndex}`;
   const steps = [...(block.steps || [])].sort(() => Math.random() - 0.5);
-  const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
+  // Drag is available whenever a fine pointer exists (mouse/trackpad) — a
+  // touch-capable laptop keeps its rich drag. Arrows are ALWAYS present as
+  // the additive touch/keyboard path, never a replacement (mockup 15d + 19b).
+  const canDrag = window.matchMedia('(any-pointer: fine)').matches;
+
   let html = `<div id="${id}">
     ${block.instructions ? `<p style="font-size:0.9em;color:var(--cr-text-muted);margin-bottom:12px">${esc(block.instructions)}</p>` : ''}
-    ${isMobile ? '<p style="font-size:0.8em;color:var(--cr-gold);margin-bottom:8px">📱 Use the arrows to reorder items</p>' : ''}
     <div class="cr-sequencing-list" id="${id}-list">
-      ${steps.map((s, i) => `<div class="cr-sequencing-item" data-order="${s.order}" ${isMobile ? '' : 'draggable="true"'}>
+      ${steps.map((s, i) => `<div class="cr-sequencing-item" data-order="${s.order}" ${canDrag ? 'draggable="true"' : ''}>
+        ${canDrag ? '<svg class="cr-seq-handle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg>' : ''}
         <span class="cr-seq-num">${i + 1}</span>
         <span style="flex:1">${esc(s.text)}</span>
         <div class="cr-seq-arrows">
@@ -9925,34 +9944,10 @@ function addKeyboardDragSupport() {
     });
   });
   
-  // Card sort: keyboard tap-to-place
-  document.querySelectorAll('.cr-cardsort-card').forEach(card => {
-    if (card._kbReady) return;
-    card._kbReady = true;
-    card.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        // Cycle through categories
-        const cats = [...this.closest('.cr-cardsort').querySelectorAll('.cr-cardsort-category-cards')];
-        const currentCat = this.closest('.cr-cardsort-category-cards');
-        const pool = this.closest('.cr-cardsort-pool');
-        
-        if (pool) {
-          // Move to first category
-          cats[0]?.appendChild(this);
-        } else if (currentCat) {
-          const idx = cats.indexOf(currentCat);
-          if (idx < cats.length - 1) {
-            cats[idx + 1].appendChild(this);
-          } else {
-            // Move back to pool
-            this.closest('.cr-cardsort').querySelector('.cr-cardsort-pool')?.appendChild(this);
-          }
-        }
-        this.focus();
-      }
-    });
-  });
+  // Card sort keyboard support lives in the delegated 16d handler (Space =
+  // hold, number keys = send to bin, Esc = put back). The old per-card
+  // "cycle through categories" handler double-fired against it and moved
+  // held cards on its own — removed.
 }
 
 // Close a11y panel on outside click
@@ -11086,6 +11081,56 @@ if (dropzone) {
 }
 
 // Handle drag-and-drop for card sort (desktop)
+// ── Sequencing drag-reorder (mockup 15d): lifted row + 3px insertion bar.
+// The rows carried draggable="true" with no drop logic at all — dragging
+// silently snapped back. Arrows and arrow-keys remain as additive paths.
+let seqDragItem = null;
+let seqInsertBar = null;
+function seqClearInsertBar() { if (seqInsertBar) { seqInsertBar.remove(); seqInsertBar = null; } }
+document.addEventListener('dragstart', function(e) {
+  const row = e.target.closest && e.target.closest('.cr-sequencing-item');
+  if (row) {
+    seqDragItem = row;
+    row.classList.add('lifted');
+    e.dataTransfer.effectAllowed = 'move';
+  }
+});
+document.addEventListener('dragend', function(e) {
+  if (seqDragItem) { seqDragItem.classList.remove('lifted'); seqDragItem = null; }
+  seqClearInsertBar();
+});
+document.addEventListener('dragover', function(e) {
+  if (!seqDragItem) return;
+  const list = e.target.closest && e.target.closest('.cr-sequencing-list');
+  if (!list || !list.contains(seqDragItem)) return;
+  e.preventDefault();
+  const rows = [...list.querySelectorAll('.cr-sequencing-item')].filter(r => r !== seqDragItem);
+  let before = null;
+  for (const r of rows) {
+    const rect = r.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) { before = r; break; }
+  }
+  if (!seqInsertBar) {
+    seqInsertBar = document.createElement('div');
+    seqInsertBar.className = 'cr-seq-insertbar';
+  }
+  if (before) list.insertBefore(seqInsertBar, before);
+  else list.appendChild(seqInsertBar);
+});
+document.addEventListener('drop', function(e) {
+  if (!seqDragItem) return;
+  const list = e.target.closest && e.target.closest('.cr-sequencing-list');
+  if (!list || !list.contains(seqDragItem)) { seqClearInsertBar(); return; }
+  e.preventDefault();
+  if (seqInsertBar && seqInsertBar.parentNode === list) list.insertBefore(seqDragItem, seqInsertBar);
+  seqClearInsertBar();
+  seqDragItem.classList.remove('lifted');
+  list.querySelectorAll('.cr-seq-num').forEach((n, i) => n.textContent = i + 1);
+  const items = [...list.querySelectorAll('.cr-sequencing-item')];
+  srAnnounce('Moved to position ' + (items.indexOf(seqDragItem) + 1) + ' of ' + items.length + '.');
+  seqDragItem = null;
+});
+
 document.addEventListener('dragstart', function(e) {
   if (e.target.classList && e.target.classList.contains('cr-cardsort-card')) {
     csDragData = e.target;
@@ -11127,6 +11172,10 @@ document.addEventListener('drop', function(e) {
 // keys send the held card to a bin, Esc returns it to the tray. Held state and
 // the focused-bin DROP TARGET are honey; every move is announced. ──
 document.addEventListener('keydown', function(e) {
+  // Never intercept typing: a held card must not swallow digits/Esc/Space
+  // aimed at a textarea, input, or contentEditable (e.g. the Notes drawer).
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.tagName === 'SELECT' || t.isContentEditable)) return;
   const card = e.target.closest && e.target.closest('.cr-cardsort-card');
   const bin = e.target.closest && e.target.closest('.cr-cardsort-category');
   const container = (card || bin) ? e.target.closest('.cr-cardsort') : null;
