@@ -162,11 +162,13 @@
        columns) was wrapping its pieces independently instead of together —
        the link columns kept hugging the right edge on their own line while
        the brand block stayed left, producing a staggered, "crooked" layout.
-       Force a clean single-column stack instead. */
+       Stack them in one column instead, keeping each piece at its natural
+       size and centered — matching how the badge card and link pair were
+       never stretched edge-to-edge even before this fix. */
     @media (max-width: 860px) {
-      .cr-ftr-top { flex-direction: column !important; align-items: stretch !important; }
-      .cr-ftr-badge { min-width: 0 !important; width: 100% !important; box-sizing: border-box !important; }
-      .cr-ftr-links { justify-content: flex-start !important; width: 100% !important; box-sizing: border-box !important; }
+      .cr-ftr-top { flex-direction: column !important; align-items: center !important; text-align: center !important; }
+      .cr-ftr-badge { min-width: 0 !important; width: auto !important; max-width: 100% !important; box-sizing: border-box !important; }
+      .cr-ftr-links { justify-content: center !important; width: auto !important; max-width: 100% !important; box-sizing: border-box !important; }
     }
   </style>
   <footer style="background:#3B0F1D;margin-top:2rem">
