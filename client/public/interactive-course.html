@@ -6169,6 +6169,7 @@ function toggleReadAloud() {
   if (ttsActive) {
     readCurrentSection();
   } else {
+    ttsQueue = []; // ends the chunk chain; cancel alone would chain onward via onend
     speechSynthesis.cancel();
   }
 }
@@ -6208,26 +6209,56 @@ function getTTSSpeed() {
   return el ? parseFloat(el.value) : 0.9;
 }
 
+// Read-aloud plays in SENTENCE CHUNKS, not one giant utterance:
+// (a) Chrome silently kills long utterances mid-read; (b) the Web Speech API
+// can't change volume/rate on a live utterance, so per-chunk playback is what
+// makes the Volume and Speed sliders take effect within a sentence.
+let ttsQueue = [];
+let ttsChunkIdx = 0;
+
+function crTtsChunks(text) {
+  const sentences = text.match(/[^.!?\n]+[.!?]?\s*/g) || [text];
+  const chunks = [];
+  let cur = '';
+  sentences.forEach(s => {
+    if (cur && (cur + s).length > 220) { chunks.push(cur.trim()); cur = ''; }
+    cur += s;
+  });
+  if (cur.trim()) chunks.push(cur.trim());
+  return chunks;
+}
+
+function crTtsSpeakNext() {
+  if (!ttsActive || ttsChunkIdx >= ttsQueue.length) {
+    const pauseBtn = document.querySelector('[data-action="ttsPause"]');
+    if (pauseBtn) pauseBtn.textContent = '▶';
+    return;
+  }
+  const u = new SpeechSynthesisUtterance(ttsQueue[ttsChunkIdx++]);
+  u.volume = getTTSVolume(); // read fresh each chunk — sliders apply live
+  u.rate = getTTSSpeed();
+  u.pitch = 1;
+  u.lang = document.documentElement.lang || 'en-US';
+  u.onend = crTtsSpeakNext;
+  u.onerror = crTtsSpeakNext;
+  ttsUtterance = u;
+  speechSynthesis.speak(u);
+}
+
 function readCurrentSection() {
   if (!ttsActive || !('speechSynthesis' in window)) return;
+  ttsQueue = []; // stops any running chunk chain before we cancel
   speechSynthesis.cancel();
-  
+
   const area = document.getElementById('crContentArea');
   const text = area.innerText.replace(/[✓★⚙️♿🕐📖💭🎯📁⚠️🖍️📝📄💾🌐🖨️🔄⏸⏹]/g, '').trim();
   if (!text) return;
-  
-  ttsUtterance = new SpeechSynthesisUtterance(text);
-  ttsUtterance.volume = getTTSVolume();
-  ttsUtterance.rate = getTTSSpeed();
-  ttsUtterance.pitch = 1;
-  
-  ttsUtterance.onend = function() {
-    const pauseBtn = document.querySelector('[data-action="ttsPause"]');
-    if (pauseBtn) pauseBtn.textContent = '▶';
-  };
-  
-  speechSynthesis.speak(ttsUtterance);
-  
+
+  ttsQueue = crTtsChunks(text);
+  ttsChunkIdx = 0;
+  // Chrome ignores speak() issued immediately after cancel() — small delay.
+  setTimeout(crTtsSpeakNext, 60);
+
   const pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '⏸';
 }
@@ -6246,6 +6277,7 @@ function ttsPause() {
 
 function ttsStop() {
   if (!('speechSynthesis' in window)) return;
+  ttsQueue = []; // ends the chunk chain; cancel alone would chain onward via onend
   speechSynthesis.cancel();
   const pauseBtn = document.querySelector('[data-action="ttsPause"]');
   if (pauseBtn) pauseBtn.textContent = '▶';
@@ -11054,15 +11086,13 @@ document.addEventListener('input', function(e) {
   if (e.target.id === 'crTTSVolume') {
     const val = parseFloat(e.target.value);
     document.getElementById('crTTSVolumeLabel').textContent = Math.round(val * 100) + '%';
-    // Apply to current utterance if playing
-    if (ttsUtterance && speechSynthesis.speaking) {
-      // Web Speech API doesn't support live volume change — need to restart
-      // Just update label; next utterance will use new volume
-    }
+    // Playback is chunked; the next sentence chunk reads this slider, so the
+    // change is audible within a sentence — no restart needed.
   }
   if (e.target.id === 'crTTSSpeed') {
     const val = parseFloat(e.target.value);
     document.getElementById('crTTSSpeedLabel').textContent = val.toFixed(1) + '×';
+    // Same as volume: applies at the next sentence chunk.
   }
   // Reflection textarea word count
   if (e.target.closest('.cr-reflection')) {
