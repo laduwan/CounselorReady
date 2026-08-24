@@ -96,7 +96,10 @@
 
       <!-- Header Row -->
       <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Manage Courses</h1>
+        <div>
+          <h1 class="font-display text-3xl font-semibold text-burgundy-900">Course Library</h1>
+          <p class="text-sm text-forest-500 mt-1" id="libSubtitle">Loading&hellip;</p>
+        </div>
         <div class="flex gap-2 flex-wrap">
           <a href="/admin-users.html" class="bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
             <i class="fas fa-users text-xs"></i> Users
@@ -128,127 +131,96 @@
 
       <!-- Content (shown after load) -->
       <div id="mainContent" class="hidden">
+        <div class="flex gap-5 items-start">
 
-        <!-- Content Health Dashboard -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-          <!-- Overview bar -->
-          <div class="col-span-2 md:col-span-4 bg-white rounded-xl border border-burgundy-100 shadow-sm p-5">
-            <div class="flex items-center justify-between">
-              <div>
-                <h3 class="font-display text-xl font-semibold text-burgundy-900">Content Health Overview</h3>
-                <p class="text-sm text-forest-500 mt-0.5" id="healthSubtitle">Loading...</p>
+          <!-- Facet rail -->
+          <aside class="w-56 flex-none bg-white rounded-xl border border-burgundy-100 shadow-sm p-4 space-y-5 sticky top-[84px]">
+            <div>
+              <div class="text-xs font-bold tracking-wider text-navy-700 uppercase mb-2">Status</div>
+              <div id="facetStatus" class="space-y-0.5 text-sm"></div>
+            </div>
+            <div>
+              <div class="text-xs font-bold tracking-wider text-navy-700 uppercase mb-2">Health</div>
+              <div id="facetHealth" class="space-y-0.5 text-sm"></div>
+            </div>
+            <div>
+              <div class="text-xs font-bold tracking-wider text-navy-700 uppercase mb-2">CE Hours</div>
+              <div id="facetCe" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </aside>
+
+          <!-- Table column -->
+          <div class="flex-1 min-w-0">
+
+            <!-- Search / sort -->
+            <div class="flex flex-wrap items-center gap-3 mb-3 bg-white p-3 rounded-xl border border-burgundy-100 shadow-sm">
+              <div class="relative flex-1 min-w-48">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-forest-400 text-sm"></i>
+                <input type="text" id="searchInput" placeholder="Search title, code, or slug&hellip;" oninput="renderCourses()"
+                  class="w-full pl-9 pr-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400 placeholder:text-forest-300">
               </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-burgundy-800" id="healthPct">—</div>
-                <div class="text-xs text-forest-500">NBCC compliant</div>
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Sort</label>
+                <select id="sortSelect" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
+                  <option value="updated">Updated</option>
+                  <option value="title">Title A&ndash;Z</option>
+                  <option value="ce">CE hours</option>
+                </select>
+              </div>
+              <span class="text-xs font-medium text-forest-400" id="courseCount"></span>
+              <div class="h-8 w-px bg-forest-200"></div>
+              <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
+                <i class="fas fa-check w-3.5"></i> Publish filtered
+              </button>
+              <button onclick="bulkPublish(false)" class="inline-flex items-center gap-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
+                <i class="fas fa-eye-slash w-3.5"></i> Unpublish filtered
+              </button>
+            </div>
+
+            <!-- Bulk selection bar -->
+            <div id="bulkBar" class="hidden items-center gap-3 mb-3 px-4 py-2.5 rounded-xl bg-burgundy-50 border border-burgundy-200 text-sm">
+              <span class="font-semibold text-burgundy-800"><span id="bulkCount">0</span> selected</span>
+              <div class="h-4 w-px bg-burgundy-200"></div>
+              <button onclick="bulkPublishSelected(true)" class="font-semibold text-burgundy-700 hover:text-burgundy-900">Publish</button>
+              <button onclick="bulkPublishSelected(false)" class="font-semibold text-burgundy-700 hover:text-burgundy-900">Unpublish</button>
+              <button onclick="exportSelectedJSON()" class="font-semibold text-burgundy-700 hover:text-burgundy-900">Export .json</button>
+              <button onclick="clearSelection()" class="ml-auto text-forest-500 hover:text-forest-700">Clear</button>
+            </div>
+
+            <!-- Table -->
+            <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr class="bg-stone-50 border-b border-burgundy-100 text-left">
+                      <th class="w-11 py-2.5 pl-4"><input type="checkbox" id="selectAllBox" onchange="toggleSelectAll(this)" class="rounded border-forest-300"></th>
+                      <th class="py-2.5 px-3 text-xs font-bold tracking-wider text-forest-500 uppercase">Course</th>
+                      <th class="py-2.5 px-3 text-xs font-bold tracking-wider text-forest-500 uppercase">CE</th>
+                      <th class="py-2.5 px-3 text-xs font-bold tracking-wider text-forest-500 uppercase">Words</th>
+                      <th class="py-2.5 px-3 text-xs font-bold tracking-wider text-forest-500 uppercase">Status</th>
+                      <th class="py-2.5 px-3 text-xs font-bold tracking-wider text-forest-500 uppercase">Updated</th>
+                      <th class="py-2.5 pr-4 text-xs font-bold tracking-wider text-forest-500 uppercase text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="courseRows"></tbody>
+                </table>
               </div>
             </div>
-            <div class="mt-3 flex gap-0.5 h-2.5 rounded-full overflow-hidden bg-gray-100" id="healthBar">
-              <div class="bg-green-500 transition-all" id="hbComplete" style="width:0%"></div>
-              <div class="bg-yellow-400 transition-all" id="hbNearly" style="width:0%"></div>
-              <div class="bg-blue-400 transition-all" id="hbProgress" style="width:0%"></div>
-              <div class="bg-gray-300 transition-all" id="hbNeeds" style="width:0%"></div>
+
+            <!-- Pagination -->
+            <div class="flex items-center justify-between mt-4 py-3" id="paginationRow">
+              <span class="text-sm text-forest-500" id="pageInfo"></span>
+              <div class="flex gap-2">
+                <button onclick="changePage(-1)" id="prevBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">&larr; Prev</button>
+                <button onclick="changePage(1)" id="nextBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">Next &rarr;</button>
+              </div>
             </div>
-            <div class="flex gap-4 mt-2 text-xs text-forest-500" id="healthLegend"></div>
           </div>
 
-          <!-- Stat cards -->
-          <div onclick="setFilter('complete')" class="bg-white rounded-xl border border-green-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-green-300 transition-all group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wider text-green-600">Complete</span>
-              <span class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center group-hover:scale-110 transition-transform">✅</span>
-            </div>
-            <div class="text-3xl font-bold text-green-700" id="countComplete">0</div>
-            <div class="text-xs text-green-600 mt-1">≥90% of 6,000 words/CE hr</div>
-          </div>
-          <div onclick="setFilter('nearly')" class="bg-white rounded-xl border border-yellow-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-yellow-300 transition-all group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wider text-yellow-600">Nearly There</span>
-              <span class="w-8 h-8 rounded-lg bg-yellow-50 flex items-center justify-center group-hover:scale-110 transition-transform">🟡</span>
-            </div>
-            <div class="text-3xl font-bold text-yellow-700" id="countNearly">0</div>
-            <div class="text-xs text-yellow-600 mt-1">50–89% of word target</div>
-          </div>
-          <div onclick="setFilter('progress')" class="bg-white rounded-xl border border-blue-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-blue-300 transition-all group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wider text-blue-600">In Progress</span>
-              <span class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center group-hover:scale-110 transition-transform">🔨</span>
-            </div>
-            <div class="text-3xl font-bold text-blue-700" id="countProgress">0</div>
-            <div class="text-xs text-blue-600 mt-1">&lt;50% of word target</div>
-          </div>
-          <div onclick="setFilter('needs')" class="bg-white rounded-xl border border-amber-200 shadow-sm p-4 cursor-pointer hover:shadow-md hover:border-amber-300 transition-all group">
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-xs font-semibold uppercase tracking-wider text-amber-600">Needs Attention</span>
-              <span class="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center group-hover:scale-110 transition-transform">⚠️</span>
-            </div>
-            <div class="text-3xl font-bold text-amber-700" id="countNeeds">0</div>
-            <div class="text-xs text-amber-600 mt-1">No CE hrs or empty content</div>
-          </div>
+          <!-- Detail rail -->
+          <aside class="w-80 flex-none bg-white rounded-xl border border-burgundy-100 shadow-sm p-5 sticky top-[84px]" id="detailRail"></aside>
+
         </div>
-
-        <!-- Search & Filters -->
-        <div class="flex flex-wrap items-center gap-3 mb-5 bg-white p-3 rounded-xl border border-burgundy-100 shadow-sm">
-          <div class="relative flex-1 min-w-48">
-            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-forest-400 text-sm"></i>
-            <input type="text" id="searchInput" placeholder="Search courses..." oninput="renderCourses()"
-              class="w-full pl-9 pr-3 py-2 border border-forest-200 rounded-lg text-sm focus:ring-2 focus:ring-burgundy-300 focus:border-burgundy-400 placeholder:text-forest-300">
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Status</label>
-            <select id="statusFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
-              <option value="">All</option>
-              <option value="published">Published</option>
-              <option value="draft">Draft</option>
-            </select>
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">Content</label>
-            <select id="contentFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
-              <option value="">All</option>
-              <option value="complete">✅ Complete</option>
-              <option value="nearly">🟡 Nearly There</option>
-              <option value="progress">🔨 In Progress</option>
-              <option value="needs">⚠️ Needs Attention</option>
-            </select>
-          </div>
-          <div class="flex items-center gap-2">
-            <label class="text-xs font-medium text-forest-500 uppercase tracking-wide">CE Hrs</label>
-            <select id="ceHoursFilter" onchange="renderCourses()" class="px-2.5 py-2 border border-forest-200 rounded-lg text-sm bg-white">
-              <option value="">All</option>
-              <option value="1">1 hr</option>
-              <option value="2">2 hrs</option>
-              <option value="3">3 hrs</option>
-              <option value="4">4 hrs</option>
-              <option value="5">5 hrs</option>
-              <option value="6">6 hrs</option>
-              <option value="6+">6+ hrs</option>
-            </select>
-          </div>
-          <div class="h-8 w-px bg-forest-200"></div>
-          <div class="flex items-center gap-1.5">
-            <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
-              <i class="fas fa-check w-3.5"></i> Publish All
-            </button>
-            <button onclick="bulkPublish(false)" class="inline-flex items-center gap-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
-              <i class="fas fa-eye-slash w-3.5"></i> Unpublish All
-            </button>
-          </div>
-          <div class="text-xs font-medium text-forest-400 ml-auto" id="courseCount"></div>
-        </div>
-
-        <!-- Course Cards -->
-        <div id="courseCards" class="space-y-3"></div>
-
-        <!-- Pagination -->
-        <div class="flex items-center justify-between mt-4 py-3" id="paginationRow">
-          <span class="text-sm text-forest-500" id="pageInfo"></span>
-          <div class="flex gap-2">
-            <button onclick="changePage(-1)" id="prevBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">← Prev</button>
-            <button onclick="changePage(1)" id="nextBtn" disabled class="px-3 py-1.5 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50 disabled:opacity-40 disabled:cursor-not-allowed">Next →</button>
-          </div>
-        </div>
-
       </div><!-- /mainContent -->
     </main>
   </div>
@@ -334,6 +306,10 @@
     const PER_PAGE = 20;
     let pendingFn = null;
 
+    const selectedIds = new Set();
+    let activeDetailId = null;
+    let filterState = { status: '', health: '', ce: '' };
+
     // ── Health classification ──
     function wordCount(course) {
       // Use pre-computed wordCount field from DB
@@ -384,6 +360,7 @@
           if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
         }
       } catch(e) {}
+      wireActions();
       loadCourses();
     }
 
@@ -434,7 +411,8 @@
         // Annotate with health
         allCourses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
 
-        updateHealthDashboard();
+        updateSubtitle();
+        updateFacets();
         renderCourses();
         hide('loadingState');
         show('mainContent');
@@ -445,65 +423,92 @@
       }
     }
 
-    function updateHealthDashboard() {
+    function updateSubtitle() {
       const total = allCourses.length;
-      const counts = { complete: 0, nearly: 0, progress: 0, needs: 0 };
-      let totalWords = 0, totalHours = 0;
-      allCourses.forEach(c => { counts[c._health]++; totalWords += c._words; totalHours += (c.ceHours || c.ceuHours || 0); });
-
-      document.getElementById('countComplete').textContent = counts.complete;
-      document.getElementById('countNearly').textContent = counts.nearly;
-      document.getElementById('countProgress').textContent = counts.progress;
-      document.getElementById('countNeeds').textContent = counts.needs;
-
-      const compliantPct = total > 0 ? Math.round((counts.complete / total) * 100) : 0;
-      document.getElementById('healthPct').textContent = compliantPct + '%';
-      document.getElementById('healthSubtitle').textContent =
-        `${totalWords.toLocaleString()} total words across ${total} courses · ${totalHours} CE hours`;
-
-      const pct = n => total > 0 ? Math.round((n / total) * 100) : 0;
-      document.getElementById('hbComplete').style.width = pct(counts.complete) + '%';
-      document.getElementById('hbNearly').style.width = pct(counts.nearly) + '%';
-      document.getElementById('hbProgress').style.width = pct(counts.progress) + '%';
-      document.getElementById('hbNeeds').style.width = pct(counts.needs) + '%';
-
-      document.getElementById('healthLegend').innerHTML = [
-        ['bg-green-500', `Complete ${counts.complete}`],
-        ['bg-yellow-400', `Nearly There ${counts.nearly}`],
-        ['bg-blue-400', `In Progress ${counts.progress}`],
-        ['bg-gray-300', `Needs Attention ${counts.needs}`],
-      ].map(([bg, label]) => `<span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full ${bg} inline-block"></span>${label}</span>`).join('');
+      const pubCount = allCourses.filter(c => c.status === 'published').length;
+      const underCount = allCourses.filter(c => c._health === 'needs' || c._health === 'progress').length;
+      document.getElementById('libSubtitle').textContent = `${total} courses · ${pubCount} published · ${underCount} below target words`;
     }
 
-    function setFilter(health) {
-      document.getElementById('contentFilter').value = health;
+    // ── Facet rail ──
+    function healthDot(val) {
+      const c = { '': '#9CA3AF', complete: '#22c55e', nearly: '#eab308', progress: '#60a5fa', needs: '#f59e0b' }[val] || '#9CA3AF';
+      return `<span class="w-2 h-2 rounded-full inline-block flex-none" style="background:${c}"></span>`;
+    }
+
+    function facetRow(kind, val, label, count, dot) {
+      const active = filterState[kind] === val;
+      return `
+        <button onclick="setFacet('${kind}','${active ? '' : val}')" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-left transition-colors ${active ? 'bg-burgundy-50 text-burgundy-800 font-semibold' : 'text-forest-600 hover:bg-stone-50'}">
+          ${dot || ''}
+          <span class="flex-1 truncate">${label}</span>
+          <span class="text-xs ${active ? 'text-burgundy-600' : 'text-forest-400'}">${count}</span>
+        </button>`;
+    }
+
+    function updateFacets() {
+      const total = allCourses.length;
+      const statusCounts = {};
+      allCourses.forEach(c => { const s = c.status || 'draft'; statusCounts[s] = (statusCounts[s]||0)+1; });
+      const healthCounts = { complete:0, nearly:0, progress:0, needs:0 };
+      allCourses.forEach(c => healthCounts[c._health]++);
+
+      const statusItems = [['', 'All courses', total], ['published','Published', statusCounts.published||0], ['draft','Draft', statusCounts.draft||0]];
+      if (statusCounts.archived) statusItems.push(['archived','Archived', statusCounts.archived]);
+      document.getElementById('facetStatus').innerHTML = statusItems.map(([val,label,count]) => facetRow('status', val, label, count)).join('');
+
+      const healthItems = [
+        ['','All',total],
+        ['complete','Complete',healthCounts.complete],
+        ['nearly','Nearly there',healthCounts.nearly],
+        ['progress','In progress',healthCounts.progress],
+        ['needs','Needs attention',healthCounts.needs],
+      ];
+      document.getElementById('facetHealth').innerHTML = healthItems.map(([val,label,count]) => facetRow('health', val, label, count, healthDot(val))).join('');
+
+      const ceValues = ['1','2','3','4','5','6','6+'];
+      document.getElementById('facetCe').innerHTML = ceValues.map(v => {
+        const active = filterState.ce === v;
+        return `<button onclick="setFacet('ce','${active ? '' : v}')" class="px-2.5 py-1 rounded-full text-xs font-semibold border transition-colors ${active ? 'bg-burgundy-800 text-white border-burgundy-800' : 'bg-stone-50 text-forest-600 border-burgundy-100 hover:bg-stone-100'}">${v}</button>`;
+      }).join('');
+    }
+
+    function setFacet(kind, val) {
+      filterState[kind] = val;
       renderCourses();
     }
 
+    // ── Filtering / sorting / paging ──
     function renderCourses() {
       const q = document.getElementById('searchInput').value.toLowerCase();
-      const st = document.getElementById('statusFilter').value;
-      const ct = document.getElementById('contentFilter').value;
-      const ch = document.getElementById('ceHoursFilter').value;
+      const sortMode = document.getElementById('sortSelect') ? document.getElementById('sortSelect').value : 'updated';
 
       filtered = allCourses.filter(c => {
         const mQ = !q || (c.title || '').toLowerCase().includes(q) || (c.slug || '').includes(q);
-        const mS = !st || c.status === st;
-        const mC = !ct || c._health === ct;
+        const mS = !filterState.status || c.status === filterState.status;
+        const mH = !filterState.health || c._health === filterState.health;
         const hrs = c.ceHours || c.ceuHours || 0;
-        const mH = !ch || (ch === '6+' ? hrs > 6 : Math.round(hrs) === parseInt(ch));
-        return mQ && mS && mC && mH;
+        const mCe = !filterState.ce || (filterState.ce === '6+' ? hrs > 6 : Math.round(hrs) === parseInt(filterState.ce));
+        return mQ && mS && mH && mCe;
       });
 
-      // Sort: published first, then by health status priority, then title
-      const hOrder = { complete: 0, nearly: 1, progress: 2, needs: 3 };
-      filtered.sort((a, b) => {
-        if (a.status === 'published' && b.status !== 'published') return -1;
-        if (a.status !== 'published' && b.status === 'published') return 1;
-        return (hOrder[a._health] || 0) - (hOrder[b._health] || 0) || (a.title || '').localeCompare(b.title || '');
-      });
+      if (sortMode === 'title') {
+        filtered.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+      } else if (sortMode === 'ce') {
+        filtered.sort((a, b) => (b.ceHours || b.ceuHours || 0) - (a.ceHours || a.ceuHours || 0));
+      } else {
+        filtered.sort((a, b) => {
+          const ad = new Date(a.updatedAt || a.publishedAt || a.createdAt || 0).getTime();
+          const bd = new Date(b.updatedAt || b.publishedAt || b.createdAt || 0).getTime();
+          if (ad !== bd) return bd - ad;
+          if (a.status === 'published' && b.status !== 'published') return -1;
+          if (a.status !== 'published' && b.status === 'published') return 1;
+          return (a.title || '').localeCompare(b.title || '');
+        });
+      }
 
       page = 1;
+      updateFacets();
       renderPage();
     }
 
@@ -512,116 +517,200 @@
       const items = filtered.slice(start, start + PER_PAGE);
       const total = filtered.length;
 
-      document.getElementById('courseCount').textContent = `${total} courses`;
+      document.getElementById('courseCount').textContent = `${total} of ${allCourses.length} courses`;
       document.getElementById('pageInfo').textContent = total > PER_PAGE
         ? `Showing ${start + 1}–${Math.min(start + PER_PAGE, total)} of ${total}` : '';
       document.getElementById('prevBtn').disabled = page <= 1;
       document.getElementById('nextBtn').disabled = page >= Math.ceil(total / PER_PAGE);
       document.getElementById('paginationRow').style.display = total > PER_PAGE ? 'flex' : 'none';
 
-      document.getElementById('courseCards').innerHTML = items.length === 0
-        ? '<div class="text-center py-12 text-forest-500 bg-white rounded-xl border border-burgundy-100">No courses found</div>'
-        : items.map(courseCard).join('');
-      wireCardActions();
+      document.getElementById('courseRows').innerHTML = items.length === 0
+        ? `<tr><td colspan="7" class="text-center py-12 text-forest-500">No courses found</td></tr>`
+        : items.map(courseRow).join('');
+
+      const selectAllBox = document.getElementById('selectAllBox');
+      if (selectAllBox) selectAllBox.checked = items.length > 0 && items.every(c => selectedIds.has(c._id));
+
+      updateBulkBar();
+      renderDetailRail();
     }
 
-    // Delegated handler for card action buttons. Replaces inline onclick="" so that
-    // course titles containing apostrophes/quotes can't break the handler (the old
-    // inline pattern silently failed on such titles — clicks did nothing).
-    let _cardActionsWired = false;
-    function wireCardActions() {
-      if (_cardActionsWired) return;
-      _cardActionsWired = true;
-      document.getElementById('courseCards').addEventListener('click', (e) => {
-        const btn = e.target.closest('[data-cr-act]');
-        if (!btn) return;
-        const d = btn.dataset;
-        console.log('[admin-courses] action click:', d.crAct, d.id);
-        switch (d.crAct) {
-          case 'publish':   togglePublish(d.id, d.status, d.title, d.src); break;
-          case 'meta':      openMetaModal(d.id, d.title, d.src, btn); break;
-          case 'duplicate': duplicateCourse(d.id, d.title); break;
-          case 'delete':    deleteCourse(d.id, d.title, d.src); break;
-        }
-      });
+    function formatDate(d) {
+      if (!d) return '—';
+      const dt = new Date(d);
+      if (isNaN(dt.getTime())) return '—';
+      return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    function courseCard(c) {
+    function courseRow(c) {
       const pub = c.status === 'published';
       const h = healthInfo(c._health);
       const ceHours = c.ceHours || c.ceuHours || 0;
       const target = ceHours * WORDS_PER_CE_HOUR;
       const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
-      const modules = c.moduleCount || 0;
-      const sections = c.sectionCount || (c.sections || c.modules || []).length;
-      const price = c.price ? `$${c.price}` : null;
-      const tier = c.accessTier || c.pricingTier || null;
-
-      const barColor = { complete: 'bg-green-500', nearly: 'bg-yellow-400', progress: 'bg-blue-400', needs: 'bg-gray-300' }[c._health];
-      const barTextColor = { complete: 'text-green-600', nearly: 'text-yellow-600', progress: 'text-blue-500', needs: 'text-gray-400' }[c._health];
+      const updated = formatDate(c.updatedAt || c.publishedAt || c.createdAt);
       const src = c._source || 'interactivecourses';
+      const checked = selectedIds.has(c._id) ? 'checked' : '';
+      const active = c._id === activeDetailId ? 'bg-burgundy-50/60' : 'hover:bg-stone-50';
 
       return `
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm hover:shadow-md transition-all p-5">
-          <div class="flex items-start justify-between gap-3 mb-3">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <h3 class="font-display text-lg font-semibold text-burgundy-900">${esc(c.title || 'Untitled')}</h3>
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${h.bg} ${h.text} ${h.border} whitespace-nowrap">
-                  ${h.label}
-                </span>
-                <span class="px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${pub ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}">
-                  ${pub ? 'published' : 'draft'}
-                </span>
-                ${tier ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-600 border border-purple-200">${tier}</span>` : ''}
-              </div>
-            </div>
-            <div class="flex flex-wrap justify-end gap-1.5">
+        <tr class="border-b border-burgundy-50 last:border-0 ${active} cursor-pointer transition-colors" data-row-id="${c._id}">
+          <td class="pl-4 py-3">
+            <input type="checkbox" data-cr-select value="${c._id}" ${checked} onchange="toggleSelect('${c._id}', this.checked)" class="rounded border-forest-300">
+          </td>
+          <td class="px-3 py-3">
+            <div class="font-semibold text-burgundy-900">${esc(c.title || 'Untitled')}</div>
+            <div class="text-xs text-forest-400 font-mono mt-0.5">${esc(c.slug || c._id)}</div>
+          </td>
+          <td class="px-3 py-3 font-semibold text-burgundy-800">${ceHours}</td>
+          <td class="px-3 py-3">
+            <div class="text-xs font-semibold ${h.text}">${c._words.toLocaleString()}${target ? ` / ${target.toLocaleString()}` : ''}</div>
+            ${target ? `<div class="w-24 bg-gray-100 rounded-full h-1.5 mt-1 overflow-hidden"><div class="h-1.5 rounded-full ${h.bar}" style="width:${wordPct}%"></div></div>` : ''}
+          </td>
+          <td class="px-3 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${pub ? 'bg-green-50 text-green-700 border-green-200' : 'bg-yellow-50 text-yellow-700 border-yellow-200'}">${esc(c.status || 'draft')}</span>
+          </td>
+          <td class="px-3 py-3 text-forest-500 text-xs">${updated}</td>
+          <td class="pr-4 py-3">
+            <div class="flex items-center justify-end gap-1 flex-wrap">
               <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
-                title="${pub ? 'Unpublish' : 'Publish'}">
-                ${pub ? '📤' : '📥'}
-              </button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
+                title="${pub ? 'Unpublish' : 'Publish'}">${pub ? '📤' : '📥'}</button>
               <a href="/interactive-course.html?id=${c._id}" target="_blank"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
-              <button onclick="copyLink('${c.slug || c._id}')"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
+              <button data-cr-act="copylink" data-slug="${esc(c.slug || c._id)}"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>
               <a href="/admin-course-preview.html?id=${c._id}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
-              <button onclick="openQuickEdit('${c._id}','${src}')"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 transition-colors" title="Preview">👁️</a>
+              <button data-cr-act="quickedit" data-id="${c._id}" data-src="${src}"
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-forest-50 hover:bg-forest-100 text-forest-700 transition-colors" title="Quick edit">⚡</button>
               <a href="/admin-course-editor.html?id=${c._id}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-burgundy-50 hover:bg-burgundy-100 text-burgundy-700 transition-colors" title="Full editor">✏️</a>
               <button data-cr-act="meta" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Meta & content areas">🏷️</button>
               <button data-cr-act="duplicate" data-id="${c._id}" data-title="${esc(c.title)}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-gold-50 hover:bg-gold-100 text-gold-700 transition-colors" title="Duplicate">📋</button>
               <button data-cr-act="delete" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}"
-                class="w-8 h-8 rounded-lg flex items-center justify-center text-sm bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
+                class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-red-50 hover:bg-red-100 text-red-700 transition-colors" title="Delete">🗑️</button>
             </div>
-          </div>
-          <div class="flex items-center gap-4 text-sm flex-wrap">
-            <span class="text-forest-600"><strong class="text-burgundy-800 text-base">${ceHours}</strong> CE hrs</span>
-            <span class="text-forest-300">·</span>
-            <span class="text-forest-600"><strong class="text-forest-800">${c._words.toLocaleString()}</strong> words</span>
-            <span class="text-forest-300">·</span>
-            <span class="text-forest-600"><strong class="text-forest-800">${sections}</strong> sections</span>
-            ${target > 0 ? `
-            <span class="text-forest-300">·</span>
-            <span class="inline-flex items-center gap-2">
-              <span class="w-24 bg-gray-100 rounded-full h-2 inline-block overflow-hidden">
-                <span class="block h-2 rounded-full ${barColor} transition-all" style="width:${wordPct}%"></span>
-              </span>
-              <span class="text-xs font-medium ${barTextColor}">${wordPct}%</span>
-            </span>` : ''}
-            ${price ? `<span class="text-forest-300">·</span><span class="font-medium text-green-700">${price}</span>` : ''}
-            ${c.enrollmentCount !== undefined ? `<span class="text-forest-300">·</span><span class="text-forest-500 text-xs">${c.enrollmentCount} enrolled</span>` : ''}
-          </div>
+          </td>
+        </tr>
+      `;
+    }
+
+    // ── Selected-course detail rail ──
+    function renderDetailRail() {
+      const el = document.getElementById('detailRail');
+      let c = allCourses.find(x => x._id === activeDetailId);
+      if (!c && filtered.length) c = filtered[0];
+      if (!c) {
+        el.innerHTML = `<div class="text-sm text-forest-400 text-center py-10">Select a course to see details</div>`;
+        return;
+      }
+      activeDetailId = c._id;
+      const h = healthInfo(c._health);
+      const pub = c.status === 'published';
+      const ceHours = c.ceHours || c.ceuHours || 0;
+      const target = ceHours * WORDS_PER_CE_HOUR;
+      const wordPct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
+      const sections = c.sectionCount || (c.sections || c.modules || []).length;
+      const src = c._source || 'interactivecourses';
+
+      el.innerHTML = `
+        <div class="text-xs font-bold tracking-wider text-navy-700 uppercase mb-1.5">Selected</div>
+        <div class="font-display text-xl font-semibold text-burgundy-900 leading-snug">${esc(c.title || 'Untitled')}</div>
+        <div class="text-xs text-forest-400 font-mono mt-1.5">${esc(c.slug || c._id)} · ${ceHours} CE</div>
+
+        <div class="mt-4 p-3 rounded-lg ${h.bg} border ${h.border}">
+          <div class="text-xs font-bold tracking-wide ${h.text}">${h.label}</div>
+          <div class="text-xs text-forest-600 mt-1">${c._words.toLocaleString()}${target ? ` / ${target.toLocaleString()} words (${wordPct}%)` : ' words'}</div>
+          ${target ? `<div class="w-full bg-white/60 rounded-full h-1.5 mt-2 overflow-hidden"><div class="h-1.5 rounded-full ${h.bar}" style="width:${wordPct}%"></div></div>` : ''}
+        </div>
+
+        <div class="mt-4 text-sm text-forest-600 space-y-1">
+          <div>${sections} section${sections === 1 ? '' : 's'}</div>
+          ${c.enrollmentCount !== undefined ? `<div>${c.enrollmentCount} enrolled</div>` : ''}
+          ${c.price ? `<div class="text-green-700 font-medium">$${c.price}</div>` : ''}
+        </div>
+
+        <div class="mt-5 flex flex-col gap-2">
+          <a href="/admin-course-editor.html?id=${c._id}" class="text-center py-2.5 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Open full editor</a>
+          <a href="/admin-course-preview.html?id=${c._id}" class="text-center py-2 rounded-lg border border-burgundy-200 text-sm font-medium text-forest-600 hover:bg-stone-50">Preview as learner</a>
+          <button data-cr-act="quickedit" data-id="${c._id}" data-src="${src}" class="text-center py-2 rounded-lg border border-burgundy-200 text-sm font-medium text-forest-600 hover:bg-stone-50">Quick edit</button>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-burgundy-50 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs font-semibold">
+          <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}" class="text-burgundy-700 hover:text-burgundy-900">${pub ? 'Unpublish' : 'Publish'}</button>
+          <button data-cr-act="meta" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}" class="text-burgundy-700 hover:text-burgundy-900">Meta</button>
+          <button data-cr-act="duplicate" data-id="${c._id}" data-title="${esc(c.title)}" class="text-burgundy-700 hover:text-burgundy-900">Duplicate</button>
+          <button data-cr-act="copylink" data-slug="${esc(c.slug || c._id)}" class="text-burgundy-700 hover:text-burgundy-900">Copy link</button>
+          <button data-cr-act="delete" data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}" class="text-red-600 hover:text-red-800 ml-auto">Delete</button>
         </div>
       `;
     }
 
+    // ── Selection (checkboxes + bulk bar) ──
+    function toggleSelect(id, checked) {
+      if (checked) { selectedIds.add(id); activeDetailId = id; }
+      else selectedIds.delete(id);
+      updateBulkBar();
+      renderDetailRail();
+    }
+
+    function toggleSelectAll(box) {
+      const start = (page - 1) * PER_PAGE;
+      const items = filtered.slice(start, start + PER_PAGE);
+      items.forEach(c => box.checked ? selectedIds.add(c._id) : selectedIds.delete(c._id));
+      renderPage();
+    }
+
+    function clearSelection() {
+      selectedIds.clear();
+      renderPage();
+    }
+
+    function updateBulkBar() {
+      const bar = document.getElementById('bulkBar');
+      if (selectedIds.size > 0) {
+        bar.classList.remove('hidden'); bar.classList.add('flex');
+        document.getElementById('bulkCount').textContent = selectedIds.size;
+      } else {
+        bar.classList.add('hidden'); bar.classList.remove('flex');
+      }
+    }
+
+    function setActiveDetail(id) {
+      activeDetailId = id;
+      renderDetailRail();
+      renderPage();
+    }
+
     function changePage(d) { page += d; renderPage(); window.scrollTo(0, 0); }
+
+    // ── Delegated action handler (table rows + detail rail) ──
+    let _actionsWired = false;
+    function wireActions() {
+      if (_actionsWired) return;
+      _actionsWired = true;
+      document.getElementById('mainContent').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cr-act]');
+        if (btn) {
+          const d = btn.dataset;
+          switch (d.crAct) {
+            case 'publish':   togglePublish(d.id, d.status, d.title, d.src); break;
+            case 'meta':      openMetaModal(d.id, d.title, d.src, btn); break;
+            case 'duplicate': duplicateCourse(d.id, d.title); break;
+            case 'delete':    deleteCourse(d.id, d.title, d.src); break;
+            case 'copylink':  copyLink(d.slug); break;
+            case 'quickedit': openQuickEdit(d.id, d.src); break;
+          }
+          return;
+        }
+        if (e.target.closest('a, input, button')) return;
+        const row = e.target.closest('tr[data-row-id]');
+        if (row) setActiveDetail(row.dataset.rowId);
+      });
+    }
 
     // ── Publish ──
     function togglePublish(id, status, title, src) {
@@ -653,14 +742,13 @@
         });
     }
 
-    async function bulkPublish(pub) {
-      const targets = filtered.filter(c => pub ? c.status !== 'published' : c.status === 'published');
-      if (!targets.length) { showToast('No courses to update', '#284157'); return; }
-      confirm2(`${pub ? 'Publish' : 'Unpublish'} ${targets.length} Courses`,
-        `This will ${pub ? 'publish' : 'unpublish'} ${targets.length} courses currently shown.`,
+    async function publishMany(list, pub) {
+      if (!list.length) { showToast('No courses to update', '#284157'); return; }
+      confirm2(`${pub ? 'Publish' : 'Unpublish'} ${list.length} Course${list.length > 1 ? 's' : ''}`,
+        `This will ${pub ? 'publish' : 'unpublish'} ${list.length} course${list.length > 1 ? 's' : ''}.`,
         async () => {
           let done = 0, failed = 0, lastErr = '';
-          for (const c of targets) {
+          for (const c of list) {
             try {
               const r = (c._source === 'courses')
                 ? await fetch(`${API_URL}/api/admin/courses/${c._id}/publish`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ publish: pub }) })
@@ -671,10 +759,35 @@
               } else { done++; }
             } catch(e) { failed++; lastErr = e.message; }
           }
-          if (failed === 0) showToast(`✓ ${done} courses updated`, '#4A7C59');
+          if (failed === 0) showToast(`✓ ${done} course${done > 1 ? 's' : ''} updated`, '#4A7C59');
           else showToast(`${done} updated, ${failed} failed: ${lastErr}`, '#dc2626');
+          selectedIds.clear();
           loadCourses();
         });
+    }
+
+    function bulkPublish(pub) {
+      const targets = filtered.filter(c => pub ? c.status !== 'published' : c.status === 'published');
+      publishMany(targets, pub);
+    }
+
+    function bulkPublishSelected(pub) {
+      const targets = allCourses.filter(c => selectedIds.has(c._id));
+      publishMany(targets, pub);
+    }
+
+    function exportSelectedJSON() {
+      const items = allCourses.filter(c => selectedIds.has(c._id)).map(c => ({
+        id: c._id, title: c.title, slug: c.slug, status: c.status,
+        ceHours: c.ceHours || c.ceuHours || 0, words: c._words
+      }));
+      if (!items.length) { showToast('No courses selected', '#284157'); return; }
+      const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `courses-export-${Date.now()}.json`;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
     }
 
     // ── Delete ──
@@ -842,7 +955,7 @@
     const container = document.getElementById('metaContentAreas');
     container.innerHTML = NBCC_AREAS.map((area, i) => `
       <label style="display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px;background:#F8F7F4;cursor:pointer;font-size:12px;color:#2C2C2C">
-        <input type="checkbox" name="nbccArea" value="${area}" 
+        <input type="checkbox" name="nbccArea" value="${area}"
           style="accent-color:#4A7C59;width:16px;height:16px;cursor:pointer"
           onchange="limitContentAreas(this)">
         ${area}
