@@ -292,20 +292,13 @@ router.post('/create-subscription', protect, async (req, res) => {
     // Create the subscription
     const subscription = await stripe.subscriptions.create(subscriptionOptions);
     
-    // Check if payment needs confirmation
+    // Check payment intent status on the first invoice
     const invoice = subscription.latest_invoice;
     const paymentIntent = invoice.payment_intent;
     
-    if (paymentIntent.status === 'requires_action') {
-      return res.json({
-        requiresAction: true,
-        clientSecret: paymentIntent.client_secret,
-        subscriptionId: subscription.id
-      });
-    }
-    
     if (paymentIntent.status === 'succeeded') {
-      // Update user subscription
+      // Payment completed immediately (rare with default_incomplete, but possible
+      // for $0 invoices or pre-authorized methods)
       await User.findByIdAndUpdate(user._id, {
         'subscription.stripeSubscriptionId': subscription.id,
         'subscription.plan': plan,
@@ -322,6 +315,16 @@ router.post('/create-subscription', protect, async (req, res) => {
           plan,
           status: subscription.status
         }
+      });
+    }
+    
+    // For requires_confirmation, requires_action (3DS), or requires_payment_method:
+    // return the clientSecret so the frontend can call confirmCardPayment()
+    if (paymentIntent.client_secret) {
+      return res.json({
+        requiresAction: true,
+        clientSecret: paymentIntent.client_secret,
+        subscriptionId: subscription.id
       });
     }
     

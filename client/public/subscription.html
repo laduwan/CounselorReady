@@ -658,12 +658,12 @@
           return;
         }
 
-        // Handle 3D Secure / SCA authentication
-        if (data.requiresAction && data.clientSecret) {
+        // Confirm payment — handles both regular confirmation and 3D Secure / SCA
+        if (data.clientSecret) {
           btn.textContent = 'Confirming...';
           const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(data.clientSecret);
           if (confirmError) {
-            document.getElementById('card-errors').textContent = confirmError.message || 'Authentication failed. Please try again.';
+            document.getElementById('card-errors').textContent = confirmError.message || 'Payment failed. Please try again.';
             btn.disabled = false;
             btn.textContent = 'Subscribe Now';
             return;
@@ -674,7 +674,7 @@
             btn.textContent = 'Subscribe Now';
             return;
           }
-          // 3DS confirmed — webhook will sync status; proceed to success
+          // Payment confirmed — webhook will sync subscription status
         }
 
         // Success!
