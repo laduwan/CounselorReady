@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Production Board - CounselorReady Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen">
+
+  <!-- Admin Header -->
+  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
+    <div class="max-w-full px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+        </div>
+        <div>
+          <span class="font-display font-semibold text-lg">
+            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
+          </span>
+          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+        </div>
+        <nav class="flex items-center gap-1 ml-4">
+          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Credentials</a>
+          <a href="/credentials.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">CE</a>
+          <a href="/credentials.html#certifications" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Certificates</a>
+          <a href="/messages.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Messages</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-burgundy-200" id="adminEmail">Admin</span>
+        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
+          <i class="fas fa-home text-xs"></i> Exit to Dashboard
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex">
+    <!-- Sidebar -->
+    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
+      <nav class="space-y-1 text-sm">
+        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-book w-4"></i> Courses
+        </a>
+        <a href="/admin-production.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
+          <i class="fas fa-columns w-4 text-burgundy-600"></i> Production
+        </a>
+        <a href="/admin-course-banners.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-image w-4"></i> Course Banners
+        </a>
+        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-users w-4"></i> Users
+        </a>
+        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-chart-line w-4"></i> Analytics
+        </a>
+        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-envelope w-4"></i> Messages
+        </a>
+        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-id-card w-4"></i> Credentials
+        </a>
+        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
+        </a>
+        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-plug w-4"></i> Integrations
+        </a>
+        <a href="/admin-migration.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-database w-4"></i> Migration
+        </a>
+        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
+          <i class="fas fa-question-circle w-4"></i> Help Center
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 min-w-0">
+
+      <!-- Header Row -->
+      <div class="flex items-end justify-between mb-5 flex-wrap gap-3">
+        <div>
+          <h1 class="font-display text-3xl font-semibold text-burgundy-900">Production Board</h1>
+          <p class="text-sm text-forest-500 mt-1" id="boardSubtitle">Loading&hellip;</p>
+        </div>
+        <div class="flex gap-2">
+          <a href="/admin-courses.html" class="bg-forest-50 hover:bg-forest-100 text-forest-700 font-medium px-3 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-table-list text-xs"></i> Course library
+          </a>
+          <button onclick="loadBoard()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
+            <i class="fas fa-arrows-rotate text-xs"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="loadingState" class="text-center py-16">
+        <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-forest-600">Loading production board...</p>
+      </div>
+
+      <!-- Error -->
+      <div id="errorState" class="hidden text-center py-16 bg-white rounded-xl border border-burgundy-100">
+        <i class="fas fa-exclamation-triangle text-3xl text-burgundy-300 mb-3"></i>
+        <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load the production board</p>
+        <button onclick="loadBoard()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
+      </div>
+
+      <!-- Content -->
+      <div id="mainContent" class="hidden">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 items-start">
+
+          <div class="rounded-2xl p-3.5" style="background:#F0EFEA">
+            <div class="flex items-center gap-2 px-1 pb-3">
+              <span class="w-2 h-2 rounded-full" style="background:#9CA3AF"></span>
+              <span class="text-xs font-bold tracking-wide uppercase text-forest-500">Draft &middot; building</span>
+              <span class="ml-auto text-xs font-bold text-forest-500" id="countDraft">0</span>
+            </div>
+            <div id="colDraft" class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-0.5"></div>
+          </div>
+
+          <div class="rounded-2xl p-3.5" style="background:#F0F4F7">
+            <div class="flex items-center gap-2 px-1 pb-3">
+              <span class="w-2 h-2 rounded-full bg-navy-700"></span>
+              <span class="text-xs font-bold tracking-wide uppercase text-navy-700">In review &middot; ACEP</span>
+              <span class="ml-auto text-xs font-bold text-navy-700" id="countReview">0</span>
+            </div>
+            <div id="colReview" class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-0.5"></div>
+          </div>
+
+          <div class="rounded-2xl p-3.5" style="background:#FDF9F0">
+            <div class="flex items-center gap-2 px-1 pb-3">
+              <span class="w-2 h-2 rounded-full bg-gold-500"></span>
+              <span class="text-xs font-bold tracking-wide uppercase text-gold-600">Ready to publish</span>
+              <span class="ml-auto text-xs font-bold text-gold-600" id="countReady">0</span>
+            </div>
+            <div id="colReady" class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-0.5"></div>
+          </div>
+
+          <div class="rounded-2xl p-3.5" style="background:#F3F6F4">
+            <div class="flex items-center gap-2 px-1 pb-3">
+              <span class="w-2 h-2 rounded-full bg-forest-600"></span>
+              <span class="text-xs font-bold tracking-wide uppercase text-forest-700">Published</span>
+              <span class="ml-auto text-xs font-bold text-forest-700" id="countPublished">0</span>
+            </div>
+            <div id="colPublished" class="flex flex-col gap-2.5 max-h-[70vh] overflow-y-auto pr-0.5"></div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toastMsg" class="px-5 py-3 rounded-xl shadow-lg text-white text-sm font-medium"></div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 items-center justify-center" style="display:none">
+    <div class="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full mx-4">
+      <h3 class="font-semibold text-burgundy-800 mb-2" id="confirmTitle">Confirm</h3>
+      <p class="text-sm text-forest-600 mb-5" id="confirmMsg"></p>
+      <div class="flex gap-3 justify-end">
+        <button onclick="closeConfirm()" class="px-4 py-2 border border-burgundy-200 rounded-lg text-sm hover:bg-burgundy-50">Cancel</button>
+        <button onclick="doConfirm()" id="confirmOk" class="px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm hover:bg-burgundy-900">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+    if (!token) window.location.href = '/login.html';
+
+    const WORDS_PER_CE_HOUR = 6000;
+    const FETCH_TIMEOUT_MS = 12000;
+    let pendingFn = null;
+
+    function fetchWithTimeout(url, opts = {}) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      return fetch(url, { ...opts, signal: controller.signal }).finally(() => clearTimeout(id));
+    }
+
+    // Same word-count / health logic as admin-courses.html, kept identical
+    // so a course's bucket here matches its health badge there.
+    function wordCount(course) {
+      if (course.wordCount && course.wordCount > 0) return course.wordCount;
+      let count = 0;
+      const sections = course.sections || course.modules || [];
+      sections.forEach(sec => {
+        const blocks = sec.contentBlocks || sec.lessons || [];
+        blocks.forEach(b => {
+          const text = b.textContent || b.content || b.body || '';
+          const plain = text.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+          if (plain) count += plain.split(' ').length;
+        });
+      });
+      return count;
+    }
+
+    function healthStatus(course) {
+      const ceHours = course.ceHours || course.ceuHours || 0;
+      if (!ceHours) return 'needs';
+      const words = wordCount(course);
+      if (words === 0) return 'needs';
+      const target = ceHours * WORDS_PER_CE_HOUR;
+      const pct = Math.round((words / target) * 100);
+      if (pct >= 90) return 'complete';
+      if (pct >= 50) return 'nearly';
+      return 'progress';
+    }
+
+    async function init() {
+      try {
+        const r = await fetchWithTimeout(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+        if (r.ok) {
+          const d = await r.json();
+          const u = d.user || d;
+          document.getElementById('adminEmail').textContent = u.email || 'Admin';
+          if (!u.isAdmin && u.role !== 'admin') window.location.href = '/dashboard.html';
+        }
+      } catch(e) {}
+      loadBoard();
+    }
+
+    async function loadBoard() {
+      show('loadingState'); hide('mainContent'); hide('errorState');
+      try {
+        let courses = [];
+
+        try {
+          const r = await fetchWithTimeout(`${API_URL}/api/admin/courses`, { headers: { Authorization: `Bearer ${token}` } });
+          if (r.ok) {
+            const d = await r.json();
+            courses = (d.courses || []).map(c => ({
+              ...c,
+              _source: c._collection === 'interactivecourses' ? 'interactivecourses' : 'courses'
+            }));
+          }
+        } catch(e) {}
+
+        try {
+          let p = 1;
+          while (true) {
+            const r = await fetchWithTimeout(`${API_URL}/api/interactive-courses?page=${p}&limit=50`, { headers: { Authorization: `Bearer ${token}` } });
+            if (!r.ok) break;
+            const d = await r.json();
+            const batch = (d.data || []).map(c => ({ ...c, _source: 'interactivecourses' }));
+            batch.forEach(ic => {
+              const idx = courses.findIndex(c => c.slug === ic.slug);
+              if (idx >= 0) courses[idx] = ic;
+              else courses.push(ic);
+            });
+            if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
+            p++;
+          }
+        } catch(e) {}
+
+        courses = courses.map(c => ({ ...c, _health: healthStatus(c), _words: wordCount(c) }));
+
+        // Real review-workflow state — partner/ACEP-submitted courses only,
+        // via InteractiveCourse.reviewStatus (server/src/routes/adminCourseReviews.js)
+        let reviewRows = [];
+        try {
+          const r = await fetchWithTimeout(`${API_URL}/api/admin/course-reviews?status=all`, { headers: { Authorization: `Bearer ${token}` } });
+          if (r.ok) {
+            const d = await r.json();
+            reviewRows = (d.data || []).filter(row => row.reviewStatus === 'requested' || row.reviewStatus === 'in_review');
+          }
+        } catch(e) {}
+        const reviewIds = new Set(reviewRows.map(row => String(row._id)));
+
+        renderBoard(courses, reviewRows, reviewIds);
+        hide('loadingState');
+        show('mainContent');
+      } catch(e) {
+        hide('loadingState');
+        show('errorState');
+        document.getElementById('errorMsg').textContent = 'Failed to load: ' + e.message;
+      }
+    }
+
+    function renderBoard(courses, reviewRows, reviewIds) {
+      const draft = courses.filter(c => c.status === 'draft' && c._health !== 'complete' && !reviewIds.has(String(c._id)));
+      const ready = courses.filter(c => c.status === 'draft' && c._health === 'complete' && !reviewIds.has(String(c._id)));
+      const published = courses.filter(c => c.status === 'published');
+
+      draft.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      ready.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      published.sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+
+      document.getElementById('boardSubtitle').textContent =
+        `${draft.length} in draft · ${reviewRows.length} in ACEP review · ${ready.length} ready to publish · ${published.length} published`;
+
+      document.getElementById('countDraft').textContent = draft.length;
+      document.getElementById('countReview').textContent = reviewRows.length;
+      document.getElementById('countReady').textContent = ready.length;
+      document.getElementById('countPublished').textContent = published.length;
+
+      document.getElementById('colDraft').innerHTML = draft.length
+        ? draft.map(draftCard).join('')
+        : emptyCol('Nothing in draft');
+      document.getElementById('colReview').innerHTML = reviewRows.length
+        ? reviewRows.map(reviewCard).join('')
+        : emptyCol('No courses in ACEP review');
+      document.getElementById('colReady').innerHTML = ready.length
+        ? ready.map(readyCard).join('')
+        : emptyCol('Nothing ready to publish');
+      document.getElementById('colPublished').innerHTML = published.length
+        ? published.map(publishedCard).join('')
+        : emptyCol('Nothing published yet');
+
+      wireActions();
+    }
+
+    function emptyCol(msg) {
+      return `<div class="text-center py-8 text-xs text-forest-400">${esc(msg)}</div>`;
+    }
+
+    function draftCard(c) {
+      const ceHours = c.ceHours || c.ceuHours || 0;
+      const target = ceHours * WORDS_PER_CE_HOUR;
+      const pct = target > 0 ? Math.min(100, Math.round((c._words / target) * 100)) : 0;
+      return `
+        <div class="bg-white rounded-xl border border-burgundy-100 p-3.5">
+          <div class="font-semibold text-sm text-burgundy-900">${esc(c.title || 'Untitled')}</div>
+          <div class="text-xs text-forest-400 font-mono mt-1">${esc(c.slug || c._id)} &middot; ${ceHours} CE</div>
+          <div class="w-full bg-gray-100 rounded-full h-1.5 mt-2.5 overflow-hidden"><div class="h-1.5 rounded-full bg-blue-400" style="width:${pct}%"></div></div>
+          <div class="text-xs text-forest-500 mt-1.5">${c._words.toLocaleString()}${target ? ` / ${target.toLocaleString()} words` : ' words'}</div>
+        </div>`;
+    }
+
+    function reviewCard(row) {
+      const passBadge = row.auditPass
+        ? `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">all checks pass</span>`
+        : `<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">${(row.auditFails || []).length} issue${(row.auditFails || []).length === 1 ? '' : 's'}</span>`;
+      const paid = row.reviewPaidAt
+        ? `<span class="text-forest-500">paid</span>`
+        : `<span class="text-amber-600 font-medium">fee unpaid</span>`;
+      return `
+        <div class="bg-white rounded-xl border border-navy-100 p-3.5">
+          <div class="font-semibold text-sm text-burgundy-900">${esc(row.title || 'Untitled')}</div>
+          <div class="text-xs text-forest-400 mt-1">${esc(row.partnerName || 'Partner')} &middot; ${row.ceHours || 0} CE</div>
+          <div class="mt-2.5">${passBadge}</div>
+          <div class="text-xs mt-1.5">${paid}</div>
+          <a href="/admin-course-reviews.html" class="mt-3 block text-center py-1.5 rounded-lg border border-navy-200 text-xs font-semibold text-navy-700 hover:bg-navy-50">Open review queue</a>
+        </div>`;
+    }
+
+    function readyCard(c) {
+      const ceHours = c.ceHours || c.ceuHours || 0;
+      const src = c._source || 'interactivecourses';
+      return `
+        <div class="bg-white rounded-xl border border-gold-100 p-3.5">
+          <div class="font-semibold text-sm text-burgundy-900">${esc(c.title || 'Untitled')}</div>
+          <div class="text-xs text-forest-400 font-mono mt-1">${esc(c.slug || c._id)} &middot; ${ceHours} CE</div>
+          <div class="mt-2.5"><span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">${c._words.toLocaleString()} / ${(ceHours * WORDS_PER_CE_HOUR).toLocaleString()} words</span></div>
+          <button data-cr-publish data-id="${c._id}" data-title="${esc(c.title)}" data-src="${src}" class="mt-3 w-full py-1.5 rounded-lg bg-forest-600 hover:bg-forest-700 text-white text-xs font-semibold">Publish</button>
+        </div>`;
+    }
+
+    function publishedCard(c) {
+      const ceHours = c.ceHours || c.ceuHours || 0;
+      const when = c.updatedAt ? new Date(c.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+      return `
+        <div class="bg-white rounded-xl border border-forest-100 p-3.5">
+          <div class="font-semibold text-sm text-burgundy-900">${esc(c.title || 'Untitled')}</div>
+          <div class="text-xs text-forest-400 font-mono mt-1">${esc(c.slug || c._id)} &middot; ${ceHours} CE</div>
+          <div class="text-xs text-forest-500 mt-2.5">${when ? `Updated ${when}` : ''}</div>
+        </div>`;
+    }
+
+    let _actionsWired = false;
+    function wireActions() {
+      if (_actionsWired) return;
+      _actionsWired = true;
+      document.getElementById('mainContent').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-cr-publish]');
+        if (!btn) return;
+        const d = btn.dataset;
+        publishCourse(d.id, d.title, d.src);
+      });
+    }
+
+    // Same publish call as admin-courses.html's togglePublish, scoped to "publish" only.
+    function publishCourse(id, title, src) {
+      confirm2('Publish Course', `"${title}" will be visible to all users.`, async () => {
+        try {
+          const r = (src === 'courses')
+            ? await fetchWithTimeout(`${API_URL}/api/admin/courses/${id}/publish`, {
+                method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publish: true })
+              })
+            : await fetchWithTimeout(`${API_URL}/api/admin/course-presentation/${id}/status`, {
+                method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ publish: true })
+              });
+          if (!r.ok) {
+            let detail = `HTTP ${r.status}`;
+            try { const j = await r.json(); if (j && (j.error || j.message)) detail = j.error || j.message; } catch(_) {}
+            throw new Error(detail);
+          }
+          showToast('✓ Published', '#4A7C59');
+          loadBoard();
+        } catch(e) { showToast('Error: ' + e.message, '#dc2626'); }
+      });
+    }
+
+    // ── Helpers (same pattern as admin-courses.html) ──
+    function confirm2(title, msg, fn) {
+      pendingFn = fn;
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMsg').textContent = msg;
+      document.getElementById('confirmModal').style.display = 'flex';
+    }
+    function closeConfirm() { document.getElementById('confirmModal').style.display = 'none'; pendingFn = null; }
+    function doConfirm() { const fn = pendingFn; closeConfirm(); if (fn) fn(); }
+
+    function showToast(msg, bg = '#6b1d34') {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      el.style.background = bg;
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(window._tt);
+      window._tt = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3000);
+    }
+
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
+    function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    init();
+  </script>
+
+<script src="/shared/nav-footer.js"></script>
+<div id="cr-footer"></div>
+</body>
+</html>
