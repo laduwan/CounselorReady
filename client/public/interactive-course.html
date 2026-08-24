@@ -928,6 +928,118 @@ button, a, input, select, textarea, [tabindex], [draggable="true"] {
   cursor: pointer; font-weight: 600;
 }
 
+/* ── Decision Tree upgrades (additive to scenarioTree) ── */
+.cr-scenario-path {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+  margin-bottom: 16px;
+}
+.cr-scenario-path-label {
+  font-size: 10px; font-weight: 800; color: var(--cr-text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin-right: 4px;
+}
+.cr-scenario-path-crumb {
+  font-size: 11px; padding: 3px 8px; border-radius: 6px;
+  background: var(--cr-border-faded, #F0ECE7); color: var(--cr-navy);
+  font-weight: 500; max-width: 140px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cr-scenario-path-arrow {
+  color: var(--cr-border); font-size: 10px;
+}
+.cr-scenario-path-current {
+  font-size: 11px; padding: 3px 8px; border-radius: 6px;
+  background: rgba(107,29,52,0.08); color: var(--cr-burgundy);
+  font-weight: 700; border: 1px solid rgba(107,29,52,0.2);
+}
+.cr-scenario-depth {
+  font-size: 12px; font-weight: 600; color: var(--cr-text-muted);
+  margin-bottom: 12px;
+}
+.cr-scenario-fork-label {
+  color: var(--cr-navy); font-weight: 600; font-size: 15px;
+  line-height: 1.6; margin: 16px 0 12px;
+}
+.cr-scenario-fork-keyword {
+  font-weight: 800; font-family: 'Lato', monospace;
+  font-size: 12px; padding: 2px 6px; border-radius: 4px;
+  margin: 0 3px; display: inline-block;
+}
+.cr-scenario-fork-if {
+  color: var(--cr-burgundy); background: rgba(107,29,52,0.06);
+}
+.cr-scenario-fork-then {
+  color: var(--cr-green); background: rgba(74,124,89,0.06);
+}
+.cr-scenario-choice-tag {
+  display: inline-block; margin-left: 8px; font-size: 10px;
+  font-weight: 700; padding: 2px 8px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+  vertical-align: middle;
+  background: var(--cr-border-faded, #F0ECE7); color: var(--cr-text-muted);
+}
+.cr-scenario-feedback.negative {
+  background: rgba(107,29,52,0.06);
+  border-left: 4px solid var(--cr-burgundy);
+}
+.cr-scenario-feedback.caution {
+  background: rgba(212,168,85,0.06);
+  border-left: 4px solid var(--cr-gold);
+}
+.cr-scenario-endpoint {
+  margin-top: 4px;
+}
+.cr-scenario-outcome-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 12px;
+}
+.cr-scenario-outcome-title {
+  font-size: 17px; font-weight: 700; color: var(--cr-navy); margin: 0;
+}
+.cr-scenario-score {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 16px;
+  font-size: 12px; font-weight: 700; color: #fff; letter-spacing: 0.3px;
+}
+.cr-scenario-score.excellent { background: var(--cr-green); }
+.cr-scenario-score.partial { background: var(--cr-gold); }
+.cr-scenario-score.poor { background: var(--cr-burgundy); }
+.cr-scenario-recommendation {
+  background: rgba(74,124,89,0.06); border: 1px solid rgba(74,124,89,0.15);
+  border-radius: 10px; padding: 14px 16px; margin: 14px 0;
+}
+.cr-scenario-recommendation-label {
+  font-size: 11px; font-weight: 800; color: var(--cr-green);
+  text-transform: uppercase; letter-spacing: 1px; margin: 0 0 4px;
+}
+.cr-scenario-path-summary {
+  background: var(--cr-border-faded, #F0ECE7);
+  border-radius: 10px; padding: 14px 16px; margin: 14px 0;
+}
+.cr-scenario-path-summary-label {
+  font-size: 11px; font-weight: 800; color: var(--cr-text-muted);
+  text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px;
+}
+.cr-scenario-path-tag {
+  display: inline-block; font-size: 12px; padding: 4px 10px;
+  border-radius: 6px; background: var(--cr-surface);
+  border: 1px solid var(--cr-border); color: var(--cr-navy);
+  font-weight: 500; margin: 2px 3px;
+}
+.cr-scenario-back {
+  padding: 10px 20px; border-radius: 10px;
+  border: 1px solid var(--cr-border); background: var(--cr-surface);
+  color: var(--cr-navy); font-weight: 600; font-size: 14px;
+  cursor: pointer; margin-right: 8px;
+}
+.cr-scenario-explore {
+  padding: 10px 20px; border-radius: 10px; border: none;
+  background: var(--cr-burgundy); color: #fff;
+  font-weight: 700; font-size: 14px; cursor: pointer;
+}
+.cr-scenario-actions {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px;
+}
+
 /* ═══════════════════════════════════════════════════════════════
    CARD SORT (mockups 15c drag · 16d keyboard · 19a mobile)
    Tray of chips → labeled bins. Keyboard affordances are HONEY —
@@ -7603,6 +7715,8 @@ function renderScenarioTree(wrap, block, blockIndex) {
   const el = wrap.querySelector(`#${id}`);
   el._stNodes = block.nodes || {};
   el._stStart = block.startNode || 'start';
+  el._stHistory = [];
+  el._stCompletedPaths = 0;
   setTimeout(() => renderScenarioNode(id, el._stStart), 0);
   return wrap;
 }
@@ -7613,40 +7727,160 @@ function renderScenarioNode(id, nodeKey) {
   const nodes = el._stNodes;
   const node = nodes[nodeKey];
   if (!node) { document.getElementById(id + '-body').innerHTML = '<p>End of scenario.</p>'; return; }
-  
+  el._stCurrent = nodeKey;
+
   const body = document.getElementById(id + '-body');
-  let html = `<div class="cr-scenario-text">${node.text || ''}</div>`;
-  
-  if (node.feedback) {
-    html += `<div class="cr-scenario-feedback positive"><strong>Feedback:</strong> ${esc(node.feedback)}</div>`;
+  const history = el._stHistory || [];
+  const depth = history.length;
+  let html = '';
+
+  // ── Path breadcrumb trail (only if depth > 0) ──
+  if (depth > 0) {
+    html += '<div class="cr-scenario-path"><span class="cr-scenario-path-label">Path</span>';
+    history.forEach((hId, i) => {
+      const hNode = nodes[hId];
+      const nextInPath = history[i + 1] || nodeKey;
+      const choiceMade = (hNode && hNode.choices) ? hNode.choices.find(function(c) { return c.next === nextInPath; }) : null;
+      const label = (choiceMade && choiceMade.tag) ? choiceMade.tag : hId.replace(/_/g, ' ');
+      html += '<span class="cr-scenario-path-crumb">' + esc(label) + '</span>';
+      html += '<span class="cr-scenario-path-arrow">→</span>';
+    });
+    html += '<span class="cr-scenario-path-current">here</span></div>';
   }
-  
-  if (node.choices && node.choices.length > 0) {
+
+  // ── Depth indicator ──
+  if (depth > 0) {
+    html += '<div class="cr-scenario-depth">Decision ' + (depth + 1) + '</div>';
+  }
+
+  // ── Feedback from previous choice ──
+  if (node.feedback) {
+    var fbObj = (typeof node.feedback === 'object') ? node.feedback : { type: 'positive', message: node.feedback };
+    var fbType = fbObj.type || 'positive';
+    // Map type to CSS class
+    var fbClass = 'positive';
+    if (fbType === 'negative' || fbType === 'bad') fbClass = 'negative';
+    else if (fbType === 'caution' || fbType === 'partial') fbClass = 'caution';
+    else if (fbType === 'neutral') fbClass = 'neutral';
+    var fbIcon = fbClass === 'positive' ? '✓' : fbClass === 'negative' ? '✕' : '⚠';
+    html += '<div class="cr-scenario-feedback ' + fbClass + '"><strong>' + fbIcon + ' </strong> ' + esc(fbObj.message || String(node.feedback)) + '</div>';
+  }
+
+  // ── Scenario text ──
+  html += '<div class="cr-scenario-text">' + (node.text || '') + '</div>';
+
+  // ── Decision fork or endpoint ──
+  var isEnd = (!node.choices || node.choices.length === 0) || node.type === 'endpoint';
+
+  if (!isEnd) {
+    // IF/THEN highlighted question
+    if (node.question) {
+      var qText = esc(node.question);
+      qText = qText.replace(/\b(IF)\b/gi, '<span class="cr-scenario-fork-keyword cr-scenario-fork-if">IF</span>');
+      qText = qText.replace(/\b(THEN)\b/gi, '<span class="cr-scenario-fork-keyword cr-scenario-fork-then">THEN</span>');
+      qText = qText.replace(/\b(ELSE)\b/gi, '<span class="cr-scenario-fork-keyword cr-scenario-fork-then" style="color:var(--cr-gold);background:rgba(212,168,85,0.06)">ELSE</span>');
+      html += '<p class="cr-scenario-fork-label">' + qText + '</p>';
+    }
+
+    // Choices
     html += '<div class="cr-scenario-choices">';
-    node.choices.forEach((choice, i) => {
-      html += `<button class="cr-scenario-choice" data-action="stChoose" data-target="${id}" data-next="${choice.next || ''}">${esc(choice.text)}</button>`;
+    node.choices.forEach(function(choice) {
+      var tagHtml = (choice.tag) ? '<span class="cr-scenario-choice-tag">' + esc(choice.tag) + '</span>' : '';
+      html += '<button class="cr-scenario-choice" data-action="stChoose" data-target="' + id + '" data-next="' + (choice.next || '') + '">' + esc(choice.text) + tagHtml + '</button>';
     });
     html += '</div>';
+
+    // Back button (only if we have history)
+    if (depth > 0) {
+      html += '<div class="cr-scenario-actions">';
+      html += '<button class="cr-scenario-back" data-action="stBack" data-target="' + id + '">← Back</button>';
+      html += '</div>';
+    }
   } else {
-    html += `<div class="cr-scenario-feedback positive" style="margin-top:16px">
-      <strong>✓ Scenario Complete</strong>
-    </div>
-    <button class="cr-scenario-restart" data-action="scenarioRestart" data-target="${id}" data-node="${el._stStart}">↻ Restart Scenario</button>`;
+    // ── ENDPOINT ──
+    el._stCompletedPaths = (el._stCompletedPaths || 0) + 1;
+    html += '<div class="cr-scenario-endpoint">';
+
+    // Score badge + outcome title
+    if (node.outcome || node.score) {
+      html += '<div class="cr-scenario-outcome-header">';
+      if (node.outcome) html += '<h4 class="cr-scenario-outcome-title">Outcome: ' + esc(node.outcome) + '</h4>';
+      if (node.score) {
+        var scoreLabel = node.score === 'excellent' ? '✦ Optimal Outcome' : node.score === 'poor' ? '✕ Ethically Problematic' : '◈ Acceptable with Gaps';
+        html += '<span class="cr-scenario-score ' + node.score + '">' + scoreLabel + '</span>';
+      }
+      html += '</div>';
+    }
+
+    // Outcome detail
+    if (node.outcomeDetail) {
+      html += '<p style="color:var(--cr-text);line-height:1.7;font-size:14px;margin-bottom:14px">' + esc(node.outcomeDetail) + '</p>';
+    }
+
+    // Recommendation
+    if (node.recommendation) {
+      html += '<div class="cr-scenario-recommendation">';
+      html += '<p class="cr-scenario-recommendation-label">Clinical Recommendation</p>';
+      html += '<p style="font-size:14px;color:var(--cr-text);line-height:1.6;margin:0">' + esc(node.recommendation) + '</p>';
+      html += '</div>';
+    }
+
+    // Path summary
+    if (depth > 0) {
+      html += '<div class="cr-scenario-path-summary">';
+      html += '<p class="cr-scenario-path-summary-label">Your Decision Path (' + depth + ' fork' + (depth !== 1 ? 's' : '') + ')</p>';
+      html += '<div>';
+      history.forEach(function(hId, i) {
+        var hNode = nodes[hId];
+        var nextInPath = history[i + 1] || nodeKey;
+        var choiceMade = (hNode && hNode.choices) ? hNode.choices.find(function(c) { return c.next === nextInPath; }) : null;
+        var label = (choiceMade && choiceMade.tag) ? choiceMade.tag : hId.replace(/_/g, ' ');
+        html += '<span class="cr-scenario-path-tag">' + (i + 1) + '. ' + esc(label) + '</span>';
+      });
+      html += '</div></div>';
+    }
+
+    // Fallback simple complete (for old shallow trees without outcome fields)
+    if (!node.outcome && !node.score && !node.outcomeDetail && !node.recommendation) {
+      html += '<div class="cr-scenario-feedback positive" style="margin-top:16px"><strong>✓ Scenario Complete</strong></div>';
+    }
+
+    // Actions
+    html += '<div class="cr-scenario-actions">';
+    if (depth > 0) html += '<button class="cr-scenario-back" data-action="stBack" data-target="' + id + '">← Go Back</button>';
+    html += '<button class="cr-scenario-explore" data-action="scenarioRestart" data-target="' + id + '" data-node="' + el._stStart + '">↻ Explore Another Path</button>';
+    html += '</div>';
+
+    html += '</div>'; // close .cr-scenario-endpoint
   }
-  
+
   body.innerHTML = html;
+  body.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function stChoose(id, nextNode, btn) {
+  var el = document.getElementById(id);
+  // Push current node to history
+  if (el && el._stCurrent) {
+    if (!el._stHistory) el._stHistory = [];
+    el._stHistory.push(el._stCurrent);
+  }
   // Disable all choices
   btn.parentElement.querySelectorAll('.cr-scenario-choice').forEach(c => {
     c.disabled = true; c.style.opacity = '0.5';
   });
   btn.style.opacity = '1'; btn.style.borderColor = 'var(--cr-gold)';
-  
+
   setTimeout(() => {
     if (nextNode) renderScenarioNode(id, nextNode);
   }, 600);
+}
+
+function stBack(id) {
+  var el = document.getElementById(id);
+  if (!el || !el._stHistory || !el._stHistory.length) return;
+  var prev = el._stHistory.pop();
+  renderScenarioNode(id, prev);
 }
 
 // ─── CARD SORT ───
@@ -11425,7 +11659,12 @@ document.addEventListener('click', function(e) {
     
     // ─── Scenario Tree ───
     case 'stChoose': stChoose(target, el.dataset.next, el); break;
-    case 'scenarioRestart': renderScenarioNode(target, el.dataset.node); break;
+    case 'stBack': stBack(target); break;
+    case 'scenarioRestart':
+      var stEl = document.getElementById(target);
+      if (stEl) { stEl._stHistory = []; }
+      renderScenarioNode(target, el.dataset.node);
+      break;
     
     // ─── Card Sort ───
     case 'csTapCard': csTapCard(el, target); break;
