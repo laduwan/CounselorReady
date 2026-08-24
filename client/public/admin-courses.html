@@ -170,10 +170,10 @@
               <span class="text-xs font-medium text-forest-400" id="courseCount"></span>
               <div class="h-8 w-px bg-forest-200"></div>
               <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
-                <i class="fas fa-check w-3.5"></i> Publish filtered
+                <i class="fas fa-check w-3.5"></i> Publish All
               </button>
               <button onclick="bulkPublish(false)" class="inline-flex items-center gap-1 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
-                <i class="fas fa-eye-slash w-3.5"></i> Unpublish filtered
+                <i class="fas fa-eye-slash w-3.5"></i> Unpublish All
               </button>
             </div>
 
@@ -1070,6 +1070,8 @@
       document.getElementById('qeCeHours').value = c.ceHours || 0;
       document.getElementById('qeStatus').value = c.status || 'draft';
       document.getElementById('qePrice').value = c.price || 0;
+      document.getElementById('qeTier').value = c.pricingTier || 'free';
+      document.getElementById('qeDeliveryFormat').value = c.deliveryFormat || 'async';
       document.getElementById('qeModalLabel').textContent = (c.title || '').substring(0, 50);
 
       document.getElementById('qeLoading').style.display = 'none';
@@ -1090,7 +1092,9 @@
       title: document.getElementById('qeTitle').value.trim(),
       ceHours: parseFloat(document.getElementById('qeCeHours').value) || 0,
       status: document.getElementById('qeStatus').value,
-      price: parseFloat(document.getElementById('qePrice').value) || 0
+      price: parseFloat(document.getElementById('qePrice').value) || 0,
+      pricingTier: document.getElementById('qeTier').value,
+      deliveryFormat: document.getElementById('qeDeliveryFormat').value
     };
     if (payload.status === 'published') payload.isPublished = true;
     if (payload.status === 'draft') payload.isPublished = false;
@@ -1162,6 +1166,25 @@
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Price ($)</label>
           <input id="qePrice" type="number" step="0.01" min="0" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Tier</label>
+          <select id="qeTier" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+            <option value="free">Free</option>
+            <option value="starter">Starter</option>
+            <option value="professional">Professional</option>
+            <option value="premier">Premier</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:4px">Delivery Mode</label>
+          <select id="qeDeliveryFormat" style="width:100%;padding:8px 12px;border:1px solid #E5E2DC;border-radius:8px;font-size:14px;font-family:inherit">
+            <option value="async">Async (self-paced)</option>
+            <option value="live">Live</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
         </div>
       </div>
       <div style="display:flex;justify-content:flex-end;gap:8px">
