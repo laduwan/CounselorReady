@@ -40,8 +40,13 @@ for (const c of courses) {
   // Conclusion: last text block of last section
   const lastBlocks = (lastSec && lastSec.contentBlocks || []);
   const lastTextBlocks = lastBlocks.filter(b => b.type === 'text');
-  const lastTextBlock = lastTextBlocks[lastTextBlocks.length-1];
-  const conclusionHtml = lastTextBlock ? (lastTextBlock.content||'') : '';
+  // Pick the most substantive text block (most words) — avoids short reference labels
+  const lastTextBlock = lastTextBlocks.reduce((best, b) => {
+    const w = countWords(stripHtml(b.content || b.textContent || ''));
+    const bw = best ? countWords(stripHtml(best.content || best.textContent || '')) : 0;
+    return w > bw ? b : best;
+  }, null);
+  const conclusionHtml = lastTextBlock ? (lastTextBlock.content || lastTextBlock.textContent || '') : '';
   const conclusionText = stripHtml(conclusionHtml);
   const conclusionWords = countWords(conclusionText);
   const conclusionGeneric = /this course has provided a comprehensive examination/i.test(conclusionText)
