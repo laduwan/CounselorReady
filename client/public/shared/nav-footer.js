@@ -169,6 +169,13 @@
       .cr-ftr-top { flex-direction: column !important; align-items: stretch !important; text-align: center !important; }
       .cr-ftr-badge { min-width: 0 !important; width: 100% !important; box-sizing: border-box !important; justify-content: center !important; }
       .cr-ftr-links { justify-content: center !important; width: 100% !important; gap: 56px !important; box-sizing: border-box !important; }
+      /* The bottom copyright/policy-links row used justify-content:space-between
+         with no direction change — once the two pieces wrap onto separate lines,
+         a lone flex item on a space-between line sits at flex-start, so both the
+         copyright text and the policy links drift to the left edge instead of
+         staying centered like the disclaimer paragraph above them. */
+      .cr-ftr-bottom { flex-direction: column !important; justify-content: center !important; text-align: center !important; }
+      .cr-ftr-policy { justify-content: center !important; }
     }
   </style>
   <footer style="background:#3B0F1D;margin-top:2rem">
@@ -211,9 +218,9 @@
       <p style="font-size:10.5px;line-height:1.7;color:rgba(255,255,255,0.45);text-align:center;max-width:960px;margin:0 auto 20px">
         CounselorReady is operated by GA Integrated Therapeutic Perspectives LLC, an NBCC Approved Continuing Education Provider (ACEP #7760). Programs that do not qualify for NBCC credit are clearly identified. GA Integrated Therapeutic Perspectives LLC is solely responsible for all aspects of the programs. NCMHCE&reg; is a registered trademark of the National Board for Certified Counselors, Inc. (NBCC). CounselorReady is not affiliated with, endorsed by, or sponsored by NBCC.
       </p>
-      <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
+      <div class="cr-ftr-bottom" style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px">
         <p style="font-size:11px;color:rgba(255,255,255,0.45);margin:0">&copy; ${new Date().getFullYear()} GA Integrated Therapeutic Perspectives LLC. CounselorReady&trade; is a trademark of GAITP LLC. All rights reserved.</p>
-        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+        <div class="cr-ftr-policy" style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
           ${policyItems}
         </div>
       </div>
