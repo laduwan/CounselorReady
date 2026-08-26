@@ -6218,6 +6218,7 @@ function showAssessment() {
       assessmentState.answers = draft.answers;
       examView.flagged = Array.isArray(draft.flagged) ? draft.flagged : [];
       examView.current = typeof draft.current === 'number' ? draft.current : 0;
+      if (draft.shuffleMap) examOptionShuffleMap = draft.shuffleMap;
     }
   }
   renderAssessment();
@@ -7273,6 +7274,24 @@ function toggleAccordion(btn) {
   srAnnounce(expanded ? 'Section collapsed' : 'Section expanded');
 }
 
+// ─── OPTION SHUFFLE (prevents position-bias / "always pick B") ───
+function crShuffleIndices(len) {
+  const idx = Array.from({length: len}, (_, i) => i);
+  for (let k = idx.length - 1; k > 0; k--) {
+    const j = Math.floor(Math.random() * (k + 1));
+    [idx[k], idx[j]] = [idx[j], idx[k]];
+  }
+  return idx;
+}
+// Stable shuffle map for the current assessment attempt (cleared on retry)
+let examOptionShuffleMap = {};
+function getExamShuffle(qIdx, numOptions) {
+  if (!examOptionShuffleMap[qIdx]) {
+    examOptionShuffleMap[qIdx] = crShuffleIndices(numOptions);
+  }
+  return examOptionShuffleMap[qIdx];
+}
+
 // ─── MULTIPLE CHOICE ───
 function renderMultipleChoice(wrap, block, blockIndex) {
   const id = `mc-${currentSectionIndex}-${blockIndex}`;
@@ -7286,12 +7305,16 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   }
   
   const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  // Shuffle option display order to prevent position bias
+  const kcShuffle = crShuffleIndices(options.length);
+  const displayOptions = kcShuffle.map(i => options[i]);
+  const shuffledCorrectIdx = kcShuffle.indexOf(correctIdx);
   
   let html = `<div class="cr-kc" id="${id}">
     <div class="cr-kc-question">${esc(block.question || '')}</div>
     <div class="cr-kc-options">`;
   
-  options.forEach((opt, i) => {
+  displayOptions.forEach((opt, i) => {
     html += `<div class="cr-kc-option" data-idx="${i}" data-action="selectMC" data-target="${id}" data-idx="${i}">
       <span class="cr-kc-radio"></span>
       <span>${esc(opt)}</span>
@@ -7299,7 +7322,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   });
   
   html += `</div>
-    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
+    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${shuffledCorrectIdx}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
     ${buildRemediationButtonHTML(block)}
   </div>`;
@@ -8859,7 +8882,10 @@ function renderAssessment() {
   const i = examView.current;
   const q = qs[i];
   const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
-  const selected = assessmentState.answers[i];
+  // Stable shuffle per question per attempt (map cleared on retry)
+  const examShuffle = getExamShuffle(i, options.length);
+  const displayOptions = examShuffle.map(si => options[si]);
+  const selected = assessmentState.answers[i]; // stored as ORIGINAL index
   const answeredCount = Object.keys(assessmentState.answers).length;
   const allAnswered = answeredCount === qs.length;
   const flagged = new Set(examView.flagged);
@@ -8880,10 +8906,13 @@ function renderAssessment() {
   html += `<div class="cr-exam-card">
     <div class="cr-exam-stem">${esc(q.question || '')}</div>
     <div class="cr-exam-options">
-      ${options.map((opt, j) => `<div class="cr-exam-option ${selected === j ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${j}">
-        <span class="cr-exam-letter">${String.fromCharCode(65 + j)}</span>
+      ${displayOptions.map((opt, dj) => {
+        const origIdx = examShuffle[dj];
+        return `<div class="cr-exam-option ${selected === origIdx ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${origIdx}">
+        <span class="cr-exam-letter">${String.fromCharCode(65 + dj)}</span>
         <span class="cr-exam-opt-text">${esc(opt)}</span>
-      </div>`).join('')}
+      </div>`;
+      }).join('')}
     </div>
   </div>`;
   html += `<div class="cr-exam-actions">
@@ -8922,7 +8951,7 @@ function renderAssessment() {
 
 // Autosave the in-progress attempt (answers, flags, position) per learner per course.
 function examPersistDraft() {
-  saveState('examDraft', { answers: assessmentState.answers, flagged: examView.flagged, current: examView.current });
+  saveState('examDraft', { answers: assessmentState.answers, flagged: examView.flagged, current: examView.current, shuffleMap: examOptionShuffleMap });
 }
 
 function examGoTo(idx) {
@@ -9281,6 +9310,7 @@ function retryAssessment() {
   assessmentState.score = null;
   assessmentState.perQuestionCorrect = null;
   examView = { current: 0, flagged: [] };
+  examOptionShuffleMap = {}; // Fresh option order for new attempt
   saveState('examDraft', null);
   renderAssessment();
 }
