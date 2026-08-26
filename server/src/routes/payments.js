@@ -17,7 +17,7 @@ import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/h
 import { processReferralPaidConversion } from '../services/rewardsService.js';
 import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
 import { constructStripeEvent } from '../utils/verifyStripeSignature.js';
-import { Course as InteractiveCourse } from '../models/InteractiveCourse.js';
+import { Course as InteractiveCourse, CourseProgress as InteractiveCourseProgress } from '../models/InteractiveCourse.js';
 import twilio from 'twilio';
 import logger from '../utils/logger.js';
 
@@ -747,6 +747,40 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           });
 
           logger.info({ userId: purchaseUserId, slug, requestId: req.requestId, action: 'course_purchase_recorded' }, 'Course purchase recorded');
+
+          // Seed enrollment record so admin panel and viewer both reflect the purchase
+          // without waiting for the user to first open the viewer (which auto-creates lazily).
+          // findOneAndUpdate + upsert is idempotent — safe on webhook retries.
+          try {
+            await InteractiveCourseProgress.findOneAndUpdate(
+              {
+                userId: new mongoose.Types.ObjectId(purchaseUserId),
+                courseId: new mongoose.Types.ObjectId(courseId)
+              },
+              {
+                $setOnInsert: {
+                  userId: new mongoose.Types.ObjectId(purchaseUserId),
+                  courseId: new mongoose.Types.ObjectId(courseId),
+                  status: 'not_started',
+                  overallProgress: 0,
+                  enrolledAt: new Date(),
+                  lastAccessedAt: new Date(),
+                  sectionProgress: [],
+                  assessmentPassed: false,
+                  evaluationSubmitted: false,
+                  attestationAgreed: false,
+                  totalTimeSpent: 0
+                }
+              },
+              { upsert: true, new: false }
+            );
+            logger.info({ userId: purchaseUserId, courseId, slug, requestId: req.requestId, action: 'enrollment_seeded' }, 'InteractiveCourseProgress enrollment seeded on purchase');
+          } catch (enrollErr) {
+            // Duplicate key = already enrolled, not an error
+            if (enrollErr.code !== 11000) {
+              logger.error({ err: enrollErr, userId: purchaseUserId, courseId, requestId: req.requestId }, 'Failed to seed enrollment on purchase');
+            }
+          }
 
           // [MARKETPLACE] Record syndication commission (15/85 split) if this sale qualifies.
           // Fire-and-forget; the helper never throws, but we guard anyway so it can never
