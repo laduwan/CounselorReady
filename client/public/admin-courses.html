@@ -394,7 +394,7 @@
         try {
           let p = 1;
           while (true) {
-            const r = await fetch(`${API_URL}/api/interactive-courses/admin/all`, {
+            const r = await fetch(`${API_URL}/api/interactive-courses?page=${p}&limit=50&status=all`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             if (!r.ok) break;
@@ -406,7 +406,8 @@
               if (idx >= 0) courses[idx] = ic;
               else courses.push(ic);
             });
-            break; // /admin/all returns everything in one shot
+            if (p >= (d.pagination?.pages || 1) || batch.length === 0) break;
+            p++;
           }
         } catch(e) {}
 
