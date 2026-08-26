@@ -790,56 +790,115 @@ router.get('/admin/feedback', protect, async (req, res) => {
 
 // @route   GET /api/analytics/admin/export
 // @desc    Export analytics data as CSV
+//          type=surveys  → platform NPS/satisfaction surveys
+//          type=evals    → course evaluations (NBCC 11-question form)
+//          type=all      → both combined
 // @access  Private (Admin)
 router.get('/admin/export', protect, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
-    
+
     const { type = 'all' } = req.query;
-    
-    let surveys;
-    if (type === 'all') {
-      surveys = await PlatformSurvey.find()
+    const esc = v => `"${String(v ?? '').replace(/"/g, '""').replace(/,/g, ';')}"`;
+
+    let csv = '';
+
+    // ── Platform surveys ──────────────────────────────────────────
+    if (type === 'all' || type === 'surveys') {
+      const surveys = await PlatformSurvey.find()
         .populate('userId', 'email')
         .populate('context.courseId', 'title')
         .sort({ createdAt: -1 });
-    } else {
-      surveys = await PlatformSurvey.find({ surveyType: type })
-        .populate('userId', 'email')
-        .populate('context.courseId', 'title')
-        .sort({ createdAt: -1 });
+
+      const surveyHeaders = [
+        'Date', 'Email', 'Survey Type', 'NPS Score', 'Satisfaction',
+        'Course Quality', 'Ease of Use', 'Value for Money', 'Support',
+        'What They Love', 'What Could Improve', 'Feature Requests', 'Course', 'Plan'
+      ];
+      const surveyRows = surveys.map(s => [
+        s.createdAt.toISOString().split('T')[0],
+        s.userId?.email || 'N/A',
+        s.surveyType,
+        s.npsScore ?? '',
+        s.satisfactionScore ?? '',
+        s.ratings?.courseQuality ?? '',
+        s.ratings?.easeOfUse ?? '',
+        s.ratings?.valueForMoney ?? '',
+        s.ratings?.customerSupport ?? '',
+        s.responses?.whatDoYouLove || '',
+        s.responses?.whatCouldImprove || '',
+        s.responses?.featureRequests || '',
+        s.context?.courseId?.title || '',
+        s.context?.subscriptionPlan || ''
+      ].map(esc));
+
+      if (type === 'all') csv += 'PLATFORM SURVEYS\n';
+      csv += [surveyHeaders.map(esc).join(','), ...surveyRows.map(r => r.join(','))].join('\n') + '\n';
     }
-    
-    // Build CSV
-    const headers = [
-      'Date', 'Email', 'Survey Type', 'NPS Score', 'Satisfaction', 
-      'Course Quality', 'Ease of Use', 'Value for Money', 'Support',
-      'What They Love', 'What Could Improve', 'Feature Requests', 'Course', 'Plan'
-    ];
-    
-    const rows = surveys.map(s => [
-      s.createdAt.toISOString().split('T')[0],
-      s.userId?.email || 'N/A',
-      s.surveyType,
-      s.npsScore ?? '',
-      s.satisfactionScore ?? '',
-      s.ratings?.courseQuality ?? '',
-      s.ratings?.easeOfUse ?? '',
-      s.ratings?.valueForMoney ?? '',
-      s.ratings?.customerSupport ?? '',
-      (s.responses?.whatDoYouLove || '').replace(/,/g, ';'),
-      (s.responses?.whatCouldImprove || '').replace(/,/g, ';'),
-      (s.responses?.featureRequests || '').replace(/,/g, ';'),
-      s.context?.courseId?.title || '',
-      s.context?.subscriptionPlan || ''
-    ]);
-    
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    
+
+    // ── Course evaluations ────────────────────────────────────────
+    if (type === 'all' || type === 'evals') {
+      const evals = await Evaluation.find({ status: { $in: ['submitted', 'completed', 'reviewed'] } })
+        .populate('user', 'email profile.firstName profile.lastName')
+        .populate('course', 'title courseCode ceHours')
+        .sort({ submittedAt: -1 });
+
+      const evalHeaders = [
+        'Date', 'Email', 'First Name', 'Last Name',
+        'Course Code', 'Course Title', 'CE Hours',
+        'Overall Rating',
+        // NBCC 10-item
+        'Objectives Met', 'Relevance', 'Current Info', 'Applicable Skills',
+        'Instructor Expertise', 'Instructor Clarity', 'Organization',
+        'Course Value', 'Confidence', 'Overall Satisfaction',
+        // Support & recommendation
+        'Support Resolution', 'Would Recommend', 'Fee Rating',
+        // Open text
+        'Most Valuable', 'Improvements', 'Additional Comments'
+      ];
+
+      const evalRows = evals.map(e => {
+        const r = e.ratings || {};
+        return [
+          e.submittedAt ? e.submittedAt.toISOString().split('T')[0] : '',
+          e.user?.email || '',
+          e.user?.profile?.firstName || '',
+          e.user?.profile?.lastName || '',
+          e.course?.courseCode || '',
+          e.course?.title || '',
+          e.course?.ceHours ?? '',
+          e.overallRating ?? '',
+          // NBCC 10-item (new; fallback to legacy where applicable)
+          r.objectivesMet      ?? r.learningObjectives ?? '',
+          r.relevance          ?? '',
+          r.currentInfo        ?? '',
+          r.applicableSkills   ?? '',
+          r.instructorExpertise ?? '',
+          r.instructorClarity  ?? r.presentation ?? '',
+          r.organization       ?? '',
+          r.courseValue        ?? '',
+          r.confidence         ?? '',
+          r.overallSatisfaction ?? r.contentQuality ?? '',
+          // Support & recommendation
+          e.supportResolution  ?? '',
+          e.wouldRecommend     ?? '',
+          e.courseFee          ?? '',
+          // Open text
+          e.feedback?.mostValuable    || e.feedback?.whatWorkedWell  || '',
+          e.feedback?.improvements    || e.feedback?.suggestions      || '',
+          e.feedback?.additionalComments || ''
+        ].map(esc);
+      });
+
+      if (type === 'all') csv += '\nCOURSE EVALUATIONS\n';
+      csv += [evalHeaders.map(esc).join(','), ...evalRows.map(r => r.join(','))].join('\n') + '\n';
+    }
+
+    const label = type === 'evals' ? 'course_evaluations' : type === 'surveys' ? 'platform_surveys' : 'analytics_export';
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename=survey_data_${Date.now()}.csv`);
+    res.setHeader('Content-Disposition', `attachment; filename=${label}_${Date.now()}.csv`);
     res.send(csv);
   } catch (error) {
     console.error('Export error:', error);

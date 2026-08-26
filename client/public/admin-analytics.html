@@ -61,9 +61,16 @@
           <option value="365">Last year</option>
           <option value="all" selected>All time</option>
         </select>
-        <button onclick="exportData()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium">
-          Export CSV
-        </button>
+        <div style="position:relative;display:inline-block" id="exportMenuWrap">
+          <button onclick="toggleExportMenu()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1">
+            Export CSV ▾
+          </button>
+          <div id="exportMenu" style="display:none;position:absolute;right:0;top:110%;background:#fff;border:1px solid #D1C9BE;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:50;min-width:200px;overflow:hidden">
+            <button onclick="exportData('surveys')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer;border-bottom:1px solid #F0EDE8" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">Platform Surveys (NPS)</button>
+            <button onclick="exportData('evals')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer;border-bottom:1px solid #F0EDE8" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">Course Evaluations</button>
+            <button onclick="exportData('all')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">All Data (Combined)</button>
+          </div>
+        </div>
         <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
         <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -1052,9 +1059,20 @@
       }
     }
 
-    function exportData() {
+    function toggleExportMenu() {
+      const menu = document.getElementById('exportMenu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+    document.addEventListener('click', e => {
+      if (!document.getElementById('exportMenuWrap')?.contains(e.target)) {
+        const menu = document.getElementById('exportMenu');
+        if (menu) menu.style.display = 'none';
+      }
+    });
+    function exportData(type = 'all') {
       const token = localStorage.getItem('token');
-      window.open(`${API_URL}/api/analytics/admin/export?token=${token}`, '_blank');
+      document.getElementById('exportMenu').style.display = 'none';
+      window.open(`${API_URL}/api/analytics/admin/export?type=${type}&token=${token}`, '_blank');
     }
 
     // ============================================
