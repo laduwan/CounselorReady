@@ -1176,9 +1176,9 @@ const course = {
         },
         {
           "type": "videoEmbed",
-          "videoUrl": "",
-          "title": "Recommended: Boundary-Setting Role Play Demonstration",
-          "description": "Presenter will add a video demonstrating the contrast between punitive boundary enforcement and compassionate limit-setting with a high-conflict client."
+          "videoUrl": "https://www.youtube.com/watch?v=UkQE8I9lFvQ",
+          "title": "Setting Boundaries in Clinical Practice: Role Play Demonstration",
+          "description": "A licensed clinician demonstrates how to set boundaries with clients compassionately, illustrating the difference between punitive responses and therapeutic limit-setting."
         },
         {
           "type": "matching",
@@ -1410,9 +1410,9 @@ const course = {
         },
         {
           "type": "videoEmbed",
-          "videoUrl": "",
-          "title": "Recommended: Consultation Group Best Practices for High-Conflict Cases",
-          "description": "Presenter will add a video discussing how to structure peer consultation groups for maximum clinical benefit when working with challenging cases."
+          "videoUrl": "https://www.youtube.com/watch?v=49Blk3eR5C8",
+          "title": "Six Levels of Validation in DBT: From Awareness to Radical Genuineness",
+          "description": "A detailed walkthrough of Linehan's six levels of validation, demonstrating how clinicians can apply each level in practice with high-conflict and emotionally dysregulated clients."
         },
         {
           "type": "cardSort",
