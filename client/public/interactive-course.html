@@ -6218,6 +6218,7 @@ function showAssessment() {
       assessmentState.answers = draft.answers;
       examView.flagged = Array.isArray(draft.flagged) ? draft.flagged : [];
       examView.current = typeof draft.current === 'number' ? draft.current : 0;
+      if (draft.shuffleMap) examOptionShuffleMap = draft.shuffleMap;
     }
   }
   renderAssessment();
@@ -7273,6 +7274,24 @@ function toggleAccordion(btn) {
   srAnnounce(expanded ? 'Section collapsed' : 'Section expanded');
 }
 
+// ─── OPTION SHUFFLE (prevents position-bias / "always pick B") ───
+function crShuffleIndices(len) {
+  const idx = Array.from({length: len}, (_, i) => i);
+  for (let k = idx.length - 1; k > 0; k--) {
+    const j = Math.floor(Math.random() * (k + 1));
+    [idx[k], idx[j]] = [idx[j], idx[k]];
+  }
+  return idx;
+}
+// Stable shuffle map for the current assessment attempt (cleared on retry)
+let examOptionShuffleMap = {};
+function getExamShuffle(qIdx, numOptions) {
+  if (!examOptionShuffleMap[qIdx]) {
+    examOptionShuffleMap[qIdx] = crShuffleIndices(numOptions);
+  }
+  return examOptionShuffleMap[qIdx];
+}
+
 // ─── MULTIPLE CHOICE ───
 function renderMultipleChoice(wrap, block, blockIndex) {
   const id = `mc-${currentSectionIndex}-${blockIndex}`;
@@ -7286,12 +7305,16 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   }
   
   const options = (block.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+  // Shuffle option display order to prevent position bias
+  const kcShuffle = crShuffleIndices(options.length);
+  const displayOptions = kcShuffle.map(i => options[i]);
+  const shuffledCorrectIdx = kcShuffle.indexOf(correctIdx);
   
   let html = `<div class="cr-kc" id="${id}">
     <div class="cr-kc-question">${esc(block.question || '')}</div>
     <div class="cr-kc-options">`;
   
-  options.forEach((opt, i) => {
+  displayOptions.forEach((opt, i) => {
     html += `<div class="cr-kc-option" data-idx="${i}" data-action="selectMC" data-target="${id}" data-idx="${i}">
       <span class="cr-kc-radio"></span>
       <span>${esc(opt)}</span>
@@ -7299,7 +7322,7 @@ function renderMultipleChoice(wrap, block, blockIndex) {
   });
   
   html += `</div>
-    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${correctIdx}">Check Answer</button>
+    <button class="cr-kc-submit" disabled data-action="submitMC" data-target="${id}" data-correct="${shuffledCorrectIdx}">Check Answer</button>
     <div class="cr-kc-explanation">${block.explanation || ''}</div>
     ${buildRemediationButtonHTML(block)}
   </div>`;
@@ -8859,7 +8882,10 @@ function renderAssessment() {
   const i = examView.current;
   const q = qs[i];
   const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
-  const selected = assessmentState.answers[i];
+  // Stable shuffle per question per attempt (map cleared on retry)
+  const examShuffle = getExamShuffle(i, options.length);
+  const displayOptions = examShuffle.map(si => options[si]);
+  const selected = assessmentState.answers[i]; // stored as ORIGINAL index
   const answeredCount = Object.keys(assessmentState.answers).length;
   const allAnswered = answeredCount === qs.length;
   const flagged = new Set(examView.flagged);
@@ -8880,10 +8906,13 @@ function renderAssessment() {
   html += `<div class="cr-exam-card">
     <div class="cr-exam-stem">${esc(q.question || '')}</div>
     <div class="cr-exam-options">
-      ${options.map((opt, j) => `<div class="cr-exam-option ${selected === j ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${j}">
-        <span class="cr-exam-letter">${String.fromCharCode(65 + j)}</span>
+      ${displayOptions.map((opt, dj) => {
+        const origIdx = examShuffle[dj];
+        return `<div class="cr-exam-option ${selected === origIdx ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${origIdx}">
+        <span class="cr-exam-letter">${String.fromCharCode(65 + dj)}</span>
         <span class="cr-exam-opt-text">${esc(opt)}</span>
-      </div>`).join('')}
+      </div>`;
+      }).join('')}
     </div>
   </div>`;
   html += `<div class="cr-exam-actions">
@@ -8922,7 +8951,7 @@ function renderAssessment() {
 
 // Autosave the in-progress attempt (answers, flags, position) per learner per course.
 function examPersistDraft() {
-  saveState('examDraft', { answers: assessmentState.answers, flagged: examView.flagged, current: examView.current });
+  saveState('examDraft', { answers: assessmentState.answers, flagged: examView.flagged, current: examView.current, shuffleMap: examOptionShuffleMap });
 }
 
 function examGoTo(idx) {
@@ -9281,6 +9310,7 @@ function retryAssessment() {
   assessmentState.score = null;
   assessmentState.perQuestionCorrect = null;
   examView = { current: 0, flagged: [] };
+  examOptionShuffleMap = {}; // Fresh option order for new attempt
   saveState('examDraft', null);
   renderAssessment();
 }
@@ -9300,22 +9330,30 @@ function renderEvaluation() {
       <p style="margin:6px 0 0;font-size:0.78rem;color:var(--cr-text-muted)">NBCC requires it before the certificate issues · ${ceHours} CE Hour${ceHours !== 1 ? 's' : ''}</p>
     </div>
 
-    <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:20px">
-      Please rate the following aspects of this continuing education activity.
+    <p style="font-size:0.85rem;color:var(--cr-text-secondary);margin-bottom:4px">
+      Please rate the following statements about this continuing education activity.
+    </p>
+    <p style="font-size:0.78rem;color:var(--cr-text-muted);margin-bottom:20px">
+      1 = Strongly Disagree · 2 = Disagree · 3 = Neutral · 4 = Agree · 5 = Strongly Agree · N/A = Not Applicable
     </p>`;
 
   const questions = [
-    { key: 'contentQuality', label: 'Quality of content and materials' },
-    { key: 'relevance', label: 'Relevance to your clinical practice' },
-    { key: 'presentation', label: 'Clarity of presentation and instruction' },
-    { key: 'engagement', label: 'Level of learner engagement' },
-    { key: 'learningObjectives', label: 'Achievement of stated learning objectives' }
+    { key: 'objectivesMet', label: 'The course objectives were clearly stated and met.' },
+    { key: 'relevance', label: 'The course content was relevant to my counseling practice and professional needs.' },
+    { key: 'currentInfo', label: 'The course provided current and clinically useful information.' },
+    { key: 'applicableSkills', label: 'I gained knowledge or skills that I can apply to my counseling practice.' },
+    { key: 'instructorExpertise', label: 'The instructor demonstrated expertise in the subject matter.' },
+    { key: 'instructorClarity', label: 'The instructor presented the material clearly and responded to questions and communications in a timely manner.' },
+    { key: 'organization', label: 'The course was well organized, and the pace and amount of material were appropriate.' },
+    { key: 'courseValue', label: 'The course provided good value for the registration fee.' },
+    { key: 'confidence', label: 'The course increased my confidence in applying what I learned in professional practice.' },
+    { key: 'overallSatisfaction', label: 'Overall, I was satisfied with this CE course.' }
   ];
 
-  questions.forEach(q => {
-    html += `<div style="margin-bottom:16px">
-      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">${q.label}</label>
-      <div style="display:flex;gap:6px" id="eval-${q.key}">`;
+  questions.forEach((q, idx) => {
+    html += `<div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #F0EDE8">
+      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">${idx + 1}. ${q.label}</label>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center" id="eval-${q.key}">`;
     for (let i = 1; i <= 5; i++) {
       html += `<button data-action="rateEval" data-key="${q.key}" data-value="${i}"
         style="width:40px;height:40px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
@@ -9323,30 +9361,69 @@ function renderEvaluation() {
         onmouseover="this.style.borderColor='var(--cr-burgundy)'"
         onmouseout="if(!this.classList.contains('selected'))this.style.borderColor='var(--cr-border)'">${i}</button>`;
     }
+    html += `<button data-action="rateEval" data-key="${q.key}" data-value="na"
+      style="padding:0 12px;height:40px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+      font-size:0.78rem;font-weight:700;color:var(--cr-text-muted);cursor:pointer;transition:all 0.15s"
+      onmouseover="this.style.borderColor='var(--cr-burgundy)'"
+      onmouseout="if(!this.classList.contains('selected'))this.style.borderColor='var(--cr-border)'">N/A</button>`;
     html += `</div></div>`;
   });
 
-  html += `<div style="margin-bottom:16px">
-      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">Would you recommend this course?</label>
-      <div style="display:flex;gap:8px" id="eval-wouldRecommend">
-        <button data-action="rateEval" data-key="wouldRecommend" data-value="yes"
-          style="padding:8px 20px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
-          font-size:0.85rem;font-weight:600;color:var(--cr-green);cursor:pointer">Yes</button>
-        <button data-action="rateEval" data-key="wouldRecommend" data-value="no"
-          style="padding:8px 20px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
-          font-size:0.85rem;font-weight:600;color:var(--cr-text-muted);cursor:pointer">No</button>
-      </div>
+  html += `<div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #F0EDE8">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">11. If you contacted support with a question or issue, was it resolved to your satisfaction?</label>
+    <div style="display:flex;flex-direction:column;gap:8px" id="eval-supportResolution">
+      <button data-action="rateEval" data-key="supportResolution" data-value="yes_resolved"
+        style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+        font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">
+        \u2705 Yes — I received a timely response and resolution</button>
+      <button data-action="rateEval" data-key="supportResolution" data-value="no_unresolved"
+        style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+        font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">
+        \u274c No — I did not receive a response or my issue was not resolved</button>
+      <button data-action="rateEval" data-key="supportResolution" data-value="no_contact"
+        style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+        font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">
+        — I did not contact support</button>
     </div>
+  </div>
 
-    <div style="margin-bottom:16px">
-      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">What worked well? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
-      <textarea id="eval-whatWorkedWell" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none" placeholder="Share what you found most valuable..."></textarea>
+  <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #F0EDE8">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">How would you rate the course fee? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+    <div style="display:flex;flex-direction:column;gap:6px" id="eval-courseFee">
+      ${['Much too high','Somewhat too high','About right','Somewhat low','Much too low','Not sure'].map(opt =>
+        `<button data-action="rateEval" data-key="courseFee" data-value="${opt.toLowerCase().replace(/ /g,'_')}"
+          style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
+          font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">${opt}</button>`
+      ).join('')}
     </div>
+  </div>
 
-    <div style="margin-bottom:20px">
-      <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">Suggestions for improvement? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
-      <textarea id="eval-suggestions" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none" placeholder="How could we make this course better?"></textarea>
+  <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #F0EDE8">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">Would you recommend this CE course to other counseling professionals?</label>
+    <div style="display:flex;gap:8px" id="eval-wouldRecommend">
+      <button data-action="rateEval" data-key="wouldRecommend" data-value="yes"
+        style="padding:8px 24px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;font-size:0.85rem;font-weight:600;color:var(--cr-text);cursor:pointer">Yes</button>
+      <button data-action="rateEval" data-key="wouldRecommend" data-value="no"
+        style="padding:8px 24px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;font-size:0.85rem;font-weight:600;color:var(--cr-text);cursor:pointer">No</button>
+      <button data-action="rateEval" data-key="wouldRecommend" data-value="maybe"
+        style="padding:8px 24px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;font-size:0.85rem;font-weight:600;color:var(--cr-text);cursor:pointer">Maybe</button>
     </div>
+  </div>
+
+  <div style="margin-bottom:16px">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">What was the most valuable aspect of this course? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+    <textarea id="eval-mostValuable" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box" placeholder="Share what you found most valuable..."></textarea>
+  </div>
+
+  <div style="margin-bottom:16px">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">What could be improved? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+    <textarea id="eval-improvements" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box" placeholder="How could we make this course better?"></textarea>
+  </div>
+
+  <div style="margin-bottom:20px">
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:6px">Additional comments or recommendations for future CE courses: <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+    <textarea id="eval-additionalComments" rows="2" style="width:100%;padding:10px 12px;border:1.5px solid var(--cr-border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical;outline:none;box-sizing:border-box" placeholder="Any other thoughts..."></textarea>
+  </div>
 
     <div id="eval-error" style="display:none;padding:10px 14px;background:#FEF2F2;border:1px solid #DC2626;border-radius:8px;color:#991B1B;font-size:0.83rem;margin-bottom:12px"></div>
 
@@ -9370,7 +9447,7 @@ function renderEvaluation() {
         b.classList.remove('selected');
         b.style.background = '#fff';
         b.style.borderColor = 'var(--cr-border)';
-        b.style.color = key === 'wouldRecommend' ? (b.dataset.value === 'yes' ? 'var(--cr-green)' : 'var(--cr-text-muted)') : 'var(--cr-navy)';
+        b.style.color = 'var(--cr-navy)';
       });
     }
     // Select this one
@@ -9387,7 +9464,7 @@ function submitEvaluation() {
 
   // Collect ratings
   const responses = {};
-  const ratingKeys = ['contentQuality', 'relevance', 'presentation', 'engagement', 'learningObjectives'];
+  const ratingKeys = ['objectivesMet', 'relevance', 'currentInfo', 'applicableSkills', 'instructorExpertise', 'instructorClarity', 'organization', 'courseValue', 'confidence', 'overallSatisfaction'];
   let missing = [];
 
   ratingKeys.forEach(key => {
@@ -9400,11 +9477,27 @@ function submitEvaluation() {
     }
   });
 
-  // Recommend
-  const recContainer = document.getElementById('eval-wouldRecommend');
-  const recSelected = recContainer?.querySelector('.selected');
-  if (recSelected) {
-    responses.wouldRecommend = recSelected.dataset.value;
+  // Support resolution (required)
+  const supContainer = document.getElementById('eval-supportResolution');
+  const supSelected = supContainer?.querySelector('.selected');
+  if (supSelected) {
+    responses.supportResolution = supSelected.dataset.value;
+  } else {
+    missing.push('support resolution');
+  }
+
+  if (missing.length > 0) {
+    if (errBox) {
+      errBox.style.display = 'block';
+      errBox.textContent = 'Please complete all required questions before submitting.';
+    }
+    return;
+  }
+
+  // Would you recommend (required)
+  const rc = document.getElementById('eval-wouldRecommend')?.querySelector('.selected');
+  if (rc) {
+    responses.wouldRecommend = rc.dataset.value;
   } else {
     missing.push('recommendation');
   }
@@ -9412,16 +9505,20 @@ function submitEvaluation() {
   if (missing.length > 0) {
     if (errBox) {
       errBox.style.display = 'block';
-      errBox.textContent = 'Please complete all ratings before submitting.';
+      errBox.textContent = 'Please complete all required questions before submitting.';
     }
     return;
   }
 
-  // Optional text
-  const ww = document.getElementById('eval-whatWorkedWell');
-  const sg = document.getElementById('eval-suggestions');
-  if (ww && ww.value.trim()) responses.whatWorkedWell = ww.value.trim();
-  if (sg && sg.value.trim()) responses.suggestions = sg.value.trim();
+  // Optional fields
+  const mv = document.getElementById('eval-mostValuable');
+  const im = document.getElementById('eval-improvements');
+  const ac = document.getElementById('eval-additionalComments');
+  const cf = document.getElementById('eval-courseFee')?.querySelector('.selected');
+  if (mv && mv.value.trim()) responses.mostValuable = mv.value.trim();
+  if (im && im.value.trim()) responses.improvements = im.value.trim();
+  if (ac && ac.value.trim()) responses.additionalComments = ac.value.trim();
+  if (cf) responses.courseFee = cf.dataset.value;
 
   // Disable button
   const btn = document.querySelector('[data-action="submitEvaluation"]');

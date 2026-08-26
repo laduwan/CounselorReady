@@ -61,9 +61,16 @@
           <option value="365">Last year</option>
           <option value="all" selected>All time</option>
         </select>
-        <button onclick="exportData()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium">
-          Export CSV
-        </button>
+        <div style="position:relative;display:inline-block" id="exportMenuWrap">
+          <button onclick="toggleExportMenu()" class="bg-forest-600 hover:bg-forest-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1">
+            Export CSV ▾
+          </button>
+          <div id="exportMenu" style="display:none;position:absolute;right:0;top:110%;background:#fff;border:1px solid #D1C9BE;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.12);z-index:50;min-width:200px;overflow:hidden">
+            <button onclick="exportData('surveys')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer;border-bottom:1px solid #F0EDE8" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">Platform Surveys (NPS)</button>
+            <button onclick="exportData('evals')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer;border-bottom:1px solid #F0EDE8" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">Course Evaluations</button>
+            <button onclick="exportData('all')" style="width:100%;padding:10px 16px;text-align:left;font-size:0.85rem;color:#284157;background:none;border:none;cursor:pointer" onmouseover="this.style.background='#F8F7F4'" onmouseout="this.style.background='none'">All Data (Combined)</button>
+          </div>
+        </div>
         <span class="text-burgundy-200 text-sm" id="adminEmail">Admin</span>
         <a href="/dashboard.html" class="text-burgundy-200 hover:text-white text-sm flex items-center gap-1">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
@@ -800,31 +807,85 @@
     }
     
     function renderSatisfactionBreakdown(sat) {
-      const categories = [
-        { key: 'avgContentQuality', label: 'Content Quality' },
-        { key: 'avgRelevance', label: 'Relevance' },
-        { key: 'avgPresentation', label: 'Presentation' },
-        { key: 'avgEngagement', label: 'Engagement' },
+      // New NBCC 10-item fields (Aug 2026+)
+      const newCategories = [
+        { key: 'avgObjectivesMet',       label: 'Objectives clearly stated and met' },
+        { key: 'avgRelevance',           label: 'Relevant to counseling practice' },
+        { key: 'avgCurrentInfo',         label: 'Current and clinically useful' },
+        { key: 'avgApplicableSkills',    label: 'Knowledge/skills I can apply' },
+        { key: 'avgInstructorExpertise', label: 'Instructor expertise' },
+        { key: 'avgInstructorClarity',   label: 'Instructor clarity and responsiveness' },
+        { key: 'avgOrganization',        label: 'Organization, pace, and amount' },
+        { key: 'avgCourseValue',         label: 'Value for registration fee' },
+        { key: 'avgConfidence',          label: 'Confidence in applying learning' },
+        { key: 'avgOverallSatisfaction', label: 'Overall satisfaction' }
+      ];
+
+      // Determine which set of fields has data
+      const hasNewData = newCategories.some(c => sat[c.key] > 0);
+      const legacyCategories = [
+        { key: 'avgContentQuality',     label: 'Content Quality' },
+        { key: 'avgRelevance',          label: 'Relevance' },
+        { key: 'avgPresentation',       label: 'Presentation' },
+        { key: 'avgEngagement',         label: 'Engagement' },
         { key: 'avgLearningObjectives', label: 'Learning Objectives' }
       ];
-      
-      const html = categories.map(cat => {
+      const categories = hasNewData ? newCategories : legacyCategories;
+
+      const ratingsHtml = categories.map(cat => {
         const value = sat[cat.key] || 0;
         const percent = (value / 5) * 100;
         return `
           <div>
-            <div class="flex justify-between text-sm mb-1">
-              <span class="text-forest-700">${cat.label}</span>
-              <span class="font-medium text-burgundy-800">${value.toFixed(1)}</span>
+            <div style="display:flex;justify-content:space-between;font-size:0.82rem;margin-bottom:3px">
+              <span style="color:#3D6B4F">${cat.label}</span>
+              <span style="font-weight:600;color:#6B1D34">${value > 0 ? value.toFixed(1) : '—'}</span>
             </div>
-            <div class="h-2 bg-forest-100 rounded-full overflow-hidden">
-              <div class="h-full bg-forest-500 rounded-full" style="width: ${percent}%"></div>
+            <div style="height:6px;background:#DCEAE2;border-radius:3px;overflow:hidden">
+              <div style="height:100%;background:#4A7C59;border-radius:3px;width:${percent}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Support resolution breakdown
+      const totalSupport = (sat.supportResolved || 0) + (sat.supportUnresolved || 0);
+      const supportHtml = totalSupport > 0 ? `
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid #F0EDE8">
+          <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7A5C24;margin-bottom:10px">Support Resolution</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="text-align:center;flex:1;min-width:80px">
+              <div style="font-size:1.4rem;font-weight:700;color:#4A7C59">${sat.supportResolved || 0}</div>
+              <div style="font-size:0.75rem;color:#5A7A65">Resolved</div>
+            </div>
+            <div style="text-align:center;flex:1;min-width:80px">
+              <div style="font-size:1.4rem;font-weight:700;color:#6B1D34">${sat.supportUnresolved || 0}</div>
+              <div style="font-size:0.75rem;color:#9B5B5B">Unresolved</div>
             </div>
           </div>
-        `;
-      }).join('');
-      
-      document.getElementById('satisfactionBreakdown').innerHTML = html;
+        </div>` : '';
+
+      // Recommendation breakdown
+      const totalRec = (sat.recommendYes || 0) + (sat.recommendNo || 0) + (sat.recommendMaybe || 0);
+      const recHtml = totalRec > 0 ? `
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #F0EDE8">
+          <div style="font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#7A5C24;margin-bottom:10px">Would Recommend</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="text-align:center;flex:1;min-width:60px">
+              <div style="font-size:1.4rem;font-weight:700;color:#4A7C59">${sat.recommendYes || 0}</div>
+              <div style="font-size:0.75rem;color:#5A7A65">Yes</div>
+            </div>
+            <div style="text-align:center;flex:1;min-width:60px">
+              <div style="font-size:1.4rem;font-weight:700;color:#D4A855">${sat.recommendMaybe || 0}</div>
+              <div style="font-size:0.75rem;color:#9B7A2A">Maybe</div>
+            </div>
+            <div style="text-align:center;flex:1;min-width:60px">
+              <div style="font-size:1.4rem;font-weight:700;color:#6B1D34">${sat.recommendNo || 0}</div>
+              <div style="font-size:0.75rem;color:#9B5B5B">No</div>
+            </div>
+          </div>
+        </div>` : '';
+
+      document.getElementById('satisfactionBreakdown').innerHTML = ratingsHtml + supportHtml + recHtml;
     }
     
     function renderTopCourses(topCourses) {
@@ -998,9 +1059,20 @@
       }
     }
 
-    function exportData() {
+    function toggleExportMenu() {
+      const menu = document.getElementById('exportMenu');
+      menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+    }
+    document.addEventListener('click', e => {
+      if (!document.getElementById('exportMenuWrap')?.contains(e.target)) {
+        const menu = document.getElementById('exportMenu');
+        if (menu) menu.style.display = 'none';
+      }
+    });
+    function exportData(type = 'all') {
       const token = localStorage.getItem('token');
-      window.open(`${API_URL}/api/analytics/admin/export?token=${token}`, '_blank');
+      document.getElementById('exportMenu').style.display = 'none';
+      window.open(`${API_URL}/api/analytics/admin/export?type=${type}&token=${token}`, '_blank');
     }
 
     // ============================================
@@ -1023,18 +1095,26 @@
           ? new Date(ev.submittedAt).toLocaleDateString()
           : (ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '');
 
-        // Build ratings line from ratings object + overallRating
+        // Build ratings line — new fields first, fall back to legacy
         let ratingsHtml = '';
         const r = ev.ratings || {};
         const parts = [];
-        if (ev.overallRating)   parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
-        if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
-        if (r.relevance)        parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
-        if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        if (ev.overallRating)        parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
+        if (r.overallSatisfaction)   parts.push(`Satisfaction: <strong>${r.overallSatisfaction}/5</strong>`);
+        else if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
+        if (r.relevance)             parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
+        if (r.applicableSkills)      parts.push(`Applied: <strong>${r.applicableSkills}/5</strong>`);
+        else if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        // Support resolution badge
+        const supLabel = { yes_resolved: '✅ Support resolved', no_unresolved: '❌ Support unresolved', no_contact: 'No support contact' };
+        const supBadge = ev.supportResolution ? `<span class="text-xs text-forest-500 ml-2">${supLabel[ev.supportResolution] || ''}</span>` : '';
+        // Recommend badge
+        const recLabel = { yes: '👍 Recommends', no: '👎 Does not recommend', maybe: '🤔 Maybe recommends' };
+        const recBadge = ev.wouldRecommend ? `<span class="text-xs text-forest-500 ml-2">${recLabel[ev.wouldRecommend] || ''}</span>` : '';
         if (parts.length) {
           ratingsHtml = parts.slice(0, 3)
             .map(p => `<span class="text-xs text-forest-600">${p}</span>`)
-            .join(' · ');
+            .join(' · ') + supBadge + recBadge;
         }
 
         return `
