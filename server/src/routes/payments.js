@@ -1030,6 +1030,25 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.status': subscription.status,
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
           };
+
+          // Resolve plan from subscription metadata or price ID lookup
+          // This is critical: without setting the plan here, users who pay
+          // via create-subscription (not checkout) stay on 'free' forever
+          // because checkout.session.completed doesn't fire for that path.
+          let resolvedPlan = subscription.metadata?.plan;
+          if (!resolvedPlan) {
+            const subPriceId = item?.price?.id;
+            if (subPriceId) {
+              for (const [key, val] of Object.entries(PRICE_IDS)) {
+                if (val === subPriceId) { resolvedPlan = key; break; }
+              }
+            }
+          }
+          if (resolvedPlan && subscription.status === 'active') {
+            userUpdate['subscription.plan'] = resolvedPlan;
+            userUpdate['subscription.stripeSubscriptionId'] = subscription.id;
+          }
+
           if (Number.isFinite(rawStart)) {
             userUpdate['subscription.currentPeriodStart'] = new Date(rawStart * 1000);
           }
