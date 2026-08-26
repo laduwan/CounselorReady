@@ -344,9 +344,12 @@ router.get('/', optionalAuth, async (req, res) => {
 router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   try {
     const courses = await Course.find({})
-      .select('title slug description status ceHours categories tags wordCount createdAt updatedAt')
-      .sort({ createdAt: -1 });
-    res.json({ success: true, data: courses, total: courses.length });
+      .select('title slug description status courseCode ceHours ceuHours categories tags wordCount sectionCount assessmentQuestionCount accessType price pricingTier thumbnail createdAt updatedAt publishedAt')
+      .sort({ status: 1, title: 1 })
+      .lean();
+    // Add _collection marker so admin-courses.html routes correctly
+    const data = courses.map(c => ({ ...c, _collection: 'interactivecourses' }));
+    res.json({ success: true, data, total: data.length });
   } catch (error) {
     console.error('Error fetching all courses for admin:', error);
     res.status(500).json({ success: false, error: 'Failed to fetch courses' });
