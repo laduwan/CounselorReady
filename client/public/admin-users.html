@@ -850,7 +850,15 @@
           headers: { 'Authorization': `Bearer ${token}` }
         });
         
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          console.error('Load user details failed:', response.status, errData);
+          alert('Failed to load user details: ' + (errData.error || response.statusText));
+          return;
+        }
+        
         const data = await response.json();
+        console.log('User detail response:', JSON.stringify(data.user, null, 2));
         currentUserData = data;
         renderUserDetails(data);
       } catch (error) {

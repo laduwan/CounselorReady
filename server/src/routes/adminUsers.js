@@ -705,14 +705,15 @@ router.get('/users/:userId/progress', protect, adminOnly, async (req, res) => {
         firstName: user.profile?.firstName,
         lastName: user.profile?.lastName,
         email: user.email,
-        phone: user.phone,
+        phone: user.phone || user.profile?.phone || '',
         role: user.role,
-        registeredAt: user.createdAt,
+        registeredAt: user.createdAt || user._id.getTimestamp(),
         lastLoginAt: user.lastLoginAt,
         subscription: user.subscription,
-        primaryState: user.profile?.state || credentials.find(c => c.isPrimary)?.state || '-',
+        primaryState: user.primaryState || user.profile?.state || credentials.find(c => c.isPrimary)?.state || '-',
         disabled: user.disabled || false,
-        disabledAt: user.disabledAt
+        disabledAt: user.disabledAt,
+        emailVerified: user.emailVerified || false
       },
       stats: {
         totalCourses: totalEnrollments,
