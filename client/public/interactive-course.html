@@ -6959,28 +6959,36 @@ function renderAssessment() {
   
   qs.forEach((q, i) => {
     const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
+    const isMS = q.type === 'multiSelect';
     const selected = assessmentState.answers[i];
-    
+    const selectedArr = Array.isArray(selected) ? selected : [];
+
     html += `<div class="cr-kc" style="border-left-color:var(--cr-gold)">
-      <div class="cr-kc-question">${i + 1}. ${esc(q.question || '')}</div>
+      <div class="cr-kc-question">${i + 1}. ${esc(q.question || '')}${isMS ? ' <span style="font-size:0.8em;color:var(--cr-text-muted)">(Select all that apply)</span>' : ''}</div>
       <div class="cr-kc-options">
-        ${options.map((opt, j) => `<div class="cr-kc-option ${selected === j ? 'selected' : ''}" 
-          data-action="assessmentSelect" data-q="${i}" data-opt="${j}">
-          <span class="cr-kc-radio"></span>
+        ${options.map((opt, j) => `<div class="cr-kc-option ${isMS ? (selectedArr.includes(j) ? 'selected' : '') : (selected === j ? 'selected' : '')}"
+          data-action="${isMS ? 'assessmentToggleMS' : 'assessmentSelect'}" data-q="${i}" data-opt="${j}">
+          <span class="${isMS ? 'cr-kc-check' : 'cr-kc-radio'}"></span>
           <span>${esc(opt)}</span>
         </div>`).join('')}
       </div>
     </div>`;
   });
-  
-  const allAnswered = Object.keys(assessmentState.answers).length === qs.length;
+
+  // A multiSelect question only counts as answered once at least one option is toggled on
+  // (an empty array is a valid "no selection yet" state, unlike a scalar key just being present).
+  const answeredCount = qs.filter((q, i) => {
+    const a = assessmentState.answers[i];
+    return q.type === 'multiSelect' ? (Array.isArray(a) && a.length > 0) : typeof a === 'number';
+  }).length;
+  const allAnswered = answeredCount === qs.length;
   html += `<div style="text-align:center;margin-top:32px">
-    <button class="cr-btn cr-btn-success" style="font-size:1.1em;padding:14px 40px" 
+    <button class="cr-btn cr-btn-success" style="font-size:1.1em;padding:14px 40px"
       data-action="submitAssessment" ${allAnswered ? '' : 'disabled'}>
       Submit Assessment
     </button>
     <p style="font-size:0.85em;color:var(--cr-text-muted);margin-top:8px">
-      ${allAnswered ? 'Ready to submit' : `${Object.keys(assessmentState.answers).length}/${qs.length} answered`}
+      ${allAnswered ? 'Ready to submit' : `${answeredCount}/${qs.length} answered`}
     </p>
   </div>`;
   
@@ -6996,11 +7004,33 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
+// Companion to assessmentSelect for exam questions of type 'multiSelect' —
+// toggles membership in a per-question array instead of overwriting a single
+// scalar answer, mirroring toggleMS()'s behavior for in-content knowledge checks.
+function assessmentToggleMS(qIdx, optIdx) {
+  if (assessmentState.submitted) return;
+  const cur = Array.isArray(assessmentState.answers[qIdx]) ? assessmentState.answers[qIdx].slice() : [];
+  const pos = cur.indexOf(optIdx);
+  if (pos >= 0) cur.splice(pos, 1); else cur.push(optIdx);
+  assessmentState.answers[qIdx] = cur;
+  renderAssessment();
+}
+
 async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
   
   qs.forEach((q, i) => {
+    if (q.type === 'multiSelect') {
+      const correctIdxs = (q.options || [])
+        .map((o, j) => (typeof o === 'object' && o.isCorrect) ? j : -1)
+        .filter(j => j >= 0);
+      const selectedIdxs = Array.isArray(assessmentState.answers[i]) ? assessmentState.answers[i] : [];
+      const hasAllCorrect = correctIdxs.every(j => selectedIdxs.includes(j));
+      const hasOnlyCorrect = selectedIdxs.every(j => correctIdxs.includes(j));
+      if (hasAllCorrect && hasOnlyCorrect) correct++;
+      return;
+    }
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
     else if (Array.isArray(q.options)) {
@@ -9076,6 +9106,7 @@ document.addEventListener('click', function(e) {
     
     // ─── Assessment ───
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
+    case 'assessmentToggleMS': assessmentToggleMS(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
     case 'submitAssessment': submitAssessment(); break;
     case 'retryAssessment': retryAssessment(); break;
     
