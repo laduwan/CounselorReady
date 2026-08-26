@@ -9399,7 +9399,7 @@ function renderEvaluation() {
   </div>
 
   <div style="margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid #F0EDE8">
-    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">Would you recommend this CE course to other counseling professionals? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
+    <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">Would you recommend this CE course to other counseling professionals?</label>
     <div style="display:flex;gap:8px" id="eval-wouldRecommend">
       <button data-action="rateEval" data-key="wouldRecommend" data-value="yes"
         style="padding:8px 24px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;font-size:0.85rem;font-weight:600;color:var(--cr-text);cursor:pointer">Yes</button>
@@ -9494,17 +9494,31 @@ function submitEvaluation() {
     return;
   }
 
+  // Would you recommend (required)
+  const rc = document.getElementById('eval-wouldRecommend')?.querySelector('.selected');
+  if (rc) {
+    responses.wouldRecommend = rc.dataset.value;
+  } else {
+    missing.push('recommendation');
+  }
+
+  if (missing.length > 0) {
+    if (errBox) {
+      errBox.style.display = 'block';
+      errBox.textContent = 'Please complete all required questions before submitting.';
+    }
+    return;
+  }
+
   // Optional fields
   const mv = document.getElementById('eval-mostValuable');
   const im = document.getElementById('eval-improvements');
   const ac = document.getElementById('eval-additionalComments');
   const cf = document.getElementById('eval-courseFee')?.querySelector('.selected');
-  const rc = document.getElementById('eval-wouldRecommend')?.querySelector('.selected');
   if (mv && mv.value.trim()) responses.mostValuable = mv.value.trim();
   if (im && im.value.trim()) responses.improvements = im.value.trim();
   if (ac && ac.value.trim()) responses.additionalComments = ac.value.trim();
   if (cf) responses.courseFee = cf.dataset.value;
-  if (rc) responses.wouldRecommend = rc.dataset.value;
 
   // Disable button
   const btn = document.querySelector('[data-action="submitEvaluation"]');
