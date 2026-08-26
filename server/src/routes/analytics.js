@@ -504,11 +504,29 @@ const round1 = (v) => (v ? Math.round(v * 10) / 10 : 0);
 
     const satisfactionData = {
       avgSatisfaction: round1(g.avgOverall),
-      avgContentQuality: round1(g.avgContentQuality),
-      avgRelevance: round1(g.avgRelevance),
-      avgPresentation: round1(g.avgPresentation),
-      avgEngagement: round1(g.avgEngagement),
-      avgLearningObjectives: round1(g.avgLearningObjectives),
+      // NBCC 10-item fields (Aug 2026+)
+      avgObjectivesMet:       round1(g.avgObjectivesMet),
+      avgRelevance:           round1(g.avgRelevance),
+      avgCurrentInfo:         round1(g.avgCurrentInfo),
+      avgApplicableSkills:    round1(g.avgApplicableSkills),
+      avgInstructorExpertise: round1(g.avgInstructorExpertise),
+      avgInstructorClarity:   round1(g.avgInstructorClarity),
+      avgOrganization:        round1(g.avgOrganization),
+      avgCourseValue:         round1(g.avgCourseValue),
+      avgConfidence:          round1(g.avgConfidence),
+      avgOverallSatisfaction: round1(g.avgOverallSatisfaction),
+      // Support resolution breakdown
+      supportResolved:        g.supportResolved || 0,
+      supportUnresolved:      g.supportUnresolved || 0,
+      // Recommendation breakdown
+      recommendYes:           g.recommendYes || 0,
+      recommendNo:            g.recommendNo || 0,
+      recommendMaybe:         g.recommendMaybe || 0,
+      // Legacy fields (pre-Aug 2026)
+      avgContentQuality:      round1(g.avgContentQuality),
+      avgPresentation:        round1(g.avgPresentation),
+      avgEngagement:          round1(g.avgEngagement),
+      avgLearningObjectives:  round1(g.avgLearningObjectives),
       count: g.count || 0
     };
 
