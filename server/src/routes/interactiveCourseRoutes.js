@@ -254,22 +254,16 @@ async function recordGamification(userId, type, metadata = {}) {
  * GET /api/interactive-courses
  * List all published courses with optional filtering
  */
-router.get('/', optionalAuth, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const {
-      category,
-      tag,
-      search,
-      page = 1,
-      limit = 10
+    const { 
+      category, 
+      tag, 
+      search, 
+      status = 'published',
+      page = 1, 
+      limit = 10 
     } = req.query;
-
-    // Only admins can request status=all or status=draft — everyone else gets published only
-    const isAdmin = req.user?.role === 'admin';
-    const requestedStatus = req.query.status || 'published';
-    const status = (requestedStatus === 'all' || requestedStatus === 'draft') && !isAdmin
-      ? 'published'
-      : requestedStatus;
 
     const query = {};
     if (status && status !== 'all') query.status = status;
