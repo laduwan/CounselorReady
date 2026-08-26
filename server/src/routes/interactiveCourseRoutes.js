@@ -804,50 +804,51 @@ router.post('/:id/evaluation', protect, async (req, res) => {
       });
     }
 
-    // Map responses to evaluation fields
-    if (responses.contentQuality) {
-      evaluation.ratings = evaluation.ratings || {};
-      evaluation.ratings.contentQuality = parseInt(responses.contentQuality);
-    }
-    if (responses.relevance) {
-      evaluation.ratings = evaluation.ratings || {};
-      evaluation.ratings.relevance = parseInt(responses.relevance);
-    }
-    if (responses.presentation) {
-      evaluation.ratings = evaluation.ratings || {};
-      evaluation.ratings.presentation = parseInt(responses.presentation);
-    }
-    if (responses.engagement) {
-      evaluation.ratings = evaluation.ratings || {};
-      evaluation.ratings.engagement = parseInt(responses.engagement);
-    }
-    if (responses.learningObjectives) {
-      evaluation.ratings = evaluation.ratings || {};
-      evaluation.ratings.learningObjectives = parseInt(responses.learningObjectives);
-    }
+    // Map responses to evaluation fields (NBCC 10-item form, Aug 2026+)
+    evaluation.ratings = evaluation.ratings || {};
+    const numericFields = [
+      'objectivesMet', 'relevance', 'currentInfo', 'applicableSkills',
+      'instructorExpertise', 'instructorClarity', 'organization',
+      'courseValue', 'confidence', 'overallSatisfaction',
+      // Legacy fallbacks
+      'contentQuality', 'presentation', 'engagement', 'learningObjectives'
+    ];
+    numericFields.forEach(field => {
+      const val = responses[field];
+      if (val && val !== 'na') {
+        evaluation.ratings[field] = parseInt(val);
+      }
+    });
 
-    // Calculate overall rating
-    const ratingValues = Object.values(evaluation.ratings || {}).filter(v => v);
+    // Calculate overall rating from all numeric ratings submitted
+    const ratingValues = Object.values(evaluation.ratings).filter(v => v != null && !isNaN(v));
     if (ratingValues.length > 0) {
       evaluation.overallRating = Math.round(ratingValues.reduce((a, b) => a + b, 0) / ratingValues.length);
     }
 
-    // Boolean fields
-    if (responses.wouldRecommend !== undefined) {
-      evaluation.wouldRecommend = responses.wouldRecommend === 'yes' || responses.wouldRecommend === true;
+    // Support resolution
+    if (responses.supportResolution) {
+      evaluation.supportResolution = responses.supportResolution;
+    }
+
+    // Fee rating (optional)
+    if (responses.courseFee) {
+      evaluation.courseFee = responses.courseFee;
+    }
+
+    // Would recommend (required — yes/no/maybe)
+    if (responses.wouldRecommend) {
+      evaluation.wouldRecommend = responses.wouldRecommend;
     }
 
     // Text feedback
     evaluation.feedback = evaluation.feedback || {};
-    if (responses.whatWorkedWell) {
-      evaluation.feedback.whatWorkedWell = responses.whatWorkedWell;
-    }
-    if (responses.suggestions) {
-      evaluation.feedback.suggestions = responses.suggestions;
-    }
-    if (responses.additionalComments) {
-      evaluation.feedback.additionalComments = responses.additionalComments;
-    }
+    if (responses.mostValuable)       evaluation.feedback.mostValuable = responses.mostValuable;
+    if (responses.improvements)       evaluation.feedback.improvements = responses.improvements;
+    if (responses.additionalComments) evaluation.feedback.additionalComments = responses.additionalComments;
+    // Legacy
+    if (responses.whatWorkedWell)     evaluation.feedback.whatWorkedWell = responses.whatWorkedWell;
+    if (responses.suggestions)        evaluation.feedback.suggestions = responses.suggestions;
 
     evaluation.status = 'submitted';
     evaluation.submittedAt = new Date();

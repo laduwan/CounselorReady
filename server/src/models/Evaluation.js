@@ -47,31 +47,52 @@ const evaluationSchema = new mongoose.Schema({
     max: 5
   },
   
-  // Detailed ratings
+  // Detailed ratings (1-5 scale; N/A responses stored as null/omitted)
   ratings: {
-    contentQuality: { type: Number, min: 1, max: 5 },
-    relevance: { type: Number, min: 1, max: 5 },
-    presentation: { type: Number, min: 1, max: 5 },
-    engagement: { type: Number, min: 1, max: 5 },
-    learningObjectives: { type: Number, min: 1, max: 5 }
+    // NBCC-compliant 10-item form (Aug 2026+)
+    objectivesMet:       { type: Number, min: 1, max: 5 },
+    relevance:           { type: Number, min: 1, max: 5 },
+    currentInfo:         { type: Number, min: 1, max: 5 },
+    applicableSkills:    { type: Number, min: 1, max: 5 },
+    instructorExpertise: { type: Number, min: 1, max: 5 },
+    instructorClarity:   { type: Number, min: 1, max: 5 },
+    organization:        { type: Number, min: 1, max: 5 },
+    courseValue:         { type: Number, min: 1, max: 5 },
+    confidence:          { type: Number, min: 1, max: 5 },
+    overallSatisfaction: { type: Number, min: 1, max: 5 },
+    // Legacy fields (pre-Aug 2026 evaluations)
+    contentQuality:      { type: Number, min: 1, max: 5 },
+    presentation:        { type: Number, min: 1, max: 5 },
+    engagement:          { type: Number, min: 1, max: 5 },
+    learningObjectives:  { type: Number, min: 1, max: 5 }
   },
-  
+
+  // Support resolution (required, Aug 2026+)
+  supportResolution: {
+    type: String,
+    enum: ['yes_resolved', 'no_unresolved', 'no_contact']
+  },
+
+  // Fee rating (optional)
+  courseFee: {
+    type: String,
+    enum: ['much_too_high', 'somewhat_too_high', 'about_right', 'somewhat_low', 'much_too_low', 'not_sure']
+  },
+
   // Written feedback
   feedback: {
+    mostValuable:       String,
+    improvements:       String,
+    additionalComments: String,
+    // Legacy
     whatWorkedWell: String,
-    suggestions: String,
-    additionalComments: String
+    suggestions:    String
   },
-  
-  // Would recommend
+
+  // Would recommend (required Aug 2026+; string to support yes/no/maybe)
   wouldRecommend: {
-    type: Boolean
-  },
-  
-  // Learning objectives met
-  objectivesMet: {
     type: String,
-    enum: ['fully', 'mostly', 'partially', 'not_at_all']
+    enum: ['yes', 'no', 'maybe']
   },
   
   // Timestamps
@@ -116,11 +137,26 @@ evaluationSchema.statics.getCourseStats = async function(courseId) {
         _id: null,
         count: { $sum: 1 },
         avgOverall: { $avg: '$overallRating' },
-        avgContent: { $avg: '$ratings.contentQuality' },
-        avgRelevance: { $avg: '$ratings.relevance' },
-        avgPresentation: { $avg: '$ratings.presentation' },
-        avgEngagement: { $avg: '$ratings.engagement' },
-        recommendCount: { $sum: { $cond: ['$wouldRecommend', 1, 0] } }
+        avgObjectivesMet:       { $avg: '$ratings.objectivesMet' },
+        avgRelevance:           { $avg: '$ratings.relevance' },
+        avgCurrentInfo:         { $avg: '$ratings.currentInfo' },
+        avgApplicableSkills:    { $avg: '$ratings.applicableSkills' },
+        avgInstructorExpertise: { $avg: '$ratings.instructorExpertise' },
+        avgInstructorClarity:   { $avg: '$ratings.instructorClarity' },
+        avgOrganization:        { $avg: '$ratings.organization' },
+        avgCourseValue:         { $avg: '$ratings.courseValue' },
+        avgConfidence:          { $avg: '$ratings.confidence' },
+        avgOverallSatisfaction: { $avg: '$ratings.overallSatisfaction' },
+        // Legacy field averages
+        avgContentQuality:      { $avg: '$ratings.contentQuality' },
+        avgPresentation:        { $avg: '$ratings.presentation' },
+        avgEngagement:          { $avg: '$ratings.engagement' },
+        recommendYes:   { $sum: { $cond: [{ $eq: ['$wouldRecommend', 'yes'] }, 1, 0] } },
+        recommendNo:    { $sum: { $cond: [{ $eq: ['$wouldRecommend', 'no'] }, 1, 0] } },
+        recommendMaybe: { $sum: { $cond: [{ $eq: ['$wouldRecommend', 'maybe'] }, 1, 0] } },
+        supportResolved:   { $sum: { $cond: [{ $eq: ['$supportResolution', 'yes_resolved'] }, 1, 0] } },
+        supportUnresolved: { $sum: { $cond: [{ $eq: ['$supportResolution', 'no_unresolved'] }, 1, 0] } },
+        supportNoContact:  { $sum: { $cond: [{ $eq: ['$supportResolution', 'no_contact'] }, 1, 0] } }
       }
     }
   ]);

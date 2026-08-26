@@ -464,14 +464,26 @@ const round1 = (v) => (v ? Math.round(v * 10) / 10 : 0);
         _id: null,
         count: { $sum: 1 },
         avgOverall: { $avg: '$overallRating' },
-        avgContentQuality: { $avg: '$ratings.contentQuality' },
-        avgRelevance: { $avg: '$ratings.relevance' },
-        avgPresentation: { $avg: '$ratings.presentation' },
-        avgEngagement: { $avg: '$ratings.engagement' },
-        avgLearningObjectives: { $avg: '$ratings.learningObjectives' },
-        promoters: { $sum: { $cond: [{ $gte: ['$overallRating', 4] }, 1, 0] } },
-        passives: { $sum: { $cond: [{ $eq: ['$overallRating', 3] }, 1, 0] } },
-        detractors: { $sum: { $cond: [{ $and: [{ $gte: ['$overallRating', 1] }, { $lte: ['$overallRating', 2] }] }, 1, 0] } }
+        avgObjectivesMet:       { $avg: '$ratings.objectivesMet' },
+        avgRelevance:           { $avg: '$ratings.relevance' },
+        avgCurrentInfo:         { $avg: '$ratings.currentInfo' },
+        avgApplicableSkills:    { $avg: '$ratings.applicableSkills' },
+        avgInstructorExpertise: { $avg: '$ratings.instructorExpertise' },
+        avgInstructorClarity:   { $avg: '$ratings.instructorClarity' },
+        avgOrganization:        { $avg: '$ratings.organization' },
+        avgCourseValue:         { $avg: '$ratings.courseValue' },
+        avgConfidence:          { $avg: '$ratings.confidence' },
+        avgOverallSatisfaction: { $avg: '$ratings.overallSatisfaction' },
+        // Legacy
+        avgContentQuality:      { $avg: '$ratings.contentQuality' },
+        avgPresentation:        { $avg: '$ratings.presentation' },
+        avgEngagement:          { $avg: '$ratings.engagement' },
+        avgLearningObjectives:  { $avg: '$ratings.learningObjectives' },
+        promoters:  { $sum: { $cond: [{ $gte: ['$overallRating', 4] }, 1, 0] } },
+        passives:   { $sum: { $cond: [{ $eq:  ['$overallRating', 3] }, 1, 0] } },
+        detractors: { $sum: { $cond: [{ $and: [{ $gte: ['$overallRating', 1] }, { $lte: ['$overallRating', 2] }] }, 1, 0] } },
+        supportResolved:   { $sum: { $cond: [{ $eq: ['$supportResolution', 'yes_resolved'] }, 1, 0] } },
+        supportUnresolved: { $sum: { $cond: [{ $eq: ['$supportResolution', 'no_unresolved'] }, 1, 0] } }
       } }
     ]);
     const g = evalGlobalAgg[0] || {};
