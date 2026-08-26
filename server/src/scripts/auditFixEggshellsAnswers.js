@@ -89,22 +89,22 @@ async function main() {
     const sec = sections[si];
     const blocks = sec.contentBlocks || [];
     const mcs = [];
-    
+
     // Collect multipleChoice blocks in order
     blocks.forEach((b, bi) => {
       if (b.type === 'multipleChoice') mcs.push({ block: b, blockIdx: bi });
     });
-    
+
     if (mcs.length === 0) continue;
-    
+
     const answers = SECTION_KC_ANSWERS[si];
     if (!answers) {
       console.log(`  ⚠️  Section ${si} "${(sec.title||'').substring(0,40)}": ${mcs.length} KCs but NO answer key — skipping`);
       continue;
     }
-    
+
     console.log(`  Section ${si} "${(sec.title||'').substring(0,40)}" (${mcs.length} KCs)`);
-    
+
     mcs.forEach(({ block, blockIdx }, kcIdx) => {
       totalQuestions++;
       const expectedCorrect = answers[kcIdx];
@@ -112,19 +112,19 @@ async function main() {
         console.log(`    ⚠️  KC ${kcIdx}: no answer key entry`);
         return;
       }
-      
+
       // Current state
-      const currentCorrectByIsCorrect = (block.options || []).findIndex(o => 
+      const currentCorrectByIsCorrect = (block.options || []).findIndex(o =>
         typeof o === 'object' && o.isCorrect === true
       );
       const currentCorrectAnswer = block.correctAnswer;
-      const currentEffective = typeof currentCorrectAnswer === 'number' 
-        ? currentCorrectAnswer 
+      const currentEffective = typeof currentCorrectAnswer === 'number'
+        ? currentCorrectAnswer
         : (currentCorrectByIsCorrect >= 0 ? currentCorrectByIsCorrect : 0);
-      
+
       const isWrong = currentEffective !== expectedCorrect;
       const letter = idx => idx >= 0 ? String.fromCharCode(65 + idx) : '?';
-      
+
       if (isWrong) {
         totalFixed++;
         console.log(`    ❌ KC ${kcIdx} (B${blockIdx}): was ${letter(currentEffective)} → should be ${letter(expectedCorrect)} | "${(block.question||'').substring(0,50)}..."`);
@@ -133,7 +133,7 @@ async function main() {
         totalCorrect++;
         console.log(`    ✅ KC ${kcIdx} (B${blockIdx}): ${letter(currentEffective)} correct`);
       }
-      
+
       // Apply fix
       if (!DRY_RUN && block.options) {
         block.options.forEach((opt, oi) => {
@@ -156,6 +156,14 @@ async function main() {
   console.log(`  ${assessQs.length} questions (expected 25)\n`);
 
   assessQs.forEach((q, qi) => {
+    // multiSelect questions have more than one correct answer and are not
+    // covered by this single-answer key — touching them would collapse
+    // their multiple isCorrect flags down to one and destroy answers.
+    if (q.type === 'multiSelect') {
+      console.log(`    ⏭️  Q${qi+1}: multiSelect (multiple correct answers) — not covered by this fix, skipping`);
+      return;
+    }
+
     totalQuestions++;
     const expectedCorrect = ASSESSMENT_ANSWERS[qi];
     if (expectedCorrect === undefined) {
@@ -163,14 +171,14 @@ async function main() {
       return;
     }
 
-    const currentCorrectByIsCorrect = (q.options || []).findIndex(o => 
+    const currentCorrectByIsCorrect = (q.options || []).findIndex(o =>
       typeof o === 'object' && o.isCorrect === true
     );
     const currentEffective = currentCorrectByIsCorrect >= 0 ? currentCorrectByIsCorrect : 0;
     const letter = idx => idx >= 0 ? String.fromCharCode(65 + idx) : '?';
-    
+
     const isWrong = currentEffective !== expectedCorrect;
-    
+
     if (isWrong) {
       totalFixed++;
       console.log(`    ❌ Q${qi+1}: was ${letter(currentEffective)} → should be ${letter(expectedCorrect)} | "${(q.question||'').substring(0,50)}..."`);
@@ -178,7 +186,7 @@ async function main() {
       totalCorrect++;
       console.log(`    ✅ Q${qi+1}: ${letter(currentEffective)} correct`);
     }
-    
+
     // Apply fix
     if (!DRY_RUN && q.options) {
       q.options.forEach((opt, oi) => {
@@ -196,18 +204,18 @@ async function main() {
   console.log(`Total questions audited: ${totalQuestions}`);
   console.log(`Already correct: ${totalCorrect}`);
   console.log(`Wrong (need fix): ${totalFixed}`);
-  
+
   if (totalFixed > 0 && !DRY_RUN) {
     // Write back using updateOne/$set — never .save()
     await col.updateOne(
       { _id: c._id },
       { $set: { sections: c.sections, assessment: c.assessment } }
     );
-    
+
     // Read-back verify
     const verify = await col.findOne({ _id: c._id });
     let verifyOK = true;
-    
+
     // Spot-check first KC in section 0
     const s0mcs = (verify.sections[0]?.contentBlocks || []).filter(b => b.type === 'multipleChoice');
     if (s0mcs.length > 0) {
@@ -217,14 +225,14 @@ async function main() {
         console.log(`\n❌ VERIFY FAILED: Section 0 KC 0 expected ${SECTION_KC_ANSWERS[0][0]} got ${ci}`);
       }
     }
-    
+
     // Spot-check first assessment question
     const aq0ci = verify.assessment?.questions?.[0]?.options?.findIndex(o => o.isCorrect === true);
     if (aq0ci !== ASSESSMENT_ANSWERS[0]) {
       verifyOK = false;
       console.log(`\n❌ VERIFY FAILED: Assessment Q1 expected ${ASSESSMENT_ANSWERS[0]} got ${aq0ci}`);
     }
-    
+
     if (verifyOK) {
       console.log(`\n✅ Fixed ${totalFixed} answers and verified. Course is ready.`);
     }
