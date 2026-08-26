@@ -9391,9 +9391,9 @@ function renderEvaluation() {
     <label style="font-size:0.85rem;font-weight:600;color:var(--cr-text);display:block;margin-bottom:8px">How would you rate the course fee? <span style="font-weight:400;color:var(--cr-text-muted)">(optional)</span></label>
     <div style="display:flex;flex-direction:column;gap:6px" id="eval-courseFee">
       ${['Much too high','Somewhat too high','About right','Somewhat low','Much too low','Not sure'].map(opt =>
-        \`<button data-action="rateEval" data-key="courseFee" data-value="${opt.toLowerCase().replace(/ /g,'_')}"
+        `<button data-action="rateEval" data-key="courseFee" data-value="${opt.toLowerCase().replace(/ /g,'_')}"
           style="padding:9px 16px;border-radius:8px;border:1.5px solid var(--cr-border);background:#fff;
-          font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">${opt}</button>\`
+          font-size:0.85rem;font-weight:500;color:var(--cr-text);cursor:pointer;text-align:left;transition:all 0.15s">${opt}</button>`
       ).join('')}
     </div>
   </div>
