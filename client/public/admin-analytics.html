@@ -1077,18 +1077,26 @@
           ? new Date(ev.submittedAt).toLocaleDateString()
           : (ev.createdAt ? new Date(ev.createdAt).toLocaleDateString() : '');
 
-        // Build ratings line from ratings object + overallRating
+        // Build ratings line — new fields first, fall back to legacy
         let ratingsHtml = '';
         const r = ev.ratings || {};
         const parts = [];
-        if (ev.overallRating)   parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
-        if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
-        if (r.relevance)        parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
-        if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        if (ev.overallRating)        parts.push(`Overall: <strong>${ev.overallRating}/5</strong>`);
+        if (r.overallSatisfaction)   parts.push(`Satisfaction: <strong>${r.overallSatisfaction}/5</strong>`);
+        else if (r.contentQuality)   parts.push(`Content: <strong>${r.contentQuality}/5</strong>`);
+        if (r.relevance)             parts.push(`Relevance: <strong>${r.relevance}/5</strong>`);
+        if (r.applicableSkills)      parts.push(`Applied: <strong>${r.applicableSkills}/5</strong>`);
+        else if (r.engagement)       parts.push(`Engagement: <strong>${r.engagement}/5</strong>`);
+        // Support resolution badge
+        const supLabel = { yes_resolved: '✅ Support resolved', no_unresolved: '❌ Support unresolved', no_contact: 'No support contact' };
+        const supBadge = ev.supportResolution ? `<span class="text-xs text-forest-500 ml-2">${supLabel[ev.supportResolution] || ''}</span>` : '';
+        // Recommend badge
+        const recLabel = { yes: '👍 Recommends', no: '👎 Does not recommend', maybe: '🤔 Maybe recommends' };
+        const recBadge = ev.wouldRecommend ? `<span class="text-xs text-forest-500 ml-2">${recLabel[ev.wouldRecommend] || ''}</span>` : '';
         if (parts.length) {
           ratingsHtml = parts.slice(0, 3)
             .map(p => `<span class="text-xs text-forest-600">${p}</span>`)
-            .join(' · ');
+            .join(' · ') + supBadge + recBadge;
         }
 
         return `
