@@ -232,7 +232,7 @@ const COURSE = {
         {
           "type": "flashcardDeck",
           "order": 9,
-          "title": "COD Epidemiology and Theory — Key Terms",
+          "instructions": "COD Epidemiology and Theory — Key Terms",
           "flashcards": [
             {
               "front": "Co-occurring disorder (COD)",
@@ -625,12 +625,19 @@ const COURSE = {
         {
           "type": "fillInBlank",
           "order": 8,
-          "question": "In the IDDT model, the four stages of integrated treatment are: ________, persuasion, active treatment, and ________.",
+          "title": "IDDT Stage Model — Quick Check",
           "blanks": [
-            "engagement",
-            "relapse prevention"
-          ],
-          "explanation": "IDDT's stage model — engagement, persuasion, active treatment, relapse prevention — guides intervention selection based on the client's current motivation and readiness rather than applying the same strategies regardless of where the client is in the change process."
+            {
+              "prompt": "In the IDDT model, the first of the four stages of integrated treatment — the stage that precedes persuasion, active treatment, and relapse prevention, where the clinician focuses on building a trusting working relationship before addressing substance use directly — is called:",
+              "answer": "engagement",
+              "acceptAlternates": ["Engagement"]
+            },
+            {
+              "prompt": "IDDT's four-stage model guides intervention selection based on the client's current motivation and readiness rather than applying the same strategies regardless of where the client is in the change process. The final of the four stages, which follows active treatment and focuses on sustaining gains and preventing return to use, is called:",
+              "answer": "relapse prevention",
+              "acceptAlternates": ["Relapse Prevention", "relapse-prevention"]
+            }
+          ]
         },
         {
           "type": "reflection",
@@ -798,8 +805,7 @@ const COURSE = {
         },
         {
           "type": "sequencing",
-          "title": "Coordinating a MAT Referral",
-          "instructions": "Place the steps of a well-coordinated MAT referral in the order that best protects engagement and safety.",
+          "instructions": "Coordinating a MAT Referral — place the steps of a well-coordinated MAT referral in the order that best protects engagement and safety.",
           "steps": [
             {
               "text": "Elicit the client's own concerns and prior experiences with medication using open questions"
@@ -852,7 +858,7 @@ const COURSE = {
         },
         {
           "type": "flashcardDeck",
-          "title": "MAT and Harm Reduction — Key Terms",
+          "instructions": "MAT and Harm Reduction — Key Terms",
           "flashcards": [
             {
               "id": "fc1",
