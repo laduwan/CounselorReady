@@ -8881,12 +8881,19 @@ function renderAssessment() {
   if (examView.current < 0) examView.current = 0;
   const i = examView.current;
   const q = qs[i];
+  const isMS = q.type === 'multiSelect';
   const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
   // Stable shuffle per question per attempt (map cleared on retry)
   const examShuffle = getExamShuffle(i, options.length);
   const displayOptions = examShuffle.map(si => options[si]);
-  const selected = assessmentState.answers[i]; // stored as ORIGINAL index
-  const answeredCount = Object.keys(assessmentState.answers).length;
+  const selected = assessmentState.answers[i]; // stored as ORIGINAL index (or array of indices for multiSelect)
+  const selectedArr = Array.isArray(selected) ? selected : [];
+  // A multiSelect question only counts as answered once at least one option is toggled on
+  // (an empty array is a valid "no selection yet" state, unlike a scalar key just being present).
+  const answeredCount = qs.filter((qq, qi) => {
+    const a = assessmentState.answers[qi];
+    return qq.type === 'multiSelect' ? (Array.isArray(a) && a.length > 0) : a !== undefined;
+  }).length;
   const allAnswered = answeredCount === qs.length;
   const flagged = new Set(examView.flagged);
   const attemptDisplay = assessmentState.attempts + 1;
@@ -8901,15 +8908,16 @@ function renderAssessment() {
   </div>`;
 
   html += `<div class="cr-exam-body"><div class="cr-exam-main">`;
-  html += `<div class="cr-exam-qlabel">QUESTION ${i + 1} OF ${qs.length}</div>`;
+  html += `<div class="cr-exam-qlabel">QUESTION ${i + 1} OF ${qs.length}${isMS ? ' <span style="font-weight:400;opacity:0.75">(Select all that apply)</span>' : ''}</div>`;
   // Graded attempt: stem + options only — no rationale (that's knowledge-check-only).
   html += `<div class="cr-exam-card">
     <div class="cr-exam-stem">${esc(q.question || '')}</div>
     <div class="cr-exam-options">
       ${displayOptions.map((opt, dj) => {
         const origIdx = examShuffle[dj];
-        return `<div class="cr-exam-option ${selected === origIdx ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${origIdx}">
-        <span class="cr-exam-letter">${String.fromCharCode(65 + dj)}</span>
+        const isSelected = isMS ? selectedArr.includes(origIdx) : selected === origIdx;
+        return `<div class="cr-exam-option ${isSelected ? 'selected' : ''}" data-action="${isMS ? 'assessmentToggleMS' : 'assessmentSelect'}" data-q="${i}" data-opt="${origIdx}">
+        <span class="cr-exam-letter">${isMS ? (isSelected ? '☑' : '☐') : String.fromCharCode(65 + dj)}</span>
         <span class="cr-exam-opt-text">${esc(opt)}</span>
       </div>`;
       }).join('')}
@@ -8927,11 +8935,13 @@ function renderAssessment() {
     <div class="cr-exam-bar"><div class="cr-exam-bar-fill" style="width:${Math.round(answeredCount / qs.length * 100)}%"></div></div>
     <div class="cr-exam-rail-label" style="margin-top:20px">QUESTIONS</div>
     <div class="cr-exam-grid">
-      ${qs.map((_, j) => {
+      ${qs.map((qq, j) => {
         let cls = 'cr-exam-cell';
+        const a = assessmentState.answers[j];
+        const isAnswered = qq.type === 'multiSelect' ? (Array.isArray(a) && a.length > 0) : a !== undefined;
         if (j === i) cls += ' current';
         else if (flagged.has(j)) cls += ' flagged';
-        else if (assessmentState.answers[j] !== undefined) cls += ' answered';
+        else if (isAnswered) cls += ' answered';
         return `<button type="button" class="${cls}" data-action="examJump" data-idx="${j}" aria-label="Go to question ${j + 1}">${j + 1}</button>`;
       }).join('')}
     </div>
@@ -8978,12 +8988,37 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
+// Companion to assessmentSelect for exam questions of type 'multiSelect' —
+// toggles membership in a per-question array instead of overwriting a single
+// scalar answer, mirroring toggleMS()'s behavior for in-content knowledge checks.
+function assessmentToggleMS(qIdx, optIdx) {
+  if (assessmentState.submitted) return;
+  const cur = Array.isArray(assessmentState.answers[qIdx]) ? assessmentState.answers[qIdx].slice() : [];
+  const pos = cur.indexOf(optIdx);
+  if (pos >= 0) cur.splice(pos, 1); else cur.push(optIdx);
+  assessmentState.answers[qIdx] = cur;
+  examPersistDraft();
+  renderAssessment();
+}
+
 async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
   const perQuestionCorrect = [];
 
   qs.forEach((q, i) => {
+    if (q.type === 'multiSelect') {
+      const correctIdxs = (q.options || [])
+        .map((o, j) => (typeof o === 'object' && o.isCorrect) ? j : -1)
+        .filter(j => j >= 0);
+      const selectedIdxs = Array.isArray(assessmentState.answers[i]) ? assessmentState.answers[i] : [];
+      const hasAllCorrect = correctIdxs.every(j => selectedIdxs.includes(j));
+      const hasOnlyCorrect = selectedIdxs.every(j => correctIdxs.includes(j));
+      const isCorrect = hasAllCorrect && hasOnlyCorrect;
+      perQuestionCorrect.push(isCorrect);
+      if (isCorrect) correct++;
+      return;
+    }
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
     else if (Array.isArray(q.options)) {
@@ -11805,6 +11840,7 @@ document.addEventListener('click', function(e) {
     
     // ─── Assessment ───
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
+    case 'assessmentToggleMS': assessmentToggleMS(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
     case 'submitAssessment': submitAssessment(); break;
     case 'retryAssessment': retryAssessment(); break;
     case 'examPrev': examGoTo(examView.current - 1); break;
