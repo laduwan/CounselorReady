@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Verify Your Email - CounselorReady</title>
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    body { background: #F8F7F4; font-family: 'Lato', system-ui, sans-serif; }
+    .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
+  </style>
+<script src="/js/cr-gtag.js"></script>
+</head>
+<body class="bg-stone-50 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-hunter-100 bg-white/80 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #8b2542, #6b1d34);">
+          <span class="font-display font-bold text-xl" style="position: relative; display: inline-block; width: 28px; height: 28px;">
+            <span style="color: #D4A855; position: absolute; top: -4px; left: 0;">C</span>
+            <span style="color: #4A7C59; position: absolute; top: 6px; left: 8px;">R</span>
+          </span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display font-semibold text-2xl tracking-wide">
+            <span class="text-burgundy-800">Counselor</span><span class="text-hunter-600">Ready</span>
+          </span>
+        </div>
+      </a>
+      <a href="/login.html" class="text-forest-700 hover:text-burgundy-700 text-sm font-medium transition-colors">
+        Back to Sign In
+      </a>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="flex-1 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-md">
+
+      <div class="bg-white rounded-2xl shadow-xl shadow-burgundy-900/10 p-8 border border-burgundy-100 text-center">
+
+        <!-- Icon -->
+        <div class="w-16 h-16 bg-gradient-to-br from-burgundy-800 to-forest-800 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <svg class="w-8 h-8 text-gold-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+          </svg>
+        </div>
+
+        <h1 class="font-display text-3xl font-semibold text-burgundy-900 mb-2">Check Your Email</h1>
+        <p class="text-forest-600 mb-2">We sent a verification link to:</p>
+        <p class="font-semibold text-burgundy-800 mb-6" id="userEmail">your email address</p>
+
+        <p class="text-forest-500 text-sm mb-8">Click the link in that email to verify your account and get started. The link expires in 24 hours.</p>
+
+        <!-- Divider -->
+        <div class="border-t border-forest-100 mb-6"></div>
+
+        <p class="text-forest-500 text-sm mb-4">Didn't get it? Check your spam folder, or:</p>
+
+        <!-- Resend button -->
+        <button
+          id="resendBtn"
+          onclick="resendVerification()"
+          class="w-full px-6 py-3 bg-hunter-600 hover:bg-hunter-700 text-white font-semibold rounded-xl transition-colors"
+        >
+          Resend Verification Email
+        </button>
+
+        <!-- Success / error messages -->
+        <div id="successMsg" class="hidden mt-4 p-3 bg-green-50 border border-green-200 rounded-xl">
+          <p class="text-green-700 text-sm font-medium">Email sent! Check your inbox.</p>
+        </div>
+        <div id="errorMsg" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <p class="text-red-700 text-sm" id="errorText">Something went wrong. Please try again.</p>
+        </div>
+
+        <!-- Already verified -->
+        <!-- Email input — shown only when no token is available (returning user via login) -->
+        <div id="emailFormWrap" class="hidden mt-4">
+          <input
+            type="email"
+            id="emailInput"
+            placeholder="Enter your email address"
+            class="w-full px-4 py-3 border border-forest-200 rounded-xl focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 transition-all outline-none mb-3"
+          >
+        </div>
+
+        <p class="text-forest-400 text-xs mt-6">
+          Already verified? <a href="/login.html" class="text-burgundy-700 hover:text-burgundy-900 font-medium underline">Sign in</a>
+        </p>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+
+    const token = localStorage.getItem('token');
+
+    // Show stored email if available
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        const email = user.email || user.profile?.email;
+        if (email) document.getElementById('userEmail').textContent = email;
+      } catch (e) {}
+    }
+
+    // No token = returning user redirected from login — show email input
+    if (!token) {
+      document.getElementById('emailFormWrap').classList.remove('hidden');
+      document.getElementById('userEmail').textContent = 'your registered email';
+    }
+
+    async function resendVerification() {
+      const btn = document.getElementById('resendBtn');
+      const successMsg = document.getElementById('successMsg');
+      const errorMsg = document.getElementById('errorMsg');
+      const errorText = document.getElementById('errorText');
+
+      successMsg.classList.add('hidden');
+      errorMsg.classList.add('hidden');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        let res, data;
+
+        if (token) {
+          // New registrant — use authenticated resend endpoint
+          res = await fetch(`${API_URL}/api/auth/resend-verification`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        } else {
+          // Returning unverified user — use public endpoint
+          const email = document.getElementById('emailInput')?.value?.trim();
+          if (!email) {
+            errorText.textContent = 'Please enter your email address.';
+            errorMsg.classList.remove('hidden');
+            btn.disabled = false;
+            btn.textContent = 'Resend Verification Email';
+            return;
+          }
+          res = await fetch(`${API_URL}/api/auth/resend-verification-public`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+          });
+        }
+
+        data = await res.json();
+
+        if (res.ok) {
+          successMsg.classList.remove('hidden');
+          btn.disabled = true;
+          btn.textContent = 'Resent — wait 60s';
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.textContent = 'Resend Verification Email';
+          }, 60000);
+        } else {
+          errorText.textContent = data.error || 'Failed to resend. Please try again.';
+          errorMsg.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Resend Verification Email';
+        }
+      } catch (e) {
+        errorText.textContent = 'Unable to connect. Please try again.';
+        errorMsg.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Resend Verification Email';
+      }
+    }
+  </script>
+
+</body>
+</html>

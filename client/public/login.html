@@ -280,6 +280,14 @@
             const params = new URLSearchParams(window.location.search);
             const redirect = params.get('redirect');
             window.location.href = (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) ? redirect : ((data.user && data.user.role === 'partner_admin') ? 'https://portal.counselorready.com/partner-dashboard.html' : '/dashboard.html');
+          } else if (data.code === 'EMAIL_NOT_VERIFIED') {
+            // Store the token so verify-pending can use the resend endpoint
+            if (data.token) {
+              localStorage.setItem('token', data.token);
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
+            errorText.innerHTML = 'Your email isn\'t verified yet. <a href="/verify-pending.html" class="underline font-medium">Resend verification email &rarr;</a>';
+            errorMessage.classList.remove('hidden');
           } else {
             // Show error
             showError(data.error || data.message || 'Invalid email or password.');
