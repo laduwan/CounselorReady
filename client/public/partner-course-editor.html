@@ -414,7 +414,7 @@
         // Safety-net: unknown block type (e.g. sectionDivider from the AI generator).
         // Preserve the original block untouched so it round-trips instead of dropping on save.
         row.dataset.raw = JSON.stringify(data || {});
-        body = `<div class="text-xs italic" style="color:#8a8a8a">Preserved block — type "${type}" isn't editable here, but is kept exactly as-is on save.</div>`;
+        body = `<div class="text-xs italic" style="color:#8a8a8a">Preserved block — type "${esc(type)}" isn't editable here, but is kept exactly as-is on save.</div>`;
       }
 
       row.innerHTML = header + body;
