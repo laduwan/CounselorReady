@@ -83,6 +83,7 @@ import orgRoutes from './routes/orgRoutes.js';
 import complianceRoutes from './routes/complianceRoutes.js';
 import liveSessionRoutes from './routes/liveSessions.js';
 import webhooksWherebyRoutes from './routes/webhooksWhereby.js';
+import medTrackerRoutes from './routes/medTracker.js';
 
 /**
  * Route Manifest — declared route registrations.
@@ -167,6 +168,7 @@ export const ROUTE_MANIFEST = [
   ['/api',                       complianceRoutes,          'Practice Compliance — Credentials/Policies/Supervision/Audit Binder'],
   ['/api/live-sessions',         liveSessionRoutes,         'Live Sessions (Whereby)'],
   ['/api/webhooks/whereby',      webhooksWherebyRoutes,     'Whereby attendance + recording webhook'],
+  ['/api/med-tracker',           medTrackerRoutes,          'Psychotropic Med Tracker'],
 ];
 
 /**
