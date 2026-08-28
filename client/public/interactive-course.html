@@ -5712,7 +5712,7 @@ function buildSectionNav() {
   nav.innerHTML = '';
   
   // Filter out overview sections for nav
-  const navSections = course.sections.map((s, i) => ({ section: s, index: i })).filter(s => !s.section._isOverview);
+  const navSections = course.sections.map((s, i) => ({ section: s, index: i })).filter(s => !s.section._isOverview && !s.section._isIntro);
   const completedCount = navSections.filter(s => completedSections.has(s.index)).length;
   
   // "COURSE SECTIONS X/Y" label
@@ -5762,7 +5762,7 @@ function makeNavItem(i) {
   if (!title) title = 'Section ' + (i + 1);
   
   // Compute display number (excluding overview sections)
-  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+  const overviewCount = course.sections.filter((s, idx) => idx < i && (s._isOverview || s._isIntro)).length;
   const displayNum = i - overviewCount;
   
   btn.innerHTML = `
@@ -5777,7 +5777,7 @@ function detectModuleGroups() {
   const sections = course.sections;
   
   // Check if sections have _moduleTitle tags from normalization
-  const hasModuleTags = sections.some(s => s._moduleTitle && !s._isOverview);
+  const hasModuleTags = sections.some(s => s._moduleTitle && !s._isOverview && !s._isIntro);
   
   if (hasModuleTags) {
     const groups = [];
@@ -5838,7 +5838,7 @@ function goToSection(i) {
   // Standalone opener is section 1 only (mockup 20b) — later sections are
   // opened by the merged boundary screen (20a), so entering them goes
   // straight to the reading page.
-  const openerDisplayNum = i - course.sections.filter((s, idx) => idx < i && s._isOverview).length + 1;
+  const openerDisplayNum = i - course.sections.filter((s, idx) => idx < i && (s._isOverview || s._isIntro)).length + 1;
   if (!alreadyVisited && section && !section._isOverview && openerDisplayNum === 1) {
     sectionSubState = 'opener';
     renderSectionOpener(i);
@@ -5931,11 +5931,11 @@ function renderSectionOpener(i) {
 
   // Content-section-relative number, excluding the synthesized overview — same
   // convention makeNavItem() already uses for its display number.
-  const overviewCount = course.sections.filter((s, idx) => idx < i && s._isOverview).length;
+  const overviewCount = course.sections.filter((s, idx) => idx < i && (s._isOverview || s._isIntro)).length;
   const displayNum = i - overviewCount + 1; // 1-based content-section number (excludes the synthesized overview)
   const color = CR_OPENER_COLORS[(displayNum - 1) % CR_OPENER_COLORS.length];
   const ordinal = CR_OPENER_ORDINALS[displayNum - 1] || String(displayNum);
-  const navSections = course.sections.filter(s => !s._isOverview);
+  const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
   const totalSections = navSections.length;
   const totalOrdinal = CR_OPENER_ORDINALS[totalSections - 1] || String(totalSections);
 
@@ -6056,7 +6056,7 @@ function renderSectionCheckpoint(si) {
   if (cpToolsNormal) cpToolsNormal.style.display = 'none';
   if (cpToolsOpener) cpToolsOpener.style.display = 'contents';
 
-  const navSections = course.sections.filter(s => !s._isOverview);
+  const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
   const displayNum = navSections.indexOf(section) + 1;
   const ordinal = CR_ORDINAL_WORDS[displayNum - 1] || String(displayNum);
   const stats = crSectionStats(section);
@@ -6218,9 +6218,9 @@ function showAssessment() {
 }
 
 function updateProgress() {
-  const navSections = course.sections.filter(s => !s._isOverview);
+  const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
   const total = navSections.length;
-  const completedNav = course.sections.filter((s, i) => !s._isOverview && completedSections.has(i)).length;
+  const completedNav = course.sections.filter((s, i) => !s._isOverview && !s._isIntro && completedSections.has(i)).length;
   const pct = total > 0 ? Math.round((completedNav / total) * 100) : 0;
   
   // Progress bar
@@ -6292,7 +6292,7 @@ function buildHlPanel() {
     list.innerHTML = '<p class="cr-hl-empty">Nothing highlighted yet. Select any passage in the lesson and choose Highlight.</p>';
     return;
   }
-  const navSections = course.sections.filter(s => !s._isOverview);
+  const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
   let h = '';
   all.forEach(hl => {
     const sec = course.sections[hl.sectionIndex];
@@ -6341,7 +6341,7 @@ function toggleNotesPanel() {
 
 function buildNotesPanel() {
   const body = document.getElementById('crNotesBody');
-  const navSections = course.sections.filter(s => !s._isOverview);
+  const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
   const sec = course.sections[currentSectionIndex];
   const num = sec && !sec._isOverview ? navSections.indexOf(sec) + 1 : null;
   const notes = crNotesState();
@@ -6691,7 +6691,7 @@ function renderCurrentSection() {
     const hasAssessment = course.assessment?.questions?.length > 0;
 
     // Page indicator excludes overview
-    const navSections = course.sections.filter(s => !s._isOverview);
+    const navSections = course.sections.filter(s => !s._isOverview && !s._isIntro);
     const navIdx = navSections.indexOf(section) + 1;
 
     // Footer buttons NAME THEIR DESTINATIONS (ELEMENT_INVENTORY §2). Prev is
@@ -11175,9 +11175,14 @@ function loadState(key) {
 
 function saveProgress() {
   if (!course) return;
-  saveState('section', currentSectionIndex);
-  saveState('completed', [...completedSections]);
-  saveState('visited', [...visitedSections]);
+  // Save the overview-adjusted index: subtract the overview section so
+  // restoreProgress doesn't need to guess whether to add it back.
+  const overviewOffset = (course.sections[0] && course.sections[0]._isOverview) ? 1 : 0;
+  saveState('section', currentSectionIndex - overviewOffset);
+  // Completed/visited sets also need adjustment — store as pre-overview indices
+  const adjustSet = (s) => [...s].map(i => i - overviewOffset).filter(i => i >= 0);
+  saveState('completed', adjustSet(completedSections));
+  saveState('visited', adjustSet(visitedSections));
   saveState('view', currentView);
 
   // Sync completed sections to backend (fire-and-forget)
@@ -11350,6 +11355,21 @@ function buildTitlePageOverview() {
   h += '</div>';
   h += '</div>';
 
+  // Mark the original first DB section as an intro if its title matches or
+  // resembles the course title, or is a generic intro label. Its content blocks
+  // remain accessible but it won't count toward section numbering (navIdx skips
+  // _isOverview and _isIntro sections). This prevents "Section 2" being the
+  // first instructional section the learner sees.
+  const introLabels = /^(section\s*1|introduction|course\s+introduction|intro)/i;
+  const firstDbSection = course.sections[0]; // pre-unshift, this is the original first section
+  if (firstDbSection) {
+    const dbTitle = (firstDbSection.title || '').trim();
+    const courseTitle = (course.title || '').trim();
+    if (dbTitle === courseTitle || introLabels.test(dbTitle)) {
+      firstDbSection._isIntro = true;
+    }
+  }
+
   course.sections.unshift({
     title: 'Course Overview',
     _isOverview: true,
@@ -11357,6 +11377,18 @@ function buildTitlePageOverview() {
       { type: 'text', content: h }
     ]
   });
+
+  // "Begin Course" should skip past the intro section (if marked) to the first
+  // real instructional section. Find its index post-unshift.
+  const firstInstructionalIdx = course.sections.findIndex((s, i) => i > 0 && !s._isOverview && !s._isIntro);
+  const beginIdx = firstInstructionalIdx > 0 ? firstInstructionalIdx : 1;
+
+  // Patch the Begin Course button's data-idx in the overview HTML
+  const overviewSection = course.sections[0];
+  if (overviewSection && overviewSection.contentBlocks && overviewSection.contentBlocks[0]) {
+    overviewSection.contentBlocks[0].content = overviewSection.contentBlocks[0].content
+      .replace('data-idx="1"', 'data-idx="' + beginIdx + '"');
+  }
 }
 
 function restoreProgress() {
@@ -11364,14 +11396,13 @@ function restoreProgress() {
   const section = loadState('section');
   const completed = loadState('completed');
   const visited = loadState('visited');
+  const hasOverview = course.sections[0] && course.sections[0]._isOverview;
+  const offset = hasOverview ? 1 : 0;
   
-  if (completed) completedSections = new Set(completed);
-  if (visited) visitedSections = new Set(visited);
-  if (section !== null) {
-    // A title-page overview was unshifted at index 0 after progress was saved
-    // against pre-overview indices; shift saved section forward to match.
-    const hasOverview = course.sections[0] && course.sections[0]._isOverview;
-    let target = hasOverview ? section + 1 : section;
+  if (completed) completedSections = new Set(completed.map(i => i + offset));
+  if (visited) visitedSections = new Set(visited.map(i => i + offset));
+  if (section !== null && section >= 0) {
+    const target = section + offset;
     if (target < course.sections.length) {
       currentSectionIndex = target;
       visitedSections.add(target);
