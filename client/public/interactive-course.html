@@ -1970,13 +1970,8 @@ a.cr-pdl-btn { text-decoration: none; display: inline-flex; align-items: center;
    any inline display the old code sets. */
 #crA11yBtn, #crRefsBtn, #crGlossaryBtn { display: none !important; }
 
-/* Retired: the legacy right-edge vertical "References"/"Resources" tab widget (the
-   self-contained script near the end of this file). Both destinations now live in
-   the reader header — References tab and Supplemental drawer — so the edge tabs
-   only duplicate them and break the mockup's clean right edge. The widget's JS sets
-   display:block inline after its fetch, hence !important. Panels/overlays are only
-   reachable through these tabs, so hiding the tabs retires the whole widget. */
-#crdTabR, #crdTabS { display: none !important; }
+/* Floating right-edge "References"/"Resources" tabs — the correct access
+   pattern for the slide-out drawers. Self-contained widget near EOF. */
 
 /* Retired: the Print Section / Export as PDF toolbar that sat on the reading canvas.
    Not part of the mockup reading page — both actions now live in the Contents
@@ -4851,12 +4846,7 @@ body.cr-has-timer .cr-glossary-btn { bottom: 220px; }
            buttons are right-aligned (the flex spacer comes after the tabs). -->
       <button type="button" class="cr-reader-tab active" data-action="setReaderTab" data-tab="lesson">Lesson</button>
       <span style="flex:1"></span>
-      <!-- KE'S TWEAK: the References and Supplemental drawer tabs live on the
-           RIGHT side (they open right-side drawers), ahead of the tool group.
-           Outside the swapped tool-group spans so they stay visible on the
-           opener/boundary screens too. -->
-      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="references">References</button>
-      <button type="button" class="cr-reader-tab" data-action="setReaderTab" data-tab="supplemental">Supplemental<span class="cr-reader-tab-badge" id="crSuppBadge" style="display:none"></span></button>
+      <!-- References/Resources access via floating right-edge tabs (self-contained widget near EOF). -->
       <!-- ELEMENT_INVENTORY §1/§4: reading page tools are Aa · Highlights · Notes;
            Save & exit belongs to the opener/boundary group only; Contents is not a
            reading-page control (the tab group + boundary screens cover navigation;
@@ -8881,19 +8871,12 @@ function renderAssessment() {
   if (examView.current < 0) examView.current = 0;
   const i = examView.current;
   const q = qs[i];
-  const isMS = q.type === 'multiSelect';
   const options = (q.options || []).map(o => typeof o === 'string' ? o : o.text || '');
   // Stable shuffle per question per attempt (map cleared on retry)
   const examShuffle = getExamShuffle(i, options.length);
   const displayOptions = examShuffle.map(si => options[si]);
-  const selected = assessmentState.answers[i]; // stored as ORIGINAL index (or array of indices for multiSelect)
-  const selectedArr = Array.isArray(selected) ? selected : [];
-  // A multiSelect question only counts as answered once at least one option is toggled on
-  // (an empty array is a valid "no selection yet" state, unlike a scalar key just being present).
-  const answeredCount = qs.filter((qq, qi) => {
-    const a = assessmentState.answers[qi];
-    return qq.type === 'multiSelect' ? (Array.isArray(a) && a.length > 0) : a !== undefined;
-  }).length;
+  const selected = assessmentState.answers[i]; // stored as ORIGINAL index
+  const answeredCount = Object.keys(assessmentState.answers).length;
   const allAnswered = answeredCount === qs.length;
   const flagged = new Set(examView.flagged);
   const attemptDisplay = assessmentState.attempts + 1;
@@ -8908,16 +8891,15 @@ function renderAssessment() {
   </div>`;
 
   html += `<div class="cr-exam-body"><div class="cr-exam-main">`;
-  html += `<div class="cr-exam-qlabel">QUESTION ${i + 1} OF ${qs.length}${isMS ? ' <span style="font-weight:400;opacity:0.75">(Select all that apply)</span>' : ''}</div>`;
+  html += `<div class="cr-exam-qlabel">QUESTION ${i + 1} OF ${qs.length}</div>`;
   // Graded attempt: stem + options only — no rationale (that's knowledge-check-only).
   html += `<div class="cr-exam-card">
     <div class="cr-exam-stem">${esc(q.question || '')}</div>
     <div class="cr-exam-options">
       ${displayOptions.map((opt, dj) => {
         const origIdx = examShuffle[dj];
-        const isSelected = isMS ? selectedArr.includes(origIdx) : selected === origIdx;
-        return `<div class="cr-exam-option ${isSelected ? 'selected' : ''}" data-action="${isMS ? 'assessmentToggleMS' : 'assessmentSelect'}" data-q="${i}" data-opt="${origIdx}">
-        <span class="cr-exam-letter">${isMS ? (isSelected ? '☑' : '☐') : String.fromCharCode(65 + dj)}</span>
+        return `<div class="cr-exam-option ${selected === origIdx ? 'selected' : ''}" data-action="assessmentSelect" data-q="${i}" data-opt="${origIdx}">
+        <span class="cr-exam-letter">${String.fromCharCode(65 + dj)}</span>
         <span class="cr-exam-opt-text">${esc(opt)}</span>
       </div>`;
       }).join('')}
@@ -8935,13 +8917,11 @@ function renderAssessment() {
     <div class="cr-exam-bar"><div class="cr-exam-bar-fill" style="width:${Math.round(answeredCount / qs.length * 100)}%"></div></div>
     <div class="cr-exam-rail-label" style="margin-top:20px">QUESTIONS</div>
     <div class="cr-exam-grid">
-      ${qs.map((qq, j) => {
+      ${qs.map((_, j) => {
         let cls = 'cr-exam-cell';
-        const a = assessmentState.answers[j];
-        const isAnswered = qq.type === 'multiSelect' ? (Array.isArray(a) && a.length > 0) : a !== undefined;
         if (j === i) cls += ' current';
         else if (flagged.has(j)) cls += ' flagged';
-        else if (isAnswered) cls += ' answered';
+        else if (assessmentState.answers[j] !== undefined) cls += ' answered';
         return `<button type="button" class="${cls}" data-action="examJump" data-idx="${j}" aria-label="Go to question ${j + 1}">${j + 1}</button>`;
       }).join('')}
     </div>
@@ -8988,37 +8968,12 @@ function assessmentSelect(qIdx, optIdx) {
   renderAssessment();
 }
 
-// Companion to assessmentSelect for exam questions of type 'multiSelect' —
-// toggles membership in a per-question array instead of overwriting a single
-// scalar answer, mirroring toggleMS()'s behavior for in-content knowledge checks.
-function assessmentToggleMS(qIdx, optIdx) {
-  if (assessmentState.submitted) return;
-  const cur = Array.isArray(assessmentState.answers[qIdx]) ? assessmentState.answers[qIdx].slice() : [];
-  const pos = cur.indexOf(optIdx);
-  if (pos >= 0) cur.splice(pos, 1); else cur.push(optIdx);
-  assessmentState.answers[qIdx] = cur;
-  examPersistDraft();
-  renderAssessment();
-}
-
 async function submitAssessment() {
   const qs = course.assessment.questions;
   let correct = 0;
   const perQuestionCorrect = [];
 
   qs.forEach((q, i) => {
-    if (q.type === 'multiSelect') {
-      const correctIdxs = (q.options || [])
-        .map((o, j) => (typeof o === 'object' && o.isCorrect) ? j : -1)
-        .filter(j => j >= 0);
-      const selectedIdxs = Array.isArray(assessmentState.answers[i]) ? assessmentState.answers[i] : [];
-      const hasAllCorrect = correctIdxs.every(j => selectedIdxs.includes(j));
-      const hasOnlyCorrect = selectedIdxs.every(j => correctIdxs.includes(j));
-      const isCorrect = hasAllCorrect && hasOnlyCorrect;
-      perQuestionCorrect.push(isCorrect);
-      if (isCorrect) correct++;
-      return;
-    }
     let correctIdx = 0;
     if (typeof q.correctAnswer === 'number') correctIdx = q.correctAnswer;
     else if (Array.isArray(q.options)) {
@@ -11840,7 +11795,6 @@ document.addEventListener('click', function(e) {
     
     // ─── Assessment ───
     case 'assessmentSelect': assessmentSelect(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
-    case 'assessmentToggleMS': assessmentToggleMS(parseInt(el.dataset.q), parseInt(el.dataset.opt)); break;
     case 'submitAssessment': submitAssessment(); break;
     case 'retryAssessment': retryAssessment(); break;
     case 'examPrev': examGoTo(examView.current - 1); break;
@@ -12395,17 +12349,45 @@ function dismissNPS() {
     b.innerHTML = h;
   }
 
+  function crdDownloadOne(url, title) {
+    if (!url) return;
+    var a = document.createElement('a');
+    a.href = url; a.download = title || ''; a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+
+  function crdDownloadAll() {
+    (resData || []).forEach(function(r, i) {
+      if (!r.url) return;
+      setTimeout(function() { crdDownloadOne(r.url, r.title); }, i * 400);
+    });
+  }
+
   function renderRes() {
     var b = document.getElementById('crdSB'), res = resData || [], h = '';
     var ic = {pdf:'\uD83D\uDCC4',png:'\uD83D\uDDBC\uFE0F',image:'\uD83D\uDDBC\uFE0F',video:'\uD83C\uDFAC',link:'\uD83D\uDD17',website:'\uD83C\uDF10',book:'\uD83D\uDCDA',worksheet:'\uD83D\uDCDD',document:'\uD83D\uDCC3',doc:'\uD83D\uDCC3',docx:'\uD83D\uDCC3'};
     if (!res.length) { b.innerHTML = '<p style="color:var(--cr-text-muted);text-align:center;margin-top:2em">No resources available.</p>'; return; }
-    res.forEach(function(r) {
+    if (res.length > 1) {
+      h += '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="crd-dl-all" style="background:var(--cr-navy,#284157);color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;font-family:Lato,system-ui,sans-serif;cursor:pointer;letter-spacing:0.03em">\u2B07 Download All</button></div>';
+    }
+    res.forEach(function(r, idx) {
       var ft = (r.type || (r.url ? r.url.split('.').pop() : 'link')).toLowerCase();
       var icon = ic[ft] || '\uD83D\uDCCE';
       var desc = r.description ? '<span style="display:block;font-size:.8em;color:var(--cr-text-muted);margin-top:2px">' + esc(r.description) + '</span>' : '';
-      h += '<div class="crd-ri"><div class="crd-ri-icon">' + icon + '</div><div class="crd-ri-info"><a href="' + esc(r.url||'#') + '" target="_blank" rel="noopener">' + esc(r.title||'Resource') + '</a><span class="crd-ft">' + esc(ft.toUpperCase()) + '</span>' + desc + '</div></div>';
+      var dlBtn = r.url ? '<button class="crd-dl-one" data-idx="' + idx + '" style="background:none;border:1.5px solid var(--cr-navy,#284157);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--cr-navy,#284157);cursor:pointer;flex-shrink:0;font-family:Lato,system-ui,sans-serif" title="Download">\u2B07</button>' : '';
+      h += '<div class="crd-ri"><div class="crd-ri-icon">' + icon + '</div><div class="crd-ri-info"><a href="' + esc(r.url||'#') + '" target="_blank" rel="noopener">' + esc(r.title||'Resource') + '</a><span class="crd-ft">' + esc(ft.toUpperCase()) + '</span>' + desc + '</div>' + dlBtn + '</div>';
     });
     b.innerHTML = h;
+    // Wire download buttons via delegation
+    var dlAll = b.querySelector('.crd-dl-all');
+    if (dlAll) dlAll.addEventListener('click', crdDownloadAll);
+    b.querySelectorAll('.crd-dl-one').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var i = parseInt(this.dataset.idx);
+        var r = res[i];
+        if (r) crdDownloadOne(r.url, r.title);
+      });
+    });
   }
 
   // ── Open/close ──
