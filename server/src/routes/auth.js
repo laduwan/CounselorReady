@@ -271,7 +271,11 @@ router.post('/login', authLimiter, async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
-    
+
+    if (!user.emailVerified) {
+      return res.status(403).json({ error: 'Please verify your email before logging in.', code: 'EMAIL_NOT_VERIFIED' });
+    }
+
     user.lastLoginAt = new Date();
 
     if (user.isTrialExpired()) {
@@ -638,6 +642,64 @@ router.post('/resend-verification', authLimiter, protect, async (req, res) => {
   } catch (error) {
     logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Resend verification error');
     res.status(500).json({ error: 'Failed to resend verification email' });
+  }
+});
+
+// Public resend verification — for returning users who don't have a token
+// Rate limited by authLimiter; always returns 200 to prevent email enumeration
+router.post('/resend-verification-public', authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    // Always respond OK — don't reveal whether the email exists
+    if (!user || user.emailVerified) {
+      return res.json({ message: 'If that email is registered and unverified, a link has been sent.' });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
+    user.emailVerificationToken = verificationTokenHash;
+    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
+    await user.save();
+
+    const verifyUrl = `${process.env.CLIENT_URL || 'https://counselorready.com'}/verify-email.html?token=${verificationToken}`;
+    try {
+      await resend.emails.send({
+        from: 'CounselorReady <noreply@counselorready.com>',
+        to: user.email,
+        subject: 'Verify Your Email - CounselorReady',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: #6b1d34; padding: 30px; text-align: center;">
+              <h1 style="color: #D4A855; margin: 0;">CounselorReady</h1>
+              <p style="color: #fff; margin: 5px 0 0 0; font-size: 12px; letter-spacing: 2px;">LEARN. LICENSE. LEAD.</p>
+            </div>
+            <div style="padding: 30px; background: #fff;">
+              <h2 style="color: #6b1d34;">Verify Your Email</h2>
+              <p>Click the button below to verify your email address and access your account.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${verifyUrl}" style="background: #4A7C59; color: #fff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">Verify Email Address</a>
+              </div>
+              <p style="color: #666; font-size: 14px;">This link expires in 24 hours.</p>
+            </div>
+            <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+              <p style="margin: 0;">Ga Integrated Therapeutic Perspectives LLC | NBCC ACEP #7760</p>
+            </div>
+          </div>
+        `
+      });
+    } catch (emailErr) {
+      logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Public resend verification email failed');
+    }
+
+    res.json({ message: 'If that email is registered and unverified, a link has been sent.' });
+  } catch (error) {
+    logger.error({ err: error, requestId: req.requestId }, 'Public resend verification error');
+    res.status(500).json({ error: 'Failed to send verification email' });
   }
 });
 

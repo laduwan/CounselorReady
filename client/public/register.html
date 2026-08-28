@@ -289,13 +289,13 @@
           console.log('Response data:', data);
 
           if (response.ok) {
-            // Store token
+            // Store token — needed for resend verification on next page
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
-            
-            // Redirect to dashboard
+
+            // Redirect to email verification pending page
             if (window.gtag_report_conversion) { gtag_report_conversion(); }
-            window.location.href = '/welcome.html';
+            window.location.href = '/verify-pending.html';
           } else {
             // Show error
             errorText.textContent = data.error || data.message || 'Something went wrong. Please try again.';
