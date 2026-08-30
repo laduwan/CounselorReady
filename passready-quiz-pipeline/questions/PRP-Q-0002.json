@@ -1,0 +1,15 @@
+{
+  "id": "PRP-Q-0002",
+  "family": "Trauma- and Stressor-Related Disorders",
+  "vignette": "During the fourth session, an adult client describes a difficult week and mentions that their partner \"lost it again\" and left bruises on their 7-year-old with a belt two nights ago. The client is tearful, says the child is at school today, and asks you not to tell anyone because it would \"blow up the family.\"",
+  "question": "What do you do FIRST?",
+  "options": [
+    {"text": "Explore the client's fears about the family consequences", "isCorrect": false},
+    {"text": "Make the mandated report of suspected child abuse", "isCorrect": true},
+    {"text": "Develop a family safety plan with the client in session", "isCorrect": false},
+    {"text": "Ask the client to bring the partner to the next session", "isCorrect": false}
+  ],
+  "rationale": "Suspected child abuse triggers a mandated report that confidentiality does not override, and the duty attaches as soon as you have reasonable suspicion. Processing the client's fear and safety planning are genuinely important — they are the work that follows the report, not a substitute for it.",
+  "rung": 1,
+  "difficulty": "core"
+}

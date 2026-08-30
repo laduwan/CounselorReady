@@ -1,0 +1,8 @@
+node_modules/
+out/
+public/audio/*/
+!public/audio/.gitkeep
+.DS_Store
+*.log
+public/fonts/
+public/data/
