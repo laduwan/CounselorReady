@@ -1,0 +1,15 @@
+{
+  "id": "PRP-Q-0001",
+  "family": "Depressive Disorders",
+  "vignette": "A 34-year-old client presents two weeks after the end of a long-term relationship. They report four weeks of low mood, waking at 3 a.m. most nights, a 12-pound unintentional weight loss, and difficulty concentrating at work. During intake they say quietly, \"Some mornings I wonder what the point of getting up is.\" They have no prior counseling history and are not taking any medication.",
+  "question": "What do you do FIRST?",
+  "options": [
+    {"text": "Assess safety and suicidal ideation directly", "isCorrect": true},
+    {"text": "Administer the PHQ-9 to quantify symptom severity", "isCorrect": false},
+    {"text": "Begin cognitive restructuring around the breakup", "isCorrect": false},
+    {"text": "Refer to a psychiatrist for a medication evaluation", "isCorrect": false}
+  ],
+  "rationale": "A passive death wish stated in session is a safety signal, and safety assessment always precedes measurement, intervention, and referral. Screening tools, treatment, and consultation all remain appropriate — after risk has been directly evaluated.",
+  "rung": 1,
+  "difficulty": "core"
+}
