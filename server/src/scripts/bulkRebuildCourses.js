@@ -584,13 +584,14 @@ APA 7 formatting rules for all generated content:
 
 Output ONLY valid JSON. No markdown, no backticks, no explanation.`;
 
-async function callClaude(prompt, maxTokens = 4000) {
+async function callClaude(prompt, maxTokens = 6000) {
   let attempts = 0;
   let text = '';
   while (attempts < 3) {
     try {
       const response = await client.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
+        thinking: { type: 'disabled' },
         max_tokens: maxTokens,
         system: GEN_SYSTEM,
         messages: [{ role: 'user', content: prompt }]

@@ -7,7 +7,7 @@ import { fetchNewerArticles } from './openAlex.js';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = 'claude-sonnet-5';
 
 async function callClaude(prompt) {
   const response = await fetch(ANTHROPIC_API_URL, {
@@ -19,6 +19,7 @@ async function callClaude(prompt) {
     },
     body: JSON.stringify({
       model: MODEL,
+      thinking: { type: 'disabled' },
       max_tokens: 2048,
       messages: [{ role: 'user', content: prompt }]
     })

@@ -67,8 +67,9 @@ router.get('/test', protect, async (req, res) => {
   if (results.apiKeyConfigured) {
     try {
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 10,
+        model: 'claude-sonnet-5',
+        thinking: { type: 'disabled' },
+        max_tokens: 15,
         messages: [{ role: 'user', content: 'Say "ok"' }]
       });
       
@@ -120,8 +121,9 @@ router.post('/', protect, upload.single('file'), async (req, res) => {
 
     // Call Claude API to extract certificate data
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1500,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 2500,
       messages: [
         {
           role: 'user',
@@ -263,8 +265,9 @@ router.post('/credential', protect, upload.single('file'), async (req, res) => {
 
     // Call Claude API to extract credential/license data
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 1500,
       messages: [
         {
           role: 'user',

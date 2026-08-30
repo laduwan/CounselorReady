@@ -97,7 +97,7 @@ async function analyzeChangesWithAI(source, oldContent, newContent) {
   }
 
   const anthropic = new Anthropic({ apiKey });
-  const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+  const model = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
   const prompt = `You are analyzing a state licensing board website for changes relevant to mental health counselors.
 
@@ -128,6 +128,7 @@ Respond ONLY with the JSON array, no other text.`;
   try {
     const response = await anthropic.messages.create({
       model,
+      thinking: { type: 'disabled' },
       max_tokens: 2000,
       messages: [{ role: 'user', content: prompt }]
     });
