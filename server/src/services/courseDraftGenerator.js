@@ -111,8 +111,9 @@ export async function generateCourseDraft({ topic, uploadedContent, ceHours, lev
 - ACEP compliance notes`;
 
   const outlineResponse = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4000,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 6000,
     messages: [{ role: 'user', content: outlinePrompt }]
   });
   usageTotals.input_tokens += outlineResponse.usage.input_tokens;
@@ -144,8 +145,9 @@ Requirements:
 - Target audience: Licensed mental health professionals`;
 
     const contentResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 12000,
       messages: [{ role: 'user', content: contentPrompt }]
     });
     usageTotals.input_tokens += contentResponse.usage.input_tokens;
@@ -164,8 +166,9 @@ Format each as:
 Return ONLY a JSON array of ${questionCount} questions.`;
 
   const assessmentResponse = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8000,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 12000,
     messages: [{ role: 'user', content: assessmentPrompt }]
   });
   usageTotals.input_tokens += assessmentResponse.usage.input_tokens;
@@ -217,8 +220,9 @@ export async function generatePartnerCourseDraft({ topic, uploadedContent, ceHou
 - Target audience: ${audienceLabel}`;
 
   const outlineResponse = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4000,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 6000,
     messages: [{ role: 'user', content: outlinePrompt }]
   });
   usageTotals.input_tokens += outlineResponse.usage.input_tokens;
@@ -250,8 +254,9 @@ Requirements:
 - Target audience: ${audienceLabel}`;
 
     const contentResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 12000,
       messages: [{ role: 'user', content: contentPrompt }]
     });
     usageTotals.input_tokens += contentResponse.usage.input_tokens;
@@ -270,8 +275,9 @@ Format each as:
 Return ONLY a JSON array of ${questionCount} questions.`;
 
   const assessmentResponse = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8000,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 12000,
     messages: [{ role: 'user', content: assessmentPrompt }]
   });
   usageTotals.input_tokens += assessmentResponse.usage.input_tokens;

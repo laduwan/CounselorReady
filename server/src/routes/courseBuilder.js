@@ -507,8 +507,9 @@ Rules:
 - Return ONLY valid JSON, no markdown`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 6000,
       messages: [{ role: 'user', content: prompt }]
     });
 
@@ -735,8 +736,9 @@ CRITICAL RULES:
 - Return ONLY a valid JSON array. No markdown.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 12000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -813,8 +815,9 @@ Return ONLY a JSON object:
 Return ONLY valid JSON. No markdown.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 8192,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 12000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -864,8 +867,9 @@ Use realistic but generalized citations — real journal names, plausible DOIs.
 Return ONLY valid JSON array. No markdown.`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 2048,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 3000,
     messages: [{ role: 'user', content: prompt }],
   });
 
@@ -1214,8 +1218,9 @@ Rules:
 - Return ONLY valid JSON, no markdown`;
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4096,
+    model: 'claude-sonnet-5',
+    thinking: { type: 'disabled' },
+    max_tokens: 6000,
     messages: [{ role: 'user', content: prompt }],
   });
 

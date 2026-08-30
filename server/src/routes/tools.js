@@ -246,8 +246,9 @@ Session context:
     });
 
     const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 1500,
       system: systemPrompt,
       messages: [
         {

@@ -13,7 +13,7 @@
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-20250514';
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
 const WORDS_PER_CE_HOUR = 6000;
 const WORDS_BUFFER = 200;
@@ -33,6 +33,7 @@ async function callClaude(systemPrompt, userPrompt, maxTokens = 5000) {
     },
     body: JSON.stringify({
       model: MODEL,
+      thinking: { type: 'disabled' },
       max_tokens: maxTokens,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }]

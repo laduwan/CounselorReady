@@ -189,8 +189,9 @@ Return ONLY valid JSON, no other text.`;
     }
     
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4000,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 6000,
       messages: messages
     });
     
@@ -390,7 +391,8 @@ Generate the complete course now. The content MUST meet NBCC word count requirem
     
     try {
       const stream = await anthropic.messages.stream({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
+        thinking: { type: 'disabled' },
         max_tokens: 64000,
         messages
       });
@@ -700,8 +702,9 @@ IMPORTANT:
     console.log(`Regenerating lesson: ${lessonTitle} (target: ${targetWords} words)`);
     
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8000,
+      model: 'claude-sonnet-5',
+      thinking: { type: 'disabled' },
+      max_tokens: 12000,
       messages: [{ role: 'user', content: prompt }]
     });
     
@@ -832,8 +835,9 @@ Return ONLY the JSON object, no markdown code blocks.`;
         console.log(`[Job ${jobId}] Generating module ${moduleNumber}/${totalModules}: ${moduleTitle} (target: ${wordsForModule} words)`);
 
         const response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 16000,
+          model: 'claude-sonnet-5',
+          thinking: { type: 'disabled' },
+          max_tokens: 24000,
           messages: [{ role: 'user', content: prompt }]
         });
 
