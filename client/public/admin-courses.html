@@ -579,7 +579,7 @@
               <button data-cr-act="publish" data-id="${c._id}" data-status="${c.status}" data-title="${esc(c.title)}" data-src="${src}"
                 class="w-7 h-7 rounded-lg flex items-center justify-center text-xs transition-colors ${pub ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700' : 'bg-green-50 hover:bg-green-100 text-green-700'}"
                 title="${pub ? 'Unpublish' : 'Publish'}">${pub ? '📤' : '📥'}</button>
-              <a href="/interactive-course.html?id=${c._id}" target="_blank"
+              <a href="/interactive-course.html?id=${c._id}&preview=true" target="_blank"
                 class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-navy-50 hover:bg-navy-100 text-navy-700 transition-colors" title="View course">📖</a>
               <button data-cr-act="copylink" data-slug="${esc(c.slug || c._id)}"
                 class="w-7 h-7 rounded-lg flex items-center justify-center text-xs bg-sky-50 hover:bg-sky-100 text-sky-700 transition-colors" title="Copy course link">🔗</button>

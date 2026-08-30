@@ -10,7 +10,7 @@
     // Redirect to real course player, preserving id parameter
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    window.location.replace('/interactive-course.html' + (id ? '?id=' + id : ''));
+    window.location.replace('/interactive-course.html' + (id ? '?id=' + id + '&preview=true' : '?preview=true'));
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

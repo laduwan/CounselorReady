@@ -5555,7 +5555,7 @@ function loadCourse(data) {
 
   // ── Auto-enroll on course load (ensures backend has enrollment record) ──
   const token = localStorage.getItem('token');
-  if (token && crSlugOrId()) {
+  if (token && crSlugOrId() && !window.__CR_PREVIEW) {
     fetch(crApiBase() + '/api/interactive-courses/' + crSlugOrId() + '/enroll', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
@@ -11191,6 +11191,7 @@ function saveProgress() {
 
 // Sync section progress to backend
 function crSyncSection(sectionIndex) {
+  if (window.__CR_PREVIEW) return; // admin preview: no progress writes
   const token = localStorage.getItem('token');
   const id = crSlugOrId();
   if (!token || !id) return;
