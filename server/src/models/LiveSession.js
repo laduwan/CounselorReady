@@ -22,7 +22,8 @@ const registrantSchema = new mongoose.Schema({
   registeredAt: { type: Date, default: Date.now },
   paid: { type: Boolean, default: false },
   stripeCheckoutSessionId: String,
-  phoneOptIn: { type: Boolean, default: false }   // SMS consent for session logistics
+  phoneOptIn: { type: Boolean, default: false },  // SMS consent for session logistics
+  remindersEnabled: { type: Boolean, default: true }  // mirrors UserCredential.remindersEnabled
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({

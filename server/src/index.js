@@ -113,6 +113,7 @@ import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
+import { runLiveSessionSelfHeal } from './jobs/liveSessionSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
 import { runTranscriptionTick } from './jobs/transcriptionTick.js';
 import { runBlogAutoGen } from './jobs/blogAutoGen.js';
@@ -441,6 +442,16 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Certificate self-heal cron scheduled (every 6 hours)');
+
+  // Live session self-heal — every 6 hours (closes sessions stuck in
+  // scheduled/live 2+ hours past scheduledEnd when the Whereby
+  // room.session.ended webhook never fired)
+  cron.schedule('0 */6 * * *', () => {
+    runLiveSessionSelfHeal().catch(err =>
+      console.error('Live session self-heal error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  logger.info('Live session self-heal cron scheduled (every 6 hours)');
 
   // Session producer tick — every minute (drop detection, break reminders, wrap-up dispatch)
   cron.schedule('* * * * *', () => {
