@@ -65,6 +65,12 @@ function replayDeepLink(session, offsetSec) {
   return offsetSec != null ? `${base}&t=${Math.round(offsetSec)}` : base;
 }
 
+/** True unless the registrant has explicitly opted out of session logistics reminders. */
+function remindersAllowed(session, userId) {
+  const reg = session.registrants.find(r => r.user && r.user.toString() === userId.toString());
+  return reg ? reg.remindersEnabled !== false : true;
+}
+
 /**
  * Gap segments for a user: pairs where leftAt is followed by a later joinedAt,
  * plus a trailing gap from last leftAt to scheduledEnd (if early leave).
@@ -297,6 +303,7 @@ export async function onRecordingFinished(session) {
       a => a.user && a.user.toString() === user._id.toString()
     );
     if (!attended) continue;
+    if (!remindersAllowed(session, user._id)) continue;
     await sendEmail({
       to: user.email,
       subject: `Replay ready: ${session.title}`,
@@ -333,6 +340,7 @@ export async function onTranscriptionFinished(session, s3Key) {
       a => a.user && a.user.toString() === userId && a.joinedAt
     );
     if (!attended) continue;
+    if (!remindersAllowed(session, userId)) continue;
 
     const gaps = computeGaps(session, userId);
     if (gaps.length === 0) continue;
@@ -374,6 +382,8 @@ export async function runWrapUp(session) {
 
   for (const user of users) {
     const userId = user._id.toString();
+    if (!remindersAllowed(session, userId)) continue;
+
     const userAttended = session.attendance.some(
       a => a.user && a.user.toString() === userId && a.joinedAt
     );
@@ -525,6 +535,7 @@ export async function processDropDetection(session) {
     if (ageMs < 3 * 60000 || ageMs > 10 * 60000) continue; // outside 3–10 min window
     if (now >= session.scheduledEnd.getTime()) continue; // session over
     if (insideBreakWindow(session, new Date(now))) continue;
+    if (!remindersAllowed(session, userId)) continue;
 
     const user = await User.findById(userId).select('email profile phone');
     if (!user) continue;
@@ -569,6 +580,7 @@ export async function processBreakReminders(session) {
     const users = await User.find({ _id: { $in: registrantIds } }).select('email profile phone');
 
     for (const user of users) {
+      if (!remindersAllowed(session, user._id)) continue;
       await sendEmail({
         to: user.email,
         subject: `${br.label || 'Break'} ending soon — ${session.title}`,
@@ -614,6 +626,7 @@ export async function processBreakageDetection(session) {
   const registrantIds = session.registrants.map(r => r.user);
   const users = await User.find({ _id: { $in: registrantIds } }).select('email profile');
   for (const user of users) {
+    if (!remindersAllowed(session, user._id)) continue;
     await sendEmail({
       to: user.email,
       subject: `Technical difficulties — ${session.title}`,

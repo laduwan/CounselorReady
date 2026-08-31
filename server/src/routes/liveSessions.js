@@ -267,6 +267,38 @@ router.post('/:id/register', protect, async (req, res) => {
   }
 });
 
+// PATCH /api/live-sessions/:id/reminders — registrant self-service reminders opt-out
+// Body: { remindersEnabled: boolean, userId? } — userId is admin-only, to target another registrant.
+router.patch('/:id/reminders', protect, async (req, res) => {
+  try {
+    const { remindersEnabled, userId } = req.body;
+    if (typeof remindersEnabled !== 'boolean') {
+      return res.status(400).json({ error: 'remindersEnabled must be a boolean.' });
+    }
+
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const isAdmin = req.user.role === 'admin';
+    let targetUserId = req.user._id;
+    if (userId) {
+      if (!isAdmin) return res.status(403).json({ error: 'Only admins can update reminders for another registrant.' });
+      targetUserId = userId;
+    }
+
+    const reg = session.registrants.find(r => r.user && r.user.toString() === targetUserId.toString());
+    if (!reg) return res.status(404).json({ error: 'Not registered for this session.' });
+
+    reg.remindersEnabled = remindersEnabled;
+    await session.save();
+
+    res.json({ remindersEnabled: reg.remindersEnabled });
+  } catch (err) {
+    console.error('[live] reminders:', err.message);
+    res.status(500).json({ error: 'Failed to update reminders' });
+  }
+});
+
 // POST /api/live-sessions/:id/join — mint the room URL (the access-control gate)
 router.post('/:id/join', protect, async (req, res) => {
   try {
