@@ -356,6 +356,9 @@ const CourseSchema = new mongoose.Schema({
       sectionIndex: Number
     }],
     attemptsAllowed: { type: Number, default: 3 },
+    // KE'S RULING: attempts are unlimited unless an admin explicitly limits them.
+    // attemptsAllowed is enforced only when limitAttempts is true.
+    limitAttempts: { type: Boolean, default: false },
     shuffleQuestions: { type: Boolean, default: true },
     shuffleOptions: { type: Boolean, default: true }
   },

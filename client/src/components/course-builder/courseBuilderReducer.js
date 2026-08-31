@@ -46,7 +46,8 @@ export const INITIAL_STATE = {
     questions: [],
     passingScore: 80,
     passThreshold: 0.80,
-    maxAttempts: 3,
+    limitAttempts: false,
+    attemptsAllowed: 3,
   },
 
   references: [],
