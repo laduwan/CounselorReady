@@ -117,6 +117,7 @@ import { runLiveSessionSelfHeal } from './jobs/liveSessionSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
 import { runTranscriptionTick } from './jobs/transcriptionTick.js';
 import { runBlogAutoGen } from './jobs/blogAutoGen.js';
+import { runDbBackup } from './jobs/dbBackup.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
@@ -491,6 +492,15 @@ const startServer = async () => {
     runBlogAutoGen().catch(err => console.error('[BlogAutoGen] Cron error:', err.message));
   }, { timezone: 'America/New_York' });
   logger.info('Blog auto-generation cron scheduled (Tuesdays 6 AM ET)');
+
+  // Nightly DB backup — dumps interactivecourses (+ DB_BACKUP_COLLECTIONS) to
+  // S3 as Extended-JSON, one file per course for single-course restores, prunes
+  // folders older than DB_BACKUP_RETENTION_DAYS, emails a where-it-went notice.
+  // Read-only against MongoDB. Manual run: node src/scripts/runDbBackup.js
+  cron.schedule('0 2 * * *', () => {
+    runDbBackup().catch(err => console.error('[DbBackup] Nightly cron error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Nightly DB backup cron scheduled (daily 2 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
