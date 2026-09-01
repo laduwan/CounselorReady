@@ -492,8 +492,11 @@ const CourseSchema = new mongoose.Schema({
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number // pre-computed for admin dashboard
-  
+  wordCount: Number, // pre-computed for admin dashboard
+  sectionCount: Number, // pre-computed for admin course-library list
+  moduleCount: Number, // pre-computed for admin course-library list
+  assessmentQuestionCount: Number // pre-computed for admin course-library list
+
 }, { timestamps: true });
 
 // Pre-save hook: normalize order, roll up totals, and compute wordCount.
@@ -517,6 +520,9 @@ CourseSchema.pre('save', function(next) {
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
     + (this.assessment?.questions?.length || 0);
+  this.sectionCount = this.sections.length;
+  this.moduleCount = this.sections.length;
+  this.assessmentQuestionCount = this.assessment?.questions?.length || 0;
 
   // Word count via canonical counter (server/src/utils/courseWordCount.js).
   // Single source of truth shared by validators, publish gate, and recompute
