@@ -97,7 +97,11 @@ export async function finalizeCourse(identifier, opts = {}) {
     return { course: doc, before, after, changed: diffRollups(before, after), backup: null };
   }
 
-  const backup = await snapshotCourse(doc, { reason });
+  // snapshotCourse() EJSON-serializes its input; a live Mongoose document's
+  // subdocument arrays (e.g. assessment.questions) carry an internal
+  // __parentArray circular back-reference that breaks that serialization.
+  // toObject() strips Mongoose's internal bookkeeping first.
+  const backup = await snapshotCourse(doc.toObject(), { reason });
   await doc.save(); // triggers the real pre-save hook — rollups are never recomputed here
   const after = currentRollups(doc);
   return { course: doc, before, after, changed: diffRollups(before, after), backup };

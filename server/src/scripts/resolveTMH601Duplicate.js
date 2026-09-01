@@ -98,7 +98,11 @@ async function main() {
     console.log(`• "${doc.title}" [${_id}]: courseCode ${doc.courseCode} -> ${toCode}`);
 
     if (EXECUTE) {
-      const backup = await snapshotCourse(doc, { reason: `resolveTMH601Duplicate.js — recode ${fromCode} -> ${toCode}` });
+      // snapshotCourse() EJSON-serializes its input; a live Mongoose document's
+      // subdocument arrays (e.g. assessment.questions) carry an internal
+      // __parentArray circular back-reference that breaks that serialization.
+      // toObject() strips Mongoose's internal bookkeeping first.
+      const backup = await snapshotCourse(doc.toObject(), { reason: `resolveTMH601Duplicate.js — recode ${fromCode} -> ${toCode}` });
       console.log(`    backup: ${backup.s3Uri || backup.localPath || '(none — check S3/local config)'}`);
       doc.courseCode = toCode;
       await doc.save();
