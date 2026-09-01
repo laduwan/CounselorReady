@@ -204,7 +204,7 @@ function AnswerDistChart({ questions }) {
 
 export default function AssessmentTab() {
   const { state, dispatch } = useCourseBuilder();
-  const { questions, passingScore, passThreshold, maxAttempts } = state.assessment;
+  const { questions, passingScore, passThreshold, limitAttempts, attemptsAllowed } = state.assessment;
   const MIN_Q = ACEP_RULES.MIN_ASSESSMENT_QUESTIONS;
 
   const addQ = () =>
@@ -267,20 +267,31 @@ export default function AssessmentTab() {
 
           <div style={{ width: 1, height: 32, background: C.border }} />
 
-          {/* Max attempts */}
+          {/* Attempts */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 500, whiteSpace: "nowrap" }}>
-              Max Attempts
-            </span>
-            <select
-              value={maxAttempts || 3}
-              onChange={e => setMeta({ maxAttempts: Number(e.target.value) })}
-              style={{ ...S.input, width: "auto", padding: "6px 10px" }}
-            >
-              {[1, 2, 3, 5, 10].map(n => (
-                <option key={n} value={n}>{n === 10 ? "Unlimited" : n}</option>
-              ))}
-            </select>
+            <label style={{ fontSize: 13, color: C.textMuted, fontWeight: 500, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}>
+              <input
+                type="checkbox"
+                checked={limitAttempts === true}
+                onChange={e => setMeta({ limitAttempts: e.target.checked })}
+              />
+              Limit attempts
+            </label>
+            {limitAttempts ? (
+              <select
+                value={attemptsAllowed || 3}
+                onChange={e => setMeta({ attemptsAllowed: Number(e.target.value) })}
+                style={{ ...S.input, width: "auto", padding: "6px 10px" }}
+              >
+                {[1, 2, 3, 4, 5, 10].map(n => (
+                  <option key={n} value={n}>{n}</option>
+                ))}
+              </select>
+            ) : (
+              <span style={{ fontSize: 13, color: C.textMuted, fontWeight: 500, whiteSpace: "nowrap" }}>
+                Unlimited
+              </span>
+            )}
           </div>
         </div>
       </div>
