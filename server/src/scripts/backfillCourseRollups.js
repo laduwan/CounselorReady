@@ -60,13 +60,24 @@ function fmtChange(changed) {
     process.exit(1);
   }
 
-  let touched = 0, alreadyCorrect = 0, notFound = 0;
+  let touched = 0, alreadyCorrect = 0, notFound = 0, errored = 0, fellBack = 0;
 
   for (const id of identifiers) {
-    const { course, before, after, changed } = await finalizeCourse(id, {
-      dryRun: DRY,
-      reason: 'backfillCourseRollups.js — stale rollup fields from a raw-driver write',
-    });
+    // One course's unrelated problem (e.g. a full-document validation
+    // failure) must never take down the rest of an --all batch.
+    let result;
+    try {
+      result = await finalizeCourse(id, {
+        dryRun: DRY,
+        reason: 'backfillCourseRollups.js — stale rollup fields from a raw-driver write',
+      });
+    } catch (err) {
+      console.log(`✗ ERROR on ${id}: ${err.message}`);
+      errored++;
+      continue;
+    }
+
+    const { course, changed, fallback } = result;
 
     if (!course) {
       console.log(`✗ NOT FOUND: ${id}`);
@@ -76,6 +87,11 @@ function fmtChange(changed) {
 
     const label = `${course.courseCode || '(no code)'} — "${(course.title || '').slice(0, 60)}" [${course._id}]`;
     const diff = fmtChange(changed);
+
+    if (fallback) {
+      console.log(`⚠ ${label} — saved via raw fallback (full validation failed on unrelated content, likely a missing contentBlocks[].order — run backfillBlockOrder.js on this course): ${fallback}`);
+      fellBack++;
+    }
 
     if (!diff) {
       console.log(`✓ ${label} — rollups already correct, nothing to do`);
@@ -90,6 +106,6 @@ function fmtChange(changed) {
   }
 
   console.log('\n────────────────────────────────────────');
-  console.log(`${identifiers.length} checked · ${touched} ${DRY ? 'would be fixed' : 'fixed'} · ${alreadyCorrect} already correct · ${notFound} not found`);
+  console.log(`${identifiers.length} checked · ${touched} ${DRY ? 'would be fixed' : 'fixed'} · ${alreadyCorrect} already correct · ${notFound} not found · ${errored} errored · ${fellBack} saved via fallback`);
   await mongoose.disconnect();
 })().catch(async (e) => { console.error('Fatal:', e); try { await mongoose.disconnect(); } catch {} process.exit(1); });
