@@ -1376,6 +1376,13 @@
           </div>
           <a href="/subscription.html" style="color:var(--hunter);font-weight:600;font-size:14px;text-decoration:none">Manage Subscription →</a>
 
+          <!-- Cancel / Reactivate (only rendered for active Stripe subscriptions) -->
+          <div id="acct-sub-actions" style="display:none;margin-top:14px">
+            <p id="acct-cancel-note" style="display:none;font-size:0.84rem;line-height:1.5;color:var(--warning-text);background:var(--warning-bg);border:1px solid #FDE68A;border-radius:8px;padding:10px 12px;margin:0 0 12px"></p>
+            <button type="button" class="btn-secondary" id="acct-cancel-btn" onclick="cancelSubscriptionFromSettings()" style="display:none;color:var(--burgundy);border-color:var(--burgundy)">Cancel Subscription</button>
+            <button type="button" class="btn-primary" id="acct-reactivate-btn" onclick="reactivateSubscriptionFromSettings()" style="display:none">Reactivate Subscription</button>
+          </div>
+
           <!-- VIP Hardship Pause (conditional, only for VIP plans) -->
           <div id="hardshipPauseCard" class="pause-card conditional-section">
             <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem">
@@ -1822,13 +1829,17 @@
         document.getElementById('acct-plan-name').textContent = planNames[plan] || plan;
         const badge = document.getElementById('acct-plan-badge');
         badge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-        if (status === 'active' || status === 'lifetime') {
+        if (user.subscription?.cancelAtPeriodEnd && user.subscription?.currentPeriodEnd) {
+          badge.textContent = 'Cancels ' + new Date(user.subscription.currentPeriodEnd).toLocaleDateString();
+          badge.style.background = 'var(--warning-bg)'; badge.style.color = 'var(--warning-text)';
+        } else if (status === 'active' || status === 'lifetime') {
           badge.style.background = 'var(--success-bg)'; badge.style.color = 'var(--success-text)';
         } else if (status === 'trial') {
           badge.style.background = 'var(--warning-bg)'; badge.style.color = 'var(--warning-text)';
         } else {
           badge.style.background = '#FEF2F2'; badge.style.color = '#991B1B';
         }
+        renderSubscriptionActions(user.subscription || {});
 
         // Hardship pause (VIP only)
         if (plan === 'vip' || plan === 'annual_vip') {
@@ -2217,6 +2228,79 @@
           showToast(data.error || 'Could not resume', true);
         }
       } catch (err) { showToast('Network error', true); }
+    }
+
+    // -- Cancel / Reactivate subscription (uses existing /api/payments routes) --
+    function renderSubscriptionActions(sub) {
+      const wrap = document.getElementById('acct-sub-actions');
+      const note = document.getElementById('acct-cancel-note');
+      const cancelBtn = document.getElementById('acct-cancel-btn');
+      const reactivateBtn = document.getElementById('acct-reactivate-btn');
+      if (!wrap) return;
+
+      const hasStripeSub = !!(sub.stripeSubscriptionId && ['active', 'trialing', 'trial', 'past_due'].includes(sub.status));
+      if (!hasStripeSub) { wrap.style.display = 'none'; return; }
+
+      wrap.style.display = 'block';
+      const endText = sub.currentPeriodEnd ? new Date(sub.currentPeriodEnd).toLocaleDateString() : 'the end of your billing period';
+
+      if (sub.cancelAtPeriodEnd) {
+        note.textContent = `Your subscription is set to cancel. You keep full access until ${endText}. Changed your mind? Reactivate below.`;
+        note.style.display = 'block';
+        cancelBtn.style.display = 'none';
+        reactivateBtn.style.display = 'inline-block';
+      } else {
+        note.style.display = 'none';
+        cancelBtn.style.display = 'inline-block';
+        reactivateBtn.style.display = 'none';
+      }
+    }
+
+    async function cancelSubscriptionFromSettings() {
+      if (!confirm('Cancel your subscription? You will keep access until the end of your current billing period, then move to the Free plan.')) return;
+      const btn = document.getElementById('acct-cancel-btn');
+      btn.disabled = true; btn.textContent = 'Cancelling...';
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/payments/cancel-subscription`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          showToast(data.message || 'Subscription will cancel at end of billing period');
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showToast(data.error || 'Could not cancel subscription', true);
+          btn.disabled = false; btn.textContent = 'Cancel Subscription';
+        }
+      } catch (err) {
+        showToast('Network error', true);
+        btn.disabled = false; btn.textContent = 'Cancel Subscription';
+      }
+    }
+
+    async function reactivateSubscriptionFromSettings() {
+      const btn = document.getElementById('acct-reactivate-btn');
+      btn.disabled = true; btn.textContent = 'Reactivating...';
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/payments/reactivate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          showToast(data.message || 'Subscription reactivated');
+          setTimeout(() => window.location.reload(), 1200);
+        } else {
+          showToast(data.error || 'Could not reactivate subscription', true);
+          btn.disabled = false; btn.textContent = 'Reactivate Subscription';
+        }
+      } catch (err) {
+        showToast('Network error', true);
+        btn.disabled = false; btn.textContent = 'Reactivate Subscription';
+      }
     }
 
     // -- Billing History (uses existing /api/payments/invoices) --
