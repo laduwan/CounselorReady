@@ -276,13 +276,29 @@ router.get('/users', protect, adminOnly, async (req, res) => {
 // @access  Admin only
 router.post('/users/create', protect, adminOnly, async (req, res) => {
   try {
-    const { firstName, lastName, email, password, role, plan, licenseType, state } = req.body;
+    const { firstName, lastName, email, password, role, plan, licenseType, state, trialDays } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
     if (password.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    }
+
+    // Optional admin-granted tester window. Provisioned as an ACTIVE paid plan
+    // (status 'trial' is capped at 2 one-CE-hour courses by the course gating),
+    // with trialEndsAt as the revoke date that testerAccessRevoke.js acts on.
+    let trialEndsAt = null;
+    if (trialDays !== undefined && trialDays !== null && trialDays !== '') {
+      const days = Number(trialDays);
+      if (!Number.isInteger(days) || days < 1 || days > 365) {
+        return res.status(400).json({ error: 'Tester access must be a whole number of days between 1 and 365' });
+      }
+      if (!plan || plan === 'free') {
+        return res.status(400).json({ error: 'Select a paid plan to grant tester access — the free plan is capped at 4 one-hour courses per month' });
+      }
+      trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + days);
     }
 
     // Check if user already exists
@@ -309,7 +325,8 @@ router.post('/users/create', protect, adminOnly, async (req, res) => {
       subscription: {
         plan: plan || 'free',
         status: (plan && plan !== 'free') ? 'active' : 'free',
-        startDate: new Date()
+        startDate: new Date(),
+        ...(trialEndsAt && { trialEndsAt })
       },
       createdByAdmin: true,
       createdAt: new Date()
@@ -317,7 +334,7 @@ router.post('/users/create', protect, adminOnly, async (req, res) => {
 
     await user.save();
 
-    console.log(`Admin created user: ${email} | Plan: ${plan || 'free'} | Role: ${role || 'user'}`);
+    console.log(`Admin created user: ${email} | Plan: ${plan || 'free'} | Role: ${role || 'user'}${trialEndsAt ? ` | Tester access until ${trialEndsAt.toISOString().slice(0, 10)}` : ''}`);
 
     res.status(201).json({
       success: true,
@@ -328,7 +345,8 @@ router.post('/users/create', protect, adminOnly, async (req, res) => {
         firstName: user.profile?.firstName,
         lastName: user.profile?.lastName,
         role: user.role,
-        plan: user.subscription?.plan
+        plan: user.subscription?.plan,
+        trialEndsAt: user.subscription?.trialEndsAt || null
       }
     });
 
