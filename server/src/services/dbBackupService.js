@@ -7,9 +7,10 @@
  * Database Backup Service
  *
  * Shared core for:
- *   - server/src/scripts/backupCourse.js   (pre-write snapshot of one or more courses)
- *   - server/src/jobs/dbBackup.js          (nightly full-collection dump)
- *   - server/src/scripts/restoreCourse.js  (restore a course from a snapshot)
+ *   - server/src/scripts/backupCourse.js       (pre-write snapshot of one or more courses)
+ *   - server/src/jobs/dbBackup.js              (nightly full-collection dump)
+ *   - server/src/jobs/dbBackupWeeklyDigest.js  (weekly zip of the nightly per-course files)
+ *   - server/src/scripts/restoreCourse.js      (restore a course from a snapshot)
  *
  * Every backup is written as MongoDB Extended JSON (relaxed mode) so ObjectIds
  * and Dates round-trip exactly on restore. Files are human-readable and
@@ -21,6 +22,7 @@
  *                    nightly/<YYYY-MM-DD>/<collection>.ndjson.gz      ← nightly full dump
  *                    nightly/<YYYY-MM-DD>/courses/<CODE>__<slug>.json ← nightly per-course
  *                    nightly/<YYYY-MM-DD>/manifest.json
+ *                    weekly/<YYYY-MM-DD>/courses-<sourceDate>.zip     ← weekly hard copy, never pruned
  *   Local:         <server>/backups/courses/<COURSE_CODE>/<timestamp>__<slug>.json
  *                  (manual snapshots only; on Render this path is ephemeral and
  *                   disappears on redeploy — the S3 copy is the durable one)
@@ -42,6 +44,7 @@ import fs from 'fs';
 import path from 'path';
 import zlib from 'zlib';
 import mongoose from 'mongoose';
+import AdmZip from 'adm-zip';
 import {
   S3Client,
   PutObjectCommand,
@@ -49,6 +52,7 @@ import {
   ListObjectsV2Command,
   DeleteObjectsCommand,
 } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 // adminNotificationService instantiates Resend at import time and throws without
 // RESEND_API_KEY, so it is loaded lazily — local/CC runs without the key still work.
 async function sendAdminAlert(eventType, data) {
@@ -323,6 +327,41 @@ export async function pruneNightly(retentionDays = RETENTION_DAYS) {
   return { retentionDays, cutoff, kept: folders.filter(f => f >= cutoff), prunedFolders: stale, deletedObjects };
 }
 
+// ── Weekly digest (zip of latest nightly per-course files) ──────────────────
+
+/** Find the most recent nightly/<date>/ folder, or null if none exist yet. */
+export async function latestNightlyFolder() {
+  const folders = await listDateFolders(`${BACKUP_PREFIX}/nightly/`);
+  return folders.length ? folders[folders.length - 1] : null;
+}
+
+/**
+ * Zip every per-course JSON under nightly/<sourceFolder>/courses/ and upload
+ * it to weekly/<weeklyFolder>/, plus a 7-day signed download link. Weekly
+ * zips are never pruned by this service — see pruneNightly for the nightly
+ * retention window, which does not apply here.
+ */
+export async function buildWeeklyDigest(weeklyFolder, sourceFolder) {
+  const coursesPrefix = `${BACKUP_PREFIX}/nightly/${sourceFolder}/courses/`;
+  const keys = await listKeys(coursesPrefix);
+  if (!keys.length) {
+    throw new Error(`No per-course files found under ${coursesPrefix}`);
+  }
+
+  const zip = new AdmZip();
+  for (const key of keys) {
+    const text = await getObjectText(key);
+    zip.addFile(key.slice(coursesPrefix.length), Buffer.from(text, 'utf8'));
+  }
+  const buf = zip.toBuffer();
+
+  const zipKey = `${BACKUP_PREFIX}/weekly/${weeklyFolder}/courses-${sourceFolder}.zip`;
+  const r = await putObject(zipKey, buf, 'application/zip');
+  const downloadUrl = await getSignedUrl(s3(), new GetObjectCommand({ Bucket: BACKUP_BUCKET, Key: zipKey }), { expiresIn: 604800 });
+
+  return { count: keys.length, bytes: r.bytes, s3Key: zipKey, s3Uri: r.uri, downloadUrl, sourceFolder, weeklyFolder };
+}
+
 // ── Notices ──────────────────────────────────────────────────────────────────
 
 /** Console notice for manual snapshots — says exactly where each copy went. */
@@ -400,5 +439,31 @@ export async function emailNightlyNotice(report) {
   data['Duration'] = `${(report.ms / 1000).toFixed(1)} s`;
   data['Restore one course'] = 'node src/scripts/restoreCourse.js --key=&lt;per-course S3 key&gt; --apply';
   await sendAdminAlert('db_backup', data);
+  return true;
+}
+
+/** Email notice for the weekly digest job. */
+export async function emailWeeklyDigestNotice(report) {
+  if (!process.env.RESEND_API_KEY) return false;
+  if (!report.ok) {
+    await sendAdminAlert('db_backup_failed', {
+      'Job': 'Weekly DB backup digest',
+      'Date': report.weeklyFolder,
+      'Error': report.error || 'unknown',
+      'Bucket': BACKUP_BUCKET || '(not configured)',
+      'Prefix': `${BACKUP_PREFIX}/weekly/${report.weeklyFolder}/`,
+    });
+    return true;
+  }
+  await sendAdminAlert('db_backup', {
+    'Job': 'Weekly DB backup digest',
+    'Date': report.weeklyFolder,
+    'Source nightly folder': report.sourceFolder,
+    'Courses zipped': report.count,
+    'Bucket': BACKUP_BUCKET,
+    'Location': report.s3Uri,
+    'Download link (7 days)': report.downloadUrl,
+    'Duration': `${(report.ms / 1000).toFixed(1)} s`,
+  });
   return true;
 }

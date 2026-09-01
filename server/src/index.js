@@ -118,6 +118,7 @@ import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
 import { runTranscriptionTick } from './jobs/transcriptionTick.js';
 import { runBlogAutoGen } from './jobs/blogAutoGen.js';
 import { runDbBackup } from './jobs/dbBackup.js';
+import { runDbBackupWeeklyDigest } from './jobs/dbBackupWeeklyDigest.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
 
 import { ROUTE_MANIFEST } from './routeManifest.js';
@@ -501,6 +502,14 @@ const startServer = async () => {
     runDbBackup().catch(err => console.error('[DbBackup] Nightly cron error:', err.message));
   }, { timezone: 'America/New_York' });
   logger.info('Nightly DB backup cron scheduled (daily 2 AM ET)');
+
+  // Weekly DB backup digest — zips the latest nightly per-course files into
+  // one archive and emails a 7-day signed download link. Never auto-pruned.
+  // Read-only against MongoDB. Manual run: node src/scripts/runDbBackupDigest.js
+  cron.schedule('30 6 * * 1', () => {
+    runDbBackupWeeklyDigest().catch(err => console.error('[DbBackupWeeklyDigest] Cron error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Weekly DB backup digest cron scheduled (Mondays 6:30 AM ET)');
   // PostHog server-side analytics
   const phKey = process.env.POSTHOG_API_KEY || 'phc_rRGb8TPVl8lDYnD4M2HMGGuBBkL9whGzghD5FEX20Vb';
   global.posthog = new PostHog(phKey, { host: 'https://us.i.posthog.com' });
