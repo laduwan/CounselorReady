@@ -155,9 +155,13 @@ export const COURSE = {
           order: 3
         },
         {
+          type: 'text',
+          content: `<h3>Idioms of Distress: A Working Glossary</h3>
+<p>Open each entry. These are illustrative rather than exhaustive, and each is offered as a prompt to ask rather than as a translation table.</p>`,
+          order: 4
+        },
+        {
           type: 'accordion',
-          title: 'Idioms of Distress: A Working Glossary',
-          instructions: 'Open each entry. These are illustrative rather than exhaustive, and each is offered as a prompt to ask rather than as a translation table.',
           accordionItems: [
             {
               title: 'Nervios (Latin American communities)',
@@ -180,7 +184,7 @@ export const COURSE = {
               content: `<p>Ask what it means, when it comes, what makes it worse and better, who else in the family has had it, what people around them think causes it, and what has helped before. Then use the client's word for the rest of the treatment. You are not endorsing an etiology by using a client's vocabulary; you are keeping the treatment attached to the experience they actually have.</p>`
             }
           ],
-          order: 4
+          order: 5
         },
         {
           type: 'imageText',
@@ -190,7 +194,7 @@ export const COURSE = {
           image: '',
           imageAlt: 'A two-column comparison diagram. The left column, labeled "Psychologized presentation", shows a path from symptom report through recognition of depression to psychotherapy referral and engagement. The right column, labeled "Somatic presentation", shows the same underlying symptom set branching instead toward medical workup, missed diagnosis, and disengagement, with a dashed arrow labeled "cultural formulation" redirecting it back to accurate diagnosis.',
           imagePosition: 'right',
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -198,14 +202,14 @@ export const COURSE = {
 <p>Every diagnostic system draws a line between the normal and the disordered, and every such line is drawn from somewhere. The categories in current use emerged predominantly from what researchers have termed WEIRD contexts — Western, educated, industrialized, rich, and democratic — which represent a small and unrepresentative fraction of humanity. This does not make the categories useless. It does mean that their boundaries encode culturally specific judgments that will occasionally misfire badly when applied across cultural difference.</p>
 <p>Several examples recur frequently enough to warrant explicit attention. Hearing or seeing a deceased relative, particularly during bereavement, is a common and non-pathological experience in many communities and is often actively expected within particular religious traditions; recorded as a hallucination without inquiry into its meaning and context, it becomes evidence for a psychotic disorder. Extended and demonstrative mourning, including ritual observance lasting a year or more, is normative in many traditions and can be pathologized as prolonged grief by a framework calibrated to a different mourning schedule. Deep interdependence among adult family members — pooled finances, shared housing, collective decision-making about marriage or career — is a cultural norm across much of the world and is regularly labeled enmeshment by clinicians trained in models that treat individuation as the developmental telos. Emotional restraint, valued as maturity and consideration for others in many contexts, is readily documented as constricted or flat affect. Trance and possession experiences within religious practice have well-established meanings within their traditions and are recognized in the diagnostic manual's own cultural concepts material as requiring contextual judgment.</p>
 <p>The DSM-5-TR itself acknowledges this in its cultural formulation material and in the general requirement that a diagnosis account for whether the presentation is sanctioned within the individual's culture. That requirement is frequently unmet in practice, not because clinicians reject it, but because assessing it requires asking questions that a standard intake does not prompt.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'callout',
           calloutType: 'warning',
           title: 'The Diagnostic Disparity Is Documented, Large, and Persistent',
           content: `<p>Reviews of the empirical literature on racial disparities in psychotic disorder diagnosis find that African American and, in several studies, Latino clients are diagnosed with schizophrenia spectrum disorders at three to four times the rate of white clients, with correspondingly lower rates of mood disorder diagnosis — a pattern that persists after controlling for symptom presentation and socioeconomic status. The disparity is not explained by differences in underlying prevalence. Contributing mechanisms identified in the literature include clinician misattribution of culturally normative mistrust as paranoia, over-weighting of psychotic-spectrum symptoms and under-weighting of affective symptoms in Black clients, communication mismatch during the interview, and reliance on instruments whose validity across populations was never established. The clinical consequence is severe: a client misdiagnosed with a psychotic disorder receives antipsychotic medication with substantial metabolic and neurological risk, carries a stigmatizing and durable label through every subsequent encounter with the system, and does not receive treatment for the condition they actually have.</p>`,
-          order: 7
+          order: 8
         },
         {
           type: 'text',
@@ -216,12 +220,11 @@ export const COURSE = {
 <p>Third, the client responds to the interview they are actually receiving. A client who perceives that they are being assessed for psychosis, or who has learned from prior experience that candor about certain experiences carries institutional risk, will disclose selectively. This is not deception; it is adaptive behavior under conditions of asymmetric power. The resulting record then appears to support the hypothesis that generated it.</p>
 <p>Fourth, the formulation hardens into a label, and the label travels. Subsequent clinicians encounter the diagnosis before they encounter the client, which shapes their own early hypothesis. Anchoring effects in medical and psychiatric records are substantial and well documented, and diagnostic labels applied to marginalized clients are markedly less likely to be revised than those applied to majority clients.</p>
 <p>Each stage is a point of possible interruption, and the interventions covered in the remainder of this course map onto them: humility about the early hypothesis, structured cultural inquiry that forces disconfirming questions to be asked, attention to the relational conditions that make honest disclosure possible, and institutional practices of second opinion and diagnostic review that keep labels revisable.</p>`,
-          order: 8
+          order: 9
         },
         {
           type: 'flashcardDeck',
-          title: 'Culture and Clinical Presentation: Core Concepts',
-          instructions: 'Answer each card before flipping. These are the concepts you will use when a presentation does not match the template you were trained on.',
+          instructions: 'Culture and Clinical Presentation: Core Concepts — Answer each card before flipping. These are the concepts you will use when a presentation does not match the template you were trained on.',
           flashcards: [
             {
               id: 'cultr603-m1-f1',
@@ -254,7 +257,7 @@ export const COURSE = {
               back: 'For clients whose communities have documented experience of coercive psychiatric treatment, immigration enforcement triggered by service contact, or child welfare involvement, caution about entering a formal system is an accurate assessment of real institutional risk. Reading it as denial locates the problem in the client and forecloses the conversation that would surface the actual barrier.'
             }
           ],
-          order: 9
+          order: 10
         },
         {
           type: 'text',
@@ -262,7 +265,7 @@ export const COURSE = {
 <blockquote><p>Nadia is a 31-year-old woman who came to the United States from Iraq eleven years ago. She is referred by her primary care physician after eighteen months of recurrent abdominal pain, headaches, and fatigue with no identified organic cause. In the first session she is polite, gives short answers, and asks twice how long the appointment will take. She reports that she sleeps poorly, that she has "no energy for anything," and that her mother — who lives with her — worries about her. When asked directly whether she feels depressed, she says no, quite firmly. She mentions that she prays more than she used to and that this helps. She does not mention that her brother was killed in 2014, a fact that appears in the medical record but that she does not raise, and she is not asked.</p></blockquote>
 <p>There are at least three defensible readings of this session, and the one the clinician selects will largely determine what happens next. Read as somatization with denial of psychological symptoms, the plan becomes psychoeducation about the mind-body connection and gentle challenge of her rejection of the depression label — an approach that positions the clinician as knowing her experience better than she does and that, in practice, frequently ends the treatment. Read as a client who does not organize her distress psychologically and who has not yet been asked anything that would allow the relevant history to surface, the plan becomes careful inquiry in her own terms: what she calls the problem, what she believes caused it, what her mother believes, what she has already tried, what her increased prayer is doing for her, and — eventually, when there is enough safety for it — what happened to her family. Read through a lens of premature cultural attribution, the plan becomes referral elsewhere on the grounds that a clinician outside her culture cannot help her, which is both an abdication and, given referral realities, often a functional denial of care.</p>
 <p>The second reading is the one this course is training toward. It requires no expertise in Iraqi culture. It requires the discipline of asking rather than assuming, and enough humility to treat her firm rejection of the word "depressed" as information about her framework rather than as resistance to yours.</p>`,
-          order: 10
+          order: 11
         },
         {
           type: 'multipleChoice',
@@ -287,7 +290,7 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'Perceptual experiences of a deceased person are common during bereavement and are actively expected within many religious and cultural traditions. The error is not the act of documenting but the act of categorizing without inquiry: the clinician converted the client\'s description into a diagnostic term without asking what the experience meant to her, whether it was expected in her tradition, whether it caused distress, or whether it was accompanied by any other indicators of a psychotic process. A standardized instrument would not have corrected this, since the same misclassification would simply have been entered into it. Referral to clergy in place of assessment substitutes one abdication for another.',
-          order: 11
+          order: 12
         },
         {
           type: 'multipleChoice',
@@ -312,7 +315,7 @@ export const COURSE = {
           ],
           correctAnswer: 1,
           explanation: 'Treating the somatic presentation as a lower-insight version of a "real" psychological disorder imports a culturally specific assumption — that psychologized self-report is the more accurate account — and then imposes it on the client as a treatment goal. Medical rule-out is appropriate but does not justify deferring mental health assessment, and interpreting the presentation as a defense repeats the same error in psychodynamic language. Accurate assessment addresses both domains without ranking one as more truthful.',
-          order: 12
+          order: 13
         },
         {
           type: 'keyTakeaway',
@@ -324,7 +327,7 @@ export const COURSE = {
             'Culturally normative experiences — bereavement perceptions, extended mourning, adult family interdependence, emotional restraint, religious trance — are routinely recorded as symptoms when the clinician does not ask about context.',
             'Diagnostic disparities are documented, large, and persistent; the mechanism runs through early hypothesis formation, confirmation-biased interviewing, selective client disclosure, and diagnostic labels that travel and resist revision.'
           ],
-          order: 13
+          order: 14
         },
         {
           type: 'multipleChoice',
@@ -349,12 +352,12 @@ export const COURSE = {
           ],
           correctAnswer: 2,
           explanation: 'The premise treats culture as something minority clients have and majority clients lack. Western psychotherapy encodes specific and contestable cultural assumptions about the autonomous self, the value of verbal emotional expression, and the individual as the unit of treatment. Culture also spans far more than race and ethnicity. The fourth option identifies a real problem — visual attribution of identity is unreliable — but treats it as the primary objection rather than as a secondary one.',
-          order: 14
+          order: 15
         },
         {
           type: 'reflection',
           question: 'Write out your own implicit template for what depression looks like in a client — the presentation that makes you think "depression" before you have finished the intake. Now describe a presentation that meets diagnostic criteria for major depression but does not match your template at all. How confident are you that you would recognize the second presentation on a busy day with a full caseload? What would have to be built into your intake process, rather than into your good intentions, for you to catch it reliably?',
-          order: 15
+          order: 16
         }
       ],
       order: 2
@@ -388,9 +391,13 @@ export const COURSE = {
           order: 3
         },
         {
+          type: 'text',
+          content: `<h3>Four Objections to the Competence Framework, and What Each Means in Practice</h3>
+<p>Open each objection. The point is not that the competence framework was wrong but that each of these failure modes shows up in ordinary clinical work.</p>`,
+          order: 4
+        },
+        {
           type: 'accordion',
-          title: 'Four Objections to the Competence Framework, and What Each Means in Practice',
-          instructions: 'Open each objection. The point is not that the competence framework was wrong but that each of these failure modes shows up in ordinary clinical work.',
           accordionItems: [
             {
               title: '1. It implies an attainable endpoint',
@@ -409,7 +416,7 @@ export const COURSE = {
               content: `<p>In practice: an exemplary clinician working in an agency with no interpreter budget, intake forms that cannot record a chosen name, a no-show policy that functions as differential rationing, and a diagnostic culture producing measurable disparities. Individual competence inside an unexamined system yields kind encounters and unchanged aggregate outcomes.</p>`
             }
           ],
-          order: 4
+          order: 5
         },
         {
           type: 'text',
@@ -419,14 +426,14 @@ export const COURSE = {
 <p><strong>Redressing power imbalance in the clinical relationship.</strong> The therapeutic relationship is structurally asymmetric — the clinician controls the setting, the record, the diagnostic language, the terms of access, and in many contexts the client's access to resources that depend on documentation. Cultural humility treats that asymmetry as a clinical variable to be actively managed rather than an inevitable backdrop: sharing the formulation in the client's own words, inviting correction, being explicit about what is being documented and why, and treating the client's account of their experience as authoritative.</p>
 <p><strong>Institutional accountability and community partnership.</strong> Tervalon and Murray-García were explicit that individual reflection is insufficient. The framework requires practitioners to work on the systems they practice within — access, representation, policy, and the community relationships through which underserved populations do or do not reach care.</p>
 <p>Crucially, cultural humility is not the absence of cultural knowledge. It is a different relationship to that knowledge: held tentatively, offered as a question rather than an assumption, and always subordinate to the client's account. The competence question is "What do I need to know about this culture?" The humility question is "What do I need to understand about this person, what am I not seeing, and how is my own lens shaping what I hear?" The second question does not make the first irrelevant; it makes it answerable without harm.</p>`,
-          order: 5
+          order: 6
         },
         {
           type: 'callout',
           calloutType: 'key',
           title: 'Cultural Knowledge Is a Hypothesis Generator, Never a Template',
           content: `<p>The practical rule that resolves most of the competence-versus-humility tension: cultural knowledge belongs on the input side of clinical reasoning, generating questions worth asking, and never on the output side, supplying conclusions. Knowing that many families in a client's community make major medical decisions collectively is a reason to <em>ask</em> how decisions are made in this family. It is never a reason to <em>assume</em> that this client will want their family involved, to route information through a relative, or to interpret a client's independence as acculturative conflict. The moment group knowledge starts producing conclusions about an individual, it has become stereotyping regardless of how accurate the group-level generalization is.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -436,12 +443,11 @@ export const COURSE = {
 <p><strong>Cultural opportunity</strong> refers to the moments in session when a client offers cultural material — a reference to their faith, their family's expectations, an experience of discrimination, a term in another language — and the clinician either engages it or passes over it. Owen and colleagues' research on <em>missed</em> cultural opportunities found that clients who reported such misses also reported weaker alliance and poorer outcomes. The misses are typically not refusals; they are small failures of noticing, and they accumulate.</p>
 <p><strong>Cultural curiosity</strong> is genuine interest in the client's cultural world as something worth understanding for its own sake, distinguishable from information-gathering in service of a formulation. Clients can tell the difference between being asked because the clinician wants to understand and being asked because the intake form has a field.</p>
 <p>The empirical finding that matters most here: client-perceived multicultural orientation predicts alliance and outcome more strongly than clinician-reported multicultural competence does. What the clinician believes about their own competence is a weak predictor. What the client experiences in the room is a strong one. This is a useful corrective for anyone inclined to treat a completed CE course as evidence of anything.</p>`,
-          order: 7
+          order: 8
         },
         {
           type: 'matching',
-          title: 'Competence, Humility, and Orientation: Getting the Terms Straight',
-          matchingInstructions: 'Match each term to its precise meaning. These distinctions matter because the frameworks are frequently conflated in practice, and the conflation produces exactly the stereotyping each is meant to prevent.',
+          matchingInstructions: 'Competence, Humility, and Orientation: Getting the Terms Straight — Match each term to its precise meaning. These distinctions matter because the frameworks are frequently conflated in practice, and the conflation produces exactly the stereotyping each is meant to prevent.',
           matchingPairs: [
             {
               term: 'Cultural competence (tripartite model)',
@@ -472,7 +478,7 @@ export const COURSE = {
               definition: 'Metzl and Hansen\'s extension of the frame beyond the dyad, training clinicians to recognize how policy, economics, and institutional arrangements produce the conditions that present in the room as individual symptoms.'
             }
           ],
-          order: 8
+          order: 9
         },
         {
           type: 'text',
@@ -480,7 +486,7 @@ export const COURSE = {
 <p>A further extension deserves attention because it addresses the fourth limitation identified above. Jonathan Metzl and Helena Hansen's concept of structural competency asks clinicians to recognize how the conditions that arrive in the consulting room as individual symptoms are produced upstream — by housing policy, immigration enforcement, insurance design, food access, policing, and the distribution of clinical resources. A client's missed appointments are frequently a transportation problem. Their medication non-adherence is frequently a formulary problem. Their hypervigilance is frequently an accurate reading of their neighborhood. Their reluctance to disclose is frequently a rational assessment of what the record will be used for.</p>
 <p>The clinical value of this frame is not that it excuses clinicians from treatment. It is that a formulation that locates a structurally produced problem entirely inside the client will generate a treatment plan that cannot work, and will then attribute its failure to the client's motivation. Structural competency asks a different diagnostic question at the outset: what in this person's material and institutional circumstances is producing or maintaining what I am seeing, and what part of my plan depends on conditions they do not control?</p>
 <p>Held together, the three frames give a workable synthesis. Competence supplies the knowledge base and the professional standard. Humility supplies the epistemic stance that keeps knowledge from becoming a template and keeps the clinician's own position under examination. Structural competency supplies the analysis that prevents systemic problems from being formulated as personal deficits. A clinician using all three asks: What do I know about the context this person comes from? What am I assuming, and how will I check it? And what is producing this situation that has nothing to do with the person sitting in front of me?</p>`,
-          order: 9
+          order: 10
         },
         {
           type: 'multipleChoice',
@@ -505,7 +511,7 @@ export const COURSE = {
           ],
           correctAnswer: 3,
           explanation: 'Cultural humility does not prohibit cultural knowledge; it specifies where knowledge belongs in clinical reasoning. Group-level information should generate questions ("How are decisions like this made in your family?") rather than supply conclusions delivered to the client. The problem is not the timing, and it is not that the training was a mistake — the knowledge would have been useful had it been held as a hypothesis. Documentation is a separate issue.',
-          order: 10
+          order: 11
         },
         {
           type: 'multipleChoice',
@@ -524,7 +530,7 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'Clinician self-report about their own competence is a weak predictor of outcome, and training hours weaker still. What predicts alliance and outcome is what the client experiences in the room — whether the clinician seemed comfortable with cultural material, engaged the openings the client offered, and appeared genuinely curious. Demographic matching shows inconsistent effects and is neither necessary nor sufficient; a matched clinician who misses cultural opportunities does not outperform an unmatched clinician who engages them.',
-          order: 11
+          order: 12
         },
         {
           type: 'keyTakeaway',
@@ -537,7 +543,7 @@ export const COURSE = {
             'Multicultural orientation makes humility observable through cultural comfort, cultural opportunity, and cultural curiosity; client-perceived orientation predicts outcome far better than clinician self-rated competence.',
             'Structural competency completes the picture by asking what upstream conditions are producing what presents in the room as individual pathology.'
           ],
-          order: 12
+          order: 13
         },
         {
           type: 'multipleChoice',
@@ -562,12 +568,12 @@ export const COURSE = {
           ],
           correctAnswer: 1,
           explanation: 'Each of the other options may eventually be relevant, but all three locate the problem inside the client before the material and institutional conditions have been examined. Structural competency asks what in the person\'s circumstances is producing the observed pattern and what part of the treatment plan depends on conditions they do not control. Formulating a transportation problem as ambivalence produces a plan that cannot work and then attributes its failure to the client.',
-          order: 13
+          order: 14
         },
         {
           type: 'reflection',
           question: 'Recall a session in which a client offered you cultural material — a reference to their faith, their family\'s expectations, an experience of racism, a word in another language — and you did not take it up. Reconstruct the moment honestly: what were you doing instead, and what was happening in you? Now write the sentence you could have said. Notice how long it takes you to compose it and how it feels to imagine saying it out loud. That difficulty is what "cultural comfort" names, and it is trainable.',
-          order: 14
+          order: 15
         }
       ],
       order: 3
@@ -603,9 +609,13 @@ export const COURSE = {
           order: 3
         },
         {
+          type: 'text',
+          content: `<h3>What Reduces Bias, and What Only Feels Like It Does</h3>
+<p>Open each item. The first three are the interventions clinicians most commonly adopt and the ones with the least support.</p>`,
+          order: 4
+        },
+        {
           type: 'accordion',
-          title: 'What Reduces Bias, and What Only Feels Like It Does',
-          instructions: 'Open each item. The first three are the interventions clinicians most commonly adopt and the ones with the least support.',
           accordionItems: [
             {
               title: 'Feels effective: awareness alone',
@@ -632,14 +642,14 @@ export const COURSE = {
               content: `<p>Individual insight is bounded by exactly the process being examined. Consultation groups with a standing item, supervision in which a supervisor is authorized to name a pattern, and agency-level audits of diagnosis and referral by demographic category catch what self-reflection structurally cannot.</p>`
             }
           ],
-          order: 4
+          order: 5
         },
         {
           type: 'callout',
           calloutType: 'donot',
           title: 'What Does Not Reduce the Effect of Bias',
           content: `<p>Three interventions feel effective and are not. <strong>Awareness alone.</strong> Learning that you have implicit biases produces reliable feelings of concern and unreliable changes in behavior; the effect of one-off awareness training on subsequent decisions is small and often short-lived. <strong>Suppression.</strong> Trying not to think about a social category increases its accessibility and can worsen behavior under cognitive load, which describes most clinical days. <strong>Colorblindness.</strong> Adopting the stance that you do not notice race removes the possibility of monitoring your own differential responses, and it is experienced by clients as invalidating rather than neutral. Awareness is a necessary starting point precisely because it motivates the structural changes that follow; it is not itself the intervention.</p>`,
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -650,7 +660,7 @@ export const COURSE = {
 <p><strong>Practice individuation.</strong> Deliberately attending to individuating information — this person's specific history, circumstances, and self-description — reduces reliance on category-based inference. In practice this means asking one more concrete question when you notice yourself reaching a conclusion quickly.</p>
 <p><strong>Build in counter-stereotypic checking.</strong> A workable habit is the counterfactual: "If this client were a 45-year-old white professional woman with the same presentation, would I be considering this diagnosis? Would I be offering this level of care? Would I be documenting it in these words?" The question takes ten seconds and reliably surfaces differential reasoning.</p>
 <p><strong>Get outside review.</strong> Individual insight is bounded by exactly the process being examined. Consultation groups that specifically review diagnostic patterns, agency-level audits of diagnosis and referral by demographic category, and supervision in which a supervisor is authorized to name a pattern are the mechanisms that catch what self-reflection cannot. This is the point at which cultural humility stops being a private virtue and becomes an institutional practice.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -661,12 +671,11 @@ export const COURSE = {
 <p><strong>Microinvalidations</strong> exclude, negate, or nullify the lived experience of the recipient, and are the most common form in therapy specifically. "Where are you really from?" denies belonging. "I don't see color" negates the reality of racialized experience. "Are you sure that was about race?" reassigns the client's interpretation of their own life to the clinician. "You don't look transgender" invalidates identity while presenting as a compliment. In therapeutic settings, microinvalidations are particularly damaging because the therapy room is where a client is invited to trust their own account of their experience.</p>
 <p>The evidence on impact is consistent: perceived microaggressions in therapy are associated with weakened working alliance, reduced disclosure, lower satisfaction, and premature termination. Clients frequently do not name them in the moment, which means the clinician's subjective sense that a session went well is not evidence that no rupture occurred.</p>
 <p>What repair requires is narrow and specific, and most clinicians get it wrong in a predictable way — by centering their own distress. Effective repair acknowledges the impact without disputing it, takes responsibility without extended self-criticism, avoids the phrase "I didn't mean it that way" as a first response since intent does not undo effect, invites the client to say more without requiring them to reassure you, changes the behavior, and does not return to the incident repeatedly for absolution. The transaction that damages the alliance further is the one in which the client ends up managing the clinician's guilt.</p>`,
-          order: 7
+          order: 8
         },
         {
           type: 'cardSort',
-          title: 'Sorting Microaggressions and Repairs',
-          instructions: 'Sort each item into its category. Distinguishing the three forms matters clinically because recognizing which one occurred shapes what repair is required.',
+          instructions: 'Sorting Microaggressions and Repairs — Sort each item into its category. Distinguishing the three forms matters clinically because recognizing which one occurred shapes what repair is required.',
           categories: ['Microinsult', 'Microinvalidation', 'Effective repair move', 'Ineffective repair move'],
           cards: [
             {
@@ -725,13 +734,18 @@ export const COURSE = {
               correctCategory: 'Ineffective repair move'
             }
           ],
-          order: 8
+          order: 9
+        },
+        {
+          type: 'text',
+          content: `<h3>Recognizing and Repairing Microaggressions in Session</h3>
+<p>This demonstration shows a therapy exchange in which a clinician makes an invalidating comment, the client names it, and the clinician repairs. Watch for the specific sequence — acknowledgment before explanation, no defense of intent, no request for reassurance — and for the moment at which the clinician resists the pull to elaborate on how badly they feel.</p>`,
+          order: 10
         },
         {
           type: 'videoEmbed',
           videoTitle: 'Recognizing and Repairing Microaggressions in Session',
           videoUrl: 'https://www.youtube.com/embed/PLACEHOLDER_cultr603_microaggression_repair',
-          content: `<p>This demonstration shows a therapy exchange in which a clinician makes an invalidating comment, the client names it, and the clinician repairs. Watch for the specific sequence — acknowledgment before explanation, no defense of intent, no request for reassurance — and for the moment at which the clinician resists the pull to elaborate on how badly they feel.</p>`,
           markers: [
             {
               time: '00:00',
@@ -754,7 +768,7 @@ export const COURSE = {
               prompt: 'How does the clinician close the repair without leaving the client responsible for it?'
             }
           ],
-          order: 9
+          order: 11
         },
         {
           type: 'text',
@@ -762,7 +776,7 @@ export const COURSE = {
 <p>Self-examination is where this module lands, with the caveat established above: examination motivates the structural practices that do the work; it does not substitute for them. Several questions are worth returning to periodically rather than once.</p>
 <p>Which clients do you find it easiest to like, and what do they have in common? Ease of liking is not a neutral variable — it predicts warmth, session length, flexibility about scheduling, and the benefit of the doubt on adherence. Which clients do you find hardest to engage, and how much of your explanation for that difficulty locates the cause in them? What do you believe you already know about particular cultural groups, and where did that information come from — clinical literature, a single memorable client, a colleague's story, media? When have you been clearly wrong about a client's background or circumstances, and what did the error consist of? Which cultural groups have you had the least contact with, and what have you done about that gap other than intend to address it?</p>
 <p>Finally, a question that is easy to avoid: what does your own cultural identity consist of, and how much time have you spent on it? Clinicians from dominant cultural positions frequently experience themselves as culturally neutral — as the baseline against which others have culture. That experience is itself a product of position, and it is the single largest obstacle to recognizing one's own lens as a lens.</p>`,
-          order: 10
+          order: 12
         },
         {
           type: 'multipleChoice',
@@ -787,7 +801,7 @@ export const COURSE = {
           ],
           correctAnswer: 2,
           explanation: 'The two constructs correlate modestly at best. Implicit associations are absorbed from cultural exposure rather than endorsed, which is why they appear in the majority of people tested, including members of the disadvantaged groups themselves. Treating implicit bias as concealed prejudice makes the topic a matter of moral accusation and reliably produces defensiveness rather than changed practice.',
-          order: 11
+          order: 13
         },
         {
           type: 'multipleChoice',
@@ -812,7 +826,7 @@ export const COURSE = {
           ],
           correctAnswer: 3,
           explanation: 'Awareness reliably produces concern and unreliably produces changed behavior; suppression can increase the accessibility of the very categories being suppressed, particularly under cognitive load. What changes outcomes is structural: reducing time pressure at decision points, using structured assessment that forces specific questions, practicing individuation, running counterfactual checks, and submitting diagnostic patterns to outside review. Awareness matters as the motivation for building those structures.',
-          order: 12
+          order: 14
         },
         {
           type: 'keyTakeaway',
@@ -825,7 +839,7 @@ export const COURSE = {
             'Microinvalidations are the most common microaggression in therapy and the most damaging, because the therapy room is where clients are invited to trust their own account of their experience.',
             'Repair means acknowledging impact before intent, changing the behavior, and never leaving the client to manage the clinician\'s guilt.'
           ],
-          order: 13
+          order: 15
         },
         {
           type: 'multipleChoice',
@@ -850,12 +864,12 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'Effective repair acknowledges impact before explaining intent, takes responsibility without extended self-criticism, and invites the client to say more without requiring reassurance. The first response defends intent and implicitly assigns the client an error in comprehension. The second centers the clinician\'s distress, leaving the client to manage it. The fourth defers, which communicates that the rupture is less important than the agenda — and in practice the client will not raise it again.',
-          order: 14
+          order: 16
         },
         {
           type: 'reflection',
           question: 'Run the counterfactual check on a real case from your current caseload. Take a client for whom you have recorded a diagnosis and a level of care, and ask: if this same presentation had come from someone of a different race, gender, age, body size, insurance status, or accent, would I have reached the same diagnosis? Would I have offered the same intensity of treatment? Would I have used the same words in the record? Be specific about where your answer is "I am not sure," and decide what you will do about that particular case this week.',
-          order: 15
+          order: 17
         }
       ],
       order: 4
@@ -902,9 +916,13 @@ export const COURSE = {
           order: 4
         },
         {
+          type: 'text',
+          content: `<h3>The CFI's Four Domains: Question Stems You Can Use Verbatim</h3>
+<p>Open each domain for wording you can take directly into an intake, plus what you are listening for.</p>`,
+          order: 5
+        },
+        {
           type: 'accordion',
-          title: 'The CFI\'s Four Domains: Question Stems You Can Use Verbatim',
-          instructions: 'Open each domain for wording you can take directly into an intake, plus what you are listening for.',
           accordionItems: [
             {
               title: 'Domain 1 — Cultural definition of the problem',
@@ -923,7 +941,7 @@ export const COURSE = {
               content: `<p><em>"Has anything prevented you from getting the help you need?" "Is there anything about the kind of help you would like to receive that I should know?" "Sometimes doctors and patients misunderstand each other because they come from different backgrounds or have different expectations. Have you been concerned about this, and is there anything we can do to provide you with the care you need?"</em></p><p>Listening for: barriers, preferences, and anticipated misunderstanding. This is the most-skipped and most valuable domain; asking the final question explicitly and early does more for alliance across difference than any amount of preparation, because it names the asymmetry rather than pretending it is absent.</p>`
             }
           ],
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -932,7 +950,7 @@ export const COURSE = {
 <p>The opposite error receives far less attention and is at least as dangerous. Cultural minimizing occurs when a clinician attributes genuine pathology to culture and therefore fails to assess or treat it. Its characteristic forms are recognizable: assuming that a client's flat presentation is cultural reserve rather than depression; declining to conduct a suicide risk assessment because the clinician believes suicide is rare or prohibited in the client's community; hearing a description of severe intimate partner violence and treating it as a cultural difference in family structure; interpreting a child's developmental delay as a language or acculturation issue and not referring; assuming that a client from a community with high rates of trauma exposure is not experiencing PTSD because "that level of stress is normal for them."</p>
 <p>The suicide example deserves emphasis because the consequences are irreversible. Beliefs about the rarity of suicide in particular religious or ethnic communities are widespread among clinicians, frequently inaccurate, and function as a reason not to ask. Risk assessment is conducted with every client regardless of what the clinician believes about their community. The same principle applies to abuse reporting, to substance use screening, and to psychosis assessment: cultural formulation informs how you interpret what you find, never whether you look.</p>
 <p>The two errors are best understood as failures of the same discipline in opposite directions. Both substitute a cultural generalization for an individual assessment. The corrective in both cases is the same question, asked in two forms: <em>Is this a problem in the client's own context, or only in mine?</em> and <em>Am I explaining away something I would assess in a client from my own background?</em> A clinician who asks only the first will minimize. A clinician who asks only the second will pathologize. Competent assessment requires both.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -941,7 +959,7 @@ export const COURSE = {
 <p>An impression-driven interview here has a well-worn path: guardedness, poor eye contact, auditory experiences, functional decline, constricted affect, a young man in the peak age range for a first psychotic episode. The diagnosis writes itself, and the literature reviewed in Module 1 says that for a young Black man it is more likely to be written than it would be for a demographically different student with the same presentation.</p>
 <p>A culturally-informed assessment does not discard that hypothesis — a first episode is a real possibility and missing it would be a serious error of the minimizing kind. It adds the questions that would distinguish it. What does he call what is happening? What do his family and community believe is causing it? Is hearing one's name called an experience with a recognized meaning in his tradition, and how does he understand it? Is the dream visitation from his grandmother expected within his family's practice of mourning — and how would he know the difference between that and something wrong? What is the academic difficulty actually about: sleep, grief, finances, language, or something else? What is his relationship with the university and with authority, and what does he expect will happen if he says the wrong thing? And directly, from the CFI's fourth domain: is he worried about being misunderstood here, and what would help?</p>
 <p>Those questions might yield a young man in complicated bereavement, sleeping badly, struggling academically, and having culturally meaningful experiences that are not psychotic. They might yield a young man in an early psychotic prodrome who also has culturally meaningful experiences, which is entirely possible and requires careful, non-stigmatizing engagement and follow-up. They will not yield a confident diagnosis at the end of a single guarded interview, and that is the correct outcome. What is not acceptable is recording either "rule out schizophrenia" or "cultural/religious experience, no pathology" as though the single interview settled it.</p>`,
-          order: 7
+          order: 8
         },
         {
           type: 'text',
@@ -955,12 +973,11 @@ export const COURSE = {
 <tr><td>Treatment implications</td><td>"Will continue supportive therapy."</td><td>"Treatment framed in client's language of pressure and energy rather than mood. Behavioral activation linked to valued roles (caregiving, prayer, community). Trauma history to be approached when alliance supports it. No interpreter needed; client declines family involvement at this time."</td></tr>
 </tbody></table>
 <p>The second column takes perhaps four additional minutes to write. It is also the version that lets a covering clinician, a supervisor, or a licensure board see that an assessment actually occurred.</p>`,
-          order: 8
+          order: 9
         },
         {
           type: 'sequencing',
-          title: 'Sequencing a Culturally-Informed Assessment',
-          instructions: 'Put the steps of a culturally-informed initial assessment in the order that best protects against both pathologizing and minimizing.',
+          instructions: 'Sequencing a Culturally-Informed Assessment — Put the steps of a culturally-informed initial assessment in the order that best protects against both pathologizing and minimizing.',
           explanation: 'The order is not arbitrary. Eliciting the client\'s own naming of the problem must come before the clinician introduces diagnostic language, or the client\'s framework is contaminated by yours. The explanatory model and prior help-seeking follow, since they shape what will count as a credible plan. Standard diagnostic assessment and risk screening are conducted for every client regardless of cultural formulation — this is the step that prevents minimizing. Generating and testing at least one non-pathological cultural alternative comes after the diagnostic data are in hand, so that it is a genuine test rather than a way of avoiding a difficult conclusion. The misunderstanding question surfaces the relational barrier while there is still time to act on it, and the formulation is then shared in the client\'s own words so that they can correct it.',
           steps: [
             {
@@ -999,7 +1016,7 @@ export const COURSE = {
               order: 7
             }
           ],
-          order: 9
+          order: 10
         },
         {
           type: 'multipleChoice',
@@ -1024,7 +1041,7 @@ export const COURSE = {
           ],
           correctAnswer: 1,
           explanation: 'Selective administration reproduces the problem the instrument exists to solve: it makes the assessment contingent on a snap judgment about the client\'s identity. Routine use also removes the awkwardness, since a question asked of everyone carries no implication about this particular client. The CFI is not validity-restricted to any population, and documenting a biased rationale does not correct it.',
-          order: 10
+          order: 11
         },
         {
           type: 'multipleChoice',
@@ -1046,7 +1063,7 @@ export const COURSE = {
           ],
           correctAnswer: 2,
           explanation: 'This is the mirror-image error to pathologizing, and it is the more dangerous of the two in this instance because the consequences are irreversible. Beliefs about the rarity of suicide in particular communities are frequently inaccurate and function as a reason not to ask. Cultural formulation informs how findings are interpreted; it never determines whether the assessment is conducted. Risk screening is performed with every client.',
-          order: 11
+          order: 12
         },
         {
           type: 'keyTakeaway',
@@ -1059,7 +1076,7 @@ export const COURSE = {
             'Cultural minimizing is the mirror error of pathologizing: risk assessment, abuse screening, and diagnostic evaluation are conducted with every client regardless of cultural formulation.',
             'Document the client\'s own words, the identity and context factors, the alternatives considered and ruled out, and the treatment implications — a formulation that never reaches the record does not survive you.'
           ],
-          order: 12
+          order: 13
         },
         {
           type: 'multipleChoice',
@@ -1081,12 +1098,12 @@ export const COURSE = {
           ],
           correctAnswer: 3,
           explanation: 'Translation is not validation; a translated item may carry a different meaning in the target language or culture, and norms derived from another population do not transfer. Refusing all use discards a legitimate within-person tracking function, and arbitrarily adjusting scores invents a correction with no empirical basis. Documenting the judgment is what makes the reasoning visible to anyone reviewing the record.',
-          order: 13
+          order: 14
         },
         {
           type: 'reflection',
           question: 'Choose one intake you conducted in the past month and reconstruct it against the four CFI domains. Which domain did you cover most thoroughly, and which did you not touch at all? Most clinicians find they covered coping and help-seeking and skipped the client\'s own definition of the problem and the misunderstanding question. Write out the two or three questions you will add to every intake starting next week — actual wording, not intentions — and decide where in your intake structure they will live so that they are asked even on your worst day.',
-          order: 14
+          order: 15
         }
       ],
       order: 5
@@ -1130,9 +1147,13 @@ export const COURSE = {
           order: 4
         },
         {
+          type: 'text',
+          content: `<h3>Six Categories of Cultural Adaptation, With Examples</h3>
+<p>Open each category. In every case the adaptation is to this client's expressed values and situation, never to an assumption about their group.</p>`,
+          order: 5
+        },
+        {
           type: 'accordion',
-          title: 'Six Categories of Cultural Adaptation, With Examples',
-          instructions: 'Open each category. In every case the adaptation is to this client\'s expressed values and situation, never to an assumption about their group.',
           accordionItems: [
             {
               title: 'Language',
@@ -1159,7 +1180,7 @@ export const COURSE = {
               content: `<p>Attend to where and how services are delivered: setting, scheduling around shift work and caregiving, session length, telephone versus video versus in-person, and whether the physical environment communicates that this client was expected.</p>`
             }
           ],
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -1171,7 +1192,7 @@ export const COURSE = {
 <p><strong>Do not require the client to educate you.</strong> A client should not have to explain what racism is, provide evidence that it exists, or manage the clinician's learning curve. General education is your own responsibility, undertaken on your own time.</p>
 <p><strong>Support coping without implying the problem is the client's response.</strong> There is a real clinical risk here. Teaching coping skills for discrimination can slide into communicating that the client's reaction is the pathology. Frame it explicitly: the discrimination is wrong and is not the client's to fix; the work here is on what it is costing them and what they want to protect.</p>
 <p><strong>Act where you have standing.</strong> Where a clinician has access — to an institution, a policy, a colleague's behavior, a system — cultural humility's institutional accountability commitment means using it. Advocacy on a client's behalf and structural work in one's own setting are part of the role, not an add-on.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -1179,7 +1200,7 @@ export const COURSE = {
 <p>You will make cultural errors. The relevant question is not how to avoid them entirely, which is not available, but what happens afterward — because rupture followed by repair is associated with better outcomes than the absence of rupture, and rupture without repair is among the strongest predictors of premature termination.</p>
 <p>What repair requires was outlined in Module 3 and is worth restating in the treatment context. Do not become defensive; the impulse to explain what you meant is strong and, offered first, functions as a dispute of the client's experience. Listen to the whole of the feedback without preparing a response. Acknowledge the impact specifically rather than generically — "what I said implied I doubted you" lands differently from "I'm sorry you felt that way." Apologize once, plainly. Change the behavior, which is the only part the client can verify. And do not burden the client with your guilt: repeated apology, extended self-criticism, and requests for reassurance convert the client into your caretaker and add a second injury to the first.</p>
 <p>One further point that clinicians frequently miss. Many clients will not tell you. The absence of complaint is not evidence that no rupture occurred, particularly across a power differential and particularly for clients whose experience has taught them that naming these things carries cost. This is an argument for asking — periodically, matter-of-factly, and in a way that makes "yes" easy: "I want to check in about how this is going. Is there anything I've missed, or gotten wrong, or that you've wanted to say and haven't?" Ask it early enough in the session that there is time to do something with the answer.</p>`,
-          order: 7
+          order: 8
         },
         {
           type: 'scenarioTree',
@@ -1226,7 +1247,7 @@ export const COURSE = {
               choices: []
             }
           },
-          order: 8
+          order: 9
         },
         {
           type: 'multipleChoice',
@@ -1251,7 +1272,7 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'Hall and colleagues\' meta-analysis and subsequent work find that culturally adapted interventions produce better outcomes than the same interventions delivered without adaptation, with the strongest effects for group-specific rather than generic adaptation and for delivery in the client\'s preferred language. The fidelity concern is not supported: adaptation of the surface elements while preserving the active mechanism improves rather than dilutes the treatment.',
-          order: 9
+          order: 10
         },
         {
           type: 'multipleChoice',
@@ -1276,7 +1297,7 @@ export const COURSE = {
           ],
           correctAnswer: 1,
           explanation: 'Validating the client\'s account and naming its impact is the indicated response. Inviting alternative explanations is a microinvalidation regardless of how gently it is framed, and clients living with discrimination are generally better calibrated about it than their clinicians. Pivoting to what the client could do differently implies the problem is their performance. Deferring to a differently-identified clinician abdicates the work and, in most referral environments, functions as a denial of care.',
-          order: 10
+          order: 11
         },
         {
           type: 'keyTakeaway',
@@ -1289,7 +1310,7 @@ export const COURSE = {
             'Rupture followed by repair predicts better outcomes than no rupture; rupture without repair predicts premature termination.',
             'The absence of complaint is not evidence that no rupture occurred — ask directly, early in the session, in a way that makes an honest answer easy.'
           ],
-          order: 11
+          order: 12
         },
         {
           type: 'multipleChoice',
@@ -1311,12 +1332,12 @@ export const COURSE = {
           ],
           correctAnswer: 2,
           explanation: 'Clients frequently do not name ruptures, especially where a power differential exists and where prior experience has taught them that naming costs something. Waiting for a missed appointment means learning about the rupture only after it has ended the treatment. Repeated apology converts the client into the clinician\'s caretaker and adds a second injury. Asking early in a session, plainly, in a way that makes an honest answer easy, is the practice that works.',
-          order: 12
+          order: 13
         },
         {
           type: 'reflection',
           question: 'Write the exact sentence you would use to open a conversation about cultural difference with a new client — the words, not the idea. Then read it aloud. Does it place the responsibility for understanding on you, or the burden of explanation on the client? Does it presume which part of their identity is relevant? Revise it until it does neither, and then decide whether it belongs in your first session as a routine question rather than as something you deploy when you notice a difference.',
-          order: 13
+          order: 14
         }
       ],
       order: 6
@@ -1363,9 +1384,13 @@ export const COURSE = {
           order: 4
         },
         {
+          type: 'text',
+          content: `<h3>The Interpreted Session: A Working Checklist</h3>
+<p>Open each phase. Most of the errors in interpreted mental health encounters are preventable with five minutes of preparation.</p>`,
+          order: 5
+        },
+        {
           type: 'accordion',
-          title: 'The Interpreted Session: A Working Checklist',
-          instructions: 'Open each phase. Most of the errors in interpreted mental health encounters are preventable with five minutes of preparation.',
           accordionItems: [
             {
               title: 'Before the session (five minutes)',
@@ -1388,7 +1413,7 @@ export const COURSE = {
               content: `<p>Conduct only what can be conducted safely — including risk assessment by whatever means are available — and reschedule the substantive work with interpretation arranged. Proceeding in a language the client does not command produces an unreliable assessment and a record you cannot defend. Treat recurring unavailability as an institutional problem to raise rather than a clinical corner to cut.</p>`
             }
           ],
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -1399,7 +1424,7 @@ export const COURSE = {
 <p><strong>Recognize transmission mechanisms.</strong> Intergenerational effects operate through identifiable pathways: parenting shaped by a caregiver's own unprocessed trauma, family silence around events that are nonetheless felt, disrupted cultural and linguistic transmission, ongoing structural disadvantage, and — the evidence here is developing rather than settled — possible biological pathways. Naming the mechanism helps clients understand why they carry something they did not personally experience.</p>
 <p><strong>Take institutional distrust seriously as accurate.</strong> Mental health systems participated directly in some of these harms: diagnosis used as a tool of social control, forced hospitalization, removal of children from Indigenous families, non-consensual research. A client's wariness of you is not a symptom to be treated. It is an accurate historical assessment applied to a person who has not yet earned an exception. The work is to be trustworthy over time and to say plainly that the wariness makes sense.</p>
 <p><strong>Attend to collective resources, not only collective wounds.</strong> Communities carrying historical trauma also carry historical resilience — practices, languages, ceremonies, kinship structures, and traditions of resistance that have sustained survival. A formulation that catalogues damage and omits these is inaccurate as well as demoralizing, and reconnection with cultural practice is itself frequently the most effective intervention available.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'imageText',
@@ -1409,7 +1434,7 @@ export const COURSE = {
           image: '',
           imageAlt: 'A diagram contrasting two models of identity. On the left, an additive model shows three separate bars labeled race, gender, and disability stacked to produce a total. On the right, an intersectional model shows three overlapping circles with the central overlap shaded and labeled "distinct social location — not visible from any single axis", with an arrow indicating that single-axis analysis examines only one circle at a time.',
           imagePosition: 'left',
-          order: 7
+          order: 8
         },
         {
           type: 'text',
@@ -1418,12 +1443,11 @@ export const COURSE = {
 <p><strong>Ask which dimensions are salient, and re-ask.</strong> "Of everything we've talked about — your family, your faith, your health, being the only person like you at work — which of these feels most connected to what's been hardest lately?" The answer will change over the course of treatment.</p>
 <p><strong>Resist the pull toward the most visible identity.</strong> Clinicians reliably over-attend to whichever identity dimension is most visually apparent and under-attend to the ones that are not — class trajectory, disability that is not visible, immigration history, religious commitment, caregiving burden. Visibility is not salience.</p>
 <p><strong>Hold privilege and marginalization together.</strong> A wealthy client experiencing racism, a white client living in rural poverty, a physician with a psychiatric history — each occupies advantaged and disadvantaged positions simultaneously, and formulations that flatten this in either direction are inaccurate. The clinically useful question is not "is this person privileged?" but "which of this person's positions is doing what, in this situation?"</p>`,
-          order: 8
+          order: 9
         },
         {
           type: 'matching',
-          title: 'Special Situations: Matching Practice to Principle',
-          matchingInstructions: 'Match each clinical situation to the principle that should govern your response.',
+          matchingInstructions: 'Special Situations: Matching Practice to Principle — Match each clinical situation to the principle that should govern your response.',
           matchingPairs: [
             {
               term: 'A client arrives with an adult daughter who offers to interpret',
@@ -1454,7 +1478,7 @@ export const COURSE = {
               definition: 'Hold both positions simultaneously and ask which is operating in the specific situation under discussion, rather than sorting the client into a single category.'
             }
           ],
-          order: 9
+          order: 10
         },
         {
           type: 'multipleChoice',
@@ -1479,7 +1503,7 @@ export const COURSE = {
           ],
           correctAnswer: 3,
           explanation: 'Using a minor exposes a child to adult clinical material, inverts the family structure, makes accurate interpretation impossible because each is protecting the other, and forecloses any confidential conversation about the family. Limiting content does not solve this, since what is sensitive is not always predictable and the structural harm occurs regardless. Proceeding in English without adequate comprehension produces an unreliable assessment and documentation that cannot be defended.',
-          order: 10
+          order: 11
         },
         {
           type: 'multipleChoice',
@@ -1495,7 +1519,7 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'The consistent finding across the refugee mental health literature is that current post-migration conditions predict distress at least as strongly as pre-migration trauma. This is clinically useful because it locates a substantial part of the work in present material circumstances — status, work, housing, family reunification — rather than exclusively in trauma processing, and it points toward advocacy and resource linkage as legitimate clinical activity.',
-          order: 11
+          order: 12
         },
         {
           type: 'keyTakeaway',
@@ -1507,7 +1531,7 @@ export const COURSE = {
             'For communities carrying historical trauma: know the history yourself, recognize transmission mechanisms, treat institutional distrust as accurate rather than symptomatic, and include collective resources in the formulation.',
             'Intersectionality is not additive; identities interact to produce a distinct social location, privilege and marginalization coexist in the same person, and salience shifts by context and must be asked about.'
           ],
-          order: 12
+          order: 13
         },
         {
           type: 'multipleChoice',
@@ -1532,12 +1556,12 @@ export const COURSE = {
           ],
           correctAnswer: 1,
           explanation: 'Crenshaw\'s argument was specifically against additive analysis: the harm she described existed only at the intersection and was invisible to either single-axis account. Designating one identity as primary reproduces the single-axis error. And every client occupies multiple positions simultaneously, advantaged and disadvantaged, so the framework is not restricted to clients with several marginalized identities.',
-          order: 13
+          order: 14
         },
         {
           type: 'reflection',
           question: 'When did you last conduct an interpreted session, and what did you actually do — did you brief the interpreter, speak to the client directly, use short segments, watch the client, and debrief afterward? If you have never had a systematic approach, write one now as a short checklist you could hand to a colleague. Then identify the single logistical obstacle in your setting that most often pushes clinicians toward using a family member, and name one thing you could do about it that does not depend on anyone else\'s permission.',
-          order: 14
+          order: 15
         }
       ],
       order: 7
@@ -1571,9 +1595,13 @@ export const COURSE = {
           order: 3
         },
         {
+          type: 'text',
+          content: `<h3>Structures at Three Levels</h3>
+<p>Open each level. Pick at least one item from each before you finish the course.</p>`,
+          order: 4
+        },
+        {
           type: 'accordion',
-          title: 'Structures at Three Levels',
-          instructions: 'Open each level. Pick at least one item from each before you finish the course.',
           accordionItems: [
             {
               title: 'Individual — what lives in your own workflow',
@@ -1588,14 +1616,14 @@ export const COURSE = {
               content: `<p>An audit of diagnosis, referral, no-show, and discharge patterns by demographic category — available to any clinician with access to their own records, and the only way disparities become visible. Interpreter budget and the use of trained rather than ad hoc interpretation. Intake forms and record fields that can hold a chosen name, pronouns, and preferred language. Review of policies that function as differential barriers, including no-show discharge rules and business-hours-only scheduling. And speaking up when a colleague's practice or an institutional decision is producing harm — the least comfortable and most consequential item on any of these lists.</p>`
             }
           ],
-          order: 4
+          order: 5
         },
         {
           type: 'callout',
           calloutType: 'tip',
           title: 'Attach Every Commitment to a Structure',
           content: `<p>A reliable test for whether a commitment you make at the end of a course will survive: name the specific structure it is attached to. "I will be more attentive to cultural factors" has no structure and will not survive the month. "I have added three CFI questions to my intake template, they appear before the symptom review, and I cannot mark the intake complete without them" has a structure. "I will examine my biases" has none. "My consultation group has added a standing ten-minute item in which one member presents a diagnosis they are least certain about, and we run the counterfactual check on it" has one. Before you finish this course, convert each of your intentions into a structure with a place, a trigger, and a form.</p>`,
-          order: 5
+          order: 6
         },
         {
           type: 'text',
@@ -1604,7 +1632,7 @@ export const COURSE = {
 <p><strong>Consultation that is authorized to name patterns.</strong> A consultation group in which cultural material is raised only when a presenter chooses to raise it will rarely surface the cases where it matters most, since the cases you do not recognize as cultural are precisely the ones you will not bring. Groups that build in a standing item — a rotating review of diagnoses the presenter is least sure about, or a periodic look at each member's diagnostic distribution — surface what voluntary disclosure does not.</p>
 <p><strong>Supervision that addresses culture as a routine dimension.</strong> Supervisors carry a specific obligation here, and the supervisory relationship is itself cross-cultural. Broaching cultural difference within supervision — naming it, inviting the supervisee's experience of it, and acknowledging the power asymmetry — is associated with stronger supervisory alliance and greater supervisee disclosure. Supervisors who never raise it communicate that it is not part of the work.</p>
 <p><strong>Professional communities that are not homogeneous.</strong> Learning from colleagues whose backgrounds and clinical traditions differ from yours is a different mechanism from reading about difference, and it is the mechanism most likely to catch the assumptions you cannot see. This requires actually building those relationships rather than waiting for them, and it requires being someone whose colleagues are willing to correct.</p>`,
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -1612,13 +1640,18 @@ export const COURSE = {
 <p>The final commitment in Tervalon and Murray-García's framework is institutional accountability, and it is the one most often quietly dropped when cultural humility is taught as a personal virtue. Individual competence inside an inequitable system produces individually kind encounters and unchanged aggregate outcomes.</p>
 <p>Concrete institutional work available to most clinicians includes: advocating for an adequate interpreter budget and for the use of trained rather than ad hoc interpretation; auditing diagnosis, referral, no-show, and discharge patterns by demographic category, which is the only way disparities become visible; examining intake forms and electronic record fields for whether they can record a chosen name, pronouns, preferred language, and relevant identity information; reviewing physical space, materials, and imagery for who is represented; scrutinizing policies that function as differential barriers, including no-show discharge rules, rigid business-hours scheduling, documentation requirements, and payment structures; supporting recruitment and retention of a workforce that reflects the population served, including attention to why clinicians from underrepresented groups leave; and speaking up when a colleague's practice or an institutional decision is producing harm, which is the least comfortable and most consequential item on the list.</p>
 <p>None of this requires a leadership position. An audit of one clinician's own diagnostic distribution over a year is available to any clinician with access to their own records, and its results have a way of prompting conversations that policy arguments do not.</p>`,
-          order: 7
+          order: 8
+        },
+        {
+          type: 'text',
+          content: `<h3>Building Cultural Humility Into Clinical Systems</h3>
+<p>This segment follows an outpatient clinic that audited its own diagnostic and discharge patterns by demographic category and used the findings to change intake procedure, interpreter access, and no-show policy. Watch for what the data showed that clinician self-report had not, and for the specific resistance the team encountered when the findings were presented.</p>`,
+          order: 9
         },
         {
           type: 'videoEmbed',
           videoTitle: 'Building Cultural Humility Into Clinical Systems',
           videoUrl: 'https://www.youtube.com/embed/PLACEHOLDER_cultr603_institutional_practice',
-          content: `<p>This segment follows an outpatient clinic that audited its own diagnostic and discharge patterns by demographic category and used the findings to change intake procedure, interpreter access, and no-show policy. Watch for what the data showed that clinician self-report had not, and for the specific resistance the team encountered when the findings were presented.</p>`,
           markers: [
             {
               time: '00:00',
@@ -1641,7 +1674,7 @@ export const COURSE = {
               prompt: 'Which of these could you implement in your own setting without anyone\'s permission?'
             }
           ],
-          order: 8
+          order: 10
         },
         {
           type: 'text',
@@ -1651,12 +1684,11 @@ export const COURSE = {
 <p>With practice, the questions become ordinary. Asking a client what they call their problem, what they believe caused it, and whether they are worried about being misunderstood stops feeling like a special intervention and becomes part of how you conduct an intake. Cultural comfort, in the multicultural orientation sense, is largely the product of repetition.</p>
 <p>Over a longer horizon, what changes is the quality of attention rather than the quantity of knowledge. Experienced clinicians who do this well are not distinguished by knowing more about more cultures. They are distinguished by holding their formulations more loosely, by noticing sooner when something does not fit, by being harder to embarrass, and by having built professional lives in which they are regularly told things they did not want to hear. That last quality is the one most worth building deliberately, because it is the only reliable defence against the drift back toward fast, confident, unexamined judgment that the working conditions of clinical practice continuously encourage.</p>
 <p>And the errors continue. Clinicians thirty years into thoughtful, committed practice still make cultural mistakes, still miss cultural opportunities, and still occasionally invalidate a client's account of their own life. The difference is not in the frequency of the error but in what happens next: whether it is noticed, whether it is named, whether it is repaired, and whether the practice changes as a result.</p>`,
-          order: 9
+          order: 11
         },
         {
           type: 'cardSort',
-          title: 'Sorting Commitments by Level',
-          instructions: 'Sort each commitment into the level at which it operates. Sustained practice requires something at all three; a plan made entirely of individual items will not survive a change of employer, a bad quarter, or a full caseload.',
+          instructions: 'Sorting Commitments by Level — Sort each commitment into the level at which it operates. Sustained practice requires something at all three; a plan made entirely of individual items will not survive a change of employer, a bad quarter, or a full caseload.',
           categories: ['Individual practice', 'Relational structure', 'Institutional change'],
           cards: [
             {
@@ -1715,7 +1747,7 @@ export const COURSE = {
               correctCategory: 'Institutional change'
             }
           ],
-          order: 10
+          order: 12
         },
         {
           type: 'multipleChoice',
@@ -1737,7 +1769,7 @@ export const COURSE = {
           ],
           correctAnswer: 2,
           explanation: 'Single-session training reliably shifts attitudes and self-reported knowledge in the short term and reliably fails to produce durable behavior change on its own. This is not a criticism of training but a description of what happens to any skill that is not practiced, measured, or reinforced by the environment. It is the reason the durable version of this work is structural — templates, standing consultation items, and audits — rather than motivational.',
-          order: 11
+          order: 13
         },
         {
           type: 'multipleChoice',
@@ -1756,7 +1788,7 @@ export const COURSE = {
           ],
           correctAnswer: 3,
           explanation: 'The framework was explicit that individual reflection is insufficient and that practitioners must work on the systems they practice within. When cultural humility is taught as a matter of personal stance, the institutional commitment is the one that quietly disappears — with the result that individually thoughtful encounters coexist with unchanged aggregate disparities in diagnosis, referral, and discharge.',
-          order: 12
+          order: 14
         },
         {
           type: 'keyTakeaway',
@@ -1769,7 +1801,7 @@ export const COURSE = {
             'An audit of your own diagnostic distribution over a year requires no leadership position and surfaces what self-report cannot.',
             'Over a career the errors continue; what changes is whether they are noticed, named, repaired, and allowed to change the practice.'
           ],
-          order: 13
+          order: 15
         },
         {
           type: 'multipleChoice',
@@ -1794,12 +1826,12 @@ export const COURSE = {
           ],
           correctAnswer: 0,
           explanation: 'The distinguishing feature is that the commitment is attached to a structure with a place, a trigger, and a form, so that it operates independently of how motivated the clinician feels on a given day. The other three are intentions without structure; they depend on recall and willpower under exactly the conditions — time pressure, fatigue, high caseload — in which recall and willpower are least available.',
-          order: 14
+          order: 16
         },
         {
           type: 'reflection',
           question: 'Write down three commitments from this course, then convert each one into a structure by naming its place, its trigger, and its form — what document or template it lives in, what event causes it to happen, and what it looks like when it has been done. Any commitment you cannot convert this way is an intention, and you should either build the structure now or replace it with something you will actually do. Finally, name one person who is positioned to tell you when your work slips, and decide what you will say to them to make it likelier that they will.',
-          order: 15
+          order: 17
         }
       ],
       order: 8
@@ -1827,9 +1859,13 @@ export const COURSE = {
           order: 2
         },
         {
+          type: 'text',
+          content: `<h3>Module Highlights</h3>
+<p>Open each module for a condensed review before the final assessment.</p>`,
+          order: 3
+        },
+        {
           type: 'accordion',
-          title: 'Module Highlights',
-          instructions: 'Open each module for a condensed review before the final assessment.',
           accordionItems: [
             {
               title: 'Module 1 — Culture and Mental Health',
@@ -1860,7 +1896,7 @@ export const COURSE = {
               content: `<p>Single-session training changes attitudes briefly and behavior barely, so the durable version of this work is structural. Individually: expand inputs, do your own identity work, build checks into templates, use implicit measures as prompts, make feedback easy. Relationally: consultation authorized to name patterns, supervision that treats culture as routine, non-homogeneous professional communities. Institutionally: interpreter access, demographic audits, record fields, space, and policies functioning as differential barriers. Convert every intention into a structure with a place, a trigger, and a form.</p>`
             }
           ],
-          order: 3
+          order: 4
         },
         {
           type: 'text',
@@ -1872,16 +1908,15 @@ export const COURSE = {
 <p><strong>Documentation and consent.</strong> Be accurate rather than reassuring about what you record and who can access it, particularly with clients for whom institutional contact carries real risk. Record identity information only where it is clinically necessary, and discuss it with the client when it is.</p>
 <p><strong>Repair and feedback.</strong> Commit to asking clients directly and periodically whether you have missed or gotten something wrong, early enough in a session to act on the answer, and to responding to what you hear without requiring reassurance.</p>
 <p><strong>Institutional accountability.</strong> Choose one structural item within your reach — an audit of your own diagnostic distribution, a change to an intake form, a conversation about interpreter budget, a standing consultation item — and complete it within ninety days. Individual competence inside an unexamined system produces kind encounters and unchanged outcomes.</p>`,
-          order: 4
+          order: 5
         },
         {
           type: 'reflection',
           question: 'Return to the client you wrote about before Module 1 — the one whose presentation you initially misread. With everything since in view, reconstruct the misreading precisely: which stage did it enter at, and through which mechanism? Was it an early hypothesis formed from cultural markers, a confirmation-biased interview, a culturally normative experience recorded as a symptom, an instrument applied outside its validation, a minimizing attribution to culture, or a rupture that was never repaired? Then name the specific structure — not the intention, the structure, with a place and a trigger and a form — that would have caught it. Write it down, and put it into your practice this week.',
-          order: 5
+          order: 6
         },
         {
           type: 'resources',
-          title: 'Take These Into Session',
           resources: [
             {
               title: 'DSM-5-TR Cultural Formulation Interview (CFI) — Online Assessment Measures',
@@ -1926,7 +1961,7 @@ export const COURSE = {
               description: 'The national standards for Culturally and Linguistically Appropriate Services, including language access requirements — the reference to cite when advocating for interpreter resources in your setting.'
             }
           ],
-          order: 6
+          order: 7
         },
         {
           type: 'text',
@@ -1958,7 +1993,7 @@ export const COURSE = {
 <p class="cr-reference">Tervalon, M., & Murray-García, J. (1998). Cultural humility versus cultural competence: A critical distinction in defining physician training outcomes in multicultural education. Journal of Health Care for the Poor and Underserved, 9(2), 117-125.</p>
 <p class="cr-reference">Williams, D. R., & Mohammed, S. A. (2013). Racism and health I: Pathways and scientific evidence. American Behavioral Scientist, 57(8), 1152–1173. https://doi.org/10.1177/0002764213487340</p>
 </div>`,
-          order: 7
+          order: 8
         }
       ],
       order: 9
