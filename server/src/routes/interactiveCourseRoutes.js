@@ -458,8 +458,7 @@ router.get('/:id/progress', protect, async (req, res) => {
         sectionProgress: course.sections.map((section, index) => ({
           sectionId: section._id, sectionIndex: index,
           viewedBlocks: [], completedBlocks: [], quizAttempts: [], status: 'not_started'
-        })),
-        assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
+        }))
       });
       await progress.save();
       if (!paid) consumeFreeSlot(req.user).catch(() => {}); // free-tier consumes 1 slot, once
@@ -557,7 +556,6 @@ router.post('/:id/enroll', protect, async (req, res) => {
         quizAttempts: [],
         status: 'not_started'
       })),
-      assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3,
       enrolledAt: new Date()
     });
 

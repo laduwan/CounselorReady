@@ -133,7 +133,7 @@ async function main() {
     console.log(`Course:   ${courseTitle}`);
     console.log(`courseId: ${progress.courseId}  | progress.status: ${progress.status}`);
     console.log(`  sectionsCompleted .... ${yn(sectionsCompleted)}  (${(progress.sectionProgress || []).filter(s => s.status === 'completed').length}/${(progress.sectionProgress || []).length} sections)`);
-    console.log(`  assessmentPassed ..... ${yn(assessmentPassed)}  (attempts: ${(progress.assessmentAttempts || []).length}, remaining: ${progress.assessmentAttemptsRemaining ?? 'n/a'})`);
+    console.log(`  assessmentPassed ..... ${yn(assessmentPassed)}  (attempts: ${(progress.assessmentAttempts || []).length})`);
     console.log(`  evaluationSubmitted .. ${yn(evaluationSubmitted)}  ${evaluation ? `(eval _id ${evaluation._id}, status="${evaluation.status}")` : '(NO evaluation doc exists)'}`);
     console.log(`  attestationAgreed .... ${yn(attestationAgreed)}  ${progress.attestationAgreedAt ? `(at ${progress.attestationAgreedAt.toISOString()})` : ''}`);
     console.log(`  ----`);
