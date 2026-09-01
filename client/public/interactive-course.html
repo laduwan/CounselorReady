@@ -12443,11 +12443,13 @@ function dismissNPS() {
   function init() {
     var params = new URLSearchParams(location.search);
     var slug = params.get('slug');
-    if (!slug) return;
+    var courseId = params.get('id');
+    if (!slug && !courseId) return;
     var base = location.origin.includes('localhost') ? 'http://localhost:5000' : 'https://api.counselorready.com';
     var authTk = localStorage.getItem('token');
     var hdrs = authTk ? { 'Authorization': 'Bearer ' + authTk } : {};
-    fetch(base + '/api/interactive-courses/slug/' + slug, { headers: hdrs })
+    var url = slug ? (base + '/api/interactive-courses/slug/' + slug) : (base + '/api/interactive-courses/' + courseId);
+    fetch(url, { headers: hdrs })
       .then(function(r) { return r.json(); })
       .then(function(d) {
         var c = d.data || d.course || d;

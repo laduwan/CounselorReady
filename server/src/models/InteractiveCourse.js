@@ -356,6 +356,9 @@ const CourseSchema = new mongoose.Schema({
       sectionIndex: Number
     }],
     attemptsAllowed: { type: Number, default: 3 },
+    // KE'S RULING: attempts are unlimited unless an admin explicitly limits them.
+    // attemptsAllowed is enforced only when limitAttempts is true.
+    limitAttempts: { type: Boolean, default: false },
     shuffleQuestions: { type: Boolean, default: true },
     shuffleOptions: { type: Boolean, default: true }
   },
@@ -489,8 +492,11 @@ const CourseSchema = new mongoose.Schema({
   totalEstimatedTime: Number, // in minutes
   totalContentBlocks: Number,
   totalQuizQuestions: Number,
-  wordCount: Number // pre-computed for admin dashboard
-  
+  wordCount: Number, // pre-computed for admin dashboard
+  sectionCount: Number, // pre-computed for admin course-library list
+  moduleCount: Number, // pre-computed for admin course-library list
+  assessmentQuestionCount: Number // pre-computed for admin course-library list
+
 }, { timestamps: true });
 
 // Pre-save hook: normalize order, roll up totals, and compute wordCount.
@@ -514,6 +520,9 @@ CourseSchema.pre('save', function(next) {
   this.totalContentBlocks = this.sections.reduce((sum, s) => sum + s.contentBlocks.length, 0);
   this.totalQuizQuestions = this.sections.reduce((sum, s) => sum + (s.quizQuestions?.length || 0), 0)
     + (this.assessment?.questions?.length || 0);
+  this.sectionCount = this.sections.length;
+  this.moduleCount = this.sections.length;
+  this.assessmentQuestionCount = this.assessment?.questions?.length || 0;
 
   // Word count via canonical counter (server/src/utils/courseWordCount.js).
   // Single source of truth shared by validators, publish gate, and recompute
@@ -584,7 +593,6 @@ const CourseProgressSchema = new mongoose.Schema({
   }],
   assessmentPassed: { type: Boolean, default: false },
   bestAssessmentScore: Number,
-  assessmentAttemptsRemaining: Number,
   
   // =====================================
   // NEW: Evaluation tracking

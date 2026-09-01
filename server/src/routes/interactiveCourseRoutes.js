@@ -458,8 +458,7 @@ router.get('/:id/progress', protect, async (req, res) => {
         sectionProgress: course.sections.map((section, index) => ({
           sectionId: section._id, sectionIndex: index,
           viewedBlocks: [], completedBlocks: [], quizAttempts: [], status: 'not_started'
-        })),
-        assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3
+        }))
       });
       await progress.save();
       if (!paid) consumeFreeSlot(req.user).catch(() => {}); // free-tier consumes 1 slot, once
@@ -557,7 +556,6 @@ router.post('/:id/enroll', protect, async (req, res) => {
         quizAttempts: [],
         status: 'not_started'
       })),
-      assessmentAttemptsRemaining: course.assessment?.attemptsAllowed || 3,
       enrolledAt: new Date()
     });
 
@@ -633,10 +631,17 @@ router.post('/:id/assessment', protect, async (req, res) => {
         error: 'You must enroll in this course before taking the assessment.' });
     }
 
-    // Check attempts remaining
-    if (progress.assessmentAttemptsRemaining <= 0) {
+    // KE'S RULING: attempts are unlimited unless the course explicitly limits them
+    // (assessment.limitAttempts === true → attemptsAllowed is enforced).
+    const attemptLimit = course.assessment?.limitAttempts === true
+      ? (Number(course.assessment.attemptsAllowed) || 0)
+      : 0;
+    const attemptsUsed = (progress.assessmentAttempts || []).length;
+    if (attemptLimit > 0 && attemptsUsed >= attemptLimit) {
       return res.status(400).json({ success: false, error: 'No attempts remaining' });
     }
+    // null = unlimited
+    const attemptsRemaining = attemptLimit > 0 ? attemptLimit - attemptsUsed - 1 : null;
 
     // Calculate score from answers if not provided
     let calculatedScore = score;
@@ -681,8 +686,6 @@ router.post('/:id/assessment', protect, async (req, res) => {
       timeUsed: timeSpent
     });
 
-    progress.assessmentAttemptsRemaining--;
-
     if (calculatedPassed) {
       progress.assessmentPassed = true;
       // Don't mark as fully completed yet - need evaluation + attestation
@@ -708,7 +711,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
         score: Math.round(calculatedScore * 100),
         passingScore: Math.round((course.assessment.passThreshold ?? 0.75) * 100),
         isAssessment: true,
-        attemptsRemaining: progress.assessmentAttemptsRemaining - 1
+        attemptsRemaining
       }, {
         userId: req.user._id,
         userName: req.user.profile?.firstName ? `${req.user.profile.firstName} ${req.user.profile.lastName || ''}`.trim() : req.user.email,
@@ -742,7 +745,7 @@ router.post('/:id/assessment', protect, async (req, res) => {
         score: Math.round(calculatedScore * 100),
         totalQuestions: course.assessment.questions.length,
         passed: calculatedPassed,
-        attemptsRemaining: progress.assessmentAttemptsRemaining,
+        attemptsRemaining,
         bestScore: progress.bestAssessmentScore
       }
     });
