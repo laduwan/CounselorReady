@@ -329,6 +329,15 @@
     let cardElement = null;
     let selectedPlan = null;
     let user = null;
+    let currentSubscription = null;
+
+    // Tier order used to decide upgrade vs downgrade
+    const PLAN_RANK = { free: 0, starter: 1, professional: 2, vip: 3, annual_vip: 3, lifetime: 4 };
+    const PAID_STRIPE_STATUSES = ['active', 'trialing', 'trial', 'past_due'];
+
+    function hasStripeSubscription(sub) {
+      return !!(sub && sub.stripeSubscriptionId && PAID_STRIPE_STATUSES.includes(sub.status));
+    }
 
     // Plan pricing - 4-tier model
     const PLANS = {
@@ -395,9 +404,15 @@
         });
         
         const data = await response.json();
+        currentSubscription = data.subscription || null;
         
-        if (data.subscription) {
-          displaySubscription(data.subscription);
+        const sub = data.subscription;
+        const isPaidPlan = sub && sub.plan && sub.plan !== 'free' &&
+          ['active', 'trialing', 'trial', 'past_due', 'lifetime'].includes(sub.status) &&
+          (sub.stripeSubscriptionId || sub.status === 'lifetime');
+
+        if (isPaidPlan) {
+          displaySubscription(sub);
         } else {
           displayFreePlan();
         }
@@ -419,6 +434,20 @@
       const plan = PLANS[subscription.plan] || PLANS.free;
       const planName = plan.name;
       const price = `$${plan.price}/${plan.interval}`;
+      const periodEnd = subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd) : null;
+      const periodEndText = periodEnd && !isNaN(periodEnd) ? periodEnd.toLocaleDateString() : '—';
+      const cancelPending = !!subscription.cancelAtPeriodEnd;
+
+      const statusMap = {
+        active:   { label: 'Active',        cls: 'text-green-600' },
+        trialing: { label: 'Trial',         cls: 'text-blue-600' },
+        trial:    { label: 'Trial',         cls: 'text-blue-600' },
+        past_due: { label: 'Payment Past Due', cls: 'text-red-600' },
+        lifetime: { label: 'Lifetime',      cls: 'text-green-600' }
+      };
+      const statusInfo = cancelPending
+        ? { label: 'Cancels ' + periodEndText, cls: 'text-burgundy-700' }
+        : (statusMap[subscription.status] || { label: subscription.status || 'Active', cls: 'text-forest-900' });
       
       badge.textContent = planName;
       badge.className = 'px-3 py-1 bg-burgundy-100 text-burgundy-700 rounded-full text-sm font-medium';
@@ -435,20 +464,40 @@
           </div>
           <div>
             <p class="text-forest-500">Status</p>
-            <p class="font-semibold text-green-600">Active</p>
+            <p class="font-semibold ${statusInfo.cls}">${statusInfo.label}</p>
           </div>
           <div>
-            <p class="text-forest-500">Next Billing</p>
-            <p class="font-semibold text-forest-900">${new Date(subscription.currentPeriodEnd).toLocaleDateString()}</p>
+            <p class="text-forest-500">${cancelPending ? 'Access Until' : 'Next Billing'}</p>
+            <p class="font-semibold text-forest-900">${periodEndText}</p>
           </div>
         </div>
+        ${cancelPending ? `
+        <p class="mt-4 text-sm text-burgundy-700 bg-burgundy-50 border border-burgundy-200 rounded-lg p-3">
+          Your subscription is set to cancel. You keep full access until ${periodEndText}. Changed your mind? Reactivate below.
+        </p>` : `
+        <p class="mt-4 text-sm text-forest-500">
+          Upgrades take effect immediately. Downgrades take effect immediately with a prorated credit applied to your next invoice.
+        </p>`}
       `;
       
-      actions.innerHTML = `
-        <button onclick="cancelSubscription()" class="px-4 py-2 border border-burgundy-300 text-burgundy-700 rounded-lg hover:bg-burgundy-50 transition-colors">
-          Cancel Subscription
-        </button>
-      `;
+      if (subscription.status === 'lifetime') {
+        actions.innerHTML = '';
+      } else if (cancelPending) {
+        actions.innerHTML = `
+          <button onclick="reactivateSubscription()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold">
+            Reactivate Subscription
+          </button>
+        `;
+      } else {
+        actions.innerHTML = `
+          <button onclick="scrollToPlans()" class="px-4 py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold">
+            Change Plan
+          </button>
+          <button onclick="cancelSubscription()" class="px-4 py-2 border border-burgundy-300 text-burgundy-700 rounded-lg hover:bg-burgundy-50 transition-colors">
+            Cancel Subscription
+          </button>
+        `;
+      }
 
       // Update button states
       updatePlanButtons(subscription.plan);
@@ -481,34 +530,46 @@
       const proBtn = document.getElementById('proBtn');
       const vipBtn = document.getElementById('vipBtn');
 
-      // Helper to set button state
-      const setButton = (btn, isCurrent, defaultText, defaultClasses) => {
-        if (isCurrent) {
+      const currentRank = PLAN_RANK[currentPlan] ?? 0;
+      const currentClasses = 'w-full py-2 bg-hunter-200 text-hunter-600 rounded-lg font-semibold cursor-not-allowed';
+
+      // Helper to set button state based on direction relative to current plan
+      const setButton = (btn, planKey, upgradeText, upgradeClasses, downgradeClasses) => {
+        const rank = PLAN_RANK[planKey] ?? 0;
+        if (planKey === currentPlan) {
           btn.textContent = 'Current Plan';
           btn.disabled = true;
-          btn.className = 'w-full py-2 bg-hunter-200 text-hunter-600 rounded-lg font-semibold cursor-not-allowed';
-        } else {
-          btn.textContent = defaultText;
+          btn.className = currentClasses;
+        } else if (rank > currentRank) {
+          btn.textContent = upgradeText;
           btn.disabled = false;
-          btn.className = defaultClasses;
+          btn.className = upgradeClasses;
+        } else {
+          btn.textContent = 'Downgrade';
+          btn.disabled = false;
+          btn.className = downgradeClasses;
         }
       };
 
       // Free
-      freeBtn.textContent = currentPlan === 'free' ? 'Current Plan' : 'Downgrade';
-      freeBtn.disabled = currentPlan === 'free';
+      setButton(freeBtn, 'free', 'Get Started',
+        'w-full py-2 border border-hunter-300 text-hunter-700 rounded-lg hover:bg-hunter-50 transition-colors font-medium',
+        'w-full py-2 border border-hunter-300 text-hunter-700 rounded-lg hover:bg-hunter-50 transition-colors font-medium');
       
       // Starter
-      setButton(starterBtn, currentPlan === 'starter', 'Upgrade Now',
-        'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold');
+      setButton(starterBtn, 'starter', 'Upgrade',
+        'w-full py-2 bg-hunter-600 hover:bg-hunter-700 text-white rounded-lg transition-colors font-semibold',
+        'w-full py-2 border border-hunter-400 text-hunter-700 rounded-lg hover:bg-hunter-50 transition-colors font-semibold');
       
       // Professional
-      setButton(proBtn, currentPlan === 'professional', 'Upgrade Now', 
-        'w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold');
+      setButton(proBtn, 'professional', 'Upgrade', 
+        'w-full py-2 bg-honey-500 hover:bg-honey-600 text-white rounded-lg transition-colors font-semibold',
+        'w-full py-2 border border-honey-500 text-honey-800 rounded-lg hover:bg-honey-50 transition-colors font-semibold');
       
       // VIP
-      setButton(vipBtn, currentPlan === 'vip', 'Go VIP', 
-        'w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold');
+      setButton(vipBtn, 'vip', 'Go VIP', 
+        'w-full py-2 bg-burgundy-600 hover:bg-burgundy-700 text-white rounded-lg transition-colors font-semibold',
+        'w-full py-2 border border-burgundy-400 text-burgundy-700 rounded-lg hover:bg-burgundy-50 transition-colors font-semibold');
     }
 
     function displayPaymentMethod(pm) {
@@ -570,13 +631,101 @@
     }
 
     function selectPlan(plan) {
+      const hasStripeSub = hasStripeSubscription(currentSubscription);
+      const currentPlan = currentSubscription?.plan || 'free';
+
       if (plan === 'free') {
-        cancelSubscription();
+        if (hasStripeSub) {
+          cancelSubscription();
+        } else if (currentPlan !== 'free') {
+          alert('Your plan was set up outside of Stripe. Please contact support@counselorready.com to change it.');
+        }
+        return;
+      }
+
+      if (plan === currentPlan) return;
+
+      // Existing Stripe subscriber → swap the price on the existing subscription.
+      // Never open the card modal here: that path calls create-subscription and
+      // would create a second, parallel subscription (double billing).
+      if (hasStripeSub && PLAN_RANK.hasOwnProperty(plan)) {
+        changePlan(plan);
         return;
       }
       
       selectedPlan = plan;
       openStripeModal();
+    }
+
+    async function changePlan(plan) {
+      const currentPlan = currentSubscription?.plan || 'free';
+      const fromName = (PLANS[currentPlan] || { name: currentPlan }).name;
+      const toName = PLANS[plan].name;
+      const isUpgrade = (PLAN_RANK[plan] ?? 0) > (PLAN_RANK[currentPlan] ?? 0);
+
+      const msg = isUpgrade
+        ? `Upgrade from ${fromName} to ${toName} ($${PLANS[plan].price}/month)?\n\nYour new plan starts immediately. The prorated difference for the rest of this billing period will be added to your next invoice.`
+        : `Downgrade from ${fromName} to ${toName} ($${PLANS[plan].price}/month)?\n\nThe change takes effect immediately. A prorated credit for the unused portion of ${fromName} will be applied to your next invoice.`;
+
+      if (!confirm(msg)) return;
+
+      const btnIds = { starter: 'starterBtn', professional: 'proBtn', vip: 'vipBtn' };
+      const btn = document.getElementById(btnIds[plan]);
+      const originalText = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = 'Updating...'; }
+
+      const token = localStorage.getItem('token');
+
+      try {
+        const response = await fetch(`${API_URL}/api/payments/change-plan`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ plan })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+          alert(data.error || 'Failed to change plan. Please try again.');
+          if (btn) { btn.disabled = false; btn.textContent = originalText; }
+          return;
+        }
+
+        alert(data.message || `Your plan is now ${toName}.`);
+        window.location.reload();
+      } catch (error) {
+        console.error('Change plan error:', error);
+        alert('Failed to change plan. Please try again.');
+        if (btn) { btn.disabled = false; btn.textContent = originalText; }
+      }
+    }
+
+    async function reactivateSubscription() {
+      const token = localStorage.getItem('token');
+      try {
+        const response = await fetch(`${API_URL}/api/payments/reactivate`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) {
+          alert(data.message || 'Subscription reactivated.');
+          window.location.reload();
+        } else {
+          alert(data.error || 'Failed to reactivate subscription');
+        }
+      } catch (error) {
+        console.error('Reactivate error:', error);
+        alert('Failed to reactivate subscription');
+      }
+    }
+
+    function scrollToPlans() {
+      const el = document.getElementById('starterBtn');
+      if (el) el.closest('section').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function openStripeModal() {
@@ -609,6 +758,12 @@
     async function submitPayment() {
       if (!stripe || !cardElement || !selectedPlan) {
         alert('Please select a plan');
+        return;
+      }
+
+      if (hasStripeSubscription(currentSubscription)) {
+        closeStripeModal();
+        changePlan(selectedPlan);
         return;
       }
 
