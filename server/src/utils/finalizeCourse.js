@@ -82,7 +82,10 @@ function diffRollups(before, after) {
  * @param {object} [opts]
  * @param {boolean} [opts.dryRun=false] - report the diff, write nothing, skip the backup
  * @param {string}  [opts.reason='rollup backfill'] - passed to the pre-write snapshot
- * @returns {Promise<{course: object|null, before: object|null, after: object|null, changed: object, backup: object|null}>}
+ * @returns {Promise<{course: object|null, before: object|null, after: object|null, changed: object, backup: object|null, fallback: string|null}>}
+ *   fallback is non-null when doc.save() failed full-document validation on
+ *   something unrelated to rollups and a raw collection update was used
+ *   instead — its value is that validation error's message.
  */
 export async function finalizeCourse(identifier, opts = {}) {
   const { dryRun = false, reason = 'rollup backfill' } = opts;
@@ -102,7 +105,27 @@ export async function finalizeCourse(identifier, opts = {}) {
   // __parentArray circular back-reference that breaks that serialization.
   // toObject() strips Mongoose's internal bookkeeping first.
   const backup = await snapshotCourse(doc.toObject(), { reason });
-  await doc.save(); // triggers the real pre-save hook — rollups are never recomputed here
+
+  let fallback = null;
+  try {
+    await doc.save(); // triggers the real pre-save hook — rollups are never recomputed here
+  } catch (err) {
+    // doc.save() runs full-document validation, not just the rollup fields —
+    // a pre-existing, unrelated problem elsewhere in the document (e.g. a
+    // contentBlocks[].order missing a value; see backfillBlockOrder.js) will
+    // block the save even though the rollup fix itself is fine. Fall back to
+    // a raw collection update of just the rollup fields (same values the
+    // hook would have computed) so one course's other problems can't take
+    // down a whole --all batch. The underlying validation error is
+    // surfaced via `fallback` rather than silently swallowed.
+    const expected = expectedRollups(doc);
+    await mongoose.connection.db.collection('interactivecourses')
+      .updateOne({ _id: doc._id }, { $set: expected });
+    fallback = err.message;
+    const after = expected;
+    return { course: doc, before, after, changed: diffRollups(before, after), backup, fallback };
+  }
+
   const after = currentRollups(doc);
-  return { course: doc, before, after, changed: diffRollups(before, after), backup };
+  return { course: doc, before, after, changed: diffRollups(before, after), backup, fallback };
 }
