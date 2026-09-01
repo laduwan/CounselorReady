@@ -29,6 +29,8 @@ const EVENT_CONFIG = {
   subscription_canceled: { emoji: '⚠️', label: 'Subscription Canceled',  color: '#B45309', adminLink: '/admin-users.html'     },
   certificate_generated: { emoji: '📜', label: 'Certificate Generated',  color: GREEN,     adminLink: '/admin-analytics.html' },
   tool_used:             { emoji: '🛠️', label: 'Free Tool Used',         color: NAVY,      adminLink: '/admin-tool-analytics.html' },
+  db_backup:             { emoji: '🗄️', label: 'DB Backup Written',      color: GREEN,     adminLink: '/admin-migration.html' },
+  db_backup_failed:      { emoji: '🚨', label: 'DB Backup FAILED',       color: '#B91C1C', adminLink: '/admin-migration.html' },
 };
 
 function buildEmailHtml({ emoji, label, color, rows, adminLink }) {
@@ -155,6 +157,12 @@ export async function sendAdminAlert(eventType, data = {}) {
         ['User',  data.userName || data.userEmail || 'Anonymous'],
         ['State', data.state || ''],
       ];
+      break;
+    case 'db_backup':
+    case 'db_backup_failed':
+      // Operational notice — data is already a flat label→value map built by dbBackupService.
+      subject += ` — ${data.Date || data.Courses || data.Job || ''}`.replace(/ — $/, '');
+      rows = Object.entries(data).map(([k, v]) => [k, String(v)]);
       break;
     default:
       rows = Object.entries(data).map(([k, v]) => [k, String(v)]);
