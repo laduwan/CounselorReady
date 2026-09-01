@@ -112,6 +112,7 @@ import cron from 'node-cron';
 import { runDeadlineReminders } from './services/ceDeadlineReminder.js';
 import { runDailyNotificationCheck } from './jobs/dailyNotificationCheck.js';
 import { runHardshipPauseResume } from './jobs/hardshipPauseResume.js';
+import { runTesterAccessRevoke } from './jobs/testerAccessRevoke.js';
 import { runCertificateSelfHeal } from './jobs/certificateSelfHeal.js';
 import { runLiveSessionSelfHeal } from './jobs/liveSessionSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
@@ -436,6 +437,14 @@ const startServer = async () => {
     );
   }, { timezone: 'America/New_York' });
   logger.info('Hardship pause auto-resume cron scheduled (daily 8 AM ET)');
+
+  // Admin-granted tester access revoke — daily at 7 AM ET
+  cron.schedule('0 7 * * *', () => {
+    runTesterAccessRevoke().catch(err =>
+      console.error('Tester access revoke error:', err.message)
+    );
+  }, { timezone: 'America/New_York' });
+  logger.info('Tester access revoke cron scheduled (daily 7 AM ET)');
 
   // Certificate self-heal — every 6 hours
   cron.schedule('0 */6 * * *', () => {

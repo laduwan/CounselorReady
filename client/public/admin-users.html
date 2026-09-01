@@ -1572,6 +1572,11 @@
             </select>
           </div>
         </div>
+        <div class="mb-4">
+          <label class="block text-xs font-semibold text-gray-600 mb-1.5">Tester Access (days)</label>
+          <input id="cu_trialDays" type="number" min="1" max="365" placeholder="Leave blank for a normal account" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-burgundy-200">
+          <p class="mt-1 text-xs text-gray-500">Grants full access on the selected paid plan, then revokes automatically on that date. Requires a paid plan above.</p>
+        </div>
         <div class="grid grid-cols-2 gap-4 mb-6">
           <div>
             <label class="block text-xs font-semibold text-gray-600 mb-1.5">License Type</label>
@@ -1609,7 +1614,7 @@
   <script>
     function openCreateUserModal() {
       document.getElementById('createUserModal').classList.remove('hidden');
-      ['cu_firstName','cu_lastName','cu_email','cu_password'].forEach(id => document.getElementById(id).value = '');
+      ['cu_firstName','cu_lastName','cu_email','cu_password','cu_trialDays'].forEach(id => document.getElementById(id).value = '');
       document.getElementById('cu_plan').value = 'free';
       document.getElementById('cu_role').value = 'user';
       document.getElementById('cu_licenseType').value = '';
@@ -1659,7 +1664,8 @@
             plan: document.getElementById('cu_plan').value,
             role: document.getElementById('cu_role').value,
             licenseType: document.getElementById('cu_licenseType').value,
-            state: document.getElementById('cu_state').value
+            state: document.getElementById('cu_state').value,
+            trialDays: document.getElementById('cu_trialDays').value.trim() || undefined
           })
         });
         const data = await res.json();
@@ -1667,7 +1673,8 @@
           errDiv.textContent = data.error || 'Failed to create user.';
           errDiv.classList.remove('hidden');
         } else {
-          successDiv.textContent = `Created: ${data.user.email} — Plan: ${data.user.plan}`;
+          const until = data.user.trialEndsAt ? ` — tester access until ${new Date(data.user.trialEndsAt).toLocaleDateString()}` : '';
+          successDiv.textContent = `Created: ${data.user.email} — Plan: ${data.user.plan}${until}`;
           successDiv.classList.remove('hidden');
           setTimeout(() => { closeCreateUserModal(); window.location.reload(); }, 1500);
         }
