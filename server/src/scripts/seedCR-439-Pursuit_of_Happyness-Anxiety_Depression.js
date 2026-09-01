@@ -34,11 +34,9 @@ export const COURSE = {
   ceHours: 3,
   ceuHours: 3,
   credits: 3,
-  ceuEligible: true,
   level: 'Intermediate',
   contentArea: 'Counseling Theory/Practice',
   nbccContentAreas: ['Counseling Theory/Practice'],
-  category: 'Clinical',
   deliveryFormat: 'async',
   deliveryMethod: 'Asynchronous Online Learning',
   approvingBody: 'NBCC',
@@ -78,7 +76,7 @@ export const COURSE = {
     {
       title: 'Course Introduction and Orientation',
       order: 1,
-      description: 'What this course covers, how it is organized, and what you should expect to be able to do differently when you finish.',
+      description: 'The clinical problem this course solves, the framework it is built on, and what you should be able to do differently when you finish.',
       contentBlocks: [
         {
           type: 'sectionDivider',
@@ -89,32 +87,158 @@ export const COURSE = {
         },
         {
           type: 'text',
-          content: `<h2>The Most Common Work, Done Well</h2>
-<p>If you see clients in an outpatient setting, anxiety and depression are not a specialty area. They are the work. Anxiety disorders affect roughly 40 million American adults in a given year and depressive disorders roughly 21 million, and the two co-occur so frequently that treating one without assessing the other is a predictable source of stalled treatment. Nearly every clinician who completes this course already has a caseload full of these presentations. The question this course addresses is not whether you will encounter them, but whether the treatment you deliver is doing what the research says it can do.</p>
-<p>That distinction matters because the gap between what these treatments achieve in trials and what they achieve in ordinary practice is large, and it is not primarily a gap of clinician effort or care. It is a gap of specificity. Cognitive-behavioral therapy delivered as a general orientation — supportive conversation with occasional thought-challenging — produces modest results. Cognitive-behavioral therapy delivered as a mechanism-matched protocol, in which the clinician has identified what is maintaining this particular client's condition and selected the intervention that reverses that mechanism, produces the effect sizes reported in the literature. The difference is almost entirely a matter of precision: knowing which process is keeping the client stuck, and knowing which technique targets that process.</p>
-<p>The film that gives this course its title is useful here, and not for sentimental reasons. Chris Gardner's story is not a story about positive thinking. It is a story about behavioral persistence under conditions of overwhelming aversive stimulation — continuing to take the next concrete action toward something that mattered while every internal signal argued for stopping. That is a remarkably accurate description of what we ask clients to do in behavioral activation and in exposure therapy. We do not ask them to feel better first. We ask them to act in the direction of what they value while feeling exactly as bad as they feel, and we build the treatment so that the acting produces the evidence that eventually changes the feeling. Understanding that sequence — action first, evidence second, belief and mood third — is the conceptual spine of everything that follows.</p>`,
+          content: `<h2>Two Clients, One Diagnosis, Two Different Treatments</h2>
+<p>Marcus is thirty-four and cannot stop checking his work email. He checks it twenty times a day, sometimes more, and each check buys him about ninety seconds of relief before the next worry arrives — a different worry, usually, because his worries rotate. His shoulders ache. He has not slept through a night in four months. On the GAD-7 he scores 17.</p>
+<p>Jasmine is twenty-nine and has not left her apartment except for work in six weeks. She describes her days as "grey." She has stopped answering her sister's calls, not from anger but because answering requires more than she has. She used to run; she cannot remember the last time she wanted to. On the PHQ-9 she scores 19, and she endorses item nine.</p>
+<p>Both will be described in a case note as "anxiety and depression." Both are among the most treatable presentations in outpatient mental health. And if the same generic protocol is applied to both — some psychoeducation, some thought records, supportive conversation, a check-in on mood — both will improve less than they should, and one of them will not be safe.</p>
+<p>What separates adequate care from excellent care here is not warmth, effort, or years of experience. It is mechanistic precision: knowing which specific process is holding this particular client's condition in place, and selecting the intervention that reverses that process. Marcus's worry is functioning as avoidance of emotional processing. Jasmine's withdrawal has cut her off from every source of reinforcement she had. Those are different mechanisms, they call for different interventions, and the difference is learnable.</p>
+<p>Anxiety disorders affect roughly 40 million American adults in a given year and depressive disorders roughly 21 million. They co-occur so often that treating one without assessing the other is a predictable source of stalled treatment. Nearly every clinician reading this already has a caseload full of them. The question this course addresses is not whether you will see these clients — you already do — but whether what you deliver is doing what the research says it can.</p>`,
           order: 2
+        },
+        {
+          type: 'callout',
+          calloutType: 'clinical',
+          title: 'Why This Matters',
+          content: `<ul>
+<li><strong>Volume.</strong> Anxiety and depressive disorders are the two most common presentations in outpatient practice — roughly 40 million and 21 million American adults annually — and lifetime comorbidity between GAD and major depression exceeds 50%.</li>
+<li><strong>Treatability.</strong> These are among the most treatable conditions in mental health. Cognitive-behavioral therapy, behavioral activation, and exposure produce large effects when delivered with fidelity to the mechanism.</li>
+<li><strong>The delivery gap.</strong> Effects achieved in ordinary practice fall well short of trial effects, and the gap is largely one of specificity rather than clinician effort — generic supportive work with occasional thought-challenging is not the treatment that was tested.</li>
+<li><strong>Detection failure.</strong> Clinician judgment about client progress is demonstrably unreliable; without routine outcome data, deteriorating clients are identified at rates barely better than chance.</li>
+<li><strong>Risk.</strong> Depression is the most common diagnostic context for suicide, which makes accurate assessment and routine screening a safety obligation rather than a documentation preference.</li>
+</ul>`,
+          order: 3
         },
         {
           type: 'text',
           content: `<h2>How This Course Is Organized</h2>
-<p>The course moves in a deliberate sequence from phenomenology to mechanism to intervention to maintenance. Modules 1 and 2 establish what anxiety and depressive disorders actually are: their diagnostic boundaries, the cognitive and behavioral processes that maintain them, their neurobiological substrates, and the assessment instruments that let you measure them rather than estimate them. These modules are diagnostic in the working sense — the goal is not to memorize criteria but to be able to say, of a specific client, which mechanism is active and therefore which treatment is indicated.</p>
-<p>Module 3 covers cognitive-behavioral therapy as a structured method: session architecture, case conceptualization, cognitive restructuring, and behavioral experiments, with explicit attention to how the emphasis shifts between anxiety and depression. Module 4 goes deep on the two most powerful behavioral engines available in outpatient work — behavioral activation for depression and exposure for anxiety — including the inhibitory learning framework that has substantially revised how exposure is designed and delivered over the past fifteen years.</p>
-<p>Module 5 addresses the third-wave approaches — Acceptance and Commitment Therapy, Dialectical Behavior Therapy skills, and Mindfulness-Based Cognitive Therapy — with a focus on the specific clinical situations in which they add something that traditional cognitive-behavioral work does not. Module 6 closes the loop with treatment planning, measurement-based care, and relapse prevention: how to know whether what you are doing is working, what to do when the data say it is not, and how to end treatment in a way that protects the gains.</p>
-<p>Throughout, you will encounter clinical vignettes with decision points, skill-building exercises with answer keys, myth-and-fact segments that address the misconceptions most likely to be operating in your own practice, and reflection prompts that ask you to examine your own patterns rather than only your clients'. Two clients — Marcus, presenting with generalized anxiety, and Jasmine, presenting with major depression — recur across modules so that assessment, conceptualization, intervention, and outcome monitoring can be traced through a continuous case rather than illustrated in fragments.</p>`,
-          order: 3
+<p>The course moves in a deliberate sequence from phenomenology to mechanism to intervention to maintenance, because each stage depends on the one before it. Modules 1 and 2 establish what anxiety and depressive disorders actually are — their diagnostic boundaries, the cognitive and behavioral processes that maintain them, their neurobiological substrates, and the assessment instruments that let you measure rather than estimate. These modules are diagnostic in the working sense: the goal is to be able to say, of a specific client, which mechanism is active and therefore which treatment is indicated.</p>
+<p>Module 3 turns to cognitive-behavioral therapy as a structured method — session architecture, case conceptualization, cognitive restructuring, and behavioral experiments — with explicit attention to how the emphasis shifts between anxiety and depression. Module 4 goes deep on the two most powerful behavioral engines available in outpatient work, behavioral activation and exposure, including the inhibitory learning framework that has substantially revised how exposure is designed over the past fifteen years.</p>
+<p>Module 5 addresses the third-wave approaches — Acceptance and Commitment Therapy, DBT skills, and Mindfulness-Based Cognitive Therapy — with a focus on the specific clinical impasses in which each adds something traditional cognitive-behavioral work does not. Module 6 closes the loop with treatment planning, measurement-based care, and relapse prevention: how to know whether what you are doing is working, what to do when the data say it is not, and how to end treatment in a way that protects the gains.</p>
+<p>Marcus and Jasmine recur throughout, so that assessment, conceptualization, intervention, and outcome monitoring can be traced through continuous cases rather than illustrated in fragments.</p>`,
+          order: 4
+        },
+        {
+          type: 'imageText',
+          title: 'The Maintenance Model: One Framework Behind Every Intervention',
+          content: `<p>Every intervention in this course rests on a single organising idea: anxiety and depression are held in place by identifiable, self-reinforcing loops, and treatment works by interrupting the loop at the point the client can actually act on.</p>
+<p>The <strong>anxiety loop</strong> runs from cue to threat appraisal to anxiety to avoidance to relief — and the relief is the problem. Avoidance is negatively reinforced by the immediate drop in distress, and it simultaneously prevents the corrective learning that would occur if the person stayed in contact with the feared stimulus and discovered the predicted catastrophe did not arrive. Every effective anxiety treatment enters this loop at the avoidance node.</p>
+<p>The <strong>depression loop</strong> runs from loss or stressor to withdrawal to reduced reinforcement to lowered mood and energy, and back to further withdrawal. Each turn removes access to the very experiences that would lift mood, and supplies fresh evidence for the negative cognitive triad. This loop cannot be broken at the level of mood, because mood is downstream; it is broken at the level of behavior, which is the one node the client can act on regardless of how they feel.</p>
+<p>Hold both loops in mind as you work through the modules. When a treatment is described, ask which node it enters at. When a client stalls, ask which loop is running and whether the intervention you are using actually touches it.</p>`,
+          image: '',
+          imageAlt: 'Two side-by-side circular flow diagrams. The left, labelled Anxiety Loop, cycles from cue to threat appraisal to anxiety to avoidance to short-term relief and back to cue, with an arrow labelled "exposure" entering at the avoidance node. The right, labelled Depression Loop, cycles from loss or stressor to withdrawal to reduced positive reinforcement to lowered mood and energy and back to withdrawal, with an arrow labelled "behavioral activation" entering at the withdrawal node.',
+          imagePosition: 'right',
+          order: 5
+        },
+        {
+          type: 'text',
+          content: `<h3>Key Concepts Preview</h3>
+<p>Six ideas do most of the work in this course. Each is previewed here and developed in the module noted.</p>`,
+          order: 6
+        },
+        {
+          type: 'accordion',
+          accordionItems: [
+            {
+              title: 'Mechanism-matched treatment (Modules 1–2)',
+              content: `<p>The clinical question is never "does this client have anxiety?" but "which process is holding this client's anxiety in place?" Worry-as-avoidance, catastrophic misinterpretation of bodily sensation, and fear of negative evaluation sustained by safety behaviors are three different mechanisms with three different interventions. Diagnosis matters because it points to mechanism.</p>`
+            },
+            {
+              title: 'Avoidance as the common maintaining factor (Module 1)',
+              content: `<p>Behavioral avoidance, cognitive avoidance through worry, interoceptive avoidance of bodily sensation, and subtle safety behaviors all do the same job: they buy immediate relief and block corrective learning. Recognising avoidance in its less obvious forms is often what unlocks a stalled anxiety treatment.</p>`
+            },
+            {
+              title: 'The withdrawal loop and behavioral activation (Modules 2 and 4)',
+              content: `<p>Depression is maintained by a loss of response-contingent positive reinforcement. Activation reverses it by scheduling specific, values-linked activity independent of momentary motivation — acting first, with mood following, rather than waiting to feel like it.</p>`
+            },
+            {
+              title: 'Four-factor case conceptualization (Module 3)',
+              content: `<p>Predisposing, precipitating, perpetuating, and protective factors organised into a working hypothesis the client recognises as a description of their own life. A conceptualization the client cannot restate is not yet doing clinical work.</p>`
+            },
+            {
+              title: 'Expectancy violation and inhibitory learning (Module 4)',
+              content: `<p>Exposure works by disconfirming a specific, falsifiable prediction — not by waiting for anxiety to halve. Anxiety can stay high throughout a highly successful exposure. The target is the gap between what the client predicted and what actually happened.</p>`
+            },
+            {
+              title: 'Measurement-based care (Module 6)',
+              content: `<p>A brief validated measure at every session, plotted and reviewed with the client, converts a subjective impression into a shared record. A flat trajectory across four to six sessions is a signal to change something, not a reason for patience.</p>`
+            }
+          ],
+          order: 7
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'What You Will Take Away',
+          takeaways: [
+            'The ability to name, for a specific client, which mechanism is maintaining their anxiety or depression — and to say which intervention reverses that mechanism.',
+            'A working command of the PHQ-9 and GAD-7: administering them at every session, plotting the trajectory, and using the numbers in a conversation with the client rather than filing them.',
+            'A four-factor case conceptualization you can write in ten minutes and share with the client in language they recognise as their own.',
+            'The ability to design an exposure around a falsifiable prediction, identify and remove the safety behaviors that would prevent disconfirmation, and debrief it so the learning consolidates.',
+            'A behavioral activation plan that is specific, values-linked, graded, and scheduled — with predicted-versus-actual mood ratings built in.',
+            'A decision rule for when to change course, agreed in advance, and a relapse-prevention plan that names warning signs, skills, contacts, and the threshold for a booster session.'
+          ],
+          order: 8
+        },
+        {
+          type: 'multipleChoice',
+          question: 'Before we begin: a client with panic disorder completes an interoceptive exposure and reports that their anxiety stayed at 8 out of 10 for the entire exercise. Under the model this course teaches, how should this exposure be judged?',
+          options: [
+            {
+              text: 'Potentially highly successful, depending on whether the client made a specific prediction and whether that prediction was disconfirmed.',
+              isCorrect: true
+            },
+            {
+              text: 'Unsuccessful — anxiety must decline by roughly half within the session for the exposure to have worked.',
+              isCorrect: false
+            },
+            {
+              text: 'Unsuccessful — the exposure should be repeated at a lower intensity until the client habituates.',
+              isCorrect: false
+            },
+            {
+              text: 'Impossible to judge without a physiological measure of arousal.',
+              isCorrect: false
+            }
+          ],
+          correctAnswer: 0,
+          explanation: 'Under the inhibitory learning model, the outcome of an exposure is expectancy violation rather than within-session habituation. A client can remain highly anxious throughout and still learn a great deal, provided a falsifiable prediction was made and disconfirmed. We will explore this in Module 4, where the shift from the habituation model to inhibitory learning is worked through in detail.',
+          order: 9
+        },
+        {
+          type: 'multipleChoice',
+          question: 'A client with major depression tells you they will start exercising again "once they have more energy." What does the behavioral model of depression predict about this plan?',
+          options: [
+            {
+              text: 'It is sound — energy must be restored before activity can be sustained.',
+              isCorrect: false
+            },
+            {
+              text: 'It is sound provided the client also begins cognitive restructuring first.',
+              isCorrect: false
+            },
+            {
+              text: 'It is irrelevant, since exercise has no established effect on depressive symptoms.',
+              isCorrect: false
+            },
+            {
+              text: 'It is likely to fail, because motivation and energy follow activity rather than precede it; the plan waits on an input the loop will not supply.',
+              isCorrect: true
+            }
+          ],
+          correctAnswer: 3,
+          explanation: 'The withdrawal loop does not resolve on its own: reduced activity lowers reinforcement, which lowers mood and energy, which makes activity feel even less possible. Waiting for energy is waiting for an output of the loop to arrive before supplying its input. Behavioral activation reverses the order deliberately — the client acts on the schedule regardless of how they feel, and the mood change follows. We will explore this in Module 4.',
+          order: 10
         },
         {
           type: 'callout',
           calloutType: 'info',
           title: 'Scope and Limits of This Course',
           content: `<p>This course addresses outpatient assessment and psychotherapy for anxiety and depressive disorders in adults. It does not provide training sufficient for independent practice in any single protocol; competent delivery of exposure therapy, ACT, or DBT requires supervised practice beyond a continuing education course. It does not cover psychopharmacology beyond the level a non-prescriber needs for collaborative care, and it does not substitute for specialized training in suicide risk assessment, which every clinician working with depressed clients should hold separately. Where content touches on medication, medical rule-outs, or risk management, treat it as a prompt for consultation and referral rather than as a scope-of-practice expansion.</p>`,
-          order: 4
+          order: 11
         },
         {
           type: 'reflection',
-          question: 'Before you begin, bring to mind a specific client with anxiety or depression whose treatment has not moved the way you hoped. Write down, in one or two sentences, your current working hypothesis about what is keeping them stuck. Keep that hypothesis where you can see it. At the end of this course you will be asked to return to it and revise it using the mechanisms and frameworks you will have learned — and the revision, not the original, is what will change what you do in the next session.',
-          order: 5
+          question: 'Bring to mind a specific client with anxiety or depression whose treatment has not moved the way you hoped. What did you actually do with them across the last month of sessions — not what modality you would name, but what happened in the room? Write down your current working hypothesis about what is keeping them stuck, in one or two sentences. Keep it where you can see it; at the end of this course you will be asked to rewrite that hypothesis in the language of maintaining mechanisms, and the rewrite is what will change your next session.',
+          order: 12
         }
       ]
     },
@@ -336,14 +460,14 @@ export const COURSE = {
           question: 'Panic Disorder is distinguished from panic attacks occurring in other anxiety disorders by:',
           options: [
             { text: 'The severity of panic symptoms', isCorrect: false },
-            { text: 'The presence of agoraphobia', isCorrect: false },
-            { text: 'Exclusively nocturnal occurrence', isCorrect: false },
             {
               text: 'Unexpected attacks plus persistent fear/behavioral changes related to attacks',
               isCorrect: true
-            }
+            },
+            { text: 'The presence of agoraphobia', isCorrect: false },
+            { text: 'Exclusively nocturnal occurrence', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'Panic disorder specifically requires unexpected (uncued) attacks plus either persistent concern about future attacks, worry about attack consequences, or maladaptive behavioral changes—not just the experience of panic symptoms.',
           order: 19
         },
@@ -363,15 +487,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'The cognitive model of Social Anxiety Disorder emphasizes which maintaining factor?',
           options: [
+            { text: 'Insufficient social skills', isCorrect: false },
+            { text: 'Realistic evaluation of social threat', isCorrect: false },
             {
               text: 'Negative self-focused attention and distorted self-perception',
               isCorrect: true
             },
-            { text: 'Insufficient social skills', isCorrect: false },
-            { text: 'Realistic evaluation of social threat', isCorrect: false },
             { text: 'Underactive amygdala response', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'SAD is maintained by shifting attention inward to monitor for signs of inadequacy, constructing distorted images of how one appears to others, which interferes with performance and prevents processing positive feedback.',
           order: 21
         },
@@ -380,11 +504,11 @@ export const COURSE = {
           question: 'Intolerance of uncertainty is a core cognitive feature of:',
           options: [
             { text: 'Specific Phobia', isCorrect: false },
-            { text: 'Generalized Anxiety Disorder', isCorrect: true },
             { text: 'Panic Disorder', isCorrect: false },
-            { text: 'Social Anxiety Disorder', isCorrect: false }
+            { text: 'Social Anxiety Disorder', isCorrect: false },
+            { text: 'Generalized Anxiety Disorder', isCorrect: true }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'Intolerance of uncertainty—difficulty tolerating ambiguity and the possibility of negative outcomes—is central to GAD, driving excessive worry as an attempt to achieve certainty and prepare for all possibilities.',
           order: 22
         },
@@ -617,12 +741,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'The cognitive triad in Beck\'s model of depression includes negative views of:',
           options: [
+            { text: 'Self, world, and future', isCorrect: true },
             { text: 'Past, present, and future', isCorrect: false },
             { text: 'Family, work, and relationships', isCorrect: false },
-            { text: 'Self, world, and future', isCorrect: true },
             { text: 'Body, mind, and spirit', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'Beck\'s cognitive triad specifically describes negative views of the self (I am worthless), the world (the world is harsh), and the future (things will never improve).',
           order: 19
         },
@@ -632,19 +756,19 @@ export const COURSE = {
           options: [
             { text: 'Motivation must return before behavior can change', isCorrect: false },
             {
+              text: 'Increased activity leads to increased opportunities for positive reinforcement',
+              isCorrect: true
+            },
+            {
               text: 'Relaxation reduces depression by decreasing physiological arousal',
               isCorrect: false
             },
             {
               text: 'Analyzing the causes of depression is necessary before symptoms can improve',
               isCorrect: false
-            },
-            {
-              text: 'Increased activity leads to increased opportunities for positive reinforcement',
-              isCorrect: true
             }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'Behavioral models propose that depression is maintained by reduced positive reinforcement. Behavioral activation increases activity to increase reinforcement opportunities—action before motivation.',
           order: 20
         },
@@ -652,12 +776,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Which PHQ-9 total score indicates severe depression?',
           options: [
-            { text: '20 or higher', isCorrect: true },
             { text: '5-9', isCorrect: false },
             { text: '10-14', isCorrect: false },
+            { text: '20 or higher', isCorrect: true },
             { text: '15-19', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'PHQ-9 severity ranges are 5-9 (mild), 10-14 (moderate), 15-19 (moderately severe), and 20+ (severe).',
           order: 21
         },
@@ -678,11 +802,11 @@ export const COURSE = {
           question: 'Persistent Depressive Disorder differs from Major Depressive Disorder primarily in:',
           options: [
             { text: 'Severity of symptoms', isCorrect: false },
-            { text: 'Duration (at least 2 years of chronic depression)', isCorrect: true },
             { text: 'Presence of suicidal ideation', isCorrect: false },
-            { text: 'Response to medication', isCorrect: false }
+            { text: 'Response to medication', isCorrect: false },
+            { text: 'Duration (at least 2 years of chronic depression)', isCorrect: true }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'PDD is defined by chronicity—depressed mood more days than not for at least 2 years—rather than necessarily meeting full major depressive episode criteria at any given time.',
           order: 23
         },
@@ -690,15 +814,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Rumination maintains depression by:',
           options: [
-            { text: 'Promoting active problem-solving', isCorrect: false },
-            { text: 'Providing distraction from negative emotions', isCorrect: false },
             {
               text: 'Intensifying negative affect while interfering with productive action',
               isCorrect: true
             },
+            { text: 'Promoting active problem-solving', isCorrect: false },
+            { text: 'Providing distraction from negative emotions', isCorrect: false },
             { text: 'Facilitating emotional processing and resolution', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'Unlike productive reflection, rumination involves passive, repetitive focus on symptoms and their causes that intensifies negative affect, impairs problem-solving, and reduces engagement in reinforcing activities.',
           order: 24
         },
@@ -956,11 +1080,11 @@ export const COURSE = {
           question: 'The therapeutic stance in CBT is characterized by:',
           options: [
             { text: 'Expert pronouncement of correct thoughts', isCorrect: false },
+            { text: 'Collaborative empiricism and Socratic questioning', isCorrect: true },
             { text: 'Primarily supportive listening without direction', isCorrect: false },
-            { text: 'Analysis of unconscious motivations', isCorrect: false },
-            { text: 'Collaborative empiricism and Socratic questioning', isCorrect: true }
+            { text: 'Analysis of unconscious motivations', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'CBT involves therapist and client working together to investigate beliefs empirically, using Socratic questioning to guide client discovery rather than telling clients what to think.',
           order: 18
         },
@@ -968,12 +1092,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'In CBT case conceptualization, which factors are the direct targets for intervention?',
           options: [
-            { text: 'Perpetuating factors', isCorrect: true },
             { text: 'Predisposing factors', isCorrect: false },
             { text: 'Precipitating factors', isCorrect: false },
+            { text: 'Perpetuating factors', isCorrect: true },
             { text: 'Protective factors', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'Perpetuating factors—the cognitive, behavioral, and environmental patterns maintaining symptoms in the present—are the direct targets for CBT intervention because they can be modified through treatment.',
           order: 19
         },
@@ -982,11 +1106,11 @@ export const COURSE = {
           question: 'Behavioral experiments in CBT are designed to:',
           options: [
             { text: 'Avoid situations that trigger distress', isCorrect: false },
-            { text: 'Test the validity of beliefs through direct experience', isCorrect: true },
             { text: 'Analyze childhood origins of current problems', isCorrect: false },
-            { text: 'Develop positive affirmations', isCorrect: false }
+            { text: 'Develop positive affirmations', isCorrect: false },
+            { text: 'Test the validity of beliefs through direct experience', isCorrect: true }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'Behavioral experiments generate new evidence through action, testing predictions and providing experiential learning that is often more compelling than verbal discussion alone.',
           order: 20
         },
@@ -1006,12 +1130,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'The primary intervention for anxiety disorders in CBT is:',
           options: [
+            { text: 'Exposure to feared stimuli', isCorrect: true },
             { text: 'Medication management', isCorrect: false },
             { text: 'Exploration of childhood trauma', isCorrect: false },
-            { text: 'Exposure to feared stimuli', isCorrect: true },
             { text: 'Relaxation training alone', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'Exposure—systematic approach to feared stimuli—is the central intervention for anxiety disorders, allowing anxiety to diminish through habituation and corrective learning.',
           order: 22
         },
@@ -1020,14 +1144,14 @@ export const COURSE = {
           question: 'In CBT for depression, behavioral activation is prioritized because:',
           options: [
             { text: 'Cognitive interventions don\'t work for depression', isCorrect: false },
-            { text: 'Depressed clients cannot engage in cognitive work', isCorrect: false },
-            { text: 'Activity is more important than thoughts', isCorrect: false },
             {
               text: 'Behavior change can shift mood and provide evidence for cognitive change',
               isCorrect: true
-            }
+            },
+            { text: 'Depressed clients cannot engage in cognitive work', isCorrect: false },
+            { text: 'Activity is more important than thoughts', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'Behavioral activation increases opportunities for positive reinforcement and mastery experiences, shifting mood and providing concrete evidence against depressive beliefs about inability to enjoy or accomplish.',
           order: 23
         },
@@ -1261,15 +1385,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Behavioral activation operates on the principle that:',
           options: [
+            { text: 'Motivation must return before behavior can change', isCorrect: false },
+            { text: 'Analyzing the causes of inactivity is the key to activation', isCorrect: false },
             {
               text: 'Action precedes motivation—behavior change leads to mood improvement',
               isCorrect: true
             },
-            { text: 'Motivation must return before behavior can change', isCorrect: false },
-            { text: 'Analyzing the causes of inactivity is the key to activation', isCorrect: false },
             { text: 'Only pleasurable activities should be scheduled', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'BA does not wait for motivation; clients act despite low motivation, and motivation/mood improvement follows as activity increases contact with positive reinforcement.',
           order: 17
         },
@@ -1278,14 +1402,14 @@ export const COURSE = {
           question: 'According to the inhibitory learning model, exposure works primarily by:',
           options: [
             { text: 'Erasing the original fear memory', isCorrect: false },
+            { text: 'Teaching clients to suppress fear', isCorrect: false },
+            { text: 'Providing relaxation to counteract anxiety', isCorrect: false },
             {
               text: 'Creating new safety associations that compete with and inhibit fear',
               isCorrect: true
-            },
-            { text: 'Teaching clients to suppress fear', isCorrect: false },
-            { text: 'Providing relaxation to counteract anxiety', isCorrect: false }
+            }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'Inhibitory learning proposes that exposure doesn\'t erase fear but creates new inhibitory associations that compete with the fear memory. This has implications for optimizing exposure to enhance learning.',
           order: 18
         },
@@ -1293,12 +1417,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Interoceptive exposure, used in treatment of panic disorder, involves:',
           options: [
+            { text: 'Deliberately inducing feared bodily sensations', isCorrect: true },
             { text: 'Imagining feared social situations', isCorrect: false },
             { text: 'Gradual approach to specific phobic objects', isCorrect: false },
-            { text: 'Deliberately inducing feared bodily sensations', isCorrect: true },
             { text: 'Confronting trauma memories', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'Interoceptive exposure targets the core fear in panic disorder—fear of physical sensations—by deliberately producing sensations like dizziness, racing heart, and shortness of breath through exercises like hyperventilation or running in place.',
           order: 19
         },
@@ -1319,14 +1443,14 @@ export const COURSE = {
           question: 'An effective exposure hierarchy should:',
           options: [
             { text: 'Include only the most feared items to maximize efficiency', isCorrect: false },
-            { text: 'Be rigidly followed from bottom to top without deviation', isCorrect: false },
-            { text: 'Focus only on situations that can be easily avoided', isCorrect: false },
             {
               text: 'Range from moderately to highly distressing items, allowing graduated approach',
               isCorrect: true
-            }
+            },
+            { text: 'Be rigidly followed from bottom to top without deviation', isCorrect: false },
+            { text: 'Focus only on situations that can be easily avoided', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'Hierarchies rank feared situations from least to most distressing using SUDs ratings, providing a roadmap for graduated exposure that builds self-efficacy while challenging avoidance.',
           order: 21
         },
@@ -1334,12 +1458,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Safety behaviors during exposure should generally be:',
           options: [
-            { text: 'Eliminated because they prevent full corrective learning', isCorrect: true },
             { text: 'Encouraged as coping strategies', isCorrect: false },
             { text: 'Maintained throughout treatment', isCorrect: false },
+            { text: 'Eliminated because they prevent full corrective learning', isCorrect: true },
             { text: 'Added to help clients tolerate distress', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'Safety behaviors prevent full exposure and allow clients to attribute survival to the safety behavior rather than learning that the situation was actually safe. Eliminating safety behaviors is essential for maximal learning.',
           order: 22
         },
@@ -1492,11 +1616,11 @@ export const COURSE = {
           question: 'According to ACT, psychological suffering often results from:',
           options: [
             { text: 'Insufficient positive thinking', isCorrect: false },
-            { text: 'Experiential avoidance and cognitive fusion', isCorrect: true },
             { text: 'Lack of insight into childhood origins', isCorrect: false },
-            { text: 'Chemical imbalance requiring medication', isCorrect: false }
+            { text: 'Chemical imbalance requiring medication', isCorrect: false },
+            { text: 'Experiential avoidance and cognitive fusion', isCorrect: true }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'ACT proposes that suffering results from attempts to avoid unwanted internal experiences (experiential avoidance) and from treating thoughts as literal truths that must be obeyed (cognitive fusion).',
           order: 11
         },
@@ -1504,12 +1628,12 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'The primary goal of ACT is to:',
           options: [
+            { text: 'Increase psychological flexibility and values-guided action', isCorrect: true },
             { text: 'Eliminate negative thoughts and feelings', isCorrect: false },
             { text: 'Develop insight into unconscious conflicts', isCorrect: false },
-            { text: 'Increase psychological flexibility and values-guided action', isCorrect: true },
             { text: 'Achieve complete relaxation', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'ACT aims to increase psychological flexibility—the ability to be present and to act in service of values regardless of internal experience—rather than directly targeting symptom reduction.',
           order: 12
         },
@@ -1518,11 +1642,11 @@ export const COURSE = {
           question: 'MBCT was specifically developed for:',
           options: [
             { text: 'Treatment of acute first-episode depression', isCorrect: false },
+            { text: 'Prevention of depressive relapse in recurrent depression', isCorrect: true },
             { text: 'Treatment of anxiety disorders', isCorrect: false },
-            { text: 'Treatment of borderline personality disorder', isCorrect: false },
-            { text: 'Prevention of depressive relapse in recurrent depression', isCorrect: true }
+            { text: 'Treatment of borderline personality disorder', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'MBCT was developed specifically to prevent depressive relapse, particularly in individuals with three or more prior episodes who are at highest risk for recurrence.',
           order: 13
         },
@@ -1542,15 +1666,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'DBT\'s "opposite action" skill involves:',
           options: [
+            { text: 'Thinking the opposite of your automatic thoughts', isCorrect: false },
+            { text: 'Avoiding any situation that triggers emotion', isCorrect: false },
             {
               text: 'Acting opposite to emotional urges when emotions don\'t fit the facts',
               isCorrect: true
             },
-            { text: 'Thinking the opposite of your automatic thoughts', isCorrect: false },
-            { text: 'Avoiding any situation that triggers emotion', isCorrect: false },
             { text: 'Suppressing all emotional expression', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'Opposite action involves behaving counter to what the emotion urges when that emotion isn\'t justified by the facts—for example, approaching rather than avoiding when fear isn\'t warranted.',
           order: 15
         },
@@ -1559,14 +1683,14 @@ export const COURSE = {
           question: 'Third-wave approaches are MOST appropriate when:',
           options: [
             { text: 'Traditional CBT is contraindicated for medical reasons', isCorrect: false },
+            { text: 'Clients refuse all psychological intervention', isCorrect: false },
+            { text: 'Only medication management is appropriate', isCorrect: false },
             {
               text: 'Clients have difficulty with thought identification or when rumination is prominent',
               isCorrect: true
-            },
-            { text: 'Clients refuse all psychological intervention', isCorrect: false },
-            { text: 'Only medication management is appropriate', isCorrect: false }
+            }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'Third-wave approaches offer alternatives for clients who struggle with traditional cognitive restructuring and particularly address rumination through disengagement from thought content rather than repeated engagement.',
           order: 16
         },
@@ -1721,15 +1845,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Measurement-based care improves treatment outcomes primarily by:',
           options: [
-            { text: 'Reducing the need for clinical judgment', isCorrect: false },
-            { text: 'Proving to clients that they are improving', isCorrect: false },
             {
               text: 'Enabling early detection of non-response and timely treatment adjustment',
               isCorrect: true
             },
+            { text: 'Reducing the need for clinical judgment', isCorrect: false },
+            { text: 'Proving to clients that they are improving', isCorrect: false },
             { text: 'Satisfying insurance requirements', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'MBC\'s primary benefit is providing objective data that signals when treatment isn\'t working as expected, enabling clinicians to adjust treatment rather than persisting with ineffective approaches.',
           order: 13
         },
@@ -1738,11 +1862,11 @@ export const COURSE = {
           question: 'For depression treatment, what PHQ-9 trajectory by weeks 4-6 predicts likely treatment response?',
           options: [
             { text: 'Any improvement, regardless of magnitude', isCorrect: false },
+            { text: 'Approximately 50% reduction from baseline', isCorrect: true },
             { text: 'Complete symptom remission (score <5)', isCorrect: false },
-            { text: 'Worsening that will eventually reverse', isCorrect: false },
-            { text: 'Approximately 50% reduction from baseline', isCorrect: true }
+            { text: 'Worsening that will eventually reverse', isCorrect: false }
           ],
-          correctAnswer: 3,
+          correctAnswer: 1,
           explanation: 'Research indicates that approximately 50% reduction in depression symptom severity by weeks 4-6 predicts likely ultimate response. Failure to achieve this early improvement signals need for treatment modification.',
           order: 14
         },
@@ -1750,15 +1874,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Relapse prevention planning should include all of the following EXCEPT:',
           options: [
-            { text: 'Assuming treatment has produced permanent cure', isCorrect: true },
             { text: 'Identification of personal warning signs', isCorrect: false },
             {
               text: 'Development of a response plan for when warning signs appear',
               isCorrect: false
             },
+            { text: 'Assuming treatment has produced permanent cure', isCorrect: true },
             { text: 'Planning for ongoing skill practice and lifestyle factors', isCorrect: false }
           ],
-          correctAnswer: 0,
+          correctAnswer: 2,
           explanation: 'Relapse prevention explicitly acknowledges the chronic/recurrent nature of anxiety and depression for many individuals. Assuming permanent cure leaves clients unprepared for potential recurrence.',
           order: 15
         },
@@ -1783,19 +1907,19 @@ export const COURSE = {
               isCorrect: false
             },
             {
-              text: 'Matching treatment intensity to need, beginning with lower-intensity interventions',
-              isCorrect: true
-            },
-            {
               text: 'Providing only one level of treatment regardless of response',
               isCorrect: false
             },
             {
               text: 'Avoiding evidence-based treatments in favor of generic supportive therapy',
               isCorrect: false
+            },
+            {
+              text: 'Matching treatment intensity to need, beginning with lower-intensity interventions',
+              isCorrect: true
             }
           ],
-          correctAnswer: 1,
+          correctAnswer: 3,
           explanation: 'Stepped care begins with lower-intensity interventions and steps up to more intensive treatments for non-responders, efficiently matching resources to patient need.',
           order: 17
         },
@@ -1803,15 +1927,15 @@ export const COURSE = {
           type: 'multipleChoice',
           question: 'Shared decision-making in treatment selection is important because:',
           options: [
-            { text: 'It reduces clinician liability', isCorrect: false },
-            { text: 'It allows patients to avoid any discomfort', isCorrect: false },
             {
               text: 'Patient preference influences treatment engagement and outcome',
               isCorrect: true
             },
+            { text: 'It reduces clinician liability', isCorrect: false },
+            { text: 'It allows patients to avoid any discomfort', isCorrect: false },
             { text: 'Clinicians should not offer recommendations', isCorrect: false }
           ],
-          correctAnswer: 2,
+          correctAnswer: 0,
           explanation: 'When patients participate in choosing their treatment, engagement and outcomes improve. Shared decision-making incorporates patient preferences while providing expert information about options.',
           order: 18
         },
@@ -1846,10 +1970,24 @@ export const COURSE = {
           order: 2
         },
         {
+          type: 'callout',
+          calloutType: 'key',
+          title: 'When You Return to Practice on Monday',
+          content: `<ul>
+<li><strong>Put a PHQ-9 and a GAD-7 in front of every client, every session.</strong> Ninety seconds. Plot the scores where the client can see them, and say out loud what the line is doing.</li>
+<li><strong>Before your next session with a stalled client, write the mechanism down in one sentence.</strong> If you cannot name it, that is the finding — the assessment is not finished, and more of the same intervention will not fix it.</li>
+<li><strong>With any depressed client, schedule one specific activity before you do any cognitive work.</strong> Named activity, named day, named time, predicted mood recorded in advance.</li>
+<li><strong>Before your next exposure, ask for the prediction and write it down.</strong> "What do you think will happen, and how likely is that?" Then compare it to what happened, out loud, at the end.</li>
+<li><strong>Set your change-course threshold now, in writing.</strong> No reliable improvement by session six means revisit the formulation, re-screen for comorbidity, check adherence including your own, consider intensity, consider medication referral, consider fit.</li>
+<li><strong>Ask every client with depression about thoughts of death, out loud, the same way you ask about sleep.</strong> Not only when the screener flags it.</li>
+</ul>`,
+          order: 3
+        },
+        {
           type: 'text',
           content: `<h3>Module Highlights</h3>
 <p>Open each module to review its central points before the final assessment.</p>`,
-          order: 3
+          order: 4
         },
         {
           type: 'accordion',
@@ -1879,7 +2017,22 @@ export const COURSE = {
               content: `<p>Stepped care matches intensity to severity and escalates on the basis of demonstrated response. Measurement-based care means a brief validated measure at every session, plotted and discussed with the client, with a flat or worsening trajectory over four to six sessions treated as a mandate to change something. Relapse prevention plans specify individual warning signs, high-risk situations, coping skills, support contacts, and the threshold for a booster session. Plan the ending from the beginning: taper frequency, rehearse setbacks, and frame a lapse as data rather than failure.</p>`
             }
           ],
-          order: 4
+          order: 5
+        },
+        {
+          type: 'keyTakeaway',
+          title: 'Course-Level Key Takeaways',
+          takeaways: [
+            'Anxiety and depression are maintained by identifiable self-reinforcing loops; treatment works by entering the loop at the node the client can act on — avoidance for anxiety, behavior for depression.',
+            'Differential diagnosis is a treatment decision: worry-as-avoidance, catastrophic misinterpretation of bodily sensation, and fear of negative evaluation each call for a different intervention.',
+            'The PHQ-9 and GAD-7 give severity, trajectory, and — through item nine — a direct safety signal; screen every depressed client for a history of hypomania before selecting a treatment path.',
+            'A four-factor conceptualization the client can restate in their own words is the difference between a documented formulation and one that is doing clinical work.',
+            'Exposure is designed around expectancy violation: a falsifiable prediction, removal of safety behaviors, a genuine test, and an explicit debrief comparing prediction to outcome.',
+            'Behavioral activation is a standalone evidence-based treatment; activity is specific, values-linked, graded, scheduled, and undertaken independently of momentary motivation.',
+            'Third-wave approaches are indicated by mechanism, not fashion — when disputation has become avoidance, when the struggle is with internal experience rather than inaccurate belief, or when preventing recurrence is the goal.',
+            'A flat outcome trajectory across four to six sessions is a mandate to change the formulation, the intervention, the intensity, or the provider — and the threshold should be set before you need it.'
+          ],
+          order: 6
         },
         {
           type: 'text',
@@ -1888,12 +2041,12 @@ export const COURSE = {
 <p>The second is monitoring. If you adopt measurement-based care, you take on the obligation to act on what the data show. Collecting PHQ-9 scores and filing them without review is worse than not collecting them, because it creates a record of deterioration that you documented and did not address. Decide in advance what your threshold will be — a common standard is no reliable improvement across four to six sessions — and decide in advance what you will do when it is crossed: revisit the formulation, consult, intensify, refer for medication evaluation, or transfer care.</p>
 <p>The third is risk. Depression is the most common diagnostic context for suicide, and every clinician treating depressed clients needs a current, practiced approach to risk assessment, safety planning, and lethal-means counseling, together with documented consultation practices for elevated-risk cases. If the PHQ-9 item on thoughts of death is endorsed, it is assessed the same day, and the assessment is documented.</p>
 <p>The fourth is informed consent as an ongoing process. Exposure therapy in particular asks clients to do difficult things deliberately, and consent for that work should be explicit, revisited, and revocable. Clients should understand the rationale well enough to explain it back, should know that distress during exposure is expected rather than a sign of harm, and should know that they can stop. Write your plan for each of these four obligations before your next clinical day, and make it specific enough that someone reviewing your practice could tell whether you had followed it.</p>`,
-          order: 5
+          order: 7
         },
         {
           type: 'reflection',
           question: 'Return now to the client and the working hypothesis you wrote down before Module 1. Rewrite the hypothesis using the language of maintaining mechanisms: what specifically is keeping this client stuck — avoidance and its subtypes, the withdrawal loop, unworkable control efforts, an unaddressed comorbidity, or something you have not yet assessed? Then name the single intervention that most directly reverses that mechanism, and the first concrete thing you will do differently in your next session with them. Be specific enough that a colleague reading it would know exactly what you intend to do.',
-          order: 6
+          order: 8
         },
         {
           type: 'resources',
@@ -1935,7 +2088,7 @@ export const COURSE = {
               description: 'Division 12 database of psychological treatments by disorder with strength-of-evidence ratings, useful for treatment selection and for documenting the evidence basis of a treatment plan.'
             }
           ],
-          order: 7
+          order: 9
         },
         {
           type: 'text',
@@ -1957,7 +2110,7 @@ export const COURSE = {
 <p class="cr-reference">Segal, Z. V., Williams, J. M. G., & Teasdale, J. D. (2018). <em>Mindfulness-based cognitive therapy for depression</em> (2nd ed.). Guilford Press.</p>
 <p class="cr-reference">Spitzer, R. L., Kroenke, K., Williams, J. B., & Löwe, B. (2006). A brief measure for assessing generalized anxiety disorder: The GAD-7. <em>Archives of Internal Medicine</em>, 166(10), 1092-1097.</p>
 </div>`,
-          order: 8
+          order: 10
         }
       ]
     }

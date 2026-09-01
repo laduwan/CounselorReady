@@ -108,8 +108,60 @@ export const PATCHES = [
       ],
     },
 
+    framework: {
+      type: 'imageText',
+      title: 'The Chronic-Condition Frame: One Idea Behind Every Module',
+      content: `<p>Every clinical recommendation in this course follows from a single organising claim: substance use disorders behave like other chronic relapsing conditions, and treating them as acute episodes produces the failures the field then blames on clients.</p>
+<p>Under the <strong>acute frame</strong>, treatment is an episode with a beginning and an end, success is abstinence at discharge, and a return to use is evidence that the episode failed or that the client was not ready. This frame produces discharge-on-relapse policies, time-limited authorisations for an unlimited condition, and a client who learns that honesty about a lapse is dangerous.</p>
+<p>Under the <strong>chronic frame</strong>, treatment manages a long-run condition, success is measured in trajectory rather than at a single endpoint, and a return to symptoms triggers re-engagement and plan adjustment — exactly as a returning asthma symptom triggers a medication review rather than a discharge. Adherence and recurrence rates for substance use disorders sit in broadly the same range as for type 1 diabetes, hypertension, and asthma; the difference is entirely in how the profession interprets the same numbers.</p>
+<p>Hold this frame as you work through the modules. When an intervention is described, ask what it is managing rather than what it is curing. When a client returns to use, ask what the plan needs rather than whether the client was serious.</p>`,
+      image: '',
+      imageAlt: 'A two-column comparison diagram. The left column, labelled Acute frame, shows a linear path from intake through a fixed treatment episode to discharge, with a return to use branching off to a dead end marked "treatment failure / discharge". The right column, labelled Chronic frame, shows a continuous loop of assessment, treatment, monitoring, and re-engagement, with a return to use feeding back into plan adjustment rather than exit.',
+      imagePosition: 'right',
+    },
+
+    introTakeaways: [
+      'A validated screening instrument you administer to every client at intake, built into the packet rather than left to clinical impression.',
+      'The ability to say, for a specific client, whether a psychiatric symptom is substance-induced or independent — and the temporal reasoning that settles it.',
+      'A functional analysis of a return to use that produces a plan adjustment rather than a verdict about motivation.',
+      'Enough working knowledge of medications for alcohol and opioid use disorder to explain them accurately and refer without ambivalence.',
+      'A relapse-prevention plan naming warning signs, high-risk situations, coping skills, support contacts, and the threshold for re-engagement.',
+      'A stated policy on what happens after a lapse, told to the client in advance, so that honesty stays possible.',
+    ],
+
+    baselineMC: {
+      question: 'Before we begin: a client in outpatient treatment for alcohol use disorder returns after two weeks of abstinence having drunk heavily over a weekend. Which first response is most consistent with the evidence base?',
+      options: [
+        { text: 'Discharge the client from the programme, since continued use indicates they are not ready for outpatient treatment.' },
+        { text: 'Assess safety first — including loss of tolerance — then conduct a functional analysis of the sequence and revise the plan accordingly.' },
+        { text: 'Maintain the existing plan without change, since a single lapse is not clinically meaningful.' },
+        { text: 'Refer immediately to residential treatment regardless of the circumstances of the lapse.' },
+      ],
+      correct: 1,
+      explanation: 'A return to use in a chronic relapsing condition is a clinical event requiring assessment and plan adjustment, not a verdict about readiness. Safety comes first, because tolerance falls during abstinence and is a mechanism behind a substantial share of overdose deaths. Discharge guarantees the outcome it punishes and teaches the client that disclosure is dangerous; leaving the plan unchanged ignores information the lapse just supplied; automatic escalation to residential care skips the assessment that would establish whether it is indicated. We will explore this in Module 5.',
+    },
+
+    integrationCallout: {
+      type: 'callout', calloutType: 'key', title: 'When You Return to Practice on Monday',
+      content: `<ul>
+<li><strong>Put a validated screener in the intake packet for every client</strong>, not for the ones who seem to need it — that judgment is where bias enters.</li>
+<li><strong>Identify withdrawal risk before you build any behavioral plan.</strong> Unmanaged alcohol, benzodiazepine, and barbiturate withdrawal can be fatal. Know today who you will call.</li>
+<li><strong>Tell every client in advance what happens if they use.</strong> The policy you state before a lapse determines whether you hear about it after one.</li>
+<li><strong>Establish your referral relationships now</strong> — medication providers, higher levels of care, specialty programmes. The moment you need them is the moment a client is willing, and that window is short.</li>
+<li><strong>Assess safety first after any return to use</strong>, tolerance loss included, before you do anything else.</li>
+<li><strong>Ask about recovery capital, not just symptoms</strong> — housing, work, relationships, community, meaning. It predicts sustained recovery better than treatment dose does.</li>
+</ul>`,
+    },
+
+    resources: [
+      { title: 'NIAAA — Alcohol Treatment Navigator', url: 'https://alcoholtreatment.niaaa.nih.gov/', type: 'website', description: 'Federal guide to identifying quality alcohol treatment, including what to look for in a provider and how to evaluate programme claims. Useful to work through with clients and families.' },
+      { title: 'SAMHSA National Helpline and Treatment Locator', url: 'https://findtreatment.gov/', type: 'website', description: 'Free, confidential referral service and searchable treatment locator covering substance use and co-occurring disorders across all levels of care.' },
+      { title: 'AUDIT — Alcohol Use Disorders Identification Test (WHO)', url: 'https://www.who.int/publications/i/item/WHO-MSD-MSB-01.6a', type: 'worksheet', description: 'Ten-item validated screening instrument with scoring guidance, free from the World Health Organization. Suitable for universal intake screening.' },
+      { title: 'SAMHSA TIP 63 — Medications for Opioid Use Disorder', url: 'https://store.samhsa.gov/product/tip-63-medications-opioid-use-disorder/pep21-02-01-002', type: 'guidelines', description: 'Federal treatment improvement protocol covering buprenorphine, methadone, and naltrexone, with a module written specifically for non-prescribing behavioral health clinicians.' },
+    ],
+
     introCallout: {
-      type: 'callout', calloutType: 'clinical', title: 'Scope and Limits of This Course',
+      type: 'callout', calloutType: 'clinical', title: 'Why This Matters — and What This Course Will and Will Not Do',
       content: '<p>This course prepares licensed clinicians to screen, assess, formulate, and treat substance use disorders in general outpatient practice, and to know the boundaries of that setting. It does not qualify anyone to provide medically supervised withdrawal management: unmanaged alcohol, benzodiazepine, and barbiturate withdrawal can be fatal, and any client whose use pattern raises that possibility requires immediate medical evaluation rather than an outpatient behavioral plan. It does not substitute for the supervised experience required for a substance use credential, and it does not cover prescribing. Where the material addresses medications for addiction treatment, it does so at the level a non-prescriber needs in order to refer competently, explain accurately, and support adherence — not to make medication decisions.</p>',
     },
 
@@ -196,8 +248,60 @@ export const PATCHES = [
       ],
     },
 
+    framework: {
+      type: 'imageText',
+      title: 'The Ambivalence Balance: Why Pushing Produces Resistance',
+      content: `<p>The framework underneath every technique in this course is a simple balance with two sides, and one counter-intuitive property.</p>
+<p>On one side sits everything arguing for change: the costs the behaviour is imposing, the values it conflicts with, the future the client wants. On the other sits everything holding the status quo in place: what the behaviour does for the client, what change would cost, and what has failed before. A person in ambivalence holds both sides at once, and both are genuine.</p>
+<p>The counter-intuitive property is this: <strong>the balance is not static, and the clinician is standing on it.</strong> When a clinician argues the change side, the client — behaving exactly as people do when a position is argued at them — voices the other. That voicing is not a symptom of poor motivation. It is a product of the conversation, and the amount of it within a session predicts the absence of change afterward. The clinician who argues hardest for change reliably produces the most argument against it.</p>
+<p>Everything MI does follows from this. Evoke rather than install. Reflect sustain talk rather than dispute it. Attend differentially to the client's own change language, because it is the client's arguments, spoken in the client's voice, that move the balance and hold once you are gone.</p>`,
+      image: '',
+      imageAlt: 'A balance-scale diagram. The left pan is labelled "reasons for change — costs, values, desired future" and the right pan "reasons for the status quo — what the behaviour does, what change costs, past failures". An arrow labelled "clinician argues for change" presses down on the left pan while the right pan rises, annotated "client voices sustain talk". A second arrow labelled "clinician evokes change talk" is shown lifting the right pan instead.',
+      imagePosition: 'right',
+    },
+
+    introTakeaways: [
+      'The ability to notice your own righting reflex in the moment and stop, rather than recognising it afterward on the drive home.',
+      'Reliable complex reflection — naming the unspoken half of an ambivalent statement rather than repeating the spoken half.',
+      'The ability to hear change talk in its preparatory and mobilising forms, and to respond to it differentially rather than letting it pass.',
+      'A working set of evocative moves: importance and confidence rulers, looking forward and back, and values exploration.',
+      'A response to sustain talk and to discord that neither confronts nor colludes.',
+      'An honest read on your own fidelity, obtained from a recorded session rather than from your impression of how it went.',
+    ],
+
+    baselineMC: {
+      question: 'Before we begin: a client says, "I know I should cut back on drinking, but honestly it is the only thing that helps me sleep." Which response best reflects motivational interviewing?',
+      options: [
+        { text: '"Actually, alcohol disrupts sleep architecture — it makes sleep worse, not better. Let me explain how that works."' },
+        { text: '"Cutting back matters to you, and at the same time drinking is doing a real job for you right now — it is what gets you to sleep."' },
+        { text: '"What do you think would happen if you tried just one week without it?"' },
+        { text: '"A lot of my clients have found that sleep improves within a couple of weeks of stopping."' },
+      ],
+      correct: 1,
+      explanation: 'The second response is a complex reflection that names both sides of the ambivalence, including the half the client has just told you is real. The first supplies accurate information as a correction and will reliably produce more argument for drinking — the righting reflex in its most common form. The third is a reasonable question asked too early, before the ambivalence has been reflected. The fourth offers information without permission and implicitly disputes the client\'s experience. We will explore complex reflection and the righting reflex in Modules 1 and 2.',
+    },
+
+    integrationCallout: {
+      type: 'callout', calloutType: 'key', title: 'When You Return to Practice on Monday',
+      content: `<ul>
+<li><strong>Catch the righting reflex once per session and stop mid-sentence.</strong> Noticing it in the room, rather than afterward, is the first real skill.</li>
+<li><strong>Reflect before you ask.</strong> A complex reflection ahead of a question changes what the question gets.</li>
+<li><strong>Name the unspoken half.</strong> When a client gives you one side of the ambivalence, reflect the other side back and let them fill it in.</li>
+<li><strong>End a summary on the change side</strong> — collect, link, and finish where the client\'s own momentum is.</li>
+<li><strong>Wait for mobilising language before planning.</strong> Commitment, activation, taking steps. Planning ahead of it produces agreements the client does not enact.</li>
+<li><strong>Record one session this month and listen to it.</strong> Your impression of your own adherence is a weak predictor of what a coder would find.</li>
+</ul>`,
+    },
+
+    resources: [
+      { title: 'Motivational Interviewing Network of Trainers (MINT)', url: 'https://motivationalinterviewing.org/', type: 'organization', description: 'The international professional home of MI, with free practitioner resources, training listings, and the current fidelity and coding literature.' },
+      { title: 'MITI 4.2.1 Coding Manual (Motivational Interviewing Treatment Integrity)', url: 'https://casaa.unm.edu/codinginst.html', type: 'guide', description: 'Free coding instrument and manual from the University of New Mexico for measuring MI fidelity from recorded sessions — the tool that turns self-assessment into evidence.' },
+      { title: 'SAMHSA TIP 35 — Enhancing Motivation for Change', url: 'https://store.samhsa.gov/product/tip-35-enhancing-motivation-change-substance-use-disorder-treatment/pep19-02-01-003', type: 'guidelines', description: 'Federal treatment improvement protocol on motivational approaches, including stage-matched strategies and worked clinical dialogue.' },
+      { title: 'Importance and Confidence Ruler — printable client worksheet', url: 'https://motivationalinterviewing.org/sites/default/files/tnt_manual_2014_d10_20150205.pdf', type: 'worksheet', description: 'Ruler exercises and evocative question sets drawn from the MINT training manual, usable directly in session.' },
+    ],
+
     introCallout: {
-      type: 'callout', calloutType: 'tip', title: 'What This Course Can and Cannot Do',
+      type: 'callout', calloutType: 'clinical', title: 'Why This Matters — What This Course Can and Cannot Do',
       content: '<p>Motivational interviewing is a learnable clinical method with a strong evidence base across substance use, medication adherence, health behaviour change, and treatment engagement. It is also one of the methods practitioners are most likely to believe they are already doing. Self-rated MI adherence correlates weakly with coded adherence, and the correction that works is not more reading but recorded sessions reviewed against a fidelity measure with feedback. Treat this course as the conceptual foundation and the map of what to practise. Treat competence as something established afterwards, through supervised practice with real feedback on real sessions. Nothing here qualifies anyone to train or supervise others in the method.</p>',
     },
 
@@ -280,8 +384,60 @@ export const PATCHES = [
       ],
     },
 
+    framework: {
+      type: 'imageText',
+      title: 'The Four-Way Sort: The Framework This Course Is Built On',
+      content: `<p>One discipline underlies every module: separating four things that arrive in the room together and are constantly mistaken for one another.</p>
+<p><strong>The behaviour</strong> — what the client is actually doing, described concretely rather than in the vocabulary of a framework. <strong>The distress</strong> — what the client is actually suffering, which is real regardless of what is causing it. <strong>The source of the distress</strong> — whether it arises from the behaviour\'s consequences (time, money, health, work, relationships, safety, failed attempts to stop) or from a judgment about the behaviour that the client has adopted from a partner, a community, or a religious formation. And <strong>your own reaction</strong> — the response your own sexual formation, moral commitments, and personal history produce when you hear it.</p>
+<p>Errors in this territory run hard in both directions, and each is a failure of the same sort. Collapsing behaviour into distress over-pathologises: consensual, legal, unremarkable behaviour gets treated as addiction because it exceeds the clinician\'s norm. Collapsing distress into moral incongruence under-recognises: a client whose life is genuinely being dismantled is reassured that they are normal and leaves without an assessment. And a clinician who cannot see their own reaction as a separate object will reliably mistake it for a clinical finding.</p>
+<p>Every assessment question in Module 1 and every treatment decision in Modules 2 and 3 is an application of this sort.</p>`,
+      image: '',
+      imageAlt: 'A diagram of four overlapping circles labelled "the behaviour", "the distress", "the source of the distress", and "the clinician\'s own reaction", shown initially merged into a single indistinct shape on the left and separated into four clearly bounded circles on the right, under a heading reading "accurate assessment separates these".',
+      imagePosition: 'right',
+    },
+
+    introTakeaways: [
+      'The ability to separate the behaviour, the distress, the source of the distress, and your own reaction — and to notice when they have collapsed into one another.',
+      'Working command of the ICD-11 Compulsive Sexual Behavior Disorder criteria, including the moral-incongruence exclusion, and of why the DSM-5-TR contains no parallel category.',
+      'An assessment that turns on function and consequence in the client\'s own account rather than on frequency, content, or a partner\'s framing.',
+      'A differential you can actually work through: bipolar spectrum, substance-induced behaviour, obsessive-compulsive presentations, trauma-related behaviour, personality patterns, and neurological or medication contributors.',
+      'A treatment stance that does not use shame as leverage, and that supplies an alternative regulatory strategy before removing the existing one.',
+      'A stated policy on secrets in couple work, decided before you take the case rather than during it.',
+    ],
+
+    baselineMC: {
+      question: 'Before we begin: a client reports weekly pornography use, describes intense shame about it, and says his church community regards it as a serious moral failing. He reports no impact on his work, finances, health, or relationships, and says he could stop but does not want to feel like he has to. What does the ICD-11 framework indicate?',
+      options: [
+        { text: 'Compulsive Sexual Behavior Disorder is indicated, since the client reports marked distress.' },
+        { text: 'The diagnosis is not indicated — distress arising solely from moral judgments about sexual impulses is explicitly excluded — though the distress is real and warrants treatment on its own terms.' },
+        { text: 'No treatment is indicated, since the behaviour falls within the normal range.' },
+        { text: 'The diagnosis is indicated because pornography use meets the behavioural threshold regardless of impairment.' },
+      ],
+      correct: 1,
+      explanation: 'The ICD-11 criteria contain an explicit exclusion: distress that is entirely a consequence of moral judgments and disapproval about sexual impulses, urges, or behaviours is not sufficient for the diagnosis. This client reports no functional impairment and describes preserved control. That does not mean nothing is wrong — the shame is real and clinically significant — but the indicated treatment addresses moral incongruence, identity, and community context rather than compulsivity. Answering "no treatment indicated" is the minimizing error. We will explore this in Module 1.',
+    },
+
+    integrationCallout: {
+      type: 'callout', calloutType: 'key', title: 'When You Return to Practice on Monday',
+      content: `<ul>
+<li><strong>State the limits of confidentiality and your reporting duties before the client discloses</strong>, not after. A client who discloses and then learns of a duty has been treated unfairly whatever the law required.</li>
+<li><strong>Ask what the behaviour has cost in the client\'s own account</strong> — time, money, health, work, relationships, safety, and what happens when they try to stop — separately from what they believe it means about them.</li>
+<li><strong>Use the client\'s language in the room and precise language in the record.</strong> Ask what they call it and why before you adopt or correct their framework.</li>
+<li><strong>Work the differential before you treat.</strong> Bipolar spectrum, substance-induced behaviour, OCD with intrusive sexual content, trauma-related behaviour, and medication effects each lead somewhere different.</li>
+<li><strong>Do not use shame as leverage.</strong> It drives the behaviour rather than deterring it; interventions that raise it make outcomes worse.</li>
+<li><strong>Decide and state your policy on secrets before you take a couple</strong>, and be willing to say that separate providers is the right answer.</li>
+</ul>`,
+    },
+
+    resources: [
+      { title: 'ICD-11 — 6C72 Compulsive Sexual Behaviour Disorder', url: 'https://icd.who.int/browse11/l-m/en', type: 'guidelines', description: 'The primary diagnostic source, including the full criteria and the exclusion for distress arising solely from moral judgments about sexual impulses.' },
+      { title: 'AASECT — Find a Certified Sex Therapist', url: 'https://www.aasect.org/referral-directory', type: 'organization', description: 'Referral directory for AASECT-certified sex therapists and counselors, for presentations that exceed general outpatient competence.' },
+      { title: 'Society for the Advancement of Sexual Health — Clinical Resources', url: 'https://sash.net/', type: 'organization', description: 'Practitioner resources, training, and current literature on out-of-control sexual behaviour, including partner-focused material.' },
+      { title: 'SAMHSA — Trauma-Informed Care in Behavioral Health Services (TIP 57)', url: 'https://store.samhsa.gov/product/tip-57-trauma-informed-care-behavioral-health-services/sma14-4816', type: 'guidelines', description: 'Federal protocol on trauma-informed practice, relevant where sexual behaviour is functioning as a trauma-related regulatory strategy.' },
+    ],
+
     introCallout: {
-      type: 'callout', calloutType: 'ethics', title: 'Scope, Competence, and Your Own Reaction',
+      type: 'callout', calloutType: 'clinical', title: 'Why This Matters — Scope, Competence, and Your Own Reaction',
       content: '<p>This course prepares licensed clinicians to assess and formulate compulsive sexual behavior and related intimacy difficulties, and to know when the presentation exceeds general outpatient competence. It does not confer certification in sex therapy, and it does not prepare anyone to conduct forensic sexual behaviour assessments, evaluate risk for sexual offending, or provide court-directed treatment — those require separate credentialing and supervised experience. Three obligations apply from the first session. Illegal behaviour, and behaviour involving minors or non-consenting persons, triggers mandatory reporting duties that must be understood and disclosed before the client discloses. Clinicians must be able to distinguish a behaviour that is clinically problematic from one that departs from their own values; where you cannot, that is a supervision matter, not a diagnostic one. And clinicians with unresolved personal material in this area — their own compulsive behaviour, their own betrayal experience, their own religious injunction — should be working on it in their own treatment rather than in the client\'s.</p>',
     },
 
@@ -364,8 +520,62 @@ export const PATCHES = [
       ],
     },
 
+    framework: {
+      type: 'imageText',
+      title: 'Where Culture Meets Liability: The Framework This Course Is Built On',
+      content: `<p>The organising claim of this course is that culturally responsive practice and ethical risk reduction are the same set of practices described in two vocabularies — and that the practices sit at four specific points in an ordinary clinical episode.</p>
+<p><strong>Consent</strong> is the first. A client who did not understand what they were agreeing to, in a language and at a level they could follow, has not consented — and that is the allegation that begins most complaints in this territory, whatever the cultural misunderstanding underneath it.</p>
+<p><strong>Assessment</strong> is the second. Instruments used outside their validated populations, and culturally normative experience recorded as symptom, produce diagnoses that cannot be defended because the reasoning was never tested.</p>
+<p><strong>Documentation</strong> is the third and the most decisive. A reviewer has the file, not your intentions. A note that records the conclusion but not the alternatives considered converts a sound clinical decision into an indefensible one.</p>
+<p><strong>Consultation</strong> is the fourth. Clinicians in culturally complex cases frequently do consult and frequently do not record it — which confers the clinical benefit and none of the protection.</p>
+<p>Each module maps onto these four points. The convergence is the argument: the practices that make care better are the same ones that make it defensible.</p>`,
+      image: '',
+      imageAlt: 'A horizontal four-stage diagram titled "Where culture meets liability", with stages labelled Consent, Assessment, Documentation, and Consultation. Above each stage is the ethical obligation it carries; below each is the corresponding complaint allegation that arises when it is unmet — inadequate informed consent, inaccurate diagnosis, inadequate records, and practice beyond competence.',
+      imagePosition: 'right',
+    },
+
+    introTakeaways: [
+      'Consent practice that addresses the language of delivery, arranged professional translation, and checked comprehension rather than a signature.',
+      'The ability to say which of your routine assessment instruments were validated in the population you are using them with, and to document the reasoning when they were not.',
+      'A cultural formulation element in your notes: the client\'s own words, the identity and context factors, the alternatives considered, and the treatment implications.',
+      'A structured decision process for cases where cultural or religious values conflict with clinical judgment or legal obligation — applied deliberately and recorded.',
+      'The habit of documenting consultation, which is the single most protective element available and the one most often omitted.',
+      'An audit of your own diagnostic and referral distribution, which requires no permission and surfaces what self-report cannot.',
+    ],
+
+    baselineMC: {
+      question: 'Before we begin: a board complaint arises from a case involving cultural misunderstanding. Based on how these complaints actually proceed, what is a reviewer most likely to examine first?',
+      options: [
+        { text: 'Evidence of the clinician\'s attitudes toward the client\'s cultural group.' },
+        { text: 'The clinical record — whether consent was documented and comprehension checked, whether the diagnosis has a recorded basis, whether instruments were appropriate, and whether consultation was documented.' },
+        { text: 'The clinician\'s continuing education transcript for multicultural training hours.' },
+        { text: 'Testimony from colleagues about the clinician\'s general cultural sensitivity.' },
+      ],
+      correct: 1,
+      explanation: 'Complaints in this territory rarely allege prejudice and reviewers rarely have access to attitudes, intentions, or relational nuance. They have the file. What decides the outcome is whether the record shows the reasoning or only the conclusion — documented and comprehension-checked consent, a diagnosis with a recorded basis, instruments used within their validated populations, and consultation that was recorded rather than merely obtained. Training hours and character testimony are secondary. We will explore this in Modules 3 and 4.',
+    },
+
+    integrationCallout: {
+      type: 'callout', calloutType: 'key', title: 'When You Return to Practice on Monday',
+      content: `<ul>
+<li><strong>Read your own consent document as a client with limited English would.</strong> Check comprehension out loud rather than assuming it, and arrange professional translation rather than relying on a family member.</li>
+<li><strong>List your routine instruments and check what population each was validated in.</strong> Where you use one outside it, write down why it is still defensible and what it is not being used for.</li>
+<li><strong>Add the cultural formulation element to your note template</strong> — client\'s words, context factors, alternatives considered, treatment implications — so it survives a full caseload.</li>
+<li><strong>Identify your consultation route before you need it</strong>: supervisor, peer group, association ethics line, or carrier risk-management service.</li>
+<li><strong>Document the consultation.</strong> Undocumented consultation gives you the clinical benefit and none of the protection.</li>
+<li><strong>Audit your own diagnostic and referral distribution within ninety days.</strong> No permission required, and it shows what self-report cannot.</li>
+</ul>`,
+    },
+
+    resources: [
+      { title: 'ACA Code of Ethics (2014)', url: 'https://www.counseling.org/resources/aca-code-of-ethics.pdf', type: 'pdf', description: 'The primary ethical framework for licensed counselors, including Sections A.2.c on culturally appropriate informed consent, C.2.a on competence, E.5.b on cultural sensitivity in diagnosis, and E.8 on assessment population validity.' },
+      { title: 'NBCC Code of Ethics', url: 'https://www.nbcc.org/ethics', type: 'standards', description: 'Ethical standards for National Certified Counselors, carrying parallel obligations on competence, consent, and assessment.' },
+      { title: 'DSM-5-TR Cultural Formulation Interview — Online Assessment Measures', url: 'https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures', type: 'pdf', description: 'The full 16-question core Cultural Formulation Interview plus the informant version and supplementary modules, free from the American Psychiatric Association.' },
+      { title: 'National CLAS Standards — Office of Minority Health', url: 'https://thinkculturalhealth.hhs.gov/clas', type: 'standards', description: 'National standards for Culturally and Linguistically Appropriate Services, including language access requirements — the reference to cite when advocating for interpreter resources.' },
+    ],
+
     introCallout: {
-      type: 'callout', calloutType: 'ethics', title: 'What Ethics Codes Actually Require Here',
+      type: 'callout', calloutType: 'clinical', title: 'Why This Matters — What Ethics Codes Actually Require Here',
       content: '<p>The {{callout:aca-code}} is explicit and specific. Section C.2.a limits practice to the boundaries of competence based on education, training, supervised experience, and professional credentials, and requires counselors to gain knowledge, awareness, sensitivity, and skills relevant to working with a diverse client population. Section A.2.c requires that informed consent be communicated in a developmentally and culturally appropriate manner, including arranging translation where the client has difficulty understanding. Section E.5.b requires recognition that culture affects the way client problems are defined and cautions against pathologizing culturally normative experience, and Section E.8 restricts the use of assessment techniques to populations for which they were validated. The {{callout:nbcc-standard}} carries parallel obligations for NCC holders. Read together, these mean that a culturally uninformed assessment is not a lapse of sensitivity — it is a departure from the competence standard, and it is the kind of departure that appears in board complaints.</p>',
     },
 
@@ -419,12 +629,28 @@ function blockText(b) { return [b.content, b.textContent, b.question, b.title, b
 
 /** Build the "Course Introduction and Orientation" section for a patch. */
 function buildIntroSection(p) {
+  // Block order follows CLAUDE_COURSE_STRUCTURE.md §3: divider, opening hook,
+  // "why this matters" callout, roadmap, foundational framework imageText,
+  // key-concepts accordion, keyTakeaway, baseline knowledge check, reflection.
+  // introBlocks[0] is the hook, [1] the roadmap, [2] the course-specific essay.
+  const [hook, roadmap, ...restIntro] = p.introBlocks;
   const blocks = [
     { type: 'sectionDivider', sectionNumber: 'Introduction', title: INTRO_SECTION_TITLE, subtitle: p.introDividerSubtitle },
-    ...p.introBlocks,
+    hook,
+    p.introCallout,
+    roadmap,
+    p.framework,
+    ...restIntro,
     { type: 'text', content: `<h3>${p.introAccordion.title}</h3>\n<p>${p.introAccordion.instructions}</p>` },
     { type: 'accordion', accordionItems: p.introAccordion.accordionItems },
-    p.introCallout,
+    { type: 'keyTakeaway', title: 'What You Will Take Away', takeaways: p.introTakeaways },
+    {
+      type: 'multipleChoice',
+      question: p.baselineMC.question,
+      options: p.baselineMC.options.map((o, i) => ({ text: o.text, isCorrect: i === p.baselineMC.correct })),
+      correctAnswer: p.baselineMC.correct,
+      explanation: p.baselineMC.explanation,
+    },
     { type: 'reflection', question: p.introReflection },
   ];
   blocks.forEach((b, i) => { b.order = i + 1; });
@@ -447,13 +673,19 @@ function buildIntroSection(p) {
  * which would inflate the CE hour calculation with text no learner sees.
  */
 function buildConclusionBlocks(p) {
+  // Block order follows CLAUDE_COURSE_STRUCTURE.md §8: synthesis narrative,
+  // clinical-integration callout, section-highlights accordion, course-level
+  // keyTakeaway, ethical practice plan, reflection, resources. The existing
+  // .cr-references block stays last — these are inserted ahead of it.
   return [
     { type: 'text', content: p.takeaways },
-    { type: 'keyTakeaway', title: 'What to Carry Into the Room', takeaways: p.takeawayItems },
+    p.integrationCallout,
     { type: 'text', content: `<h3>${HIGHLIGHTS_TITLE}</h3>\n<p>Open each module to review its central points before the final assessment.</p>` },
     { type: 'accordion', accordionItems: p.highlights },
+    { type: 'keyTakeaway', title: 'Course-Level Key Takeaways', takeaways: p.takeawayItems },
     { type: 'text', content: p.plan },
     { type: 'reflection', question: p.conclusionReflection },
+    { type: 'resources', resources: p.resources },
   ];
 }
 
@@ -608,11 +840,18 @@ async function main() {
       console.log(`   MODEL SAVE FAILED: ${err.message}`);
       console.log('   FALLING BACK to collection update (validation bypassed — the failure above is in PRE-EXISTING content and should be fixed separately)');
       const patchedDoc = { ...raw, sections };
+      // Mirror every rollup the pre-save hook would have computed, including the
+      // three admin-library counts declared in PR #906 — a collection write skips
+      // the hook, and an undeclared-or-unset rollup reads as missing in the app.
       await col.updateOne({ _id: raw._id }, {
         $set: {
           sections,
           wordCount: countCourseWords(patchedDoc),
           totalContentBlocks: sections.reduce((n, s) => n + (s.contentBlocks || []).length, 0),
+          totalEstimatedTime: sections.reduce((n, s) => n + (s.estimatedTime || 15), 0),
+          sectionCount: sections.length,
+          moduleCount: sections.length,
+          assessmentQuestionCount: raw.assessment?.questions?.length || 0,
           updatedAt: new Date(),
         },
       });
