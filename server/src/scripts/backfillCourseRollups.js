@@ -51,9 +51,14 @@ function fmtChange(changed) {
   if (target) {
     identifiers = [target];
   } else if (ALL) {
+    // Collect by _id, not courseCode/slug: this repo has documented duplicate
+    // courseCodes (see reconcileDuplicates.js — e.g. two live CR-TMH601 docs).
+    // finalizeCourse() looks a course up by whatever identifier it's given,
+    // so an --all pass driven by courseCode would resolve every duplicate's
+    // identifier to the same first match and silently never touch the rest.
     const col = mongoose.connection.db.collection('interactivecourses');
-    const docs = await col.find({}, { projection: { courseCode: 1, slug: 1 } }).sort({ courseCode: 1 }).toArray();
-    identifiers = docs.map(d => d.courseCode || d.slug);
+    const docs = await col.find({}, { projection: { _id: 1 } }).sort({ _id: 1 }).toArray();
+    identifiers = docs.map(d => String(d._id));
   } else {
     console.error('Specify a course code/_id, or --all.');
     await mongoose.disconnect();
