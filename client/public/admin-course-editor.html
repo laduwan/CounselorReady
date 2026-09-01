@@ -275,7 +275,7 @@ async function loadCourse() {
   try {
     const token = localStorage.getItem('token');
     const res = await fetch(`${API}/admin/courses/${courseId}`, { headers: { 'Authorization': `Bearer ${token}` } });
-    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || `HTTP ${res.status}`); }
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(apiErrorMessage(e, res.status)); }
     courseData = await res.json();
     populateForm();
     document.getElementById('loadingState').style.display = 'none';
@@ -458,7 +458,7 @@ async function saveAll() {
   try {
     const token = localStorage.getItem('token');
     const res = await fetch(`${API}/admin/courses/${courseId}`, { method:'PUT', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`}, body:JSON.stringify(payload) });
-    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||`HTTP ${res.status}`); }
+    if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(apiErrorMessage(e, res.status)); }
     const saved = await res.json().catch(() => payload);
     courseData = saved.course || saved;
     showToast('Saved successfully','success');
@@ -473,6 +473,16 @@ async function saveAll() {
 
 function previewCourse() { window.open(`cready-viewer.html?id=${courseId}`, '_blank'); }
 function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+// The admin API reports errors under `error`/`detail`/`fields`, never `message` —
+// pull the real reason out instead of falling back to a bare "HTTP 400/500".
+function apiErrorMessage(e, status) {
+  const base = e.error || e.message || `HTTP ${status}`;
+  if (Array.isArray(e.fields) && e.fields.length) {
+    const detail = e.fields.map(f => typeof f === 'string' ? f : `${f.path}${f.message ? ': ' + f.message : ''}`).join('; ');
+    return `${base} — ${detail}`;
+  }
+  return e.detail ? `${base} — ${e.detail}` : base;
+}
 function showToast(msg, type='success') { const t = document.getElementById('toast'); t.textContent = msg; t.className = `toast ${type} show`; setTimeout(() => t.classList.remove('show'), 3000); }
 </script>
 <script src="/shared/nav-footer.js"></script>
