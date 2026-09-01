@@ -587,7 +587,6 @@ const CourseProgressSchema = new mongoose.Schema({
   }],
   assessmentPassed: { type: Boolean, default: false },
   bestAssessmentScore: Number,
-  assessmentAttemptsRemaining: Number,
   
   // =====================================
   // NEW: Evaluation tracking
