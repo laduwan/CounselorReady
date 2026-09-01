@@ -50,7 +50,7 @@ app simply never loads.)
 History: broken/restored at commits `268e190`, `2875c7e`, then re-broken at `53797f2`.
 ---
 ## Seed & Course Authoring
-**Before creating or editing any interactive-course seed, read `docs/SEED_AUTHORING_AND_VIEWER_GUIDE.md`** — verified block-type shapes, the references/resources drawer mechanism, validation gates, and engagement rules. The code (`InteractiveCourse.js`, `interactive-course.html`) overrides any spec doc.
+**Before creating or editing any interactive-course seed, read `CLAUDE_COURSE_STRUCTURE.md`** (repo root) — verified block-type shapes, intro/conclusion structure requirements, callout + keyTakeaway per-section mandate, the references/resources drawer mechanism, glossary auto-generation, validation gates, and engagement rules. The code (`InteractiveCourse.js`, `interactive-course.html`) overrides any other spec doc.
 
 ---
 ## Hard Off-Limits Files
