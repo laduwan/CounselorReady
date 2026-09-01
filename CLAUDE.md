@@ -384,6 +384,7 @@ No `$set`, `updateOne`, `replaceOne`, MCP write, or seed re-run may touch a docu
 
 - **Pre-write snapshot:** `node src/scripts/backupCourse.js <CODE> [--reason="what you're about to change"]` (Render shell, `~/project/src/server`). Writes Extended JSON to S3 `db-backups/courses/<CODE>/<timestamp>__<slug>.json` and a local copy under `server/backups/` (ephemeral on Render), prints a notice of where each copy went, and emails `ADMIN_ALERT_EMAIL`.
 - **Nightly dump:** `server/src/jobs/dbBackup.js` runs 2 AM ET → S3 `db-backups/nightly/<date>/` (gzipped NDJSON per collection + one JSON per course + manifest), 30-day retention. Manual: `node src/scripts/runDbBackup.js`.
+- **Weekly hard copy:** `server/src/jobs/dbBackupWeeklyDigest.js` runs Mondays 6:30 AM ET → zips the latest nightly per-course files to S3 `db-backups/weekly/<date>/` and emails a 7-day signed download link. Weekly zips are never auto-pruned. Manual: `node src/scripts/runDbBackupDigest.js`.
 - **Restore:** `node src/scripts/restoreCourse.js --key=<S3 key>` is dry-run; add `--apply` to overwrite. It snapshots the live doc first. This is the only script permitted to `replaceOne` a course.
 - All of the above are **read-only** against MongoDB except `restoreCourse.js --apply`. Never add write paths to `dbBackupService.js`.
 - Seed files pushed to GitHub remain the primary hard copy for new courses; snapshots cover edits to existing ones. Atlas Cloud Backup (M10) is the disaster-recovery layer and is not a substitute for either.
