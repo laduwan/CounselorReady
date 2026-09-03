@@ -1031,18 +1031,27 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
           };
 
-          // Resolve plan from subscription metadata or price ID lookup
-          // This is critical: without setting the plan here, users who pay
-          // via create-subscription (not checkout) stay on 'free' forever
-          // because checkout.session.completed doesn't fire for that path.
-          let resolvedPlan = subscription.metadata?.plan;
-          if (!resolvedPlan) {
-            const subPriceId = item?.price?.id;
-            if (subPriceId) {
-              for (const [key, val] of Object.entries(PRICE_IDS)) {
-                if (val === subPriceId) { resolvedPlan = key; break; }
-              }
+          // Resolve plan from the subscription's actual price ID first — that's
+          // the live source of truth for what the customer is on right now.
+          // metadata.plan is only a fallback: it's written once (at checkout or
+          // by our own /change-plan) and never updated when the price changes
+          // through another path (e.g. the Stripe customer portal), so trusting
+          // stale metadata over the real price ID silently froze the plan on
+          // upgrades/downgrades made outside /change-plan — the DB kept showing
+          // the old tier (e.g. 'starter') after the customer moved to a new one
+          // (e.g. 'professional'), which is what the admin page then displayed.
+          // This is also still critical for users who pay via create-subscription
+          // (not checkout): without setting the plan here, they'd stay on 'free'
+          // forever because checkout.session.completed doesn't fire for that path.
+          let resolvedPlan = null;
+          const subPriceId = item?.price?.id;
+          if (subPriceId) {
+            for (const [key, val] of Object.entries(PRICE_IDS)) {
+              if (val === subPriceId) { resolvedPlan = key; break; }
             }
+          }
+          if (!resolvedPlan) {
+            resolvedPlan = subscription.metadata?.plan;
           }
           if (resolvedPlan && subscription.status === 'active') {
             userUpdate['subscription.plan'] = resolvedPlan;
