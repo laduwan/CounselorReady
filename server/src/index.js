@@ -28,6 +28,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { requestId } from './middleware/requestId.js';
 import { apiVersioning } from './middleware/apiVersioning.js';
+import { protect, requireAdmin } from './middleware/auth.js';
 import logger from './utils/logger.js';
 
 dotenv.config();
@@ -118,6 +119,7 @@ import { runLiveSessionSelfHeal } from './jobs/liveSessionSelfHeal.js';
 import { runSessionProducerTick } from './jobs/sessionProducerTick.js';
 import { runTranscriptionTick } from './jobs/transcriptionTick.js';
 import { runBlogAutoGen } from './jobs/blogAutoGen.js';
+import { runBlogDigest } from './jobs/blogDigest.js';
 import { runDbBackup } from './jobs/dbBackup.js';
 import { runDbBackupWeeklyDigest } from './jobs/dbBackupWeeklyDigest.js';
 import { runComplianceDailyJob } from './services/complianceService.js';
@@ -502,6 +504,25 @@ const startServer = async () => {
     runBlogAutoGen().catch(err => console.error('[BlogAutoGen] Cron error:', err.message));
   }, { timezone: 'America/New_York' });
   logger.info('Blog auto-generation cron scheduled (Tuesdays 6 AM ET)');
+
+  // Blog digest — weekly email summarizing all pending drafts with one-click
+  // approve/reject links. Runs Wednesdays 8 AM ET, a day after auto-gen so
+  // drafts have landed. Also invocable directly: node src/scripts/runBlogDigest.js
+  cron.schedule('0 8 * * 3', () => {
+    runBlogDigest().catch(err => console.error('[BlogDigest] Cron error:', err.message));
+  }, { timezone: 'America/New_York' });
+  logger.info('Blog digest cron scheduled (Wednesdays 8 AM ET)');
+
+  // Manual trigger — admin only. Lets Ke fire the digest on demand instead
+  // of waiting for Wednesday, and confirms the whole pipeline end-to-end.
+  app.post('/api/blog/admin/digest/run', protect, requireAdmin, async (req, res) => {
+    try {
+      const result = await runBlogDigest();
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
 
   // Nightly DB backup — dumps interactivecourses (+ DB_BACKUP_COLLECTIONS) to
   // S3 as Extended-JSON, one file per course for single-course restores, prunes
