@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "prebuild": "node ../tools/generate-sitemap.cjs || true; node ../tools/prerender-courses.cjs || true"
+    "prebuild": "node ../tools/generate-sitemap.cjs || true; node ../tools/prerender-courses.cjs || true; node ../tools/prerender-blog.cjs || true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.24.3",
