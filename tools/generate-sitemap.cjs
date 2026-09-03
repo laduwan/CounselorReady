@@ -69,6 +69,17 @@ async function fetchCourses() {
     .map(c => ({ slug: c.slug, lastmod: (c.updatedAt || c.publishedAt || '').split('T')[0] || TODAY }));
 }
 
+async function fetchBlogPosts() {
+  const url = `${API_BASE}/api/blog?limit=500`;
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error(`Blog fetch failed: ${res.status} ${res.statusText}`);
+  const json = await res.json();
+  const arr = Array.isArray(json) ? json : (json.posts || json.data || []);
+  return arr
+    .filter(p => p && p.slug)
+    .map(p => ({ slug: p.slug, lastmod: (p.updatedAt || p.publishedAt || '').split('T')[0] || TODAY }));
+}
+
 async function main() {
   let courses = [];
   try {
@@ -79,9 +90,19 @@ async function main() {
     console.error('Writing sitemap with static pages only. Re-run when the API is reachable.');
   }
 
+  let posts = [];
+  try {
+    posts = await fetchBlogPosts();
+    console.log(`Fetched ${posts.length} published blog posts from ${API_BASE}`);
+  } catch (err) {
+    console.error(`WARNING: ${err.message}`);
+    console.error('Writing sitemap without blog posts. Re-run when the API is reachable.');
+  }
+
   const entries = [];
   for (const [loc, cf, pr] of STATIC_PAGES) entries.push(urlEntry(loc, cf, pr));
   for (const c of courses) entries.push(urlEntry(`/courses/${c.slug}`, 'weekly', '0.8', c.lastmod));
+  for (const p of posts) entries.push(urlEntry(`/blog/${p.slug}`, 'weekly', '0.7', p.lastmod));
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',

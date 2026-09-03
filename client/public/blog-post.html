@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    (function () {
+      var slug = new URLSearchParams(window.location.search).get('slug');
+      if (slug) { window.location.replace('/blog/' + encodeURIComponent(slug)); }
+    })();
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Blog — CounselorReady</title>
