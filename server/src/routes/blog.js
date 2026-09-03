@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import matter from 'gray-matter';
+import jwt from 'jsonwebtoken';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import BlogPost from '../models/BlogPost.js';
 
@@ -281,6 +282,47 @@ router.post('/admin/:id/toggle', authenticateToken, isAdmin, async (req, res) =>
   } catch (err) {
     console.error('Toggle post error:', err);
     res.status(500).json({ error: 'Failed to toggle post status' });
+  }
+});
+
+// GET /api/blog/quick-review/:token — one-click approve/reject from digest
+// email. No login required (token is the auth). Public by design — do not
+// add authenticateToken/isAdmin here.
+router.get('/quick-review/:token', async (req, res) => {
+  const brandStyle = `font-family: -apple-system, Arial, sans-serif; max-width: 480px; margin: 80px auto; text-align: center; color: #6B1D34;`;
+
+  try {
+    const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
+    if (decoded.purpose !== 'blog-review') {
+      return res.status(400).send(`<div style="${brandStyle}"><h2>Invalid link</h2></div>`);
+    }
+
+    const post = await BlogPost.findById(decoded.postId);
+    if (!post) {
+      return res.status(404).send(`<div style="${brandStyle}"><h2>Draft not found</h2><p>It may have already been reviewed.</p></div>`);
+    }
+
+    if (decoded.action === 'approve') {
+      if (post.status !== 'published') {
+        post.status = 'published';
+        post.publishedAt = post.publishedAt || new Date();
+        await post.save();
+      }
+      return res.send(`<div style="${brandStyle}"><h2>✓ Published</h2><p>"${post.title}" is now live.</p></div>`);
+    }
+
+    if (decoded.action === 'reject') {
+      await BlogPost.findByIdAndDelete(decoded.postId);
+      return res.send(`<div style="${brandStyle}"><h2>Discarded</h2><p>"${post.title}" has been removed.</p></div>`);
+    }
+
+    return res.status(400).send(`<div style="${brandStyle}"><h2>Unknown action</h2></div>`);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(400).send(`<div style="${brandStyle}"><h2>Link expired</h2><p>Review links are valid for 14 days. Approve or reject this draft directly in /admin-blog.html.</p></div>`);
+    }
+    console.error('Quick-review error:', err.message);
+    return res.status(400).send(`<div style="${brandStyle}"><h2>Invalid link</h2></div>`);
   }
 });
 
