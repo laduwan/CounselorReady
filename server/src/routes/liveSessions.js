@@ -1,951 +1,1585 @@
 /**
  * Copyright (c) 2026 CounselorReady, a subsidiary of Ga Integrated Therapeutic Perspectives, LLC.
  * All rights reserved. Proprietary and confidential.
- */
-
-/**
- * liveSessions — synchronous sessions (live CE webinars + clinical supervision).
- * Mounted at /api/live-sessions (see WIRING.md for index.js + routeManifest entries).
- *
- * ROUTE ORDER RULE: named routes (/upcoming, /mine) MUST precede /:id routes.
- *
- * Access-control architecture:
- *   - Whereby room URLs, S3 replay URLs, and Cloudinary handout URLs NEVER
- *     appear in public payloads or page source. They are returned only from
- *     the gated endpoints below, to authenticated registered users, inside
- *     the appropriate time/availability window.
+ * Unauthorized copying or distribution is strictly prohibited.
  */
 import express from 'express';
+import mongoose from 'mongoose';
 import Stripe from 'stripe';
-import multer from 'multer';
-import mammoth from 'mammoth';
-import LiveSession from '../models/LiveSession.js';
-import { protect, requireAdmin } from '../middleware/auth.js';
-import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
-import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
+import User from '../models/User.js';
+import Course from '../models/Course.js';
+import Partner from '../models/Partner.js';
+import { protect, requirePartnerAdmin } from '../middleware/auth.js';
+import { PREMIUM_ADDONS, PREMIUM_BUNDLE_PRICE_CENTS } from '../utils/planLimits.js';
+import { bustAddonCache } from '../middleware/partnerFeatureGate.js';
+import { logActivity, ACTIVITY_TYPES } from '../services/activityTrackingService.js';
+import { sendPaymentFailedEmail, sendPaymentRecoveredEmail } from '../services/hardshipEmailService.js';
+import { processReferralPaidConversion } from '../services/rewardsService.js';
+import { recordSyndicationCommission, applyRefundToCommission, voidSyndicationCommissionByPaymentIntent } from '../utils/syndicationCommission.js';
+import { constructStripeEvent } from '../utils/verifyStripeSignature.js';
+import { Course as InteractiveCourse, CourseProgress as InteractiveCourseProgress } from '../models/InteractiveCourse.js';
+import twilio from 'twilio';
+import logger from '../utils/logger.js';
+
+const twilioClient = process.env.TWILIO_ACCOUNT_SID
+  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  : null;
 
 const router = express.Router();
-const agendaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
-const stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY) : null;
 
-const JOIN_WINDOW_BEFORE_MIN = 15; // doors open 15 min early
-const JOIN_WINDOW_AFTER_MIN = 30;  // grace after scheduled end (overruns)
+// Initialize Stripe
+const stripe = process.env.STRIPE_SECRET_KEY 
+  ? new Stripe(process.env.STRIPE_SECRET_KEY) 
+  : null;
 
-/**
- * parseAgendaMarkdown — deterministic (no-AI) parser for the Run of Show importer.
- *
- * Does NOT rewrite, summarize, or paraphrase any text — every character of the
- * script the presenter wrote lands in the `script` field verbatim. This is
- * intentional: unlike course content generation, an agenda script is read aloud
- * live, so exact wording matters more than it does anywhere else in the platform.
- *
- * Expected format:
- *   # Hour 1: Framing and Statute        <- level-1 headings are ignored (organizational only)
- *   ## [breakout] Case A — the record that doesn't separate (25 min)
- *   Prompt: What would you have flagged in this note?
- *   <everything else here is the speaker script, preserved as-is>
- *
- * - `##` or `###` starts a new segment.
- * - An optional `[type]` tag at the start of the heading sets segment type
- *   (lecture/discussion/breakout/clip/break); falls back to keyword sniffing
- *   in the title, then defaults to 'lecture'.
- * - An optional `(NN min)` anywhere in the heading sets durationMin.
- * - An optional line starting with `Prompt:` (case-insensitive) anywhere in the
- *   body is pulled out as the segment's `prompt`; everything else is `script`.
- */
-function parseAgendaMarkdown(rawText) {
-  const TYPES = ['lecture', 'clip', 'discussion', 'breakout', 'break'];
-  const KEYWORD_TYPE = [
-    [/\bbreakout\b/i, 'breakout'],
-    [/\bdiscussion\b|\bpoll\b/i, 'discussion'],
-    [/\bbreak\b/i, 'break'],
-    [/\bclip\b|\bvideo\b/i, 'clip']
-  ];
+// Price IDs from Stripe Dashboard (set in environment)
+const PRICE_IDS = {
+  starter: process.env.STRIPE_PRICE_STARTER || 'price_starter_monthly',
+  professional: process.env.STRIPE_PRICE_PROFESSIONAL || 'price_professional_monthly',
+  vip: process.env.STRIPE_PRICE_VIP || 'price_vip_monthly'
+};
 
-  const lines = (rawText || '').replace(/\r\n/g, '\n').split('\n');
-  const segments = [];
-  let current = null;
+const PLAN_DETAILS = {
+  free: { name: 'Free', price: 0, maxCEHours: 4, maxStates: 1 },
+  starter: { name: 'Starter', price: 1999, maxCEHours: 999, maxStates: 1 },
+  professional: { name: 'Professional', price: 2999, maxCEHours: 999, maxStates: 1 },
+  vip: { name: 'VIP', price: 4999, maxCEHours: 999, maxStates: 999 }
+};
 
-  function pushCurrent() {
-    if (!current) return;
-    // Extract the Prompt: line (first match) out of the accumulated body.
-    const bodyLines = current.bodyLines;
-    let prompt = '';
-    const keptLines = [];
-    let promptTaken = false;
-    for (const line of bodyLines) {
-      const m = !promptTaken && line.match(/^\s*prompt:\s*(.*)$/i);
-      if (m) {
-        prompt = m[1].trim();
-        promptTaken = true;
-      } else {
-        keptLines.push(line);
-      }
-    }
-    // Trim leading/trailing blank lines only — internal spacing/paragraphs preserved verbatim.
-    while (keptLines.length && keptLines[0].trim() === '') keptLines.shift();
-    while (keptLines.length && keptLines[keptLines.length - 1].trim() === '') keptLines.pop();
+// ============================================
+// SUBSCRIPTION ROUTES
+// ============================================
 
-    segments.push({
-      type: current.type,
-      title: current.title,
-      durationMin: current.durationMin,
-      prompt,
-      script: keptLines.join('\n')
-    });
-    current = null;
-  }
-
-  for (const rawLine of lines) {
-    const headingMatch = rawLine.match(/^(#{2,3})\s+(.*)$/);
-    if (headingMatch) {
-      pushCurrent();
-      let headingText = headingMatch[2].trim();
-
-      let type = null;
-      const tagMatch = headingText.match(/^\[(\w+)\]\s*/);
-      if (tagMatch && TYPES.includes(tagMatch[1].toLowerCase())) {
-        type = tagMatch[1].toLowerCase();
-        headingText = headingText.slice(tagMatch[0].length).trim();
-      }
-
-      let durationMin = null;
-      const durMatch = headingText.match(/\((\d+)\s*min\)/i);
-      if (durMatch) {
-        durationMin = parseInt(durMatch[1], 10);
-        headingText = headingText.replace(durMatch[0], '').trim();
-      }
-
-      if (!type) {
-        for (const [re, t] of KEYWORD_TYPE) {
-          if (re.test(headingText)) { type = t; break; }
+// @route   GET /api/payments/subscription
+// @desc    Get current subscription status
+// @access  Private
+router.get('/subscription', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    
+    let paymentMethod = null;
+    if (user.subscription?.stripeCustomerId && stripe) {
+      try {
+        const customer = await stripe.customers.retrieve(user.subscription.stripeCustomerId);
+        if (customer.invoice_settings?.default_payment_method) {
+          const pm = await stripe.paymentMethods.retrieve(
+            customer.invoice_settings.default_payment_method
+          );
+          paymentMethod = {
+            brand: pm.card?.brand,
+            last4: pm.card?.last4,
+            expMonth: pm.card?.exp_month,
+            expYear: pm.card?.exp_year
+          };
         }
+      } catch (e) {
+        logger.info({ err: e, userId: req.user?._id, requestId: req.requestId }, 'Could not fetch payment method');
       }
-      if (!type) type = 'lecture';
-
-      headingText = headingText.replace(/[-–—\s]+$/, '').trim();
-
-      current = { type, title: headingText, durationMin, bodyLines: [] };
-      continue;
     }
-
-    // Skip level-1 headings entirely (organizational "# Hour N" dividers only).
-    if (/^#\s+/.test(rawLine)) continue;
-
-    if (current) current.bodyLines.push(rawLine);
-  }
-  pushCurrent();
-
-  return segments.map((s, i) => ({ order: i, ...s }));
-}
-
-/* ════════════════════════ PUBLIC / LEARNER ════════════════════════ */
-
-// GET /api/live-sessions/upcoming — published upcoming live courses (catalog)
-router.get('/upcoming', async (req, res) => {
-  try {
-    const sessions = await LiveSession.find({
-      isPublished: true,
-      sessionType: 'live-course',
-      status: { $in: ['scheduled', 'live'] },
-      scheduledEnd: { $gte: new Date() }
-    }).sort({ scheduledStart: 1 }).limit(50);
-    res.json({ sessions: sessions.map(s => s.toPublicJSON()) });
-  } catch (err) {
-    console.error('[live] upcoming:', err.message);
-    res.status(500).json({ error: 'Failed to load upcoming sessions' });
-  }
-});
-
-// GET /api/live-sessions/mine — sessions the user is registered for (incl. supervision)
-router.get('/mine', protect, async (req, res) => {
-  try {
-    const sessions = await LiveSession.find({
-      'registrants.user': req.user._id
-    }).sort({ scheduledStart: -1 }).limit(100);
-    res.json({
-      sessions: sessions.map(s => ({
-        ...s.toPublicJSON(),
-        attendedMinutes: s.attendedMinutes(req.user._id),
-        hasReplay: s.recordings.some(r => r.replayEnabled && r.status === 'ready')
-      }))
+    
+    res.json({ 
+      subscription: user.subscription,
+      paymentMethod
     });
-  } catch (err) {
-    console.error('[live] mine:', err.message);
-    res.status(500).json({ error: 'Failed to load your sessions' });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get subscription error');
+    res.status(500).json({ error: 'Failed to get subscription' });
   }
 });
 
-// GET /api/live-sessions/admin/all — full session list for admin dashboard
-router.get('/admin/all', protect, requireAdmin, async (req, res) => {
+// @route   GET /api/payments/invoices
+// @desc    Get user's billing history / invoices from Stripe
+// @access  Private
+router.get('/invoices', protect, async (req, res) => {
+  if (!stripe) {
+    return res.json({ invoices: [] });
+  }
+  
   try {
-    const sessions = await LiveSession.find({})
-      .sort({ scheduledStart: -1 })
-      .limit(200)
-      .lean();
-    res.json({ sessions });
-  } catch (err) {
-    console.error('[live] admin/all:', err.message);
-    res.status(500).json({ error: 'Failed to load sessions' });
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeCustomerId) {
+      return res.json({ invoices: [] });
+    }
+
+    // Get invoices from Stripe
+    const invoices = await stripe.invoices.list({
+      customer: user.subscription.stripeCustomerId,
+      status: 'paid',
+      limit: 20
+    });
+
+    const formattedInvoices = invoices.data.map(inv => ({
+      id: inv.id,
+      date: new Date(inv.created * 1000),
+      description: inv.lines.data[0]?.description || 'Subscription',
+      amount: inv.amount_paid,
+      status: inv.status,
+      invoiceUrl: inv.hosted_invoice_url,
+      invoicePdf: inv.invoice_pdf
+    }));
+    
+    res.json({ invoices: formattedInvoices });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get invoices error');
+    res.status(500).json({ error: 'Failed to get invoices' });
   }
 });
 
-// GET /api/live-sessions/:id — public-safe detail (by id or slug)
-router.get('/:id', async (req, res) => {
-  try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session || (!session.isPublished && session.sessionType === 'live-course')) {
-      return res.status(404).json({ error: 'Session not found' });
-    }
-    res.json({ session: session.toPublicJSON() });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to load session' });
+// @route   POST /api/payments/create-checkout-session
+// @desc    Create Stripe checkout session for new subscription
+// @access  Private
+router.post('/create-checkout-session', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
   }
-});
-
-// POST /api/live-sessions/:id/register
-router.post('/:id/register', protect, async (req, res) => {
+  
   try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session || !session.isPublished) return res.status(404).json({ error: 'Session not found' });
-    if (!['scheduled', 'live'].includes(session.status)) {
-      return res.status(400).json({ error: 'Registration is closed for this session.' });
+    const { plan } = req.body;
+    
+    if (!PRICE_IDS[plan]) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
     }
-    if (session.isRegistered(req.user._id)) {
-      return res.json({ registered: true, message: 'Already registered.' });
-    }
-    if (session.registrants.length >= session.capacity) {
-      return res.status(400).json({ error: 'This session is full.' });
-    }
-
-    const isAdmin = req.user.role === 'admin';
-    // Same currency check as canBookConsultation(): VIP-tier plan AND subscription actually active.
-    const isActiveVip = req.user.isVip() &&
-      (req.user.subscription.status === 'active' || req.user.subscription.status === 'lifetime');
-
-    // Live sessions are free for current VIP subscribers. Everyone else must pay per-session
-    // when the session is priced; if it isn't priced, there's no non-VIP path in.
-    if (!isAdmin && !isActiveVip && !(session.price > 0)) {
-      return res.status(403).json({
-        error: 'Live sessions are a VIP subscriber benefit, or available for individual purchase.',
-        reason: 'VIP subscription required',
-        requiredTier: 'vip'
-      });
-    }
-
-    // Paid sessions → Stripe Checkout for non-VIP; fulfillment registers via webhook (WIRING.md)
-    if (!isAdmin && !isActiveVip && session.price > 0) {
-      if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
-      const checkout = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        mode: 'payment',
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            unit_amount: Math.round(session.price * 100),
-            product_data: { name: `Live Session: ${session.title}` }
-          },
-          quantity: 1
-        }],
-        success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?registered=${session.slug}`,
-        cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?canceled=true`,
+    
+    const user = await User.findById(req.user._id);
+    
+    // Create or get Stripe customer
+    let customerId = user.subscription?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         metadata: {
-          type: 'live-session',
-          liveSessionId: session._id.toString(),
-          userId: req.user._id.toString()
+          userId: user._id.toString()
         }
       });
-      return res.json({ checkoutUrl: checkout.url });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
     }
 
-    session.registrants.push({ user: req.user._id, paid: false });
-    await session.save();
-    res.json({ registered: true });
-  } catch (err) {
-    console.error('[live] register:', err.message);
-    res.status(500).json({ error: 'Registration failed' });
+    // Create checkout session
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{
+        price: PRICE_IDS[plan],
+        quantity: 1
+      }],
+      mode: 'subscription',
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/subscription.html?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/subscription.html?canceled=true`,
+      metadata: {
+        userId: user._id.toString(),
+        plan
+      },
+      subscription_data: {
+        metadata: {
+          userId: user._id.toString(),
+          plan
+        }
+      }
+    });
+    
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create checkout session error');
+    res.status(500).json({ error: 'Failed to create checkout session' });
   }
 });
 
-// PATCH /api/live-sessions/:id/reminders — registrant self-service reminders opt-out
-// Body: { remindersEnabled: boolean, userId? } — userId is admin-only, to target another registrant.
-router.patch('/:id/reminders', protect, async (req, res) => {
-  try {
-    const { remindersEnabled, userId } = req.body;
-    if (typeof remindersEnabled !== 'boolean') {
-      return res.status(400).json({ error: 'remindersEnabled must be a boolean.' });
-    }
-
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    const isAdmin = req.user.role === 'admin';
-    let targetUserId = req.user._id;
-    if (userId) {
-      if (!isAdmin) return res.status(403).json({ error: 'Only admins can update reminders for another registrant.' });
-      targetUserId = userId;
-    }
-
-    const reg = session.registrants.find(r => r.user && r.user.toString() === targetUserId.toString());
-    if (!reg) return res.status(404).json({ error: 'Not registered for this session.' });
-
-    reg.remindersEnabled = remindersEnabled;
-    await session.save();
-
-    res.json({ remindersEnabled: reg.remindersEnabled });
-  } catch (err) {
-    console.error('[live] reminders:', err.message);
-    res.status(500).json({ error: 'Failed to update reminders' });
+// @route   POST /api/payments/create-subscription
+// @desc    Create subscription with inline card payment (supports coupons)
+// @access  Private
+router.post('/create-subscription', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
   }
-});
-
-// POST /api/live-sessions/:id/join — mint the room URL (the access-control gate)
-router.post('/:id/join', protect, async (req, res) => {
+  
   try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    const isAdmin = req.user.role === 'admin';
-    if (!isAdmin && !session.isRegistered(req.user._id)) {
-      return res.status(403).json({ error: 'You are not registered for this session.' });
+    const { paymentMethodId, priceId, couponCode } = req.body;
+    
+    if (!paymentMethodId || !priceId) {
+      return res.status(400).json({ error: 'Payment method and price ID required' });
     }
-    if (session.status === 'cancelled') {
-      return res.status(400).json({ error: 'This session was cancelled.' });
+    
+    const user = await User.findById(req.user._id);
+
+    // Guard: reject if an active Stripe subscription already exists.
+    // Prevents double-billing when the frontend guard is bypassed due to
+    // stale client state or a failed loadSubscription() call.
+    if (user.subscription?.stripeSubscriptionId) {
+      try {
+        const existingSub = await stripe.subscriptions.retrieve(user.subscription.stripeSubscriptionId);
+        if (existingSub.status === 'incomplete') {
+          // Dangling payment attempt that never confirmed — cancel it so we can create fresh
+          await stripe.subscriptions.cancel(existingSub.id);
+          logger.info({ userId: user._id, canceledSubId: existingSub.id, requestId: req.requestId }, 'create-subscription: canceled dangling incomplete sub before new creation');
+        } else if (['active', 'trialing', 'past_due'].includes(existingSub.status)) {
+          // Real paying subscription — must go through /change-plan, not here
+          logger.warn({ userId: user._id, existingSubId: existingSub.id, status: existingSub.status, requestId: req.requestId }, 'create-subscription blocked: active subscription already exists');
+          return res.status(409).json({
+            error: 'Your subscription is already active. To change your plan, please use the upgrade option.',
+            code: 'SUBSCRIPTION_EXISTS',
+            existingPlan: user.subscription.plan
+          });
+        }
+        // canceled / incomplete_expired → fall through and create normally
+      } catch (subCheckErr) {
+        // Subscription ID in DB doesn't exist in Stripe or network error — allow proceeding
+        logger.warn({ err: subCheckErr, userId: user._id, requestId: req.requestId }, 'create-subscription: could not verify existing sub; proceeding');
+      }
     }
 
-    const now = Date.now();
-    const opens = session.scheduledStart.getTime() - JOIN_WINDOW_BEFORE_MIN * 60000;
-    const closes = session.scheduledEnd.getTime() + JOIN_WINDOW_AFTER_MIN * 60000;
-    if (!isAdmin && (now < opens || now > closes)) {
-      return res.status(400).json({
-        error: 'The room is not open yet.',
-        opensAt: new Date(opens).toISOString()
+    // Determine plan from priceId
+    let plan = null;
+    for (const [key, value] of Object.entries(PRICE_IDS)) {
+      if (value === priceId) {
+        plan = key;
+        break;
+      }
+    }
+    
+    if (!plan) {
+      return res.status(400).json({ error: 'Invalid price ID' });
+    }
+    
+    // Create or get Stripe customer
+    let customerId = user.subscription?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email,
+        metadata: {
+          userId: user._id.toString()
+        }
+      });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
+    }
+    
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: customerId
+    });
+    
+    // Set as default payment method
+    await stripe.customers.update(customerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId
+      }
+    });
+    
+    // Build subscription options
+    const subscriptionOptions = {
+      customer: customerId,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: {
+        payment_method_types: ['card'],
+        save_default_payment_method: 'on_subscription'
+      },
+      expand: ['latest_invoice.payment_intent'],
+      metadata: {
+        userId: user._id.toString(),
+        plan
+      }
+    };
+    
+    // Add coupon if provided
+    if (couponCode) {
+      // Try to find the coupon in Stripe
+      try {
+        const coupons = await stripe.coupons.list({ limit: 100 });
+        const coupon = coupons.data.find(c => 
+          c.name?.toUpperCase() === couponCode.toUpperCase() || 
+          c.id.toUpperCase() === couponCode.toUpperCase()
+        );
+        
+        if (coupon) {
+          subscriptionOptions.coupon = coupon.id;
+        } else {
+          // Try as promotion code
+          const promoCodes = await stripe.promotionCodes.list({
+            code: couponCode.toUpperCase(),
+            active: true,
+            limit: 1
+          });
+          
+          if (promoCodes.data.length > 0) {
+            subscriptionOptions.promotion_code = promoCodes.data[0].id;
+          }
+        }
+      } catch (couponErr) {
+        logger.info({ err: couponErr, userId: req.user?._id, requestId: req.requestId }, 'Coupon lookup error');
+        // Continue without coupon
+      }
+    }
+    
+    // Create the subscription
+    const subscription = await stripe.subscriptions.create(subscriptionOptions);
+    
+    // Check payment intent status on the first invoice
+    const invoice = subscription.latest_invoice;
+    const paymentIntent = invoice.payment_intent;
+    
+    if (paymentIntent.status === 'succeeded') {
+      // Payment completed immediately (rare with default_incomplete, but possible
+      // for $0 invoices or pre-authorized methods)
+      await User.findByIdAndUpdate(user._id, {
+        'subscription.stripeSubscriptionId': subscription.id,
+        'subscription.plan': plan,
+        'subscription.status': 'active',
+        'subscription.priceId': priceId,
+        'subscription.currentPeriodStart': new Date(subscription.current_period_start * 1000),
+        'subscription.currentPeriodEnd': new Date(subscription.current_period_end * 1000)
+      });
+      
+      return res.json({
+        success: true,
+        subscription: {
+          id: subscription.id,
+          plan,
+          status: subscription.status
+        }
       });
     }
+    
+    // For requires_confirmation, requires_action (3DS), or requires_payment_method:
+    // return the clientSecret so the frontend can call confirmCardPayment()
+    if (paymentIntent.client_secret) {
+      return res.json({
+        requiresAction: true,
+        clientSecret: paymentIntent.client_secret,
+        subscriptionId: subscription.id
+      });
+    }
+    
+    return res.status(400).json({ error: 'Payment failed. Please try again.' });
+    
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create subscription error');
+    
+    // Handle specific Stripe errors
+    if (error.type === 'StripeCardError') {
+      return res.status(400).json({ error: error.message });
+    }
+    
+    res.status(500).json({ error: 'Failed to create subscription' });
+  }
+});
 
-    const displayName = `${(req.user.profile?.firstName || '')} ${(req.user.profile?.lastName || '')}`.trim() || req.user.email;
-    const baseUrl = isAdmin ? (session.whereby.hostRoomUrl || session.whereby.viewerRoomUrl) : session.whereby.viewerRoomUrl;
-    if (!baseUrl) return res.status(500).json({ error: 'Room not provisioned. Contact support.' });
-
-    const sep = baseUrl.includes('?') ? '&' : '?';
-    const roomUrl = `${baseUrl}${sep}displayName=${encodeURIComponent(displayName)}`;
-
-    if (session.status === 'scheduled' && now >= opens) {
-      session.status = 'live';
-      await session.save();
+// @route   POST /api/payments/create-portal-session
+// @desc    Create Stripe customer portal session for managing subscription
+// @access  Private
+router.post('/create-portal-session', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeCustomerId) {
+      return res.status(400).json({ error: 'No subscription found' });
     }
 
-    res.json({
-      roomUrl,
-      isHost: isAdmin,
-      session: session.toPublicJSON()
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.subscription.stripeCustomerId,
+      return_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/subscription.html`
     });
-  } catch (err) {
-    console.error('[live] join:', err.message);
-    res.status(500).json({ error: 'Failed to join session' });
+    
+    res.json({ url: session.url });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create portal session error');
+    res.status(500).json({ error: 'Failed to create portal session' });
   }
 });
 
-// GET /api/live-sessions/:id/replay — presigned S3 URL, registrants only
-router.get('/:id/replay', protect, async (req, res) => {
+// @route   POST /api/payments/change-plan
+// @desc    Change subscription plan (upgrade/downgrade)
+// @access  Private
+router.post('/change-plan', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
   try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (session.sessionType !== 'live-course') return res.status(403).json({ error: 'No replay available.' });
-
-    const isAdmin = req.user.role === 'admin';
-    if (!isAdmin && !session.isRegistered(req.user._id)) {
-      return res.status(403).json({ error: 'Replays are available to registered attendees only.' });
+    const { plan } = req.body;
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription to change' });
     }
 
-    const recording = session.recordings.find(r => r.status === 'ready' && (r.replayEnabled || isAdmin));
-    if (!recording) return res.status(404).json({ error: 'No replay is available for this session.' });
-
-    // Lazy-import AWS SDK so the server boots fine before deps are installed
-    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-
-    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-    const url = await getSignedUrl(
-      s3,
-      new GetObjectCommand({
-        Bucket: recording.s3Bucket || process.env.AWS_S3_RECORDINGS_BUCKET,
-        Key: recording.s3Key
-      }),
-      { expiresIn: 3600 } // 1 hour
-    );
-
-    res.json({ replayUrl: url, expiresInSeconds: 3600, title: session.title });
-  } catch (err) {
-    console.error('[live] replay:', err.message);
-    res.status(500).json({ error: 'Failed to load replay' });
-  }
-});
-
-// GET /api/live-sessions/:id/handouts/:handoutId — gated handout URL
-router.get('/:id/handouts/:handoutId', protect, async (req, res) => {
-  try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    const isAdmin = req.user.role === 'admin';
-    if (!isAdmin && !session.isRegistered(req.user._id)) {
-      return res.status(403).json({ error: 'Handouts are available to registered attendees only.' });
+    if (!PRICE_IDS[plan]) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
     }
 
-    const handout = session.handouts.id(req.params.handoutId);
-    if (!handout) return res.status(404).json({ error: 'Handout not found' });
+    // Get current subscription
+    const subscription = await stripe.subscriptions.retrieve(user.subscription.stripeSubscriptionId);
 
-    if (!isAdmin) {
-      const now = Date.now();
-      const started = now >= session.scheduledStart.getTime() - JOIN_WINDOW_BEFORE_MIN * 60000;
-      const ended = session.status === 'completed' || now > session.scheduledEnd.getTime();
-      const ok =
-        handout.availability === 'before' ||
-        (handout.availability === 'during' && started) ||
-        (handout.availability === 'after' && ended);
-      if (!ok) return res.status(403).json({ error: 'This handout is not available yet.' });
+    // Update subscription with new price
+    const updatedSubscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+      items: [{
+        id: subscription.items.data[0].id,
+        price: PRICE_IDS[plan]
+      }],
+      proration_behavior: 'create_prorations',
+      metadata: {
+        plan
+      }
+    });
+    
+    // Update user record
+    await User.findByIdAndUpdate(user._id, {
+      'subscription.plan': plan,
+      'subscription.priceId': PRICE_IDS[plan]
+    });
+    
+    res.json({ 
+      message: `Successfully changed to ${PLAN_DETAILS[plan].name} plan`,
+      subscription: {
+        plan,
+        status: updatedSubscription.status
+      }
+    });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Change plan error');
+    res.status(500).json({ error: 'Failed to change plan' });
+  }
+});
+
+// @route   POST /api/payments/cancel-subscription
+// @desc    Cancel subscription
+// @access  Private
+router.post('/cancel-subscription', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription to cancel' });
     }
 
-    res.json({ title: handout.title, fileUrl: handout.fileUrl, fileType: handout.fileType });
-  } catch (err) {
-    console.error('[live] handout:', err.message);
-    res.status(500).json({ error: 'Failed to load handout' });
-  }
-});
+    // Cancel at period end (user keeps access until billing period ends)
+    const subscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true
+    });
 
-/* ════════════════════════ ADMIN ════════════════════════ */
-
-// POST /api/live-sessions — create session + provision Whereby room
-router.post('/', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = new LiveSession(req.body);
-    await session.validate(); // run hard-lock invariants BEFORE provisioning the room
-
-    const room = await createMeeting(session);
-    session.whereby = room;
-    await session.save();
-
-    res.status(201).json({ session });
-  } catch (err) {
-    console.error('[live] create:', err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// PATCH /api/live-sessions/:id — update metadata/handouts/publish state
-router.patch('/:id', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    // Never allow client payloads to overwrite room URLs or attendance
-    const { whereby, attendance, registrants, recordings, ...safe } = req.body;
-    Object.assign(session, safe);
-    await session.save(); // pre-validate re-runs hard-locks
-
-    res.json({ session });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// DELETE /api/live-sessions/:id — cancel + tear down Whereby room
-router.delete('/:id', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    await deleteMeeting(session.whereby?.meetingId);
-    session.status = 'cancelled';
-    session.isPublished = false;
-    await session.save();
-
-    res.json({ cancelled: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to cancel session' });
-  }
-});
-
-// GET /api/live-sessions/:id/attendance — verified attendance report
-router.get('/:id/attendance', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id)
-      .populate('registrants.user', 'email profile.firstName profile.lastName')
-      .populate('attendance.user', 'email profile.firstName profile.lastName');
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    const scheduledMin = session.scheduledDurationMin();
-    const report = session.registrants.map(r => {
-      const attended = session.attendedMinutes(r.user._id);
-      return {
-        user: r.user,
-        registeredAt: r.registeredAt,
-        paid: r.paid,
-        attendedMinutes: attended,
-        attendancePct: scheduledMin ? Math.round((attended / scheduledMin) * 100) : 0,
-        qualifies: session.meetsAttendanceThreshold(r.user._id)
-      };
+    await User.findByIdAndUpdate(user._id, {
+      'subscription.cancelAtPeriodEnd': true
     });
 
     res.json({
-      session: { title: session.title, sessionType: session.sessionType, scheduledMin, thresholdPct: session.attendanceThresholdPct },
-      report,
-      rawAttendance: session.attendance
+      message: 'Subscription will be canceled at the end of the billing period',
+      cancelAt: new Date(subscription.current_period_end * 1000)
     });
-  } catch (err) {
-    console.error('[live] attendance:', err.message);
-    res.status(500).json({ error: 'Failed to load attendance' });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Cancel subscription error');
+    res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
 
-// POST /api/live-sessions/:id/issue-certificates — cert qualifying attendees
-router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) => {
-  try {
-    const result = await issueLiveSessionCertificates(req.params.id);
-    res.json(result);
-  } catch (err) {
-    console.error('[live] issue-certificates:', err.message);
-    res.status(400).json({ error: err.message });
+// @route   POST /api/payments/cancel
+// @desc    Cancel subscription (alias)
+// @access  Private
+router.post('/cancel', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
   }
-});
 
-/* ════════════════════════ WATCH PARTY — ATTENDEE ════════════════════════ */
-
-// GET /api/live-sessions/:id/live-state — lean poll endpoint (3s interval)
-router.get('/:id/live-state', protect, async (req, res) => {
   try {
-    const session = await LiveSession.findById(req.params.id)
-      .select('liveState agenda status scheduledStart scheduledEnd registrants')
-      .lean();
-    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const user = await User.findById(req.user._id);
 
-    const isAdmin = req.user.role === 'admin';
-    const registered = session.registrants.some(
-      r => r.user && r.user.toString() === req.user._id.toString()
-    );
-    if (!isAdmin && !registered) {
-      return res.status(403).json({ error: 'Not registered for this session.' });
+    if (!user.subscription?.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No active subscription to cancel' });
     }
 
-    const rawSeg = session.agenda?.[session.liveState?.currentSegment ?? 0] ?? null;
-    // 'script' is the host's speaker script — host-only, never sent to attendees.
-    // Mirrors the existing whereby/S3/handout gating pattern: strip on the way out
-    // for non-admins rather than trusting the client not to render it.
-    let seg = rawSeg;
-    if (rawSeg && !isAdmin) {
-      const { script, ...attendeeSeg } = rawSeg;
-      seg = attendeeSeg;
-    }
-    // Poll is gated like `script`: attendees never receive the voters list, and never
-    // see counts until the host reveals them. The host (admin) sees full tallies.
-    const uid = req.user._id.toString();
-    let outLiveState = session.liveState || {};
-    const poll = outLiveState.poll;
-    if (poll) {
-      if (isAdmin) {
-        outLiveState = { ...outLiveState, poll: { ...poll, voterCount: (poll.voters || []).length, voters: undefined } };
-      } else if (poll.active || poll.showResults) {
-        const youVoted = (poll.voters || []).some(v => v.toString() === uid);
-        const options = poll.showResults
-          ? (poll.options || []).map(o => ({ text: o.text, count: o.count }))
-          : (poll.options || []).map(o => ({ text: o.text }));
-        // openedAt identifies the poll instance so the client can scope its
-        // local "already voted" flag per poll, not per session.
-        outLiveState = { ...outLiveState, poll: { active: poll.active, question: poll.question, options, showResults: !!poll.showResults, youVoted, openedAt: poll.openedAt } };
-      } else {
-        outLiveState = { ...outLiveState, poll: undefined };
-      }
-    }
-    res.json({
-      liveState: outLiveState,
-      currentSegment: seg,
-      status: session.status
+    // Cancel at period end (user keeps access until billing period ends)
+    const subscription = await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true
     });
-  } catch (err) {
-    console.error('[live] live-state:', err.message);
-    res.status(500).json({ error: 'Failed to load live state' });
+    
+    await User.findByIdAndUpdate(user._id, {
+      'subscription.cancelAtPeriodEnd': true
+    });
+    
+    res.json({ 
+      message: 'Subscription will be canceled at the end of the billing period',
+      cancelAt: new Date(subscription.current_period_end * 1000)
+    });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Cancel subscription error');
+    res.status(500).json({ error: 'Failed to cancel subscription' });
   }
 });
 
-// GET /api/live-sessions/:id/clips/:clipIndex/url — presigned S3 URL, 15-min expiry
-router.get('/:id/clips/:clipIndex/url', protect, async (req, res) => {
+// @route   POST /api/payments/reactivate
+// @desc    Reactivate a canceled subscription
+// @access  Private
+router.post('/reactivate', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
   try {
-    const session = await LiveSession.findById(req.params.id)
-      .select('clips registrants status scheduledStart scheduledEnd sessionType')
-      .lean();
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (session.sessionType !== 'live-course') {
-      return res.status(403).json({ error: 'No clips on supervision sessions.' });
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeSubscriptionId) {
+      return res.status(400).json({ error: 'No subscription to reactivate' });
     }
 
-    const isAdmin = req.user.role === 'admin';
-    const registered = session.registrants.some(
-      r => r.user && r.user.toString() === req.user._id.toString()
-    );
-    if (!isAdmin && !registered) {
-      return res.status(403).json({ error: 'Clips are available to registered attendees only.' });
+    // Remove cancellation
+    await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+      cancel_at_period_end: false
+    });
+    
+    await User.findByIdAndUpdate(user._id, {
+      'subscription.cancelAtPeriodEnd': false
+    });
+    
+    res.json({ message: 'Subscription reactivated successfully' });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Reactivate subscription error');
+    res.status(500).json({ error: 'Failed to reactivate subscription' });
+  }
+});
+
+// @route   GET /api/payments/billing-history
+// @desc    Get billing history (invoices)
+// @access  Private
+router.get('/billing-history', protect, async (req, res) => {
+  if (!stripe) {
+    return res.json({ invoices: [] });
+  }
+  
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user.subscription?.stripeCustomerId) {
+      return res.json({ invoices: [] });
     }
 
-    // Session window check
-    if (!isAdmin) {
-      const now = Date.now();
-      const opens = new Date(session.scheduledStart).getTime() - JOIN_WINDOW_BEFORE_MIN * 60000;
-      const closes = new Date(session.scheduledEnd).getTime() + JOIN_WINDOW_AFTER_MIN * 60000;
-      if (now < opens || now > closes) {
-        return res.status(403).json({ error: 'Clips are only available during the session window.' });
+    const invoices = await stripe.invoices.list({
+      customer: user.subscription.stripeCustomerId,
+      status: 'paid',
+      limit: 20
+    });
+
+    const formattedInvoices = invoices.data.map(inv => ({
+      id: inv.id,
+      number: inv.number,
+      amount: inv.amount_paid / 100,
+      currency: inv.currency,
+      status: inv.status,
+      date: new Date(inv.created * 1000),
+      pdfUrl: inv.invoice_pdf,
+      hostedUrl: inv.hosted_invoice_url,
+      description: inv.lines.data[0]?.description || 'Subscription'
+    }));
+    
+    res.json({ invoices: formattedInvoices });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get billing history error');
+    res.status(500).json({ error: 'Failed to get billing history' });
+  }
+});
+
+// ============================================
+// COURSE CHECKOUT (one-time purchase)
+// ============================================
+
+// @route   POST /api/payments/create-course-checkout
+// @desc    Create a one-time Stripe checkout for a paid course
+// @access  Private
+router.post('/create-course-checkout', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+
+  try {
+    const { courseId } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await mongoose.connection.db
+      .collection('interactivecourses')
+      .findOne({ _id: new mongoose.Types.ObjectId(courseId) });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (course.accessType === 'free') {
+      return res.status(400).json({ error: 'Course is free' });
+    }
+
+    // ── If partner-owned course: route through Connect destination charge ──
+    const isPartnerCourse = !!course.partnerId;
+    let connectAccountId = null;
+    let applicationFeeAmount = null;
+
+    if (isPartnerCourse) {
+      const coursePartner = await Partner.findById(course.partnerId)
+        .select('billing.connectAccountId billing.connectOnboardingComplete').lean();
+      if (!coursePartner?.billing?.connectAccountId || !coursePartner?.billing?.connectOnboardingComplete) {
+        return res.status(402).json({
+          error: 'This course is not yet available for purchase — provider has not completed payment setup.',
+          code: 'CONNECT_NOT_READY'
+        });
       }
+      connectAccountId = coursePartner.billing.connectAccountId;
+      applicationFeeAmount = Math.round(course.price * 100 * 0.15); // CR's 15%
     }
 
-    const clipIndex = parseInt(req.params.clipIndex, 10);
-    const clip = session.clips?.[clipIndex];
-    if (!clip) return res.status(404).json({ error: 'Clip not found.' });
+    const user = await User.findById(req.user._id);
 
-    const { S3Client, GetObjectCommand } = await import('@aws-sdk/client-s3');
-    const { getSignedUrl } = await import('@aws-sdk/s3-request-presigner');
-    const s3 = new S3Client({ region: process.env.AWS_REGION || 'us-east-1' });
-    const url = await getSignedUrl(
-      s3,
-      new GetObjectCommand({
-        Bucket: clip.s3Bucket || process.env.AWS_S3_RECORDINGS_BUCKET,
-        Key: clip.s3Key
-      }),
-      { expiresIn: 900 } // 15 minutes
-    );
-
-    res.json({ clipUrl: url, title: clip.title, durationSec: clip.durationSec, expiresInSeconds: 900 });
-  } catch (err) {
-    console.error('[live] clip-url:', err.message);
-    res.status(500).json({ error: 'Failed to load clip URL' });
-  }
-});
-
-/* ════════════════════════ WATCH PARTY — HOST (admin) ════════════════════════ */
-
-// POST /api/live-sessions/:id/live-state/segment — host advances segment
-router.post('/:id/live-state/segment', protect, requireAdmin, async (req, res) => {
-  try {
-    const { segment } = req.body;
-    if (typeof segment !== 'number') {
-      return res.status(400).json({ error: 'segment must be a number.' });
-    }
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    session.liveState = {
-      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
-      currentSegment: segment,
-      segmentStartedAt: new Date()
-    };
-    session.markModified('liveState');
-    await session.save();
-
-    res.json({ liveState: session.liveState });
-  } catch (err) {
-    console.error('[live] segment:', err.message);
-    res.status(500).json({ error: 'Failed to update segment' });
-  }
-});
-
-// POST /api/live-sessions/:id/live-state/playback — host controls clip playback
-router.post('/:id/live-state/playback', protect, requireAdmin, async (req, res) => {
-  try {
-    const { clipIndex, playing, positionSec } = req.body;
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    session.liveState = {
-      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
-      playback: { clipIndex, playing: !!playing, positionSec: positionSec ?? 0, stateUpdatedAt: new Date() }
-    };
-    session.markModified('liveState');
-    await session.save();
-
-    res.json({ playback: session.liveState.playback });
-  } catch (err) {
-    console.error('[live] playback:', err.message);
-    res.status(500).json({ error: 'Failed to update playback state' });
-  }
-});
-
-/* ────────────────────── LIVE POLLS ─────────────────────── */
-
-// POST /:id/live-state/poll/open — host opens a poll (defaults to Yes/No)
-router.post('/:id/live-state/poll/open', protect, requireAdmin, async (req, res) => {
-  try {
-    let { question, options } = req.body;
-    if (!question || typeof question !== 'string') return res.status(400).json({ error: 'question is required.' });
-    if (!Array.isArray(options)) options = ['Yes', 'No'];
-    options = options.map(t => String(t || '').trim()).filter(Boolean).slice(0, 4);
-    if (options.length < 2) return res.status(400).json({ error: 'Need at least 2 options.' });
-
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    session.liveState = {
-      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
-      poll: {
-        active: true,
-        question: question.trim(),
-        options: options.map(text => ({ text, count: 0 })),
-        voters: [],
-        showResults: false,
-        openedAt: new Date()
-      }
-    };
-    session.markModified('liveState');
-    await session.save();
-    res.json({ poll: session.liveState.poll });
-  } catch (err) {
-    console.error('[live] poll/open:', err.message);
-    res.status(500).json({ error: 'Failed to open poll' });
-  }
-});
-
-// POST /:id/live-state/poll/close — host stops voting (keeps results)
-router.post('/:id/live-state/poll/close', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (!session.liveState?.poll) return res.status(400).json({ error: 'No poll to close.' });
-    session.liveState.poll.active = false;
-    session.markModified('liveState');
-    await session.save();
-    res.json({ poll: session.liveState.poll });
-  } catch (err) {
-    console.error('[live] poll/close:', err.message);
-    res.status(500).json({ error: 'Failed to close poll' });
-  }
-});
-
-// POST /:id/live-state/poll/reveal — host shows/hides results ({ show: true|false })
-router.post('/:id/live-state/poll/reveal', protect, requireAdmin, async (req, res) => {
-  try {
-    const show = req.body?.show !== false;
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (!session.liveState?.poll) return res.status(400).json({ error: 'No poll.' });
-    session.liveState.poll.showResults = show;
-    session.markModified('liveState');
-    await session.save();
-    res.json({ poll: session.liveState.poll });
-  } catch (err) {
-    console.error('[live] poll/reveal:', err.message);
-    res.status(500).json({ error: 'Failed to update poll visibility' });
-  }
-});
-
-// POST /:id/live-state/poll/vote — attendee casts one vote (anonymous, deduped)
-router.post('/:id/live-state/poll/vote', protect, async (req, res) => {
-  try {
-    const { optionIndex } = req.body;
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    const isAdmin = req.user.role === 'admin';
-    const registered = session.registrants.some(r => r.user && r.user.toString() === req.user._id.toString());
-    if (!isAdmin && !registered) return res.status(403).json({ error: 'Not registered for this session.' });
-
-    const poll = session.liveState?.poll;
-    if (!poll || !poll.active) return res.status(400).json({ error: 'No poll is open.' });
-    // Integer check matters here specifically: optionIndex is interpolated into the
-    // $inc field path below, so a float would write to a nested garbage path.
-    if (!Number.isInteger(optionIndex) || optionIndex < 0 || optionIndex >= poll.options.length) {
-      return res.status(400).json({ error: 'Invalid option.' });
-    }
-    const uid = req.user._id.toString();
-    if (poll.voters.some(v => v.toString() === uid)) {
-      return res.status(409).json({ error: 'You have already voted.', youVoted: true });
+    // Create or get Stripe customer
+    let customerId = user.subscription?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        metadata: {
+          userId: user._id.toString()
+        }
+      });
+      customerId = customer.id;
+      await User.findByIdAndUpdate(user._id, { 'subscription.stripeCustomerId': customerId });
     }
 
-    // The check above is a fast path for a good error message, not the dedupe itself.
-    // Applying the tally as one conditional update fixes a lost-update problem: the
-    // previous read-modify-save rewrote the whole liveState subtree, so concurrent
-    // votes clobbered each other and a room voting on a cue could land as one vote.
-    // Here { $ne: uid } and the $push commit together or not at all, so the dedupe is
-    // enforced by the write rather than incidentally by that clobbering, and a rejected
-    // repeat gets an explicit 409 instead of silently succeeding. openedAt pins the
-    // write to the exact poll we validated, so a vote landing just as the host opens
-    // the next poll cannot be counted into it.
-    const filter = {
-      _id: req.params.id,
-      'liveState.poll.active': true,
-      'liveState.poll.voters': { $ne: req.user._id }
-    };
-    if (poll.openedAt) filter['liveState.poll.openedAt'] = poll.openedAt;
-
-    const updated = await LiveSession.findOneAndUpdate(
-      filter,
-      {
-        $inc: { [`liveState.poll.options.${optionIndex}.count`]: 1 },
-        $push: { 'liveState.poll.voters': req.user._id }
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.ceHours + ' CE Hours'
+          }
+        },
+        quantity: 1
+      }],
+      mode: 'payment',
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug || ''}&name=${encodeURIComponent(course.title || '')}`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/course-details.html?slug=${course.slug || ''}&cancelled=true`,
+      metadata: {
+        type: 'course_purchase',
+        courseId: course._id.toString(),
+        userId: req.user._id.toString(),
+        slug: course.slug || '',
+        partnerId: course.partnerId?.toString() || ''
       },
-      { new: true }
-    ).select('liveState.poll.voters liveState.poll.active liveState.poll.openedAt');
-
-    if (!updated) {
-      // Nothing matched — re-read to say which guard rejected it.
-      const now = await LiveSession.findById(req.params.id).select('liveState.poll').lean();
-      const p = now?.liveState?.poll;
-      if (p && (p.voters || []).some(v => v.toString() === uid)) {
-        return res.status(409).json({ error: 'You have already voted.', youVoted: true });
-      }
-      return res.status(400).json({ error: 'No poll is open.' });
-    }
-    res.json({ ok: true, youVoted: true });
-  } catch (err) {
-    console.error('[live] poll/vote:', err.message);
-    res.status(500).json({ error: 'Failed to record vote' });
-  }
-});
-
-// POST /api/live-sessions/:id/clips — add clip metadata
-router.post('/:id/clips', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    const { title, s3Key, s3Bucket, durationSec } = req.body;
-    session.clips.push({ title, s3Key, s3Bucket, durationSec });
-    await session.save(); // pre-validate enforces supervision lock + 600s ceiling
-    res.status(201).json({ clips: session.clips, clipIndex: session.clips.length - 1 });
-  } catch (err) {
-    console.error('[live] add-clip:', err.message);
-    res.status(400).json({ error: err.message });
-  }
-});
-
-// DELETE /api/live-sessions/:id/clips/:clipIndex — remove clip metadata
-router.delete('/:id/clips/:clipIndex', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    const idx = parseInt(req.params.clipIndex, 10);
-    if (isNaN(idx) || idx < 0 || idx >= session.clips.length) {
-      return res.status(404).json({ error: 'Clip index out of range.' });
-    }
-    session.clips.splice(idx, 1);
-    await session.save();
-    res.json({ clips: session.clips });
-  } catch (err) {
-    console.error('[live] delete-clip:', err.message);
-    res.status(500).json({ error: 'Failed to delete clip' });
-  }
-});
-
-/* ════════════════════════ RUN OF SHOW — GUIDE IMPORTER ════════════════════════
- * PREVIEW-ONLY: neither route below writes to the database. They parse text
- * (pasted or extracted from a .docx) into agenda rows and hand them back to the
- * admin UI, which loads them into the existing Run of Show editor for review.
- * Saving still goes through the existing PATCH /:id, unchanged. */
-
-// POST /api/live-sessions/:id/agenda/import-text — paste path
-router.post('/:id/agenda/import-text', protect, requireAdmin, async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id).select('sessionType');
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (session.sessionType !== 'live-course') {
-      return res.status(403).json({ error: 'Agenda import is only available for live CE courses.' });
-    }
-    const { text } = req.body;
-    if (!text || !text.trim()) return res.status(400).json({ error: 'No text provided.' });
-
-    const agenda = parseAgendaMarkdown(text);
-    if (!agenda.length) {
-      return res.status(400).json({ error: 'No segments found. Expected headings like "## Segment Title (25 min)".' });
-    }
-    res.json({ agenda, segmentCount: agenda.length, totalMinutes: agenda.reduce((s, a) => s + (a.durationMin || 0), 0) });
-  } catch (err) {
-    console.error('[live] agenda/import-text:', err.message);
-    res.status(500).json({ error: 'Failed to parse text.' });
-  }
-});
-
-// POST /api/live-sessions/:id/agenda/import-docx — file upload path
-router.post('/:id/agenda/import-docx', protect, requireAdmin, agendaUpload.single('file'), async (req, res) => {
-  try {
-    const session = await LiveSession.findById(req.params.id).select('sessionType');
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-    if (session.sessionType !== 'live-course') {
-      return res.status(403).json({ error: 'Agenda import is only available for live CE courses.' });
-    }
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
-
-    // convertToMarkdown (not extractRawText) so Word's Heading 1/2/3 styles
-    // become '#'/'##'/'###' — the same convention the paste-path parser expects.
-    const { value: markdown } = await mammoth.convertToMarkdown({ buffer: req.file.buffer });
-
-    const agenda = parseAgendaMarkdown(markdown);
-    if (!agenda.length) {
-      return res.status(400).json({ error: 'No segments found. Make sure segment titles use a Word Heading 2 style (or ## in the raw text).' });
-    }
-    res.json({ agenda, segmentCount: agenda.length, totalMinutes: agenda.reduce((s, a) => s + (a.durationMin || 0), 0) });
-  } catch (err) {
-    console.error('[live] agenda/import-docx:', err.message);
-    res.status(500).json({ error: 'Failed to parse document.' });
-  }
-});
-
-/* ════════════════════════ CATCH-UP ════════════════════════ */
-
-// POST /api/live-sessions/:id/catchup
-// Returns cached AI gap summaries for the requesting user's missed segments.
-// 403 for supervision sessions. {queued:true} if transcript not yet available.
-router.post('/:id/catchup', protect, async (req, res) => {
-  try {
-    const session = await findByIdOrSlug(req.params.id);
-    if (!session) return res.status(404).json({ error: 'Session not found' });
-
-    if (session.sessionType === 'supervision') {
-      return res.status(403).json({ error: 'Catch-up is not available for supervision sessions.' });
-    }
-
-    if (!session.isRegistered(req.user._id)) {
-      return res.status(403).json({ error: 'You are not registered for this session.' });
-    }
-
-    // During a live session: transcript not available yet
-    if (session.status === 'live') {
-      return res.json({ queued: true, message: 'The session is still in progress. Your personalized catch-up will be available after the session ends.' });
-    }
-
-    // Transcript not yet available
-    if (!session.producer?.transcriptS3Key) {
-      return res.json({ queued: true, message: 'Your catch-up is being prepared. Check back shortly after the session ends.' });
-    }
-
-    // Return cached summaries for this user's gap segments
-    const { computeGaps } = await import('../services/sessionProducer.js');
-    const userId = req.user._id.toString();
-    const gaps = computeGaps(session, userId);
-
-    const result = gaps.map(gap => {
-      // Pull cached summary from the attendance segment
-      const seg = session.attendance.find(
-        a => a.user && a.user.toString() === userId &&
-             a.leftAt && Math.abs(a.leftAt.getTime() - gap.leftAt.getTime()) < 5000
-      );
-      return {
-        gapMin: gap.gapMin,
-        offsetSec: gap.offsetSec,
-        replayUrl: `${req.protocol}://${req.get('host')}/live-room.html?session=${session.slug}&replay=1&t=${gap.offsetSec}`,
-        summary: seg?.catchupSummary ? JSON.parse(seg.catchupSummary) : null
-      };
+      ...(connectAccountId ? {
+        payment_intent_data: {
+          application_fee_amount: applicationFeeAmount,
+          transfer_data: { destination: connectAccountId }
+        }
+      } : {})
     });
 
-    res.json({ gaps: result });
-  } catch (err) {
-    console.error('[live] catchup:', err.message);
-    res.status(500).json({ error: 'Failed to load catch-up' });
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Create course checkout error');
+    res.status(500).json({ error: 'Failed to create course checkout session' });
   }
 });
 
-/* ── helpers ── */
-async function findByIdOrSlug(idOrSlug) {
-  if (/^[0-9a-fA-F]{24}$/.test(idOrSlug)) {
-    const byId = await LiveSession.findById(idOrSlug);
-    if (byId) return byId;
+// ============================================
+// STRIPE WEBHOOK
+// ============================================
+
+// @route   POST /api/payments/webhook
+// @desc    Handle Stripe webhooks
+// @access  Public (verified by Stripe signature)
+router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
   }
-  return LiveSession.findOne({ slug: idOrSlug.toLowerCase() });
-}
+  
+  const sig = req.headers['stripe-signature'];
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  let event;
+  
+  try {
+    event = constructStripeEvent(stripe, req.body, sig, webhookSecret);
+  } catch (err) {
+    logger.error({ err, requestId: req.requestId }, 'Webhook signature verification failed');
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+  
+  // Handle the event
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        const userId = session.metadata?.userId;
+        const plan = session.metadata?.plan;
+        const purchaseType = session.metadata?.type;
+        const partnerId = session.metadata?.partnerId;
+
+        // Handle partner add-on purchase (must precede partner-plan block)
+        if (purchaseType === 'addon_purchase' && partnerId) {
+          const ak = session.metadata?.addonKey;
+          if (ak) {
+            const keys = ak === 'bundle'
+              ? ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools']
+              : [ak];
+            const addonUpdate = {};
+            for (const k of keys) {
+              addonUpdate[`premiumAddons.${k}.enabled`] = true;
+              addonUpdate[`premiumAddons.${k}.enabledAt`] = new Date();
+            }
+            await Partner.findByIdAndUpdate(partnerId, addonUpdate);
+            bustAddonCache(partnerId);
+            logger.info({ partnerId, addonKey: ak, requestId: req.requestId }, 'Partner addon enabled via checkout');
+          }
+          break;
+        }
+
+        // Handle partner subscription checkout
+        if (partnerId && plan) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.stripeSubscriptionId': session.subscription,
+            'billing.plan': plan,
+            'billing.status': 'active',
+            'billing.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          });
+          logger.info({ partnerId, plan, requestId: req.requestId }, 'Partner subscription activated');
+          break;
+        }
+
+        // Handle individual course purchases
+        if (session.metadata?.type === 'course_purchase') {
+          const { courseId, userId: purchaseUserId, slug } = session.metadata;
+
+          await User.findByIdAndUpdate(purchaseUserId, {
+            $addToSet: {
+              purchasedCourses: {
+                courseId: new mongoose.Types.ObjectId(courseId),
+                slug: slug,
+                purchasedAt: new Date(),
+                amount: session.amount_total / 100,
+                stripeSessionId: session.id
+              }
+            }
+          });
+
+          logger.info({ userId: purchaseUserId, slug, requestId: req.requestId, action: 'course_purchase_recorded' }, 'Course purchase recorded');
+
+          // Seed enrollment record so admin panel and viewer both reflect the purchase
+          // without waiting for the user to first open the viewer (which auto-creates lazily).
+          // findOneAndUpdate + upsert is idempotent — safe on webhook retries.
+          try {
+            await InteractiveCourseProgress.findOneAndUpdate(
+              {
+                userId: new mongoose.Types.ObjectId(purchaseUserId),
+                courseId: new mongoose.Types.ObjectId(courseId)
+              },
+              {
+                $setOnInsert: {
+                  userId: new mongoose.Types.ObjectId(purchaseUserId),
+                  courseId: new mongoose.Types.ObjectId(courseId),
+                  status: 'not_started',
+                  overallProgress: 0,
+                  enrolledAt: new Date(),
+                  lastAccessedAt: new Date(),
+                  sectionProgress: [],
+                  assessmentPassed: false,
+                  evaluationSubmitted: false,
+                  attestationAgreed: false,
+                  totalTimeSpent: 0
+                }
+              },
+              { upsert: true, new: false }
+            );
+            logger.info({ userId: purchaseUserId, courseId, slug, requestId: req.requestId, action: 'enrollment_seeded' }, 'InteractiveCourseProgress enrollment seeded on purchase');
+          } catch (enrollErr) {
+            // Duplicate key = already enrolled, not an error
+            if (enrollErr.code !== 11000) {
+              logger.error({ err: enrollErr, userId: purchaseUserId, courseId, requestId: req.requestId }, 'Failed to seed enrollment on purchase');
+            }
+          }
+
+          // [MARKETPLACE] Record syndication commission (15/85 split) if this sale qualifies.
+          // Fire-and-forget; the helper never throws, but we guard anyway so it can never
+          // affect the purchase outcome.
+          (async () => {
+            try {
+              const [synCourse, synBuyer] = await Promise.all([
+                mongoose.connection.db.collection('interactivecourses')
+                  .findOne({ _id: new mongoose.Types.ObjectId(courseId) }),
+                User.findById(purchaseUserId).select('_id partnerId').lean()
+              ]);
+              const entry = await recordSyndicationCommission({
+                course: synCourse,
+                buyer: synBuyer,
+                grossAmount: (session.amount_total || 0) / 100,
+                saleId: session.id,
+                paymentIntentId: session.payment_intent
+              });
+              if (entry) {
+                logger.info({ userId: purchaseUserId, slug, ledgerId: entry._id?.toString(), category: entry.accountingCategory, requestId: req.requestId, action: 'syndication_commission_recorded' }, '[MARKETPLACE] syndication commission recorded');
+              }
+            } catch (err) {
+              logger.error({ err, userId: purchaseUserId, requestId: req.requestId }, '[MARKETPLACE] syndication commission record failed');
+            }
+          })();
+
+          const buyer = await User.findById(purchaseUserId).select('email profile.firstName');
+          logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+            courseId,
+            amount: session.amount_total,
+            type: 'course_purchase'
+          }, {
+            userId: purchaseUserId,
+            userName: buyer?.profile?.firstName || '',
+            userEmail: buyer?.email || ''
+          }).catch(() => {});
+
+          // [REWARDS] Referral paid conversion — fire-and-forget, dedup'd server-side
+          processReferralPaidConversion(purchaseUserId)
+            .then(r => {
+              if (r.referrerAwarded) {
+                logger.info({ userId: purchaseUserId, points: r.points, action: 'referral_paid_conversion' }, '[REWARDS] referrer awarded paid conversion');
+              }
+            })
+            .catch(err => logger.error({ err, userId: purchaseUserId, requestId: req.requestId }, '[REWARDS] referral paid conversion failed'));
+
+          // SMS notification (fire-and-forget)
+          if (twilioClient && process.env.ADMIN_PHONE) {
+            twilioClient.messages.create({
+              body: `CounselorReady: Payment\n${buyer?.email} paid for "${slug}"`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: process.env.ADMIN_PHONE
+            }).catch(e => logger.error({ err: e, userId: purchaseUserId, requestId: req.requestId }, 'SMS course purchase notification error'));
+          }
+          break;
+        }
+
+        // AI credit pack purchase
+        if (session.metadata?.type === 'ai_credits') {
+          const aiPartnerId = session.metadata.partnerId;
+          const aiHours = Number(session.metadata.hours);
+          if (aiPartnerId && aiHours > 0) {
+            const aiPartner = await Partner.findById(aiPartnerId);
+            if (aiPartner) {
+              // Guard against double-credit on Stripe retries
+              const alreadyCredited = aiPartner.aiUsage?.creditedSessions?.includes(session.id);
+              if (!alreadyCredited) {
+                const { addPurchasedHours } = await import('../utils/aiBudget.js');
+                addPurchasedHours(aiPartner, aiHours);
+                if (!aiPartner.aiUsage) aiPartner.aiUsage = {};
+                if (!aiPartner.aiUsage.creditedSessions) aiPartner.aiUsage.creditedSessions = [];
+                aiPartner.aiUsage.creditedSessions.push(session.id);
+                await aiPartner.save();
+                logger.info({ partnerId: aiPartnerId, hours: aiHours, sessionId: session.id, requestId: req.requestId }, 'AI credits added to partner');
+              }
+            }
+          }
+          break;
+        }
+
+        // Partner course ACEP review fee payment
+        if (session.metadata?.type === 'course_review') {
+          const reviewCourseId = session.metadata.courseId;
+          if (reviewCourseId) {
+            const reviewCourse = await InteractiveCourse.findById(reviewCourseId);
+            if (reviewCourse && reviewCourse.reviewStatus === 'none') {
+              reviewCourse.reviewStatus      = 'requested';
+              reviewCourse.reviewPaidAt      = new Date();
+              reviewCourse.reviewRequestedAt = new Date();
+              reviewCourse.reviewFeeCents    = session.amount_total ?? reviewCourse.reviewFeeCents;
+              await reviewCourse.save();
+              logger.info({ courseId: reviewCourseId, sessionId: session.id, requestId: req.requestId }, 'Course review fee paid');
+            }
+          }
+          break;
+        }
+
+        // Live session seat purchase
+        if (session.metadata?.type === 'live-session') {
+          const { liveSessionId, userId: liveUserId } = session.metadata;
+          const LiveSession = (await import('../models/LiveSession.js')).default;
+          const live = await LiveSession.findById(liveSessionId);
+          if (live && !live.isRegistered(liveUserId)) {
+            live.registrants.push({
+              user: liveUserId,
+              paid: true,
+              stripeCheckoutSessionId: session.id
+            });
+            await live.save();
+            logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+          }
+          break;
+        }
+
+        // Handle subscription purchase
+        // Resolve plan from metadata; fall back to price ID lookup so sessions
+        // created before subscription_data.metadata was wired still activate correctly.
+        let resolvedPlan = plan;
+        if (!resolvedPlan && session.subscription) {
+          try {
+            const sub = await stripe.subscriptions.retrieve(session.subscription);
+            const priceId = sub.items?.data?.[0]?.price?.id;
+            if (priceId) {
+              for (const [key, val] of Object.entries(PRICE_IDS)) {
+                if (val === priceId) { resolvedPlan = key; break; }
+              }
+            }
+          } catch (e) {
+            logger.warn({ err: e, userId, requestId: req.requestId }, 'checkout.session.completed: price-ID plan fallback failed');
+          }
+        }
+
+        if (userId && resolvedPlan) {
+          await User.findByIdAndUpdate(userId, {
+            'subscription.stripeSubscriptionId': session.subscription,
+            'subscription.plan': resolvedPlan,
+            'subscription.status': 'active',
+            'subscription.currentPeriodStart': new Date(),
+            'subscription.currentPeriodEnd': new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            'subscription.monthlyAmountCents': session.amount_total || 0
+          });
+          const subscriber = await User.findById(userId).select('email profile.firstName');
+          logActivity(ACTIVITY_TYPES.PAYMENT_SUCCEEDED, {
+            plan: resolvedPlan,
+            amount: session.amount_total,
+            type: 'subscription'
+          }, {
+            userId,
+            userName: subscriber?.profile?.firstName || '',
+            userEmail: subscriber?.email || ''
+          }).catch(() => {});
+          logger.info({ userId, plan: resolvedPlan, requestId: req.requestId, action: 'subscription_activated' }, 'Subscription activated');
+
+          // SMS: new subscription
+          if (twilioClient && process.env.ADMIN_PHONE) {
+            const amount = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : 'discounted';
+            twilioClient.messages.create({
+              body: `CounselorReady: New Subscription\n${subscriber?.email}\nPlan: ${resolvedPlan} · ${amount}/mo`,
+              from: process.env.TWILIO_PHONE_NUMBER,
+              to: process.env.ADMIN_PHONE
+            }).catch(e => logger.error({ err: e, userId, requestId: req.requestId }, 'SMS subscription notification error'));
+          }
+
+          // [REWARDS] Referral paid conversion (subscription) — fire-and-forget, dedup'd
+          processReferralPaidConversion(userId)
+            .then(r => {
+              if (r.referrerAwarded) {
+                logger.info({ userId, points: r.points, action: 'referral_subscription_conversion' }, '[REWARDS] referrer awarded subscription conversion');
+              }
+            })
+            .catch(err => logger.error({ err, userId, requestId: req.requestId }, '[REWARDS] referral paid (sub) failed'));
+        }
+        break;
+      }
+      
+      case 'charge.refunded': {
+        // [MARKETPLACE] Reduce/void the matching commission on refund (partial-aware);
+        // flag clawback if already paid out.
+        const charge = event.data.object;
+        const pi = typeof charge.payment_intent === 'string' ? charge.payment_intent : charge.payment_intent?.id;
+        if (pi) {
+          try {
+            const adj = await applyRefundToCommission(pi, (charge.amount_refunded || 0) / 100, (charge.amount || 0) / 100);
+            if (adj) {
+              logger.info({ paymentIntent: pi, ledgerId: adj._id?.toString(), status: adj.status, clawbackRequired: adj.clawbackRequired, clawbackAmount: adj.clawbackAmount, requestId: req.requestId, action: 'syndication_commission_refunded' }, '[MARKETPLACE] syndication commission adjusted on refund');
+            }
+          } catch (err) {
+            logger.error({ err, paymentIntent: pi, requestId: req.requestId }, '[MARKETPLACE] syndication commission refund-adjust failed');
+          }
+        }
+        break;
+      }
+      
+      case 'charge.dispute.created': {
+        // [MARKETPLACE] A chargeback reverses the full charge — void the commission and flag
+        // clawback if it was already paid out.
+        const dispute = event.data.object;
+        const pi = typeof dispute.payment_intent === 'string' ? dispute.payment_intent : dispute.payment_intent?.id;
+        if (pi) {
+          try {
+            const voided = await voidSyndicationCommissionByPaymentIntent(pi);
+            if (voided) {
+              logger.info({ paymentIntent: pi, ledgerId: voided._id?.toString(), clawbackRequired: voided.clawbackRequired, clawbackAmount: voided.clawbackAmount, requestId: req.requestId, action: 'syndication_commission_disputed' }, '[MARKETPLACE] syndication commission voided on dispute/chargeback');
+            }
+          } catch (err) {
+            logger.error({ err, paymentIntent: pi, requestId: req.requestId }, '[MARKETPLACE] syndication commission dispute-void failed');
+          }
+        }
+        break;
+      }
+      
+      case 'customer.subscription.updated': {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.userId;
+        const partnerId = subscription.metadata?.partnerId;
+
+        // Stripe API 2025-12-15+ moved current_period_* from the subscription object
+        // to the subscription ITEM. Read item-level first; fall back to the legacy
+        // top-level field so this is correct across API versions.
+        const item = subscription.items?.data?.[0];
+        const rawStart = item?.current_period_start ?? subscription.current_period_start;
+        const rawEnd   = item?.current_period_end   ?? subscription.current_period_end;
+
+        // Partner subscription update
+        if (partnerId) {
+          const partnerUpdate = {
+            'billing.status': subscription.status === 'active' ? 'active' : subscription.status
+          };
+          if (Number.isFinite(rawEnd)) {
+            partnerUpdate['billing.currentPeriodEnd'] = new Date(rawEnd * 1000);
+          }
+          await Partner.findByIdAndUpdate(partnerId, partnerUpdate);
+          logger.info({ partnerId, status: subscription.status, requestId: req.requestId }, 'Partner subscription updated');
+        }
+
+        // Resolve the user: prefer metadata.userId, fall back to stripeCustomerId.
+        let resolvedUser = null;
+        if (userId) {
+          resolvedUser = await User.findById(userId).select('_id email profile.firstName subscription.plan').catch(() => null);
+        }
+        if (!resolvedUser) {
+          resolvedUser = await User.findOne({ 'subscription.stripeCustomerId': subscription.customer }).select('_id email profile.firstName subscription.plan');
+        }
+
+        if (resolvedUser) {
+          const userUpdate = {
+            'subscription.status': subscription.status,
+            'subscription.cancelAtPeriodEnd': subscription.cancel_at_period_end
+          };
+
+          // Resolve plan from the subscription's actual price ID first — that's
+          // the live source of truth for what the customer is on right now.
+          // metadata.plan is only a fallback: it's written once (at checkout or
+          // by our own /change-plan) and never updated when the price changes
+          // through another path (e.g. the Stripe customer portal), so trusting
+          // stale metadata over the real price ID silently froze the plan on
+          // upgrades/downgrades made outside /change-plan — the DB kept showing
+          // the old tier (e.g. 'starter') after the customer moved to a new one
+          // (e.g. 'professional'), which is what the admin page then displayed.
+          // This is also still critical for users who pay via create-subscription
+          // (not checkout): without setting the plan here, they'd stay on 'free'
+          // forever because checkout.session.completed doesn't fire for that path.
+          let resolvedPlan = null;
+          const subPriceId = item?.price?.id;
+          if (subPriceId) {
+            for (const [key, val] of Object.entries(PRICE_IDS)) {
+              if (val === subPriceId) { resolvedPlan = key; break; }
+            }
+          }
+          if (!resolvedPlan) {
+            resolvedPlan = subscription.metadata?.plan;
+          }
+          if (resolvedPlan && subscription.status === 'active') {
+            userUpdate['subscription.plan'] = resolvedPlan;
+            userUpdate['subscription.stripeSubscriptionId'] = subscription.id;
+          }
+
+          if (Number.isFinite(rawStart)) {
+            userUpdate['subscription.currentPeriodStart'] = new Date(rawStart * 1000);
+          }
+          if (Number.isFinite(rawEnd)) {
+            userUpdate['subscription.currentPeriodEnd'] = new Date(rawEnd * 1000);
+          }
+          await User.findByIdAndUpdate(resolvedUser._id, userUpdate);
+          // Notify admin when a new subscription becomes active
+          if (subscription.status === 'active') {
+            logActivity(ACTIVITY_TYPES.SUBSCRIPTION_STARTED, {
+              plan: subscription.metadata?.plan || 'unknown',
+              status: subscription.status
+            }, {
+              userId: resolvedUser._id,
+              userName: resolvedUser?.profile?.firstName || '',
+              userEmail: resolvedUser?.email || ''
+            }).catch(() => {});
+          }
+          try {
+            if (global.posthog) {
+              global.posthog.capture({
+                distinctId: resolvedUser._id.toString(),
+                event: 'subscription_activated',
+                properties: {
+                  plan: subscription.metadata?.plan || 'unknown',
+                  status: subscription.status,
+                  stripeSubscriptionId: subscription.id
+                }
+              });
+            }
+          } catch (phErr) { logger.error({ err: phErr, userId: resolvedUser._id, requestId: req.requestId }, 'PostHog subscription_activated failed'); }
+          logger.info({ userId: resolvedUser._id, status: subscription.status, requestId: req.requestId, action: 'subscription_updated' }, 'Subscription updated');
+        } else {
+          logger.warn({ customerId: subscription.customer, userId, requestId: req.requestId }, 'subscription.updated: no user found; acknowledging 200 to stop retries');
+        }
+        break;
+      }
+
+      case 'customer.subscription.deleted': {
+        const subscription = event.data.object;
+        const userId = subscription.metadata?.userId;
+        const partnerId = subscription.metadata?.partnerId;
+
+        // Partner add-on subscription canceled (must precede plan-cancel block)
+        if (subscription.metadata?.type === 'addon' && partnerId) {
+          const ak = subscription.metadata?.addonKey;
+          if (ak) {
+            const keys = ak === 'bundle'
+              ? ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools']
+              : [ak];
+            const addonUpdate = {};
+            for (const k of keys) {
+              addonUpdate[`premiumAddons.${k}.enabled`] = false;
+            }
+            await Partner.findByIdAndUpdate(partnerId, addonUpdate);
+            bustAddonCache(partnerId);
+            logger.info({ partnerId, addonKey: ak, requestId: req.requestId }, 'Partner addon disabled via subscription cancellation');
+          }
+          break;
+        }
+
+        // Partner subscription canceled
+        if (partnerId) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.plan': 'free',
+            'billing.status': 'canceled',
+            'billing.stripeSubscriptionId': null
+          });
+          logger.info({ partnerId, requestId: req.requestId }, 'Partner subscription canceled');
+        }
+
+        // User subscription canceled
+        if (userId) {
+          const canceledUser = await User.findById(userId).select('email profile.firstName subscription.plan');
+          const canceledPlan = canceledUser?.subscription?.plan || 'unknown';
+          await User.findByIdAndUpdate(userId, {
+            'subscription.plan': 'free',
+            'subscription.status': 'canceled',
+            'subscription.stripeSubscriptionId': null
+          });
+          logActivity(ACTIVITY_TYPES.SUBSCRIPTION_CANCELED, {
+            plan: canceledPlan
+          }, {
+            userId,
+            userName: canceledUser?.profile?.firstName || '',
+            userEmail: canceledUser?.email || ''
+          }).catch(() => {});
+          try {
+            if (global.posthog) {
+              global.posthog.capture({
+                distinctId: userId.toString(),
+                event: 'subscription_canceled',
+                properties: {
+                  plan: canceledPlan,
+                  stripeSubscriptionId: subscription.id
+                }
+              });
+            }
+          } catch (phErr) { logger.error({ err: phErr, userId, requestId: req.requestId }, 'PostHog subscription_canceled failed'); }
+          logger.info({ userId, requestId: req.requestId, action: 'subscription_canceled' }, 'Subscription canceled');
+        }
+        break;
+      }
+      
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+        
+        const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
+        if (user) {
+          await User.findByIdAndUpdate(user._id, {
+            'subscription.status': 'past_due',
+            'subscription.paymentFailedAt': new Date(),
+            $inc: { 'subscription.paymentFailureCount': 1 }
+          });
+          logger.info({ userId: user._id, requestId: req.requestId, action: 'payment_failed' }, 'Payment failed');
+          // Notify admin of payment failure
+          logActivity(ACTIVITY_TYPES.PAYMENT_FAILED, {
+            plan: user.subscription?.plan || 'unknown'
+          }, {
+            userId: user._id,
+            userName: user.profile?.firstName || '',
+            userEmail: user.email || ''
+          }).catch(() => {});
+          // Send email notification about failed payment to user
+          try {
+            await sendPaymentFailedEmail(user._id);
+          } catch (emailErr) {
+            logger.error({ err: emailErr, userId: user._id, requestId: req.requestId }, 'Failed to send payment failure email');
+          }
+        } else {
+          // [PARTNER] Partner subscription invoice failed → mark the partner past_due
+          const partner = await Partner.findOne({ 'billing.stripeCustomerId': customerId });
+          if (partner) {
+            await Partner.findByIdAndUpdate(partner._id, { 'billing.status': 'past_due' });
+            logger.info({ partnerId: partner._id, requestId: req.requestId, action: 'partner_payment_failed' }, 'Partner subscription payment failed');
+          }
+        }
+        break;
+      }
+      
+      case 'invoice.paid': {
+        const invoice = event.data.object;
+        const customerId = invoice.customer;
+
+        const user = await User.findOne({ 'subscription.stripeCustomerId': customerId });
+        if (user) {
+          const wasRecovery = user.subscription?.status === 'past_due';
+          const updateFields = {
+            'subscription.status': 'active',
+            'subscription.currentPeriodEnd': new Date(invoice.lines.data[0]?.period?.end * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000),
+            'subscription.monthlyAmountCents': invoice.amount_paid || 0
+          };
+
+          if (wasRecovery) {
+            updateFields['subscription.paymentRecoveredAt'] = new Date();
+            updateFields['subscription.paymentFailedAt'] = null;
+            updateFields['subscription.paymentFailureCount'] = 0;
+          }
+
+          await User.findByIdAndUpdate(user._id, updateFields);
+          logger.info({ userId: user._id, wasRecovery, requestId: req.requestId, action: 'invoice_paid' }, 'Invoice paid');
+
+          if (wasRecovery) {
+            await sendPaymentRecoveredEmail(user._id);
+          }
+        } else {
+          // [PARTNER] Partner subscription renewed/recovered → keep active + refresh period end
+          const partner = await Partner.findOne({ 'billing.stripeCustomerId': customerId });
+          if (partner) {
+            await Partner.findByIdAndUpdate(partner._id, {
+              'billing.status': 'active',
+              'billing.currentPeriodEnd': new Date((invoice.lines.data[0]?.period?.end || 0) * 1000 || Date.now() + 30 * 24 * 60 * 60 * 1000)
+            });
+            logger.info({ partnerId: partner._id, requestId: req.requestId, action: 'partner_invoice_paid' }, 'Partner subscription invoice paid');
+          }
+        }
+        break;
+      }
+      
+      case 'account.updated': {
+        const account = event.data.object;
+        const partnerId = account.metadata?.partnerId;
+        if (!partnerId) break;
+        if (account.charges_enabled) {
+          await Partner.findByIdAndUpdate(partnerId, {
+            'billing.connectOnboardingComplete': true,
+            'billing.connectAccountId': account.id
+          });
+          logger.info({ partnerId, accountId: account.id, requestId: req.requestId }, 'Connect account charges enabled');
+        }
+        break;
+      }
+
+      default:
+        logger.info({ eventType: event.type, requestId: req.requestId }, 'Unhandled Stripe event type');
+    }
+    
+    res.json({ received: true });
+  } catch (error) {
+    logger.error({ err: error, requestId: req.requestId }, 'Webhook handler error');
+    res.status(500).json({ error: 'Webhook handler failed' });
+  }
+});
+
+// ============================================
+// PROMO CODES
+// ============================================
+
+// @route   POST /api/payments/apply-promo
+// @desc    Apply a promo code to checkout
+// @access  Private
+router.post('/apply-promo', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  
+  try {
+    const { code } = req.body;
+    
+    if (!code) {
+      return res.status(400).json({ error: 'Promo code required' });
+    }
+    
+    // Look up promotion code in Stripe
+    const promoCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+    
+    if (promoCodes.data.length === 0) {
+      return res.status(400).json({ error: 'Invalid or expired promo code' });
+    }
+    
+    const promoCode = promoCodes.data[0];
+    const coupon = await stripe.coupons.retrieve(promoCode.coupon.id);
+    
+    res.json({
+      valid: true,
+      promoCodeId: promoCode.id,
+      discount: {
+        type: coupon.percent_off ? 'percent' : 'fixed',
+        value: coupon.percent_off || coupon.amount_off / 100,
+        name: coupon.name || code.toUpperCase()
+      }
+    });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Apply promo code error');
+    res.status(500).json({ error: 'Failed to apply promo code' });
+  }
+});
+
+// ============================================
+// INDIVIDUAL COURSE PURCHASE ROUTES
+// ============================================
+
+// @route   POST /api/payments/validate-coupon
+// @desc    Validate a coupon/promo code and return discount info for course purchase
+// @access  Private
+router.post('/validate-coupon', protect, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ valid: false, error: 'Payment system not configured' });
+  }
+
+  try {
+    const { code, courseId, price } = req.body;
+
+    if (!code) {
+      return res.status(400).json({ valid: false, error: 'No code provided' });
+    }
+
+    // Look up promotion code in Stripe
+    const promotionCodes = await stripe.promotionCodes.list({
+      code: code.toUpperCase(),
+      active: true,
+      limit: 1
+    });
+
+    if (!promotionCodes.data.length) {
+      return res.status(400).json({ valid: false, error: 'Invalid or expired code' });
+    }
+
+    const promo = promotionCodes.data[0];
+    const coupon = promo.coupon;
+
+    // Calculate discount
+    let discountDescription = '';
+    let finalPrice = price || 0;
+
+    if (coupon.percent_off) {
+      discountDescription = `${coupon.percent_off}% off`;
+      finalPrice = price * (1 - coupon.percent_off / 100);
+    } else if (coupon.amount_off) {
+      const amountOff = coupon.amount_off / 100; // Stripe stores in cents
+      discountDescription = `$${amountOff} off`;
+      finalPrice = Math.max(0, price - amountOff);
+    }
+
+    res.json({
+      valid: true,
+      message: 'Discount code applied!',
+      discountDescription,
+      finalPrice: Math.round(finalPrice * 100) / 100,
+      couponId: coupon.id
+    });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Validate coupon error');
+    res.status(500).json({ valid: false, error: 'Failed to validate code' });
+  }
+});
+
+// POST /purchase-course — Stripe Checkout for one-time course purchase
+router.post('/purchase-course', protect, async (req, res) => {
+  try {
+    const { courseId, couponCode } = req.body;
+    if (!courseId) {
+      return res.status(400).json({ error: 'courseId is required' });
+    }
+
+    const course = await mongoose.connection.db
+      .collection('interactivecourses')
+      .findOne({ _id: new mongoose.Types.ObjectId(courseId) });
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (!course.price || course.price <= 0) {
+      return res.status(400).json({ error: 'This course is free — no purchase needed' });
+    }
+
+    const user = await User.findById(req.user._id);
+    const alreadyPurchased = (user.purchasedCourses || []).some(
+      pc => pc.courseId?.toString() === courseId
+    );
+    if (alreadyPurchased) {
+      return res.status(400).json({ error: 'You already own this course' });
+    }
+
+    let customerId = user.subscription?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+        metadata: { userId: user._id.toString() }
+      });
+      customerId = customer.id;
+      user.subscription.stripeCustomerId = customerId;
+      await user.save();
+    }
+
+    const sessionParams = {
+      customer: customerId,
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(course.price * 100),
+          product_data: {
+            name: course.title,
+            description: course.description || `${course.ceHours || 0} CE Hours`,
+            metadata: { courseId: courseId, slug: course.slug }
+          }
+        },
+        quantity: 1
+      }],
+      metadata: {
+        type: 'course_purchase',
+        courseId: courseId,
+        userId: user._id.toString(),
+        slug: course.slug
+      },
+      success_url: req.body.successUrl || `${process.env.CLIENT_URL || 'https://counselorready.com'}/purchase-success.html?session_id={CHECKOUT_SESSION_ID}&slug=${course.slug}`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/course-details.html?slug=${course.slug}&cancelled=true`
+    };
+
+    // Add discount if coupon code provided
+    if (couponCode) {
+      try {
+        const promotionCodes = await stripe.promotionCodes.list({
+          code: couponCode.toUpperCase(),
+          active: true,
+          limit: 1
+        });
+        if (promotionCodes.data.length) {
+          sessionParams.discounts = [{ promotion_code: promotionCodes.data[0].id }];
+        }
+      } catch (err) {
+        logger.error({ err, userId: req.user?._id, requestId: req.requestId }, 'Coupon lookup error');
+        // Continue without discount rather than failing the purchase
+      }
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
+
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Purchase course error');
+    res.status(500).json({ error: 'Failed to create checkout session' });
+  }
+});
+
+router.get('/purchased-courses', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const purchased = (user.purchasedCourses || []).map(pc => ({
+      courseId: pc.courseId,
+      purchasedAt: pc.purchasedAt,
+      amount: pc.amount
+    }));
+    res.json({ purchased });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Get purchased courses error');
+    res.status(500).json({ error: 'Failed to fetch purchased courses' });
+  }
+});
+
+// ============================================
+// PARTNER ADD-ON PURCHASE
+// ============================================
+
+// @route   POST /api/payments/addon-checkout
+// @desc    Create Stripe Checkout session for a partner premium add-on
+// @access  Partner admin only
+const VALID_ADDON_KEYS = ['certTracking', 'credentialManagement', 'complianceTracking', 'clinicalTools', 'bundle'];
+
+router.post('/addon-checkout', protect, requirePartnerAdmin, async (req, res) => {
+  if (!stripe) {
+    return res.status(503).json({ error: 'Payment system not configured' });
+  }
+  try {
+    const { addonKey } = req.body;
+    if (!VALID_ADDON_KEYS.includes(addonKey)) {
+      return res.status(400).json({ error: 'Invalid addonKey' });
+    }
+
+    const partner = await Partner.findById(req.user.partnerId);
+    if (!partner) {
+      return res.status(404).json({ error: 'Partner not found' });
+    }
+
+    // Ensure Stripe customer
+    let customerId = partner.billing?.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: partner.contact?.email || req.user.email,
+        name: partner.name,
+        metadata: { partnerId: partner._id.toString() }
+      });
+      customerId = customer.id;
+      partner.billing = partner.billing || {};
+      partner.billing.stripeCustomerId = customerId;
+      await partner.save();
+    }
+
+    const unitAmount = addonKey === 'bundle'
+      ? PREMIUM_BUNDLE_PRICE_CENTS
+      : PREMIUM_ADDONS[addonKey].monthlyPriceCents;
+
+    const addonName = addonKey === 'bundle'
+      ? 'Premium Add-Ons Bundle (All 4)'
+      : PREMIUM_ADDONS[addonKey].name;
+
+    const sessionMeta = {
+      type: 'addon_purchase',
+      partnerId: partner._id.toString(),
+      addonKey
+    };
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [{
+        price_data: {
+          currency: 'usd',
+          unit_amount: unitAmount,
+          recurring: { interval: 'month' },
+          product_data: { name: addonName }
+        },
+        quantity: 1
+      }],
+      metadata: sessionMeta,
+      subscription_data: { metadata: sessionMeta },
+      success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-billing.html?addon=${addonKey}&status=success`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/partner-billing.html#addons`
+    });
+
+    logger.info({ partnerId: partner._id, addonKey, requestId: req.requestId }, 'Addon checkout session created');
+    res.json({ url: session.url, sessionId: session.id });
+  } catch (error) {
+    logger.error({ err: error, userId: req.user?._id, requestId: req.requestId }, 'Addon checkout error');
+    res.status(500).json({ error: 'Failed to create addon checkout session' });
+  }
+});
 
 export default router;
