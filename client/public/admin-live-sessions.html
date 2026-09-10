@@ -18,1162 +18,1197 @@
     .font-display { font-family: 'Cormorant Garamond', Georgia, serif; }
     #createModal { display:none; }
     #createModal.open { display:flex; }
+    @media (max-width: 767px) {
+      #mobileSidebar { transform: translateX(-100%); transition: transform 0.22s ease; }
+      #mobileSidebar.open { transform: translateX(0); }
+    }
   </style>
-<script src="/js/cr-gtag.js"></script>
+  <script src="/js/cr-gtag.js"></script>
 </head>
 <body class="bg-stone-50 min-h-screen">
 
-  <!-- Admin Header -->
-  <header class="bg-burgundy-900 text-white sticky top-0 z-50">
-    <div class="max-w-full px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-4">
-        <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden">
-          <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
-          <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
-        </div>
-        <div>
-          <span class="font-display font-semibold text-lg">
-            <span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span>
-          </span>
-          <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
-        </div>
-        <nav class="flex items-center gap-1 ml-4">
-          <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
-          <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
-          <a href="/live-sessions.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Live Sessions</a>
-        </nav>
-      </div>
-      <div class="flex items-center gap-4 text-sm">
-        <span class="text-burgundy-200" id="adminEmail">Admin</span>
-        <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1">
-          <i class="fas fa-home text-xs"></i> Exit to Dashboard
-        </a>
-      </div>
-    </div>
-  </header>
+<div id="sidebarOverlay" class="fixed inset-0 bg-black/40 z-40 hidden md:hidden" onclick="closeSidebar()"></div>
 
-  <div class="flex">
-    <!-- Sidebar -->
-    <aside class="w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4">
-      <nav class="space-y-1 text-sm">
-        <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-book w-4"></i> Courses
-        </a>
-        <a href="/admin-live-sessions.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium">
-          <i class="fas fa-video w-4 text-burgundy-600"></i> Live Sessions
-        </a>
-        <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-users w-4"></i> Users
-        </a>
-        <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-chart-line w-4"></i> Analytics
-        </a>
-        <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-envelope w-4"></i> Messages
-        </a>
-        <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-id-card w-4"></i> Credentials
-        </a>
-        <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-hand-holding-heart w-4"></i> Hardship
-        </a>
-        <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-plug w-4"></i> Integrations
-        </a>
-        <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors">
-          <i class="fas fa-question-circle w-4"></i> Help Center
-        </a>
+<aside id="mobileSidebar" class="fixed top-0 left-0 bottom-0 z-50 w-64 bg-white border-r border-burgundy-100 p-4 overflow-y-auto md:hidden">
+  <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
+    <span class="font-display font-semibold text-burgundy-900">Navigation</span>
+    <button onclick="closeSidebar()" class="text-forest-400 hover:text-burgundy-700 transition-colors p-1"><i class="fas fa-times"></i></button>
+  </div>
+  <nav class="space-y-1 text-sm">
+    <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-book w-4"></i> Courses</a>
+    <a href="/admin-live-sessions.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium"><i class="fas fa-video w-4 text-burgundy-600"></i> Live Sessions</a>
+    <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-users w-4"></i> Users</a>
+    <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-chart-line w-4"></i> Analytics</a>
+    <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-envelope w-4"></i> Messages</a>
+    <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-id-card w-4"></i> Credentials</a>
+    <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-hand-holding-heart w-4"></i> Hardship</a>
+    <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-plug w-4"></i> Integrations</a>
+    <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-question-circle w-4"></i> Help Center</a>
+  </nav>
+</aside>
+
+<header class="bg-burgundy-900 text-white sticky top-0 z-30">
+  <div class="max-w-full px-4 md:px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <button onclick="openSidebar()" class="md:hidden text-burgundy-200 hover:text-white p-1 -ml-1" aria-label="Open menu"><i class="fas fa-bars text-xl"></i></button>
+      <div class="w-9 h-9 bg-burgundy-800 rounded-lg flex items-center justify-center relative overflow-hidden flex-shrink-0">
+        <span class="font-display font-bold text-gold-400 absolute" style="font-size:16px;top:2px;left:5px;">C</span>
+        <span class="font-display font-bold text-forest-400 absolute" style="font-size:16px;bottom:2px;left:13px;">R</span>
+      </div>
+      <div class="flex-shrink-0">
+        <span class="font-display font-semibold text-lg"><span style="color:#f2a8be">Counselor</span><span style="color:#98c3a9">Ready</span></span>
+        <span class="ml-2 text-xs bg-gold-500 text-white px-2 py-0.5 rounded-full font-semibold">ADMIN</span>
+      </div>
+      <nav class="hidden md:flex items-center gap-1 ml-2">
+        <a href="/dashboard.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Dashboard</a>
+        <a href="/courses.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Courses</a>
+        <a href="/live-sessions.html" class="px-3 py-1 rounded-full text-xs font-medium text-burgundy-200 hover:text-white hover:bg-burgundy-800 transition-colors">Live Sessions</a>
       </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 p-6 min-w-0">
-
-      <!-- Header Row -->
-      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <h1 class="font-display text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
-        <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 text-sm transition-colors">
-          <i class="fas fa-plus text-xs"></i> Create Live Session
-        </button>
-      </div>
-
-      <!-- Toast -->
-      <div id="toast" class="hidden fixed bottom-6 right-6 z-[100] px-5 py-3 rounded-xl text-white text-sm font-medium shadow-lg transition-all"></div>
-
-      <!-- Loading -->
-      <div id="loadingState" class="text-center py-16">
-        <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
-        <p class="text-forest-600">Loading sessions...</p>
-      </div>
-
-      <!-- Error -->
-      <div id="errorState" class="hidden text-center py-16 bg-white rounded-xl border border-burgundy-100">
-        <i class="fas fa-exclamation-triangle text-3xl text-burgundy-300 mb-3"></i>
-        <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load sessions</p>
-        <button onclick="loadSessions()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
-      </div>
-
-      <!-- Sessions Table -->
-      <div id="mainContent" class="hidden">
-        <div class="bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm min-w-[900px]">
-              <thead class="bg-stone-50 border-b border-burgundy-100">
-                <tr>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Title</th>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Type</th>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">
-                    <button onclick="toggleSort()" class="flex items-center gap-1 hover:text-burgundy-600 transition-colors" title="Click to change sort order">
-                      Scheduled <i id="sortIcon" class="fas fa-arrow-up text-[10px]"></i>
-                    </button>
-                  </th>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Status</th>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Registered</th>
-                  <th class="text-left px-4 py-3 font-semibold text-burgundy-800">CEUs</th>
-                  <th class="text-right px-4 py-3 font-semibold text-burgundy-800">Actions</th>
-                </tr>
-              </thead>
-              <tbody id="sessionsBody"></tbody>
-            </table>
-          </div>
-          <div id="emptyState" class="hidden text-center py-16 text-forest-500">
-            <i class="fas fa-video text-4xl text-burgundy-200 mb-3 block"></i>
-            No sessions yet. Create one to get started.
-          </div>
-        </div>
-      </div>
-
-    </main>
-  </div>
-
-  <!-- ── Create Live Session Modal ── -->
-  <div id="createModal" class="fixed inset-0 z-[200] bg-black/50 items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
-        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
-        <button onclick="closeCreateModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
-          <i class="fas fa-times text-lg"></i>
-        </button>
-      </div>
-
-      <form id="createForm" onsubmit="submitCreate(event)" class="px-6 py-5 space-y-4">
-
-        <!-- Title -->
-        <div>
-          <label class="block text-sm font-medium text-burgundy-800 mb-1">Title <span class="text-red-500">*</span></label>
-          <input type="text" name="title" required
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
-            placeholder="e.g. Trauma-Informed Care: Live Workshop">
-        </div>
-
-        <!-- Slug -->
-        <div>
-          <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug <span class="text-red-500">*</span></label>
-          <input type="text" name="slug" required pattern="[a-z0-9\-]+"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500"
-            placeholder="trauma-informed-care-live">
-          <p class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
-        </div>
-
-        <!-- Session Type -->
-        <div>
-          <label class="block text-sm font-medium text-burgundy-800 mb-1">Session Type <span class="text-red-500">*</span></label>
-          <select name="sessionType" required id="sessionTypeSelect"
-            onchange="handleSessionTypeChange(this.value)"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
-            <option value="live-course">Live CE Course</option>
-            <option value="supervision">Clinical Supervision</option>
-          </select>
-        </div>
-
-        <!-- Scheduled Start / End -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled Start <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledStart" required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled End <span class="text-red-500">*</span></label>
-            <input type="datetime-local" name="scheduledEnd" required
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-          </div>
-        </div>
-
-        <!-- CEU Hours (live-course only) -->
-        <div id="ceuHoursRow">
-          <label class="block text-sm font-medium text-burgundy-800 mb-1">CEU Hours</label>
-          <input type="number" name="ceuHours" min="0" max="20" step="0.5" value="1"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-        </div>
-
-        <!-- Capacity & Price -->
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-medium text-burgundy-800 mb-1">Capacity</label>
-            <input type="number" name="capacity" min="1" max="200" value="50"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
-            <input type="number" name="price" min="0" step="0.01" value="0"
-              class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-            <p class="text-xs text-forest-500 mt-1">0 = free / subscription-included</p>
-          </div>
-        </div>
-
-        <!-- Attendance Threshold -->
-        <div>
-          <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
-          <input type="number" name="attendanceThresholdPct" min="50" max="100" value="90"
-            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
-          <p class="text-xs text-forest-500 mt-1">Minimum % of session duration to qualify for certificate (50–100).</p>
-        </div>
-
-        <!-- Recording Enabled (live-course only; hidden + forced off for supervision) -->
-        <div id="recordingRow">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="recordingEnabled" id="recordingEnabled"
-              class="w-4 h-4 accent-burgundy-700">
-            <span class="text-sm font-medium text-burgundy-800">Enable recording (replay available after session)</span>
-          </label>
-          <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
-        </div>
-
-        <!-- Published -->
-        <div>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="isPublished" id="isPublished"
-              class="w-4 h-4 accent-burgundy-700">
-            <span class="text-sm font-medium text-burgundy-800">Publish immediately (visible in catalog)</span>
-          </label>
-        </div>
-
-        <!-- Form error -->
-        <div id="formError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
-
-        <!-- Buttons -->
-        <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
-          <button type="button" onclick="closeCreateModal()"
-            class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">
-            Cancel
-          </button>
-          <button type="submit" id="submitBtn"
-            class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold flex items-center gap-2 transition-colors">
-            <i class="fas fa-video text-xs"></i>
-            <span id="submitLabel">Create Session</span>
-          </button>
-        </div>
-      </form>
+    </div>
+    <div class="flex items-center gap-3 text-sm">
+      <span class="text-burgundy-200 hidden sm:block truncate max-w-[140px]" id="adminEmail">Admin</span>
+      <a href="/dashboard.html" class="text-burgundy-300 hover:text-white flex items-center gap-1 text-xs"><i class="fas fa-home text-xs"></i> <span class="hidden sm:inline">Exit</span></a>
     </div>
   </div>
+</header>
 
-  <!-- ── Breaks Modal ── -->
-  <div id="breaksModal" class="hidden fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
-        <div>
-          <h2 class="font-display text-2xl font-semibold text-burgundy-900">Scheduled Breaks</h2>
-          <p id="brksSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
-        </div>
-        <button onclick="closeBreaksModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
-          <i class="fas fa-times text-lg"></i>
+<div class="flex">
+  <aside class="hidden md:block w-52 bg-white border-r border-burgundy-100 min-h-[calc(100vh-52px)] sticky top-[52px] p-4 flex-shrink-0">
+    <nav class="space-y-1 text-sm">
+      <a href="/admin-courses.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-book w-4"></i> Courses</a>
+      <a href="/admin-live-sessions.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-burgundy-50 text-burgundy-800 font-medium"><i class="fas fa-video w-4 text-burgundy-600"></i> Live Sessions</a>
+      <a href="/admin-users.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-users w-4"></i> Users</a>
+      <a href="/admin-analytics.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-chart-line w-4"></i> Analytics</a>
+      <a href="/admin-messages.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-envelope w-4"></i> Messages</a>
+      <a href="/admin-credentials.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-id-card w-4"></i> Credentials</a>
+      <a href="/admin-hardship.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-hand-holding-heart w-4"></i> Hardship</a>
+      <a href="/admin-integrations.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-plug w-4"></i> Integrations</a>
+      <a href="/admin-help.html" class="flex items-center gap-2 px-3 py-2.5 rounded-lg text-forest-600 hover:bg-forest-50 transition-colors"><i class="fas fa-question-circle w-4"></i> Help Center</a>
+    </nav>
+  </aside>
+
+  <main class="flex-1 p-4 md:p-6 min-w-0">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-3">
+      <h1 class="font-display text-2xl md:text-3xl font-semibold text-burgundy-900">Live Sessions</h1>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="archiveToggle" onclick="toggleArchive()" class="inline-flex items-center gap-1.5 border border-gray-300 text-forest-600 hover:bg-stone-100 font-medium px-3 py-2 rounded-lg text-xs transition-colors">
+          <i class="fas fa-archive text-xs"></i> Archives
         </button>
+        <div class="h-7 w-px bg-gray-200 hidden sm:block"></div>
+        <button onclick="bulkPublish(true)" class="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors"><i class="fas fa-check text-xs"></i> Publish All</button>
+        <button onclick="bulkPublish(false)" class="inline-flex items-center gap-1.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-lg text-xs transition-colors"><i class="fas fa-eye-slash text-xs"></i> Unpublish All</button>
+        <button onclick="openCreateModal()" class="bg-burgundy-800 hover:bg-burgundy-900 text-white font-semibold px-4 py-2 rounded-xl inline-flex items-center gap-1.5 text-sm transition-colors"><i class="fas fa-plus text-xs"></i> Create Session</button>
       </div>
-      <div class="px-6 py-5">
-        <div class="overflow-x-auto border border-gray-100 rounded-lg mb-3">
-          <table class="w-full text-sm">
-            <thead class="bg-stone-50 border-b border-gray-100">
+    </div>
+
+    <div id="toast" class="hidden fixed bottom-6 right-4 z-[100] px-5 py-3 rounded-xl text-white text-sm font-medium shadow-lg max-w-xs"></div>
+
+    <div id="loadingState" class="text-center py-16">
+      <div class="w-10 h-10 border-4 border-burgundy-200 border-t-burgundy-700 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-forest-600">Loading sessions...</p>
+    </div>
+
+    <div id="errorState" class="hidden text-center py-16 bg-white rounded-xl border border-burgundy-100">
+      <i class="fas fa-exclamation-triangle text-3xl text-burgundy-300 mb-3"></i>
+      <p class="text-burgundy-700 font-medium" id="errorMsg">Failed to load sessions</p>
+      <button onclick="loadSessions()" class="mt-4 px-4 py-2 bg-burgundy-800 text-white rounded-lg text-sm">Retry</button>
+    </div>
+
+    <div id="mainContent" class="hidden">
+
+      <!-- Filter bar -->
+      <div class="flex flex-wrap items-center gap-2 mb-4">
+        <span class="text-xs font-medium text-forest-500 uppercase tracking-wide">Filter</span>
+        <select id="filterStatusSel" onchange="updateFilter()" class="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white text-forest-700">
+          <option value="all">All statuses</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="live">Live</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select id="filterTypeSel" onchange="updateFilter()" class="px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs bg-white text-forest-700">
+          <option value="all">All types</option>
+          <option value="live-course">Live CE</option>
+          <option value="supervision">Supervision</option>
+        </select>
+        <span id="filterCount" class="text-xs text-forest-400"></span>
+        <button id="clearFiltersBtn" onclick="clearFilters()" class="hidden text-xs text-burgundy-600 hover:text-burgundy-800 underline">Clear</button>
+      </div>
+
+      <!-- Desktop table -->
+      <div class="hidden md:block bg-white rounded-xl border border-burgundy-100 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm min-w-[1100px]">
+            <thead class="bg-stone-50 border-b border-burgundy-100">
               <tr>
-                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Label</th>
-                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Starts at</th>
-                <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Min</th>
-                <th class="px-3 py-2 w-8"></th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Title</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Type</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">
+                  <button onclick="toggleSort()" class="flex items-center gap-1 hover:text-burgundy-600 transition-colors" title="Toggle sort">
+                    Scheduled <i id="sortIcon" class="fas fa-arrow-up text-[10px]"></i>
+                  </button>
+                </th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Status</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">Reg</th>
+                <th class="text-left px-4 py-3 font-semibold text-burgundy-800">CEUs</th>
+                <th class="text-right px-4 py-3 font-semibold text-burgundy-800">Actions</th>
               </tr>
             </thead>
-            <tbody id="brksTbody"></tbody>
+            <tbody id="sessionsBody"></tbody>
           </table>
         </div>
-        <p id="brksEmpty" class="hidden text-center py-3 text-forest-500 text-sm">No breaks declared yet.</p>
-        <div id="brksErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
-        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-          <button id="brksAddBtn" type="button" onclick="addBreakRow()"
-            class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1">
-            <i class="fas fa-plus text-xs"></i> Add break
-          </button>
-          <div class="flex items-center gap-3">
-            <button type="button" onclick="closeBreaksModal()"
-              class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
-            <button id="brksSubmitBtn" type="button" onclick="saveBreaks()"
-              class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save Breaks</button>
-          </div>
+        <div id="emptyState" class="hidden text-center py-16 text-forest-500">
+          <i class="fas fa-video text-4xl text-burgundy-200 mb-3 block"></i>
+          No upcoming sessions matching filters.
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ── Run of Show Modal (clips + agenda) ── -->
-  <div id="runOfShowModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
-      <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
-        <h2 id="rosTitle" class="font-display text-2xl font-semibold text-burgundy-900">Run of Show</h2>
-        <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors">
-          <i class="fas fa-times text-lg"></i>
+      <!-- Mobile cards -->
+      <div class="md:hidden space-y-3" id="sessionCards"></div>
+      <div id="emptyStateMobile" class="hidden md:hidden text-center py-12 text-forest-500">
+        <i class="fas fa-video text-4xl text-burgundy-200 mb-3 block"></i>
+        No upcoming sessions matching filters.
+      </div>
+
+      <!-- Archive section -->
+      <div id="archiveSection" class="hidden mt-10">
+        <div class="flex items-center gap-3 mb-5">
+          <div class="h-px flex-1 bg-gray-200"></div>
+          <h2 class="font-display text-lg font-semibold text-gray-400 px-2 whitespace-nowrap"><i class="fas fa-archive text-sm mr-1"></i> Archived Sessions</h2>
+          <div class="h-px flex-1 bg-gray-200"></div>
+        </div>
+        <div class="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden opacity-80">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm min-w-[1100px]">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">Title</th>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">Type</th>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">Scheduled</th>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">Status</th>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">Reg</th>
+                  <th class="text-left px-4 py-3 font-semibold text-gray-500">CEUs</th>
+                  <th class="text-right px-4 py-3 font-semibold text-gray-500">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="archiveBody"></tbody>
+            </table>
+          </div>
+          <div id="archiveEmpty" class="hidden text-center py-12 text-forest-500 text-sm">No archived sessions.</div>
+        </div>
+        <div class="md:hidden space-y-3 opacity-80" id="archiveCards"></div>
+        <div id="archiveEmptyMobile" class="hidden md:hidden text-center py-8 text-sm text-forest-500">No archived sessions.</div>
+      </div>
+
+    </div><!-- /mainContent -->
+  </main>
+</div>
+
+<!-- ── Create / Edit Session Modal ── -->
+<div id="createModal" class="fixed inset-0 z-[200] bg-black/50 items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 id="createModalTitle" class="font-display text-2xl font-semibold text-burgundy-900">Create Live Session</h2>
+      <button onclick="closeCreateModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <form id="createForm" onsubmit="submitCreate(event)" class="px-6 py-5 space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Title <span class="text-red-500">*</span></label>
+        <input type="text" name="title" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500" placeholder="e.g. Trauma-Informed Care: Live Workshop">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Slug <span class="text-red-500">*</span></label>
+        <input type="text" name="slug" required pattern="[a-z0-9\-]+" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500" placeholder="trauma-informed-care-live">
+        <p class="text-xs text-forest-500 mt-1">Lowercase letters, numbers, and hyphens only.</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Session Type <span class="text-red-500">*</span></label>
+        <select name="sessionType" required id="sessionTypeSelect" onchange="handleSessionTypeChange(this.value)" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+          <option value="live-course">Live CE Course</option>
+          <option value="supervision">Clinical Supervision</option>
+        </select>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled Start <span class="text-red-500">*</span></label>
+          <input type="datetime-local" name="scheduledStart" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Scheduled End <span class="text-red-500">*</span></label>
+          <input type="datetime-local" name="scheduledEnd" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+      </div>
+      <div id="ceuHoursRow">
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">CEU Hours</label>
+        <input type="number" name="ceuHours" min="0" max="20" step="0.5" value="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Capacity</label>
+          <input type="number" name="capacity" min="1" max="200" value="50" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-burgundy-800 mb-1">Price (USD)</label>
+          <input type="number" name="price" min="0" step="0.01" value="0" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+          <p class="text-xs text-forest-500 mt-1">0 = free / subscription-included</p>
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Attendance Threshold %</label>
+        <input type="number" name="attendanceThresholdPct" min="50" max="100" value="90" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        <p class="text-xs text-forest-500 mt-1">Minimum % of session duration to qualify for certificate (50-100).</p>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Registration Cutoff (days before start)</label>
+        <input type="number" name="registrationCutoffDays" min="0" max="30" value="7" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
+        <p class="text-xs text-forest-500 mt-1">Registration closes this many days before the session. Set to 0 for no cutoff. Default: 7.</p>
+      </div>
+      <div id="recordingRow">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="recordingEnabled" id="recordingEnabled" class="w-4 h-4 accent-burgundy-700">
+          <span class="text-sm font-medium text-burgundy-800">Enable recording (replay available after session)</span>
+        </label>
+        <p class="text-xs text-forest-500 mt-1 ml-6">Disabled and locked off for supervision sessions (HIPAA).</p>
+      </div>
+      <div>
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" name="isPublished" id="isPublished" class="w-4 h-4 accent-burgundy-700">
+          <span class="text-sm font-medium text-burgundy-800">Publish immediately (visible in catalog)</span>
+        </label>
+      </div>
+      <div id="formError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
+        <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+        <button type="submit" id="submitBtn" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold flex items-center gap-2 transition-colors">
+          <i class="fas fa-video text-xs"></i><span id="submitLabel">Create Session</span>
         </button>
       </div>
-      <div class="px-6 py-5 space-y-6">
-        <div id="rosClipsSection"></div>
-        <div class="border-t border-gray-100"></div>
-        <div id="rosImportSection"></div>
-        <div class="border-t border-gray-100"></div>
-        <div id="rosAgendaSection"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Set Status Modal ── -->
+<div id="statusModal" class="hidden fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6">
+    <h2 class="font-display text-xl font-semibold text-burgundy-900 mb-1">Set Session Status</h2>
+    <p class="text-xs text-forest-500 mb-5">Manually override the current status.</p>
+    <input type="hidden" id="statusModalSessionId">
+    <div class="space-y-1 mb-6">
+      <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+        <input type="radio" name="statusChoice" value="scheduled" class="accent-burgundy-700">
+        <span class="text-sm"><span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs mr-1">scheduled</span> Upcoming / not started</span>
+      </label>
+      <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+        <input type="radio" name="statusChoice" value="live" class="accent-burgundy-700">
+        <span class="text-sm"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs mr-1">live</span> Currently in progress</span>
+      </label>
+      <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+        <input type="radio" name="statusChoice" value="completed" class="accent-burgundy-700">
+        <span class="text-sm"><span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs mr-1">completed</span> Session ended, issue certs</span>
+      </label>
+      <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50 cursor-pointer">
+        <input type="radio" name="statusChoice" value="cancelled" class="accent-burgundy-700">
+        <span class="text-sm"><span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs mr-1">cancelled</span> Mark as cancelled</span>
+      </label>
+    </div>
+    <div class="flex gap-3 justify-end border-t border-gray-100 pt-4">
+      <button onclick="closeStatusModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50">Cancel</button>
+      <button onclick="saveSessionStatus()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Breaks Modal ── -->
+<div id="breaksModal" class="hidden fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <div>
+        <h2 class="font-display text-2xl font-semibold text-burgundy-900">Scheduled Breaks</h2>
+        <p id="brksSubtitle" class="text-xs text-forest-500 mt-0.5"></p>
+      </div>
+      <button onclick="closeBreaksModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div class="px-6 py-5">
+      <div class="overflow-x-auto border border-gray-100 rounded-lg mb-3">
+        <table class="w-full text-sm">
+          <thead class="bg-stone-50 border-b border-gray-100">
+            <tr>
+              <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Label</th>
+              <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Starts at</th>
+              <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Min</th>
+              <th class="px-3 py-2 w-8"></th>
+            </tr>
+          </thead>
+          <tbody id="brksTbody"></tbody>
+        </table>
+      </div>
+      <p id="brksEmpty" class="hidden text-center py-3 text-forest-500 text-sm">No breaks declared yet.</p>
+      <div id="brksErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
+      <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+        <button id="brksAddBtn" type="button" onclick="addBreakRow()" class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1"><i class="fas fa-plus text-xs"></i> Add break</button>
+        <div class="flex items-center gap-3">
+          <button type="button" onclick="closeBreaksModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
+          <button id="brksSubmitBtn" type="button" onclick="saveBreaks()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save Breaks</button>
+        </div>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- Hidden file input for docx guide import -->
-  <input type="file" id="rosImportFileInput" accept=".docx" class="hidden" onchange="importAgendaFromDocx(this.files[0])">
+<!-- ── Run of Show Modal ── -->
+<div id="runOfShowModal" class="fixed inset-0 z-[250] bg-black/50 items-center justify-center p-4" style="display:none;">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto border border-burgundy-100">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 id="rosTitle" class="font-display text-2xl font-semibold text-burgundy-900">Run of Show</h2>
+      <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div class="px-6 py-5 space-y-6">
+      <div id="rosClipsSection"></div>
+      <div class="border-t border-gray-100"></div>
+      <div id="rosImportSection"></div>
+      <div class="border-t border-gray-100"></div>
+      <div id="rosAgendaSection"></div>
+    </div>
+  </div>
+</div>
 
-  <script>
-    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
-    const API = API_URL + '/api/live-sessions';
-    const token = localStorage.getItem('token');
-    let sessions = [];
-    let sortDir = 'asc'; // 'asc' = soonest/current first, 'desc' = furthest-out first
+<input type="file" id="rosImportFileInput" accept=".docx" class="hidden" onchange="importAgendaFromDocx(this.files[0])">
 
-    /* Run-of-show working state */
-    let rosSession = null;
-    let rosAgenda = [];
-    const AGENDA_TYPES = ['lecture','clip','discussion','breakout','break'];
+<script>
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+  const API = API_URL + '/api/live-sessions';
+  const token = localStorage.getItem('token');
+  let sessions = [];
+  let sortDir = 'asc';
+  let showArchive = false;
+  let editMode = false;
+  let editSessionId = null;
+  let filterStatus = 'all';
+  let filterType = 'all';
+  let _lastAttendanceReport = [];
+  let _lastAttendanceSessionId = null;
+  let _lastRegistrants = [];
+  let _lastRegistrantsTitle = '';
 
-    /* ── Auth guard ── */
-    async function checkAuth() {
-      if (!token) { window.location.href = '/login.html'; return; }
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 8000);
-        const r = await fetch(API_URL + '/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
-        clearTimeout(tid);
-        if (!r.ok) { window.location.href = '/login.html'; return; }
-        const d = await r.json();
-        if ((d.user || d)?.role !== 'admin') { window.location.href = '/dashboard.html'; return; }
-        document.getElementById('adminEmail').textContent = (d.user || d).email || 'Admin';
-        loadSessions();
-      } catch {
-        window.location.href = '/login.html';
-      }
-    }
+  let rosSession = null;
+  let rosAgenda = [];
+  const AGENDA_TYPES = ['lecture','clip','discussion','breakout','break'];
 
-    /* ── Load sessions ── */
-    async function loadSessions() {
-      document.getElementById('loadingState').classList.remove('hidden');
-      document.getElementById('mainContent').classList.add('hidden');
-      document.getElementById('errorState').classList.add('hidden');
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/admin/all`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
-        clearTimeout(tid);
-        if (!r.ok) throw new Error('Failed');
-        const d = await r.json();
-        sessions = d.sessions || [];
-        sortSessions();
-        renderTable();
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('mainContent').classList.remove('hidden');
-      } catch {
-        document.getElementById('loadingState').classList.add('hidden');
-        document.getElementById('errorState').classList.remove('hidden');
-        document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
-      }
-    }
+  /* ── Mobile sidebar ── */
+  function openSidebar() { document.getElementById('mobileSidebar').classList.add('open'); document.getElementById('sidebarOverlay').classList.remove('hidden'); document.body.style.overflow='hidden'; }
+  function closeSidebar() { document.getElementById('mobileSidebar').classList.remove('open'); document.getElementById('sidebarOverlay').classList.add('hidden'); document.body.style.overflow=''; }
 
-    /* ── Sort sessions by scheduled date ── */
-    function sortSessions() {
-      sessions.sort((a, b) => {
-        const ta = a.scheduledStart ? new Date(a.scheduledStart).getTime() : 0;
-        const tb = b.scheduledStart ? new Date(b.scheduledStart).getTime() : 0;
-        return sortDir === 'asc' ? ta - tb : tb - ta;
-      });
-    }
+  /* ── Auth ── */
+  async function checkAuth() {
+    if (!token) { window.location.href='/login.html'; return; }
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 8000);
+      const r = await fetch(API_URL+'/api/auth/me', { headers:{'Authorization':'Bearer '+token}, signal:controller.signal });
+      clearTimeout(tid);
+      if (!r.ok) { window.location.href='/login.html'; return; }
+      const d = await r.json();
+      if ((d.user||d)?.role !== 'admin') { window.location.href='/dashboard.html'; return; }
+      document.getElementById('adminEmail').textContent = (d.user||d).email || 'Admin';
+      loadSessions();
+    } catch { window.location.href='/login.html'; }
+  }
 
-    function toggleSort() {
-      sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-      const icon = document.getElementById('sortIcon');
-      if (icon) icon.className = sortDir === 'asc' ? 'fas fa-arrow-up text-[10px]' : 'fas fa-arrow-down text-[10px]';
+  /* ── Load ── */
+  async function loadSessions() {
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('mainContent').classList.add('hidden');
+    document.getElementById('errorState').classList.add('hidden');
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 10000);
+      const r = await fetch(`${API}/admin/all`, { headers:{'Authorization':'Bearer '+token}, signal:controller.signal });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error('Failed');
+      const d = await r.json();
+      sessions = d.sessions || [];
       sortSessions();
       renderTable();
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('mainContent').classList.remove('hidden');
+    } catch {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('errorState').classList.remove('hidden');
+      document.getElementById('errorMsg').textContent = 'Failed to load sessions. Check console.';
     }
+  }
 
-    /* ── Render table ── */
-    function renderTable() {
-      const tbody = document.getElementById('sessionsBody');
-      const empty = document.getElementById('emptyState');
-      if (!sessions.length) {
-        tbody.innerHTML = '';
-        empty.classList.remove('hidden');
-        return;
-      }
-      empty.classList.add('hidden');
-      tbody.innerHTML = sessions.map(s => {
-        const start = s.scheduledStart ? new Date(s.scheduledStart).toLocaleString('en-US', { month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit' }) : '—';
-        const statusColor = {
-          scheduled: 'bg-blue-100 text-blue-700',
-          live: 'bg-green-100 text-green-700',
-          completed: 'bg-gray-100 text-gray-600',
-          cancelled: 'bg-red-100 text-red-700'
-        }[s.status] || 'bg-gray-100 text-gray-600';
-        const typeLabel = s.sessionType === 'supervision' ? 'Supervision' : 'Live CE';
-        const typeColor = s.sessionType === 'supervision' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
-        return `<tr class="border-b border-gray-100 hover:bg-stone-50 transition-colors">
-          <td class="px-4 py-3">
-            <div class="font-medium text-burgundy-900">${escHtml(s.title)}</div>
-            <div class="text-xs text-forest-500">${escHtml(s.slug)}</div>
-          </td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full text-xs font-medium ${typeColor}">${typeLabel}</span>
-          </td>
-          <td class="px-4 py-3 text-forest-700 text-xs">${start}</td>
-          <td class="px-4 py-3">
-            <span class="px-2 py-0.5 rounded-full text-xs font-medium ${statusColor}">${s.status || 'scheduled'}</span>
-            ${s.isPublished ? '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Published</span>' : '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Draft</span>'}
-          </td>
-          <td class="px-4 py-3 text-center text-forest-700">${(s.registrants || []).length}</td>
-          <td class="px-4 py-3 text-center text-forest-700">${s.ceuHours || '—'}</td>
-          <td class="px-4 py-3 text-right">
-            <div class="flex items-center justify-end gap-2">
-              <a href="/live-host.html?session=${encodeURIComponent(s.slug)}"
-                class="px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1" style="background:#6B1D34;color:#fff;">
-                <i class="fas fa-video text-xs"></i> Host Console
-              </a>
-              <a href="/admin-live-sessions.html?attendance=${s._id}"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1"
-                onclick="viewAttendance(event,'${s._id}')">
-                <i class="fas fa-chart-bar text-xs"></i> Attendance
-              </a>
-              <button onclick="openBreaksModal('${s._id}')"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
-                <i class="fas fa-mug-hot text-xs"></i> Breaks${(s.breaks && s.breaks.length) ? ` <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">${s.breaks.length}</span>` : ''}
-              </button>
-              ${s.sessionType === 'live-course' ? `
-              <button onclick="openRunOfShowModal('${s._id}')"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
-                <i class="fas fa-list-ol text-xs"></i> Run of Show
-              </button>` : ''}
-              ${s.status === 'completed' ? `
-              <button onclick="issueCerts('${s._id}', this)"
-                class="px-2.5 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
-                <i class="fas fa-certificate text-xs"></i> Issue Certs
-              </button>` : ''}
-              <button onclick="togglePublish('${s._id}', ${s.isPublished})"
-                class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs hover:bg-stone-50 transition-colors ${s.isPublished ? 'text-red-600' : 'text-green-700'}">
-                ${s.isPublished ? 'Unpublish' : 'Publish'}
-              </button>
-            </div>
-          </td>
-        </tr>`;
-      }).join('');
-    }
+  /* ── Sort ── */
+  function sortSessions() {
+    sessions.sort((a,b) => {
+      const ta = a.scheduledStart ? new Date(a.scheduledStart).getTime() : 0;
+      const tb = b.scheduledStart ? new Date(b.scheduledStart).getTime() : 0;
+      return sortDir === 'asc' ? ta-tb : tb-ta;
+    });
+  }
+  function toggleSort() {
+    sortDir = sortDir==='asc' ? 'desc' : 'asc';
+    const icon = document.getElementById('sortIcon');
+    if (icon) icon.className = sortDir==='asc' ? 'fas fa-arrow-up text-[10px]' : 'fas fa-arrow-down text-[10px]';
+    sortSessions(); renderTable();
+  }
 
-    /* ── Attendance view (inline panel) ── */
-    async function viewAttendance(evt, id) {
-      evt.preventDefault();
+  /* ── Filters ── */
+  function updateFilter() {
+    filterStatus = document.getElementById('filterStatusSel').value;
+    filterType = document.getElementById('filterTypeSel').value;
+    renderTable();
+  }
+  function clearFilters() {
+    filterStatus = 'all'; filterType = 'all';
+    document.getElementById('filterStatusSel').value = 'all';
+    document.getElementById('filterTypeSel').value = 'all';
+    renderTable();
+  }
+
+  /* ── Archive toggle ── */
+  function toggleArchive() { showArchive = !showArchive; renderTable(); }
+
+  /* ── Bulk publish (active only) ── */
+  async function bulkPublish(pub) {
+    const active = sessions.filter(s => s.status !== 'completed' && s.status !== 'cancelled');
+    const targets = active.filter(s => pub ? !s.isPublished : s.isPublished);
+    if (!targets.length) { showToast('Nothing to '+(pub?'publish':'unpublish')+'.', '#284157'); return; }
+    if (!confirm((pub?'Publish':'Unpublish')+' '+targets.length+' session(s)?')) return;
+    let done=0, failed=0;
+    for (const s of targets) {
       try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/${id}/attendance`, { headers: { 'Authorization': 'Bearer ' + token }, signal: controller.signal });
-        clearTimeout(tid);
-        if (!r.ok) throw new Error('Forbidden or error');
-        const d = await r.json();
-        const rows = (d.report || []).map(a =>
-          `<tr class="border-b border-gray-100">
-            <td class="px-3 py-2">${escHtml(a.user?.email || '—')}</td>
-            <td class="px-3 py-2 text-center">${a.attendedMinutes ?? 0} min</td>
-            <td class="px-3 py-2 text-center">${a.attendancePct ?? 0}%</td>
-            <td class="px-3 py-2 text-center">${a.qualifies ? '<span class="text-green-600 font-medium">Yes</span>' : '<span class="text-red-500">No</span>'}</td>
-          </tr>`
-        ).join('');
-        showModal(`
-          <div class="p-6">
-            <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(d.session?.title || 'Attendance')} — Attendance Report</h3>
-            <p class="text-xs text-forest-500 mb-4">Threshold: ${d.session?.thresholdPct}% of ${d.session?.scheduledMin} min</p>
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead class="bg-stone-50"><tr>
-                  <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email</th>
-                  <th class="px-3 py-2 font-semibold text-burgundy-800">Attended</th>
-                  <th class="px-3 py-2 font-semibold text-burgundy-800">%</th>
-                  <th class="px-3 py-2 font-semibold text-burgundy-800">Qualifies</th>
-                </tr></thead>
-                <tbody>${rows || '<tr><td colspan="4" class="text-center py-6 text-forest-500">No attendance data yet.</td></tr>'}</tbody>
-              </table>
-            </div>
-            <div class="mt-4 flex justify-end">
-              <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
-            </div>
-          </div>`);
-      } catch (e) {
-        showToast('Failed to load attendance: ' + e.message, '#c0392b');
-      }
+        const r = await fetch(`${API}/${s._id}`, { method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({isPublished:pub}) });
+        if (r.ok) done++; else failed++;
+      } catch { failed++; }
     }
+    showToast((pub?'Published':'Unpublished')+' '+done+(failed?', '+failed+' failed':'')+'.', '#284157');
+    loadSessions();
+  }
 
-    /* ── Issue certificates ── */
-    async function issueCerts(id, btn) {
-      if (!confirm('Issue certificates to all qualifying attendees for this session?')) return;
-      btn.disabled = true;
-      btn.textContent = 'Issuing…';
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 30000);
-        const r = await fetch(`${API}/${id}/issue-certificates`, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token },
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed');
-        showToast(`Issued ${d.issued ?? 0} certificate(s). ${d.skipped ?? 0} already had one.`, '#284157');
-        btn.textContent = 'Done';
-      } catch (e) {
-        showToast('Error: ' + e.message, '#c0392b');
-        btn.disabled = false;
-        btn.textContent = 'Issue Certs';
-      }
-    }
+  /* ── Shared action buttons ── */
+  function renderActions(s) {
+    const bc = (s.breaks&&s.breaks.length) ? s.breaks.length : 0;
+    const rc = (s.registrants||[]).length;
+    const b = 'inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap';
+    const actions = [
+      // Operational
+      `<a href="/live-host.html?session=${encodeURIComponent(s.slug)}" class="${b} font-semibold" style="background:#6B1D34;color:#fff;"><i class="fas fa-video text-xs"></i> Host</a>`,
+      `<a href="/admin-live-sessions.html?attendance=${s._id}" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50" onclick="viewAttendance(event,'${s._id}')"><i class="fas fa-chart-bar text-xs"></i> Attendance</a>`,
+      `<button onclick="openRegistrantsModal('${s._id}')" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50"><i class="fas fa-users text-xs"></i> Registrants${rc ? ' <span class="px-1.5 rounded-full" style="background:#E8F4E9;color:#2E7D32;">'+rc+'</span>' : ''}</button>`,
+      // Setup
+      `<button onclick="openBreaksModal('${s._id}')" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50"><i class="fas fa-mug-hot text-xs"></i> Breaks${bc ? ' <span class="px-1.5 rounded-full" style="background:#F3E6C8;color:#8B6914;">'+bc+'</span>' : ''}</button>`,
+      s.sessionType === 'live-course' ? `<button onclick="openRunOfShowModal('${s._id}')" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50"><i class="fas fa-list-ol text-xs"></i> Run of Show</button>` : '',
+      // Admin
+      s.status !== 'cancelled' ? `<button onclick="openEditModal('${s._id}')" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50"><i class="fas fa-pencil-alt text-xs"></i> Edit</button>` : '',
+      `<button onclick="duplicateSession('${s._id}')" class="${b} border border-gray-200 text-forest-700 hover:bg-stone-50"><i class="fas fa-copy text-xs"></i> Duplicate</button>`,
+      `<button onclick="togglePublish('${s._id}',${s.isPublished})" class="${b} border border-gray-200 hover:bg-stone-50 ${s.isPublished?'text-red-600':'text-green-700'}">${s.isPublished?'Unpublish':'Publish'}</button>`,
+      // Status / certs / danger
+      `<button onclick="openStatusModal('${s._id}')" class="${b} border border-gray-200 text-forest-600 hover:bg-stone-50"><i class="fas fa-exchange-alt text-xs"></i> Status</button>`,
+      s.status === 'completed' ? `<button onclick="issueCerts('${s._id}',this)" class="${b} border border-burgundy-200 text-burgundy-700 hover:bg-burgundy-50"><i class="fas fa-certificate text-xs"></i> Issue Certs</button>` : '',
+      s.status !== 'cancelled' && s.status !== 'completed' ? `<button onclick="cancelSession('${s._id}')" class="${b} border border-red-100 text-red-600 hover:bg-red-50"><i class="fas fa-ban text-xs"></i> Cancel</button>` : ''
+    ];
+    return actions.filter(Boolean).join('');
+  }
 
-    /* ── Toggle publish ── */
-    async function togglePublish(id, currentlyPublished) {
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/${id}`, {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isPublished: !currentlyPublished }),
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        if (!r.ok) { const d = await r.json(); throw new Error(d.error || 'Failed'); }
-        showToast(currentlyPublished ? 'Session unpublished.' : 'Session published!', '#284157');
-        loadSessions();
-      } catch (e) {
-        showToast('Error: ' + e.message, '#c0392b');
-      }
-    }
+  /* ── Registration cutoff helper ── */
+  function regCutoffLabel(s) {
+    const cutoffDays = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
+    if (!s.scheduledStart || cutoffDays === 0) return '';
+    const cutoffMs = new Date(s.scheduledStart).getTime() - cutoffDays * 86400000;
+    const cutoffDate = new Date(cutoffMs);
+    const closed = Date.now() > cutoffMs;
+    const label = cutoffDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    if (closed) return `<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Reg. closed ${label}</span>`;
+    const daysLeft = Math.ceil((cutoffMs - Date.now()) / 86400000);
+    const color = daysLeft <= 3 ? 'bg-orange-50 text-orange-700' : 'bg-stone-100 text-forest-600';
+    return `<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${color}">Reg. closes ${label}</span>`;
+  }
 
-    /* ── Create modal ── */
-    function openCreateModal() {
-      document.getElementById('createForm').reset();
-      document.getElementById('formError').classList.add('hidden');
-      document.getElementById('submitLabel').textContent = 'Create Session';
-      document.getElementById('submitBtn').disabled = false;
-      handleSessionTypeChange('live-course');
-      document.getElementById('createModal').classList.add('open');
-    }
+  /* ── Desktop table row ── */
+  function renderRow(s) {
+    const start = s.scheduledStart ? new Date(s.scheduledStart).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+    const sc = {scheduled:'bg-blue-100 text-blue-700',live:'bg-green-100 text-green-700',completed:'bg-gray-100 text-gray-600',cancelled:'bg-red-100 text-red-700'}[s.status]||'bg-gray-100 text-gray-600';
+    const tl = s.sessionType==='supervision' ? 'Supervision' : 'Live CE';
+    const tc = s.sessionType==='supervision' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
+    return `<tr class="border-b border-gray-100 hover:bg-stone-50 transition-colors">
+      <td class="px-4 py-3"><div class="font-medium text-burgundy-900">${escHtml(s.title)}</div><div class="text-xs text-forest-500">${escHtml(s.slug)}</div></td>
+      <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tc}">${tl}</span></td>
+      <td class="px-4 py-3 text-forest-700 text-xs">${start}</td>
+      <td class="px-4 py-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium ${sc}">${s.status||'scheduled'}</span>
+        ${s.isPublished ? '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Published</span>' : '<span class="ml-1 px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Draft</span>'}
+        ${s.status === 'scheduled' ? regCutoffLabel(s) : ''}
+      </td>
+      <td class="px-4 py-3 text-center text-forest-700">${(s.registrants||[]).length}</td>
+      <td class="px-4 py-3 text-center text-forest-700">${s.ceuHours||'—'}</td>
+      <td class="px-4 py-3 text-right"><div class="flex items-center justify-end gap-1.5 flex-wrap">${renderActions(s)}</div></td>
+    </tr>`;
+  }
 
-    function closeCreateModal() {
-      document.getElementById('createModal').classList.remove('open');
-    }
-
-    function handleSessionTypeChange(type) {
-      const isSupervision = type === 'supervision';
-      const recRow = document.getElementById('recordingRow');
-      const recChk = document.getElementById('recordingEnabled');
-      const ceuRow = document.getElementById('ceuHoursRow');
-      // supervision: hide recording row, force checkbox off, hide CEU hours
-      recRow.classList.toggle('hidden', isSupervision);
-      if (isSupervision) {
-        recChk.checked = false;
-        recChk.disabled = true;
-        ceuRow.classList.add('hidden');
-      } else {
-        recChk.disabled = false;
-        ceuRow.classList.remove('hidden');
-      }
-    }
-
-    async function submitCreate(evt) {
-      evt.preventDefault();
-      const form = evt.target;
-      const btn = document.getElementById('submitBtn');
-      const lbl = document.getElementById('submitLabel');
-      const errEl = document.getElementById('formError');
-      errEl.classList.add('hidden');
-      btn.disabled = true;
-      lbl.textContent = 'Creating…';
-
-      const fd = new FormData(form);
-      const payload = {
-        title: fd.get('title'),
-        slug: fd.get('slug'),
-        sessionType: fd.get('sessionType'),
-        scheduledStart: new Date(fd.get('scheduledStart')).toISOString(),
-        scheduledEnd: new Date(fd.get('scheduledEnd')).toISOString(),
-        ceuHours: parseFloat(fd.get('ceuHours') || '0'),
-        capacity: parseInt(fd.get('capacity') || '50', 10),
-        price: parseFloat(fd.get('price') || '0'),
-        attendanceThresholdPct: parseInt(fd.get('attendanceThresholdPct') || '90', 10),
-        recordingEnabled: fd.get('sessionType') === 'supervision' ? false : !!fd.get('recordingEnabled'),
-        isPublished: !!fd.get('isPublished')
-      };
-
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(API, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Creation failed');
-        closeCreateModal();
-        showToast('Session created and Whereby room provisioned!', '#284157');
-        loadSessions();
-      } catch (e) {
-        errEl.textContent = e.message;
-        errEl.classList.remove('hidden');
-        btn.disabled = false;
-        lbl.textContent = 'Create Session';
-      }
-    }
-
-    /* ── Info modal (for attendance report) ── */
-    function showModal(html) {
-      let m = document.getElementById('infoModal');
-      if (!m) {
-        m = document.createElement('div');
-        m.id = 'infoModal';
-        m.className = 'fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4';
-        document.body.appendChild(m);
-      }
-      m.innerHTML = `<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">${html}</div>`;
-      m.style.display = 'flex';
-    }
-
-    function closeInfoModal() {
-      const m = document.getElementById('infoModal');
-      if (m) m.style.display = 'none';
-    }
-
-    /* ── Toast ── */
-    function showToast(msg, bg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.backgroundColor = bg || '#284157';
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 4000);
-    }
-
-    /* ── Escape HTML ── */
-    function escHtml(s) {
-      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    /* ── Run of Show: clips + agenda ── */
-    function rosReadOnly() {
-      return !!rosSession && (rosSession.status === 'completed' || rosSession.status === 'cancelled');
-    }
-
-    function openRunOfShowModal(id) {
-      const s = sessions.find(x => x._id === id);
-      if (!s) { showToast('Session not found.', '#c0392b'); return; }
-      // Compliance: agenda/clips are live-course only (supervision is forbidden server-side).
-      if (s.sessionType !== 'live-course') {
-        showToast('Run of show is only available for live CE courses.', '#c0392b');
-        return;
-      }
-      rosSession = s;
-      rosAgenda = (s.agenda || []).map(a => ({
-        type: AGENDA_TYPES.includes(a.type) ? a.type : 'lecture',
-        title: a.title || '',
-        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
-        prompt: a.prompt || '',
-        script: a.script || '',
-        clipIndex: (a.clipIndex === 0 || a.clipIndex) ? a.clipIndex : ''
-      }));
-      renderRunOfShow();
-      document.getElementById('runOfShowModal').style.display = 'flex';
-    }
-
-    function closeRunOfShowModal() {
-      document.getElementById('runOfShowModal').style.display = 'none';
-      rosSession = null;
-      rosAgenda = [];
-    }
-
-    function renderRunOfShow() {
-      document.getElementById('rosTitle').textContent = 'Run of Show — ' + (rosSession?.title || '');
-      renderRosClips();
-      renderRosImport();
-      renderRosAgenda();
-    }
-
-    function renderRosImport() {
-      const ro = rosReadOnly();
-      if (ro) { document.getElementById('rosImportSection').innerHTML = ''; return; }
-      document.getElementById('rosImportSection').innerHTML = `
-        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Import Guide</h3>
-        <p class="text-xs text-forest-500 mb-2">
-          Paste your facilitator guide (headings like <code>## Segment Title (25 min)</code>, with an optional
-          <code>Prompt:</code> line) or upload the .docx directly — Word Heading 2 styles are read the same way.
-          This only fills the editor below; nothing saves until you click "Save agenda."
-        </p>
-        <textarea id="rosImportText" rows="4" placeholder="Paste your facilitator guide text here…"
-          class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500 mb-2"></textarea>
-        <div class="flex items-center gap-2">
-          <button onclick="importAgendaFromText()" class="px-3 py-1.5 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-xs font-semibold transition-colors flex items-center gap-1">
-            <i class="fas fa-file-import text-xs"></i> Parse pasted text
-          </button>
-          <button onclick="document.getElementById('rosImportFileInput').click()" class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1">
-            <i class="fas fa-file-word text-xs"></i> Upload .docx instead
-          </button>
-          <span id="rosImportStatus" class="text-xs text-forest-500"></span>
-        </div>`;
-    }
-
-    function applyParsedAgenda(agenda, meta) {
-      if (rosAgenda.length > 0 && !confirm(`This will replace the ${rosAgenda.length} row(s) currently in the editor with ${agenda.length} imported segment(s) (${meta.totalMinutes} min total). Continue?`)) {
-        return;
-      }
-      rosAgenda = agenda.map(a => ({
-        type: a.type, title: a.title || '',
-        durationMin: (a.durationMin === 0 || a.durationMin) ? a.durationMin : '',
-        prompt: a.prompt || '', script: a.script || '', clipIndex: ''
-      }));
-      renderRosAgenda();
-      showToast(`Imported ${agenda.length} segments (${meta.totalMinutes} min). Review below, then Save agenda.`, '#284157');
-    }
-
-    async function importAgendaFromText() {
-      const text = document.getElementById('rosImportText').value;
-      if (!text || !text.trim()) { showToast('Paste some text first.', '#c0392b'); return; }
-      const status = document.getElementById('rosImportStatus');
-      status.textContent = 'Parsing…';
-      try {
-        const r = await fetch(`${API}/${rosSession._id}/agenda/import-text`, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-        const d = await r.json();
-        status.textContent = '';
-        if (!r.ok) { showToast(d.error || 'Failed to parse text.', '#c0392b'); return; }
-        applyParsedAgenda(d.agenda, d);
-      } catch (e) {
-        status.textContent = '';
-        showToast('Error: ' + e.message, '#c0392b');
-      }
-    }
-
-    async function importAgendaFromDocx(file) {
-      if (!file) return;
-      const status = document.getElementById('rosImportStatus');
-      if (status) status.textContent = 'Uploading & parsing…';
-      try {
-        const fd = new FormData();
-        fd.append('file', file);
-        const r = await fetch(`${API}/${rosSession._id}/agenda/import-docx`, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token },
-          body: fd
-        });
-        const d = await r.json();
-        if (status) status.textContent = '';
-        if (!r.ok) { showToast(d.error || 'Failed to parse document.', '#c0392b'); return; }
-        applyParsedAgenda(d.agenda, d);
-      } catch (e) {
-        if (status) status.textContent = '';
-        showToast('Error: ' + e.message, '#c0392b');
-      } finally {
-        document.getElementById('rosImportFileInput').value = '';
-      }
-    }
-
-    function renderRosClips() {
-      const clips = rosSession.clips || [];
-      const ro = rosReadOnly();
-      const list = clips.length
-        ? clips.map((c, i) => `
-          <div class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg">
-            <div class="text-sm text-forest-700">
-              <span class="font-medium text-burgundy-900">${escHtml(c.title)}</span>
-              · ${Number(c.durationSec) || 0}s · clipIndex ${i}
-            </div>
-            ${ro ? '' : `<button onclick="removeClip('${rosSession._id}', ${i})" title="Remove clip"
-              class="text-forest-400 hover:text-red-600 transition-colors"><i class="fas fa-times"></i></button>`}
-          </div>`).join('')
-        : '<p class="text-sm text-forest-500">No clips registered yet.</p>';
-
-      const addRow = ro ? '' : `
-        <div class="grid grid-cols-12 gap-2 mt-3">
-          <input id="rosClipTitle" type="text" placeholder="Title"
-            class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-          <input id="rosClipKey" type="text" placeholder="s3Key"
-            class="col-span-4 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-          <input id="rosClipBucket" type="text" placeholder="s3Bucket (optional)"
-            class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-          <input id="rosClipDur" type="number" min="1" max="600" placeholder="sec"
-            class="col-span-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-          <button onclick="addClip('${rosSession._id}')"
-            class="col-span-1 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold transition-colors">Add</button>
+  /* ── Mobile card ── */
+  function renderCard(s) {
+    const start = s.scheduledStart ? new Date(s.scheduledStart).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '—';
+    const sc = {scheduled:'bg-blue-100 text-blue-700',live:'bg-green-100 text-green-700',completed:'bg-gray-100 text-gray-600',cancelled:'bg-red-100 text-red-700'}[s.status]||'bg-gray-100 text-gray-600';
+    const tl = s.sessionType==='supervision' ? 'Supervision' : 'Live CE';
+    const tc = s.sessionType==='supervision' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
+    const archived = s.status==='completed'||s.status==='cancelled';
+    return `<div class="bg-white rounded-xl border ${archived?'border-gray-200':'border-burgundy-100'} shadow-sm p-4">
+      <div class="flex items-start justify-between gap-2 mb-2">
+        <div class="min-w-0 flex-1"><div class="font-semibold text-burgundy-900 leading-snug">${escHtml(s.title)}</div><div class="text-xs text-forest-500 truncate mt-0.5">${escHtml(s.slug)}</div></div>
+        <div class="flex flex-col items-end gap-1 flex-shrink-0">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium ${sc}">${s.status||'scheduled'}</span>
+          ${s.isPublished ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Published</span>' : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Draft</span>'}
         </div>
-        <p class="text-xs text-forest-500 mt-1">Registers an existing S3 object by key (no file upload here). Duration must be 1–600 seconds.</p>`;
+      </div>
+      <div class="flex flex-wrap items-center gap-2 text-xs text-forest-600 mb-3">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium ${tc}">${tl}</span>
+        <span><i class="fas fa-calendar-alt text-[10px] mr-0.5"></i>${start}</span>
+        <span><i class="fas fa-users text-[10px] mr-0.5"></i>${(s.registrants||[]).length} reg</span>
+        ${s.ceuHours ? `<span><i class="fas fa-graduation-cap text-[10px] mr-0.5"></i>${s.ceuHours} CEU</span>` : ''}
+        ${s.status === 'scheduled' ? regCutoffLabel(s) : ''}
+      </div>
+      <div class="flex flex-wrap gap-1.5">${renderActions(s)}</div>
+    </div>`;
+  }
 
-      document.getElementById('rosClipsSection').innerHTML = `
-        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Clips</h3>
-        <div class="space-y-2">${list}</div>
-        ${addRow}`;
+  /* ── Render table (filters + active/archive split) ── */
+  function renderTable() {
+    // Apply filters
+    let filtered = sessions;
+    if (filterStatus !== 'all') filtered = filtered.filter(s => s.status === filterStatus);
+    if (filterType !== 'all') filtered = filtered.filter(s => s.sessionType === filterType);
+
+    // Filter count indicator
+    const filterActive = filterStatus !== 'all' || filterType !== 'all';
+    document.getElementById('filterCount').textContent = filterActive ? filtered.length+' of '+sessions.length+' shown' : '';
+    document.getElementById('clearFiltersBtn').classList.toggle('hidden', !filterActive);
+
+    const active   = filtered.filter(s => s.status !== 'completed' && s.status !== 'cancelled');
+    const archived = filtered.filter(s => s.status === 'completed'  || s.status === 'cancelled');
+
+    // Archive toggle badge
+    const allArchived = sessions.filter(s => s.status==='completed'||s.status==='cancelled');
+    const btn = document.getElementById('archiveToggle');
+    if (btn) {
+      btn.innerHTML = '<i class="fas fa-archive text-xs"></i> Archives' +
+        (allArchived.length ? ' <span class="ml-1 px-1.5 py-0.5 rounded-full bg-gray-200 text-gray-600 text-xs font-semibold">'+allArchived.length+'</span>' : '');
+      btn.classList.toggle('bg-stone-100', showArchive);
+      btn.classList.toggle('text-burgundy-700', showArchive);
+      btn.classList.toggle('border-burgundy-300', showArchive);
     }
 
-    async function addClip(id) {
-      if (rosReadOnly()) return;
-      const title = document.getElementById('rosClipTitle').value.trim();
-      const s3Key = document.getElementById('rosClipKey').value.trim();
-      const s3Bucket = document.getElementById('rosClipBucket').value.trim();
-      const durationSec = parseInt(document.getElementById('rosClipDur').value, 10);
-      if (!title || !s3Key) { showToast('Clip title and s3Key are required.', '#c0392b'); return; }
-      if (!Number.isFinite(durationSec) || durationSec < 1 || durationSec > 600) {
-        showToast('Clip duration must be between 1 and 600 seconds.', '#c0392b'); return;
-      }
-      const body = { title, s3Key, durationSec };
-      if (s3Bucket) body.s3Bucket = s3Bucket;
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(`${API}/${id}/clips`, {
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to add clip');
-        rosSession.clips = d.clips || [];
-        renderRosClips();
-        renderRosAgenda();
-        showToast('Clip registered.', '#284157');
-      } catch (e) {
-        showToast('Error: ' + e.message, '#c0392b');
-      }
+    // Active
+    const tbody = document.getElementById('sessionsBody');
+    const empty  = document.getElementById('emptyState');
+    const cards  = document.getElementById('sessionCards');
+    const emptyM = document.getElementById('emptyStateMobile');
+    if (!active.length) {
+      tbody.innerHTML=''; empty.classList.remove('hidden'); cards.innerHTML=''; emptyM.classList.remove('hidden');
+    } else {
+      empty.classList.add('hidden'); emptyM.classList.add('hidden');
+      tbody.innerHTML = active.map(s=>renderRow(s)).join('');
+      cards.innerHTML = active.map(s=>renderCard(s)).join('');
     }
 
-    async function removeClip(id, idx) {
-      if (rosReadOnly()) return;
-      if (!confirm('Remove this clip? Agenda rows referencing it may need re-selecting.')) return;
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 15000);
-        const r = await fetch(`${API}/${id}/clips/${idx}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': 'Bearer ' + token },
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to remove clip');
-        rosSession.clips = d.clips || [];
-        syncAgendaFromDom();
-        renderRosClips();
-        renderRosAgenda();
-        showToast('Clip removed.', '#284157');
-      } catch (e) {
-        showToast('Error: ' + e.message, '#c0392b');
+    // Archive
+    const archSect = document.getElementById('archiveSection');
+    archSect.classList.toggle('hidden', !showArchive);
+    if (showArchive) {
+      const archBody  = document.getElementById('archiveBody');
+      const archCards = document.getElementById('archiveCards');
+      const archEmpty = document.getElementById('archiveEmpty');
+      const archEmptyM = document.getElementById('archiveEmptyMobile');
+      if (!archived.length) {
+        archBody.innerHTML=''; archEmpty.classList.remove('hidden'); archCards.innerHTML=''; archEmptyM.classList.remove('hidden');
+      } else {
+        archEmpty.classList.add('hidden'); archEmptyM.classList.add('hidden');
+        archBody.innerHTML = archived.map(s=>renderRow(s)).join('');
+        archCards.innerHTML = archived.map(s=>renderCard(s)).join('');
       }
     }
+  }
 
-    function renderRosAgenda() {
-      const ro = rosReadOnly();
-      const clips = rosSession.clips || [];
-      const rows = rosAgenda.map((a, i) => {
-        const typeOpts = AGENDA_TYPES.map(t =>
-          `<option value="${t}" ${a.type === t ? 'selected' : ''}>${t}</option>`).join('');
-        let clipCell = '';
-        if (a.type === 'clip') {
-          if (!clips.length) {
-            clipCell = `<div class="text-xs text-burgundy-700 bg-burgundy-50 rounded px-2 py-1">Add a clip in the Clips section first.</div>`;
-          } else {
-            const opts = ['<option value="">— select clip —</option>'].concat(
-              clips.map((c, ci) => `<option value="${ci}" ${String(a.clipIndex) === String(ci) ? 'selected' : ''}>${escHtml(c.title)} (${Number(c.durationSec) || 0}s)</option>`)
-            ).join('');
-            clipCell = `<div>
-              <label class="block text-xs text-forest-600 mb-1">Clip</label>
-              <select id="ros_clip_${i}" ${ro ? 'disabled' : ''}
-                class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${opts}</select>
-            </div>`;
-          }
-        }
-        return `<div class="border border-burgundy-100 rounded-lg p-3 space-y-2 bg-stone-50">
-          <div class="grid grid-cols-12 gap-2 items-center">
-            <select id="ros_type_${i}" onchange="onAgendaTypeChange(${i}, this.value)" ${ro ? 'disabled' : ''}
-              class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${typeOpts}</select>
-            <input id="ros_title_${i}" type="text" value="${escHtml(a.title)}" placeholder="Title" ${ro ? 'disabled' : ''}
-              class="col-span-5 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            <input id="ros_dur_${i}" type="number" min="1" value="${a.durationMin === '' ? '' : escHtml(a.durationMin)}" placeholder="min" ${ro ? 'disabled' : ''}
-              class="col-span-2 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-            <div class="col-span-2 flex flex-wrap items-center justify-end gap-1">
-              ${ro ? '' : `
-              <button onclick="moveAgendaRow(${i},-1)" title="Move up" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-up"></i></button>
-              <button onclick="moveAgendaRow(${i},1)" title="Move down" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-down"></i></button>
-              <button onclick="removeAgendaRow(${i})" title="Remove" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}
-            </div>
+  /* ── Attendance ── */
+  async function viewAttendance(evt, id) {
+    evt.preventDefault();
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(() => controller.abort(), 10000);
+      const r = await fetch(`${API}/${id}/attendance`, { headers:{'Authorization':'Bearer '+token}, signal:controller.signal });
+      clearTimeout(tid);
+      if (!r.ok) throw new Error('Forbidden or error');
+      const d = await r.json();
+      _lastAttendanceReport = d.report || [];
+      _lastAttendanceSessionId = id;
+      const rows = (d.report||[]).map(a =>
+        `<tr class="border-b border-gray-100">
+          <td class="px-3 py-2">${escHtml(a.user?.email||'—')}</td>
+          <td class="px-3 py-2 text-center">${a.attendedMinutes??0} min</td>
+          <td class="px-3 py-2 text-center">${a.attendancePct??0}%</td>
+          <td class="px-3 py-2 text-center">${a.qualifies ? '<span class="text-green-600 font-medium">Yes</span>' : '<span class="text-red-500">No</span>'}</td>
+          <td class="px-3 py-2 text-center">${a.qualifies ? '<button onclick="resendCert(\''+id+'\',\''+(a.user?._id||a.userId||'')+'\',\''+escHtml(a.user?.email||'')+'\',this)" class="px-2 py-1 rounded text-xs bg-burgundy-50 text-burgundy-700 hover:bg-burgundy-100 font-medium">Resend</button>' : '—'}</td>
+        </tr>`
+      ).join('');
+      showModal(`
+        <div class="p-6">
+          <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(d.session?.title||'Attendance')} — Attendance</h3>
+          <p class="text-xs text-forest-500 mb-4">Threshold: ${d.session?.thresholdPct}% of ${d.session?.scheduledMin} min</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50"><tr>
+                <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800">Attended</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800">%</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800">Qualifies</th>
+                <th class="px-3 py-2 font-semibold text-burgundy-800">Cert</th>
+              </tr></thead>
+              <tbody>${rows||'<tr><td colspan="5" class="text-center py-6 text-forest-500">No attendance data yet.</td></tr>'}</tbody>
+            </table>
           </div>
-          <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional — shown to attendees in their NOW card)" ${ro ? 'disabled' : ''}
-            class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
-          <div>
-            <label class="block text-xs text-forest-600 mb-1">Speaker script (host-only — never shown to attendees)</label>
-            <textarea id="ros_script_${i}" rows="3" placeholder="What you actually say during this segment…" ${ro ? 'disabled' : ''}
-              class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.script)}</textarea>
+          <div class="mt-4 flex justify-between items-center">
+            <button onclick="exportAttendanceCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 font-medium"><i class="fas fa-download text-xs"></i> Download CSV</button>
+            <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
           </div>
-          ${clipCell}
-        </div>`;
-      }).join('');
+        </div>`);
+    } catch (e) { showToast('Failed to load attendance: '+e.message, '#c0392b'); }
+  }
 
-      const controls = ro
-        ? `<p class="text-xs text-forest-500">This session is ${escHtml(rosSession.status)} — agenda is read-only.</p>`
-        : `<div class="flex items-center justify-between">
-            <button onclick="addAgendaRow()" class="px-3 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1">
-              <i class="fas fa-plus text-xs"></i> Add row
-            </button>
-            <button onclick="saveAgenda('${rosSession._id}')" class="px-4 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold transition-colors flex items-center gap-2">
-              <i class="fas fa-save text-xs"></i> Save agenda
-            </button>
-          </div>`;
+  /* ── Export attendance CSV ── */
+  function exportAttendanceCSV() {
+    const rows = [['Email','Attended (min)','Attendance %','Qualifies']];
+    _lastAttendanceReport.forEach(a => {
+      rows.push([a.user?.email||'', a.attendedMinutes??0, a.attendancePct??0, a.qualifies?'Yes':'No']);
+    });
+    downloadCSV(rows, 'attendance-'+(_lastAttendanceSessionId||'export')+'.csv');
+  }
 
-      document.getElementById('rosAgendaSection').innerHTML = `
-        <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Agenda / Run of Show</h3>
-        <div class="space-y-2 mb-3">${rows || '<p class="text-sm text-forest-500">No agenda rows yet.</p>'}</div>
-        ${controls}`;
-    }
-
-    function syncAgendaFromDom() {
-      rosAgenda.forEach((a, i) => {
-        const tEl = document.getElementById('ros_type_' + i);
-        const tiEl = document.getElementById('ros_title_' + i);
-        const dEl = document.getElementById('ros_dur_' + i);
-        const pEl = document.getElementById('ros_prompt_' + i);
-        const sEl = document.getElementById('ros_script_' + i);
-        const cEl = document.getElementById('ros_clip_' + i);
-        if (tEl) a.type = tEl.value;
-        if (tiEl) a.title = tiEl.value;
-        if (dEl) a.durationMin = dEl.value;
-        if (pEl) a.prompt = pEl.value;
-        if (sEl) a.script = sEl.value;
-        if (cEl) a.clipIndex = cEl.value;
-        else if (a.type !== 'clip') a.clipIndex = '';
+  /* ── Resend certificate ── */
+  async function resendCert(sessionId, userId, email, btn) {
+    if (!userId) { showToast('No user ID available for resend.', '#c0392b'); return; }
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      const r = await fetch(`${API}/${sessionId}/issue-certificates`, {
+        method:'POST', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body: JSON.stringify({ userId })
       });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed');
+      btn.textContent = 'Sent ✓';
+      showToast('Certificate resent to '+email+'.', '#284157');
+    } catch (e) {
+      showToast('Error: '+e.message, '#c0392b');
+      btn.disabled=false; btn.textContent='Resend';
     }
+  }
 
-    function onAgendaTypeChange(i, val) {
-      syncAgendaFromDom();
-      rosAgenda[i].type = val;
-      if (val !== 'clip') rosAgenda[i].clipIndex = '';
-      renderRosAgenda();
-    }
+  /* ── Issue certificates ── */
+  async function issueCerts(id, btn) {
+    if (!confirm('Issue certificates to all qualifying attendees for this session?')) return;
+    btn.disabled=true; btn.textContent='Issuing…';
+    try {
+      const controller = new AbortController();
+      const tid = setTimeout(()=>controller.abort(),30000);
+      const r = await fetch(`${API}/${id}/issue-certificates`, { method:'POST', headers:{'Authorization':'Bearer '+token}, signal:controller.signal });
+      clearTimeout(tid);
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed');
+      showToast(`Issued ${d.issued??0} certificate(s). ${d.skipped??0} already had one.`, '#284157');
+      btn.textContent='Done';
+    } catch (e) { showToast('Error: '+e.message,'#c0392b'); btn.disabled=false; btn.textContent='Issue Certs'; }
+  }
 
-    function addAgendaRow() {
-      syncAgendaFromDom();
-      rosAgenda.push({ type: 'lecture', title: '', durationMin: '', prompt: '', script: '', clipIndex: '' });
-      renderRosAgenda();
-    }
+  /* ── Toggle publish (single) ── */
+  async function togglePublish(id, currentlyPublished) {
+    try {
+      const r = await fetch(`${API}/${id}`, { method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({isPublished:!currentlyPublished}) });
+      if (!r.ok) { const d=await r.json(); throw new Error(d.error||'Failed'); }
+      showToast(currentlyPublished?'Session unpublished.':'Session published!', '#284157');
+      loadSessions();
+    } catch (e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
 
-    function moveAgendaRow(i, dir) {
-      syncAgendaFromDom();
-      const j = i + dir;
-      if (j < 0 || j >= rosAgenda.length) return;
-      const tmp = rosAgenda[i];
-      rosAgenda[i] = rosAgenda[j];
-      rosAgenda[j] = tmp;
-      renderRosAgenda();
-    }
+  /* ── Registrants modal ── */
+  function openRegistrantsModal(id) {
+    const s = sessions.find(x=>x._id===id);
+    if (!s) return;
+    _lastRegistrantsTitle = s.title;
+    const regs = s.registrants || [];
+    _lastRegistrants = regs;
+    const rows = regs.map(r => {
+      const email = typeof r === 'string' ? r : (r.email||r.user?.email||r.userId||'—');
+      const name  = typeof r === 'object' ? (r.name||r.user?.name||'') : '';
+      const date  = (r.registeredAt||r.createdAt) ? new Date(r.registeredAt||r.createdAt).toLocaleDateString() : '—';
+      return `<tr class="border-b border-gray-100"><td class="px-3 py-2 text-sm">${escHtml(String(email))}</td><td class="px-3 py-2 text-sm">${escHtml(name)}</td><td class="px-3 py-2 text-sm text-center">${date}</td></tr>`;
+    }).join('');
+    showModal(`
+      <div class="p-6">
+        <h3 class="font-display text-xl font-semibold text-burgundy-900 mb-1">${escHtml(s.title)} — Registrants</h3>
+        <p class="text-xs text-forest-500 mb-4">${regs.length} registered</p>
+        ${regs.length ? `
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-stone-50"><tr>
+              <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Email / ID</th>
+              <th class="text-left px-3 py-2 font-semibold text-burgundy-800">Name</th>
+              <th class="px-3 py-2 font-semibold text-burgundy-800 text-center">Registered</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>` : '<p class="text-center py-6 text-forest-500">No registrants yet.</p>'}
+        <div class="mt-4 flex justify-between items-center">
+          ${regs.length ? '<button onclick="exportRegistrantsCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 font-medium"><i class="fas fa-download text-xs"></i> Download CSV</button>' : '<span></span>'}
+          <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
+        </div>
+      </div>`);
+  }
 
-    function removeAgendaRow(i) {
-      syncAgendaFromDom();
-      rosAgenda.splice(i, 1);
-      renderRosAgenda();
-    }
+  /* ── Export registrants CSV ── */
+  function exportRegistrantsCSV() {
+    const rows = [['Email / ID','Name','Registered']];
+    _lastRegistrants.forEach(r => {
+      const email = typeof r==='string' ? r : (r.email||r.user?.email||r.userId||'');
+      const name  = typeof r==='object' ? (r.name||r.user?.name||'') : '';
+      const date  = (r.registeredAt||r.createdAt) ? new Date(r.registeredAt||r.createdAt).toLocaleDateString() : '';
+      rows.push([email,name,date]);
+    });
+    downloadCSV(rows, 'registrants-'+_lastRegistrantsTitle.replace(/\s+/g,'-').toLowerCase()+'.csv');
+  }
 
-    async function saveAgenda(id) {
-      if (rosReadOnly()) return;
-      syncAgendaFromDom();
-      const clipsLen = (rosSession.clips || []).length;
-      const agenda = rosAgenda.map((a, idx) => {
-        const row = { order: idx, type: a.type, title: (a.title || '').trim() };
-        const dur = parseInt(a.durationMin, 10);
-        if (a.durationMin !== '' && Number.isFinite(dur) && dur >= 1) row.durationMin = dur;
-        if ((a.prompt || '').trim()) row.prompt = a.prompt.trim();
-        if ((a.script || '').trim()) row.script = a.script.trim();
-        if (a.type === 'clip' && a.clipIndex !== '' && a.clipIndex != null) {
-          const ci = parseInt(a.clipIndex, 10);
-          if (Number.isFinite(ci) && ci >= 0 && ci < clipsLen) row.clipIndex = ci;
-        }
-        return row;
+  /* ── CSV download helper ── */
+  function downloadCSV(rows, filename) {
+    const csv = rows.map(r => r.map(c => '"'+String(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url  = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  /* ── Edit session ── */
+  function openEditModal(id) {
+    const s = sessions.find(x=>x._id===id);
+    if (!s) return;
+    editMode=true; editSessionId=id;
+    document.getElementById('createForm').reset();
+    document.getElementById('formError').classList.add('hidden');
+    document.getElementById('createModalTitle').textContent = 'Edit Session';
+    document.getElementById('submitLabel').textContent = 'Save Changes';
+    document.getElementById('submitBtn').disabled = false;
+    handleSessionTypeChange(s.sessionType||'live-course');
+    const form = document.getElementById('createForm');
+    form.title.value = s.title||'';
+    form.slug.value = s.slug||'';
+    form.sessionType.value = s.sessionType||'live-course';
+    if (s.scheduledStart) form.scheduledStart.value = _isoToLocal(s.scheduledStart);
+    if (s.scheduledEnd)   form.scheduledEnd.value   = _isoToLocal(s.scheduledEnd);
+    form.ceuHours.value = s.ceuHours||1;
+    form.capacity.value = s.capacity||50;
+    form.price.value = s.price||0;
+    form.attendanceThresholdPct.value = s.attendanceThresholdPct||90;
+    document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+    document.getElementById('isPublished').checked = !!s.isPublished;
+    form.registrationCutoffDays.value = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
+    document.getElementById('createModal').classList.add('open');
+  }
+
+  function _isoToLocal(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const p = n => String(n).padStart(2,'0');
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+  }
+
+  /* ── Duplicate session ── */
+  function duplicateSession(id) {
+    const s = sessions.find(x=>x._id===id);
+    if (!s) return;
+    editMode=false; editSessionId=null;
+    document.getElementById('createForm').reset();
+    document.getElementById('formError').classList.add('hidden');
+    document.getElementById('createModalTitle').textContent = 'Duplicate Session';
+    document.getElementById('submitLabel').textContent = 'Create Duplicate';
+    document.getElementById('submitBtn').disabled=false;
+    handleSessionTypeChange(s.sessionType||'live-course');
+    const form = document.getElementById('createForm');
+    form.title.value = s.title+' (Copy)';
+    form.slug.value = s.slug+'-copy';
+    form.sessionType.value = s.sessionType||'live-course';
+    form.ceuHours.value = s.ceuHours||1;
+    form.capacity.value = s.capacity||50;
+    form.price.value = s.price||0;
+    form.attendanceThresholdPct.value = s.attendanceThresholdPct||90;
+    document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+    document.getElementById('isPublished').checked = false;
+    document.getElementById('createModal').classList.add('open');
+    showToast('Set a new date and slug, then save.', '#284157');
+  }
+
+  /* ── Cancel session ── */
+  async function cancelSession(id) {
+    const s = sessions.find(x=>x._id===id);
+    if (!s) return;
+    if (!confirm('Cancel "'+s.title+'"? This unpublishes it and moves it to archives. Registrants will NOT be notified automatically.')) return;
+    try {
+      const r = await fetch(`${API}/${id}`, { method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify({status:'cancelled',isPublished:false}) });
+      if (!r.ok) { const d=await r.json(); throw new Error(d.error||'Failed'); }
+      showToast('Session cancelled. Remember to notify registrants.', '#284157');
+      loadSessions();
+    } catch (e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
+
+  /* ── Set Status modal ── */
+  function openStatusModal(id) {
+    document.getElementById('statusModalSessionId').value = id;
+    const s = sessions.find(x=>x._id===id);
+    const cur = s?.status||'scheduled';
+    document.querySelectorAll('input[name="statusChoice"]').forEach(r => { r.checked = r.value===cur; });
+    document.getElementById('statusModal').classList.remove('hidden');
+  }
+  function closeStatusModal() { document.getElementById('statusModal').classList.add('hidden'); }
+  async function saveSessionStatus() {
+    const id = document.getElementById('statusModalSessionId').value;
+    const chosen = document.querySelector('input[name="statusChoice"]:checked');
+    if (!chosen) { showToast('Select a status.','#c0392b'); return; }
+    const newStatus = chosen.value;
+    try {
+      const payload = { status: newStatus };
+      if (newStatus==='cancelled') payload.isPublished = false;
+      const r = await fetch(`${API}/${id}`, { method:'PATCH', headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+      if (!r.ok) { const d=await r.json(); throw new Error(d.error||'Failed'); }
+      closeStatusModal();
+      showToast('Status updated to "'+newStatus+'".','#284157');
+      loadSessions();
+    } catch (e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
+
+  /* ── Create / Edit modal ── */
+  function openCreateModal() {
+    editMode=false; editSessionId=null;
+    document.getElementById('createForm').reset();
+    document.getElementById('formError').classList.add('hidden');
+    document.getElementById('createModalTitle').textContent='Create Live Session';
+    document.getElementById('submitLabel').textContent='Create Session';
+    document.getElementById('submitBtn').disabled=false;
+    handleSessionTypeChange('live-course');
+    document.getElementById('createModal').classList.add('open');
+  }
+  function closeCreateModal() {
+    document.getElementById('createModal').classList.remove('open');
+    editMode=false; editSessionId=null;
+    document.getElementById('createModalTitle').textContent='Create Live Session';
+    document.getElementById('submitLabel').textContent='Create Session';
+  }
+  function handleSessionTypeChange(type) {
+    const isSupervision = type==='supervision';
+    const recRow=document.getElementById('recordingRow');
+    const recChk=document.getElementById('recordingEnabled');
+    const ceuRow=document.getElementById('ceuHoursRow');
+    recRow.classList.toggle('hidden',isSupervision);
+    if (isSupervision) { recChk.checked=false; recChk.disabled=true; ceuRow.classList.add('hidden'); }
+    else { recChk.disabled=false; ceuRow.classList.remove('hidden'); }
+  }
+  async function submitCreate(evt) {
+    evt.preventDefault();
+    const form=evt.target;
+    const btn=document.getElementById('submitBtn');
+    const lbl=document.getElementById('submitLabel');
+    const errEl=document.getElementById('formError');
+    errEl.classList.add('hidden'); btn.disabled=true; lbl.textContent=editMode?'Saving…':'Creating…';
+    const fd=new FormData(form);
+    const payload = {
+      title:fd.get('title'), slug:fd.get('slug'), sessionType:fd.get('sessionType'),
+      scheduledStart:new Date(fd.get('scheduledStart')).toISOString(),
+      scheduledEnd:new Date(fd.get('scheduledEnd')).toISOString(),
+      ceuHours:parseFloat(fd.get('ceuHours')||'0'),
+      capacity:parseInt(fd.get('capacity')||'50',10),
+      price:parseFloat(fd.get('price')||'0'),
+      attendanceThresholdPct:parseInt(fd.get('attendanceThresholdPct')||'90',10),
+      recordingEnabled:fd.get('sessionType')==='supervision' ? false : !!fd.get('recordingEnabled'),
+      isPublished:!!fd.get('isPublished'),
+      registrationCutoffDays:parseInt(fd.get('registrationCutoffDays')||'7',10)
+    };
+    try {
+      const controller=new AbortController();
+      const tid=setTimeout(()=>controller.abort(),15000);
+      const r=await fetch(editMode?`${API}/${editSessionId}`:API, {
+        method:editMode?'PATCH':'POST',
+        headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body:JSON.stringify(payload), signal:controller.signal
       });
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 15000);
-        // Persist the run-of-show agenda via PATCH /:id (the route strips
-        // whereby/attendance/registrants/recordings and re-validates the rest).
-        const r = await fetch(`${API}/${id}`, {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ agenda }),
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed to save agenda');
-        rosSession.agenda = (d.session && d.session.agenda) ? d.session.agenda : agenda;
-        showToast('Agenda saved.', '#284157');
-      } catch (e) {
-        showToast('Error: ' + e.message, '#c0392b');
-      }
+      clearTimeout(tid);
+      const d=await r.json();
+      if (!r.ok) throw new Error(d.error||(editMode?'Update failed':'Creation failed'));
+      closeCreateModal();
+      showToast(editMode?'Session updated!':'Session created and Whereby room provisioned!', '#284157');
+      loadSessions();
+    } catch (e) {
+      errEl.textContent=e.message; errEl.classList.remove('hidden');
+      btn.disabled=false; lbl.textContent=editMode?'Save Changes':'Create Session';
     }
+  }
 
-    /* Close modals on backdrop click */
-    document.getElementById('createModal').addEventListener('click', e => {
-      if (e.target === document.getElementById('createModal')) closeCreateModal();
-    });
-    document.getElementById('runOfShowModal').addEventListener('click', e => {
-      if (e.target === document.getElementById('runOfShowModal')) closeRunOfShowModal();
-    });
+  /* ── Info modal ── */
+  function showModal(html) {
+    let m=document.getElementById('infoModal');
+    if (!m) { m=document.createElement('div'); m.id='infoModal'; m.className='fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4'; document.body.appendChild(m); }
+    m.innerHTML=`<div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto">${html}</div>`;
+    m.style.display='flex';
+  }
+  function closeInfoModal() { const m=document.getElementById('infoModal'); if(m) m.style.display='none'; }
 
-    /* ── Manage breaks (writes LiveSession.breaks[] that the producer reads) ── */
-    let _breaksSessionId = null;
+  /* ── Toast / escHtml ── */
+  function showToast(msg,bg) {
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.style.backgroundColor=bg||'#284157';
+    t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),4000);
+  }
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-    function openBreaksModal(id) {
-      _breaksSessionId = id;
-      const s = sessions.find(x => x._id === id);
-      const readonly = s && (s.status === 'completed' || s.status === 'cancelled');
-
-      document.getElementById('brksSubtitle').textContent =
-        (s ? s.title + ' — ' : '') +
-        'break minutes excluded from NBCC attendance denominator; attendees get a resume reminder ~3 min before each break ends.' +
-        (readonly ? ' (read-only: session is ' + s.status + ')' : '');
-
-      const tbody = document.getElementById('brksTbody');
-      tbody.innerHTML = '';
-      ((s && s.breaks) || []).forEach(b => _appendBreakRow(tbody, b, readonly));
-      _refreshBrksEmpty();
-
-      document.getElementById('brksAddBtn').classList.toggle('hidden', !!readonly);
-      document.getElementById('brksSubmitBtn').classList.toggle('hidden', !!readonly);
-      document.getElementById('brksErr').classList.add('hidden');
-      document.getElementById('breaksModal').classList.remove('hidden');
-    }
-
-    function closeBreaksModal() {
-      document.getElementById('breaksModal').classList.add('hidden');
-    }
-
-    function _toDatetimeLocal(isoStr) {
-      if (!isoStr) return '';
-      const d = new Date(isoStr);
-      const p = n => String(n).padStart(2, '0');
-      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
-             'T' + p(d.getHours()) + ':' + p(d.getMinutes());
-    }
-
-    function _appendBreakRow(tbody, b, readonly) {
-      const tr = document.createElement('tr');
-      tr.className = 'border-b border-gray-100';
-      if (b && b.resumeReminderSentAt) tr.dataset.resumeReminderSentAt = b.resumeReminderSentAt;
-      const dis = readonly ? ' disabled' : '';
-      const cls = 'w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500' +
-                  (readonly ? ' bg-stone-100 cursor-not-allowed' : '');
-      tr.innerHTML =
-        '<td class="px-2 py-2"><input type="text" placeholder="Break" value="' + escHtml(b ? (b.label || 'Break') : '') + '" class="' + cls + '"' + dis + '></td>' +
-        '<td class="px-2 py-2"><input type="datetime-local" value="' + escHtml(_toDatetimeLocal(b && b.startsAt)) + '" class="' + cls + '"' + dis + '></td>' +
-        '<td class="px-2 py-2 w-20"><input type="number" min="1" max="120" placeholder="10" value="' + escHtml(b ? String(b.durationMin || '') : '') + '" class="' + cls + ' text-center"' + dis + '></td>' +
-        '<td class="px-2 py-2 text-right">' + (!readonly ? '<button type="button" onclick="removeBreakRow(this)" class="text-red-500 hover:text-red-700 text-xs" title="Remove"><i class="fas fa-trash"></i></button>' : '') + '</td>';
-      tbody.appendChild(tr);
-    }
-
-    function addBreakRow() {
-      const tbody = document.getElementById('brksTbody');
-      _appendBreakRow(tbody, null, false);
-      _refreshBrksEmpty();
-      const rows = tbody.querySelectorAll('tr');
-      if (rows.length) rows[rows.length - 1].querySelector('input').focus();
-    }
-
-    function removeBreakRow(btn) {
-      btn.closest('tr').remove();
-      _refreshBrksEmpty();
-    }
-
-    function _refreshBrksEmpty() {
-      const empty = document.getElementById('brksEmpty');
-      const count = document.getElementById('brksTbody').querySelectorAll('tr').length;
-      empty.classList.toggle('hidden', count > 0);
-    }
-
-    async function saveBreaks() {
-      const tbody = document.getElementById('brksTbody');
-      const errEl = document.getElementById('brksErr');
-      const submitBtn = document.getElementById('brksSubmitBtn');
-      errEl.classList.add('hidden');
-
-      const rows = Array.from(tbody.querySelectorAll('tr'));
-      const breaks = [];
-      for (let i = 0; i < rows.length; i++) {
-        const inputs = rows[i].querySelectorAll('input');
-        const label = (inputs[0].value || 'Break').trim();
-        const startVal = inputs[1].value;
-        const dur = parseInt(inputs[2].value, 10);
-        if (!startVal) {
-          errEl.textContent = 'Row ' + (i + 1) + ': Start time is required.';
-          errEl.classList.remove('hidden');
-          return;
+  /* ── Run of Show ── */
+  function rosReadOnly() { return !!rosSession&&(rosSession.status==='completed'||rosSession.status==='cancelled'); }
+  function openRunOfShowModal(id) {
+    const s=sessions.find(x=>x._id===id);
+    if (!s) { showToast('Session not found.','#c0392b'); return; }
+    if (s.sessionType!=='live-course') { showToast('Run of show is only available for live CE courses.','#c0392b'); return; }
+    rosSession=s;
+    rosAgenda=(s.agenda||[]).map(a=>({
+      type:AGENDA_TYPES.includes(a.type)?a.type:'lecture',
+      title:a.title||'', durationMin:(a.durationMin===0||a.durationMin)?a.durationMin:'',
+      prompt:a.prompt||'', script:a.script||'',
+      clipIndex:(a.clipIndex===0||a.clipIndex)?a.clipIndex:''
+    }));
+    renderRunOfShow();
+    document.getElementById('runOfShowModal').style.display='flex';
+  }
+  function closeRunOfShowModal() { document.getElementById('runOfShowModal').style.display='none'; rosSession=null; rosAgenda=[]; }
+  function renderRunOfShow() {
+    document.getElementById('rosTitle').textContent='Run of Show — '+(rosSession?.title||'');
+    renderRosClips(); renderRosImport(); renderRosAgenda();
+  }
+  function renderRosImport() {
+    const ro=rosReadOnly();
+    if (ro) { document.getElementById('rosImportSection').innerHTML=''; return; }
+    document.getElementById('rosImportSection').innerHTML=`
+      <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Import Guide</h3>
+      <p class="text-xs text-forest-500 mb-2">Paste your facilitator guide (headings like <code>## Segment Title (25 min)</code>, with an optional <code>Prompt:</code> line) or upload the .docx directly.</p>
+      <textarea id="rosImportText" rows="4" placeholder="Paste your facilitator guide text here..." class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500 mb-2"></textarea>
+      <div class="flex items-center gap-2">
+        <button onclick="importAgendaFromText()" class="px-3 py-1.5 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-xs font-semibold transition-colors flex items-center gap-1"><i class="fas fa-file-import text-xs"></i> Parse pasted text</button>
+        <button onclick="document.getElementById('rosImportFileInput').click()" class="px-3 py-1.5 rounded-lg border border-gray-300 text-xs text-forest-700 hover:bg-stone-50 transition-colors flex items-center gap-1"><i class="fas fa-file-word text-xs"></i> Upload .docx instead</button>
+        <span id="rosImportStatus" class="text-xs text-forest-500"></span>
+      </div>`;
+  }
+  function applyParsedAgenda(agenda,meta) {
+    if (rosAgenda.length>0&&!confirm(`This will replace the ${rosAgenda.length} row(s) in the editor with ${agenda.length} imported segment(s) (${meta.totalMinutes} min total). Continue?`)) return;
+    rosAgenda=agenda.map(a=>({type:a.type,title:a.title||'',durationMin:(a.durationMin===0||a.durationMin)?a.durationMin:'',prompt:a.prompt||'',script:a.script||'',clipIndex:''}));
+    renderRosAgenda();
+    showToast(`Imported ${agenda.length} segments (${meta.totalMinutes} min). Review below, then Save agenda.`,'#284157');
+  }
+  async function importAgendaFromText() {
+    const text=document.getElementById('rosImportText').value;
+    if (!text||!text.trim()) { showToast('Paste some text first.','#c0392b'); return; }
+    const status=document.getElementById('rosImportStatus');
+    status.textContent='Parsing...';
+    try {
+      const r=await fetch(`${API}/${rosSession._id}/agenda/import-text`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({text})});
+      const d=await r.json(); status.textContent='';
+      if (!r.ok) { showToast(d.error||'Failed to parse text.','#c0392b'); return; }
+      applyParsedAgenda(d.agenda,d);
+    } catch(e) { status.textContent=''; showToast('Error: '+e.message,'#c0392b'); }
+  }
+  async function importAgendaFromDocx(file) {
+    if (!file) return;
+    const status=document.getElementById('rosImportStatus');
+    if (status) status.textContent='Uploading & parsing...';
+    try {
+      const fd=new FormData(); fd.append('file',file);
+      const r=await fetch(`${API}/${rosSession._id}/agenda/import-docx`,{method:'POST',headers:{'Authorization':'Bearer '+token},body:fd});
+      const d=await r.json();
+      if (status) status.textContent='';
+      if (!r.ok) { showToast(d.error||'Failed to parse document.','#c0392b'); return; }
+      applyParsedAgenda(d.agenda,d);
+    } catch(e) { if(status) status.textContent=''; showToast('Error: '+e.message,'#c0392b'); }
+    finally { document.getElementById('rosImportFileInput').value=''; }
+  }
+  function renderRosClips() {
+    const clips=rosSession.clips||[];
+    const ro=rosReadOnly();
+    const list=clips.length
+      ? clips.map((c,i)=>`<div class="flex items-center justify-between px-3 py-2 border border-gray-200 rounded-lg"><div class="text-sm text-forest-700"><span class="font-medium text-burgundy-900">${escHtml(c.title)}</span> · ${Number(c.durationSec)||0}s · clipIndex ${i}</div>${ro?'':`<button onclick="removeClip('${rosSession._id}',${i})" class="text-forest-400 hover:text-red-600 transition-colors"><i class="fas fa-times"></i></button>`}</div>`).join('')
+      : '<p class="text-sm text-forest-500">No clips registered yet.</p>';
+    const addRow=ro?'':`<div class="grid grid-cols-12 gap-2 mt-3">
+      <input id="rosClipTitle" type="text" placeholder="Title" class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+      <input id="rosClipKey" type="text" placeholder="s3Key" class="col-span-4 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+      <input id="rosClipBucket" type="text" placeholder="s3Bucket (optional)" class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+      <input id="rosClipDur" type="number" min="1" max="600" placeholder="sec" class="col-span-1 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+      <button onclick="addClip('${rosSession._id}')" class="col-span-1 bg-burgundy-800 hover:bg-burgundy-900 text-white rounded-lg text-sm font-semibold transition-colors">Add</button>
+      </div><p class="text-xs text-forest-500 mt-1">Registers an existing S3 object by key. Duration must be 1-600 seconds.</p>`;
+    document.getElementById('rosClipsSection').innerHTML=`<h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Clips</h3><div class="space-y-2">${list}</div>${addRow}`;
+  }
+  async function addClip(id) {
+    if (rosReadOnly()) return;
+    const title=document.getElementById('rosClipTitle').value.trim();
+    const s3Key=document.getElementById('rosClipKey').value.trim();
+    const s3Bucket=document.getElementById('rosClipBucket').value.trim();
+    const durationSec=parseInt(document.getElementById('rosClipDur').value,10);
+    if (!title||!s3Key) { showToast('Clip title and s3Key are required.','#c0392b'); return; }
+    if (!Number.isFinite(durationSec)||durationSec<1||durationSec>600) { showToast('Clip duration must be between 1 and 600 seconds.','#c0392b'); return; }
+    const body={title,s3Key,durationSec}; if(s3Bucket) body.s3Bucket=s3Bucket;
+    try {
+      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),15000);
+      const r=await fetch(`${API}/${id}/clips`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body),signal:controller.signal});
+      clearTimeout(tid); const d=await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed to add clip');
+      rosSession.clips=d.clips||[]; renderRosClips(); renderRosAgenda(); showToast('Clip registered.','#284157');
+    } catch(e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
+  async function removeClip(id,idx) {
+    if (rosReadOnly()) return;
+    if (!confirm('Remove this clip? Agenda rows referencing it may need re-selecting.')) return;
+    try {
+      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),15000);
+      const r=await fetch(`${API}/${id}/clips/${idx}`,{method:'DELETE',headers:{'Authorization':'Bearer '+token},signal:controller.signal});
+      clearTimeout(tid); const d=await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed to remove clip');
+      rosSession.clips=d.clips||[]; syncAgendaFromDom(); renderRosClips(); renderRosAgenda(); showToast('Clip removed.','#284157');
+    } catch(e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
+  function renderRosAgenda() {
+    const ro=rosReadOnly();
+    const clips=rosSession.clips||[];
+    const rows=rosAgenda.map((a,i)=>{
+      const typeOpts=AGENDA_TYPES.map(t=>`<option value="${t}" ${a.type===t?'selected':''}>${t}</option>`).join('');
+      let clipCell='';
+      if (a.type==='clip') {
+        if (!clips.length) { clipCell=`<div class="text-xs text-burgundy-700 bg-burgundy-50 rounded px-2 py-1">Add a clip in the Clips section first.</div>`; }
+        else {
+          const opts=['<option value="">- select clip -</option>'].concat(clips.map((c,ci)=>`<option value="${ci}" ${String(a.clipIndex)===String(ci)?'selected':''}>${escHtml(c.title)} (${Number(c.durationSec)||0}s)</option>`)).join('');
+          clipCell=`<div><label class="block text-xs text-forest-600 mb-1">Clip</label><select id="ros_clip_${i}" ${ro?'disabled':''} class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${opts}</select></div>`;
         }
-        if (!dur || dur < 1 || dur > 120) {
-          errEl.textContent = 'Row ' + (i + 1) + ': Duration must be 1–120 minutes.';
-          errEl.classList.remove('hidden');
-          return;
-        }
-        const b = { label: label || 'Break', startsAt: new Date(startVal).toISOString(), durationMin: dur };
-        if (rows[i].dataset.resumeReminderSentAt) b.resumeReminderSentAt = rows[i].dataset.resumeReminderSentAt;
-        breaks.push(b);
       }
-      breaks.sort((a, b) => new Date(a.startsAt) - new Date(b.startsAt));
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Saving…';
-      try {
-        const controller = new AbortController();
-        const tid = setTimeout(() => controller.abort(), 10000);
-        const r = await fetch(`${API}/${_breaksSessionId}`, {
-          method: 'PATCH',
-          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ breaks }),
-          signal: controller.signal
-        });
-        clearTimeout(tid);
-        const d = await r.json();
-        if (!r.ok) throw new Error(d.error || 'Failed');
-        const s = sessions.find(x => x._id === _breaksSessionId);
-        if (s) s.breaks = (d.session && d.session.breaks) || breaks;
-        closeBreaksModal();
-        showToast('Saved ' + breaks.length + ' break(s).', '#284157');
-        renderTable();
-      } catch (e) {
-        errEl.textContent = 'Error: ' + e.message;
-        errEl.classList.remove('hidden');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Save Breaks';
-      }
-    }
-
-    /* Close breaks modal on backdrop click */
-    document.getElementById('breaksModal').addEventListener('click', function(e) {
-      if (e.target === document.getElementById('breaksModal')) closeBreaksModal();
+      return `<div class="border border-burgundy-100 rounded-lg p-3 space-y-2 bg-stone-50">
+        <div class="grid grid-cols-12 gap-2 items-center">
+          <select id="ros_type_${i}" onchange="onAgendaTypeChange(${i},this.value)" ${ro?'disabled':''} class="col-span-3 border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500">${typeOpts}</select>
+          <input id="ros_title_${i}" type="text" value="${escHtml(a.title)}" placeholder="Title" ${ro?'disabled':''} class="col-span-5 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <input id="ros_dur_${i}" type="number" min="1" value="${a.durationMin===''?'':escHtml(a.durationMin)}" placeholder="min" ${ro?'disabled':''} class="col-span-2 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <div class="col-span-2 flex flex-wrap items-center justify-end gap-1">${ro?'':`<button onclick="moveAgendaRow(${i},-1)" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-up"></i></button><button onclick="moveAgendaRow(${i},1)" class="text-forest-400 hover:text-burgundy-700 px-1"><i class="fas fa-arrow-down"></i></button><button onclick="removeAgendaRow(${i})" class="text-forest-400 hover:text-red-600 px-1"><i class="fas fa-times"></i></button>`}</div>
+        </div>
+        <input id="ros_prompt_${i}" type="text" value="${escHtml(a.prompt)}" placeholder="Prompt (optional - shown to attendees)" ${ro?'disabled':''} class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+        <div><label class="block text-xs text-forest-600 mb-1">Speaker script (host-only)</label>
+          <textarea id="ros_script_${i}" rows="3" ${ro?'disabled':''} class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">${escHtml(a.script)}</textarea>
+        </div>${clipCell}
+      </div>`;
+    }).join('');
+    const controls=ro
+      ? `<p class="text-xs text-forest-500">This session is ${escHtml(rosSession.status)} - agenda is read-only.</p>`
+      : `<div class="flex items-center justify-between"><button onclick="addAgendaRow()" class="px-3 py-1.5 rounded-lg border border-burgundy-200 text-xs text-burgundy-700 hover:bg-burgundy-50 transition-colors flex items-center gap-1"><i class="fas fa-plus text-xs"></i> Add row</button><button onclick="saveAgenda('${rosSession._id}')" class="px-4 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold transition-colors flex items-center gap-2"><i class="fas fa-save text-xs"></i> Save agenda</button></div>`;
+    document.getElementById('rosAgendaSection').innerHTML=`<h3 class="font-display text-lg font-semibold text-burgundy-900 mb-2">Agenda / Run of Show</h3><div class="space-y-2 mb-3">${rows||'<p class="text-sm text-forest-500">No agenda rows yet.</p>'}</div>${controls}`;
+  }
+  function syncAgendaFromDom() {
+    rosAgenda.forEach((a,i)=>{
+      const tEl=document.getElementById('ros_type_'+i),tiEl=document.getElementById('ros_title_'+i),dEl=document.getElementById('ros_dur_'+i),pEl=document.getElementById('ros_prompt_'+i),sEl=document.getElementById('ros_script_'+i),cEl=document.getElementById('ros_clip_'+i);
+      if(tEl)a.type=tEl.value;if(tiEl)a.title=tiEl.value;if(dEl)a.durationMin=dEl.value;if(pEl)a.prompt=pEl.value;if(sEl)a.script=sEl.value;
+      if(cEl)a.clipIndex=cEl.value;else if(a.type!=='clip')a.clipIndex='';
     });
+  }
+  function onAgendaTypeChange(i,val) { syncAgendaFromDom(); rosAgenda[i].type=val; if(val!=='clip') rosAgenda[i].clipIndex=''; renderRosAgenda(); }
+  function addAgendaRow() { syncAgendaFromDom(); rosAgenda.push({type:'lecture',title:'',durationMin:'',prompt:'',script:'',clipIndex:''}); renderRosAgenda(); }
+  function moveAgendaRow(i,dir) { syncAgendaFromDom(); const j=i+dir; if(j<0||j>=rosAgenda.length)return; const tmp=rosAgenda[i];rosAgenda[i]=rosAgenda[j];rosAgenda[j]=tmp; renderRosAgenda(); }
+  function removeAgendaRow(i) { syncAgendaFromDom(); rosAgenda.splice(i,1); renderRosAgenda(); }
+  async function saveAgenda(id) {
+    if (rosReadOnly()) return;
+    syncAgendaFromDom();
+    const clipsLen=(rosSession.clips||[]).length;
+    const agenda=rosAgenda.map((a,idx)=>{
+      const row={order:idx,type:a.type,title:(a.title||'').trim()};
+      const dur=parseInt(a.durationMin,10);
+      if(a.durationMin!==''&&Number.isFinite(dur)&&dur>=1) row.durationMin=dur;
+      if((a.prompt||'').trim()) row.prompt=a.prompt.trim();
+      if((a.script||'').trim()) row.script=a.script.trim();
+      if(a.type==='clip'&&a.clipIndex!==''&&a.clipIndex!=null){const ci=parseInt(a.clipIndex,10);if(Number.isFinite(ci)&&ci>=0&&ci<clipsLen) row.clipIndex=ci;}
+      return row;
+    });
+    try {
+      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),15000);
+      const r=await fetch(`${API}/${id}`,{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({agenda}),signal:controller.signal});
+      clearTimeout(tid); const d=await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed to save agenda');
+      rosSession.agenda=(d.session&&d.session.agenda)?d.session.agenda:agenda;
+      showToast('Agenda saved.','#284157');
+    } catch(e) { showToast('Error: '+e.message,'#c0392b'); }
+  }
 
-    checkAuth();
-  </script>
+  /* ── Modal backdrop clicks ── */
+  document.getElementById('createModal').addEventListener('click',e=>{ if(e.target===document.getElementById('createModal')) closeCreateModal(); });
+  document.getElementById('runOfShowModal').addEventListener('click',e=>{ if(e.target===document.getElementById('runOfShowModal')) closeRunOfShowModal(); });
+  document.getElementById('statusModal').addEventListener('click',e=>{ if(e.target===document.getElementById('statusModal')) closeStatusModal(); });
+
+  /* ── Breaks modal ── */
+  let _breaksSessionId=null;
+  function openBreaksModal(id) {
+    _breaksSessionId=id;
+    const s=sessions.find(x=>x._id===id);
+    const readonly=s&&(s.status==='completed'||s.status==='cancelled');
+    document.getElementById('brksSubtitle').textContent=(s?s.title+' - ':'')+
+      'break minutes excluded from NBCC attendance denominator; attendees get a resume reminder ~3 min before each break ends.'+
+      (readonly?' (read-only: session is '+s.status+')':'');
+    const tbody=document.getElementById('brksTbody'); tbody.innerHTML='';
+    ((s&&s.breaks)||[]).forEach(b=>_appendBreakRow(tbody,b,readonly));
+    _refreshBrksEmpty();
+    document.getElementById('brksAddBtn').classList.toggle('hidden',!!readonly);
+    document.getElementById('brksSubmitBtn').classList.toggle('hidden',!!readonly);
+    document.getElementById('brksErr').classList.add('hidden');
+    document.getElementById('breaksModal').classList.remove('hidden');
+  }
+  function closeBreaksModal() { document.getElementById('breaksModal').classList.add('hidden'); }
+  function _toDatetimeLocal(isoStr) {
+    if (!isoStr) return '';
+    const d=new Date(isoStr); const p=n=>String(n).padStart(2,'0');
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+  }
+  function _appendBreakRow(tbody,b,readonly) {
+    const tr=document.createElement('tr'); tr.className='border-b border-gray-100';
+    if(b&&b.resumeReminderSentAt) tr.dataset.resumeReminderSentAt=b.resumeReminderSentAt;
+    const dis=readonly?' disabled':'';
+    const cls='w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500'+(readonly?' bg-stone-100 cursor-not-allowed':'');
+    tr.innerHTML='<td class="px-2 py-2"><input type="text" placeholder="Break" value="'+escHtml(b?(b.label||'Break'):'')+'" class="'+cls+'"'+dis+'></td>'+
+      '<td class="px-2 py-2"><input type="datetime-local" value="'+escHtml(_toDatetimeLocal(b&&b.startsAt))+'" class="'+cls+'"'+dis+'></td>'+
+      '<td class="px-2 py-2 w-20"><input type="number" min="1" max="120" placeholder="10" value="'+escHtml(b?String(b.durationMin||''):'')+'" class="'+cls+' text-center"'+dis+'></td>'+
+      '<td class="px-2 py-2 text-right">'+(!readonly?'<button type="button" onclick="removeBreakRow(this)" class="text-red-500 hover:text-red-700 text-xs" title="Remove"><i class="fas fa-trash"></i></button>':' ')+'</td>';
+    tbody.appendChild(tr);
+  }
+  function addBreakRow() { const tbody=document.getElementById('brksTbody'); _appendBreakRow(tbody,null,false); _refreshBrksEmpty(); const rows=tbody.querySelectorAll('tr'); if(rows.length) rows[rows.length-1].querySelector('input').focus(); }
+  function removeBreakRow(btn) { btn.closest('tr').remove(); _refreshBrksEmpty(); }
+  function _refreshBrksEmpty() { const empty=document.getElementById('brksEmpty'); const count=document.getElementById('brksTbody').querySelectorAll('tr').length; empty.classList.toggle('hidden',count>0); }
+  async function saveBreaks() {
+    const tbody=document.getElementById('brksTbody'); const errEl=document.getElementById('brksErr'); const submitBtn=document.getElementById('brksSubmitBtn');
+    errEl.classList.add('hidden');
+    const rows=Array.from(tbody.querySelectorAll('tr'));
+    const breaks=[];
+    for(let i=0;i<rows.length;i++){
+      const inputs=rows[i].querySelectorAll('input');
+      const label=(inputs[0].value||'Break').trim(); const startVal=inputs[1].value; const dur=parseInt(inputs[2].value,10);
+      if(!startVal){errEl.textContent='Row '+(i+1)+': Start time is required.';errEl.classList.remove('hidden');return;}
+      if(!dur||dur<1||dur>120){errEl.textContent='Row '+(i+1)+': Duration must be 1-120 minutes.';errEl.classList.remove('hidden');return;}
+      const b={label:label||'Break',startsAt:new Date(startVal).toISOString(),durationMin:dur};
+      if(rows[i].dataset.resumeReminderSentAt) b.resumeReminderSentAt=rows[i].dataset.resumeReminderSentAt;
+      breaks.push(b);
+    }
+    breaks.sort((a,b)=>new Date(a.startsAt)-new Date(b.startsAt));
+    submitBtn.disabled=true; submitBtn.textContent='Saving...';
+    try {
+      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),10000);
+      const r=await fetch(`${API}/${_breaksSessionId}`,{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({breaks}),signal:controller.signal});
+      clearTimeout(tid); const d=await r.json();
+      if(!r.ok) throw new Error(d.error||'Failed');
+      const s=sessions.find(x=>x._id===_breaksSessionId); if(s) s.breaks=(d.session&&d.session.breaks)||breaks;
+      closeBreaksModal(); showToast('Saved '+breaks.length+' break(s).','#284157'); renderTable();
+    } catch(e) { errEl.textContent='Error: '+e.message; errEl.classList.remove('hidden'); submitBtn.disabled=false; submitBtn.textContent='Save Breaks'; }
+  }
+  document.getElementById('breaksModal').addEventListener('click',function(e){if(e.target===document.getElementById('breaksModal'))closeBreaksModal();});
+
+  checkAuth();
+</script>
 </body>
 </html>

@@ -105,6 +105,7 @@ const liveSessionSchema = new mongoose.Schema({
 
   // Access & pricing
   capacity: { type: Number, default: 50, min: 1, max: 200 },
+  registrationCutoffDays: { type: Number, default: 7, min: 0, max: 30 }, // days before start; 0 = no cutoff
   price: { type: Number, default: 0, min: 0 }, // USD; 0 = free / included
   isPublished: { type: Boolean, default: false, index: true },
 
@@ -305,6 +306,7 @@ liveSessionSchema.methods.toPublicJSON = function () {
     scheduledEnd: this.scheduledEnd,
     timezone: this.timezone,
     capacity: this.capacity,
+    registrationCutoffDays: this.registrationCutoffDays ?? 7,
     seatsRemaining: Math.max(0, this.capacity - this.registrants.length),
     price: this.price,
     status: this.status,

@@ -217,6 +217,22 @@ router.post('/:id/register', protect, async (req, res) => {
     if (!['scheduled', 'live'].includes(session.status)) {
       return res.status(400).json({ error: 'Registration is closed for this session.' });
     }
+    // ── Registration cutoff (admin always bypasses) ──
+    const _cutoffDays = typeof session.registrationCutoffDays === 'number'
+      ? session.registrationCutoffDays : 7;
+    if (_cutoffDays > 0 && req.user.role !== 'admin' && session.scheduledStart) {
+      const msUntilStart = new Date(session.scheduledStart).getTime() - Date.now();
+      if (msUntilStart < _cutoffDays * 24 * 60 * 60 * 1000) {
+        const cutoffDate = new Date(new Date(session.scheduledStart).getTime() - _cutoffDays * 24 * 60 * 60 * 1000);
+        return res.status(400).json({
+          error: `Registration closed on ${cutoffDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}. Sign-ups close ${_cutoffDays} day${_cutoffDays !== 1 ? 's' : ''} before each session.`,
+          reason: 'registration_closed',
+          cutoffDays: _cutoffDays,
+          cutoffDate: cutoffDate.toISOString()
+        });
+      }
+    }
+
     if (session.isRegistered(req.user._id)) {
       return res.json({ registered: true, message: 'Already registered.' });
     }
