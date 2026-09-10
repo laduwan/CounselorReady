@@ -31,6 +31,7 @@ const EVENT_CONFIG = {
   tool_used:             { emoji: '🛠️', label: 'Free Tool Used',         color: NAVY,      adminLink: '/admin-tool-analytics.html' },
   db_backup:             { emoji: '🗄️', label: 'DB Backup Written',      color: GREEN,     adminLink: '/admin-migration.html' },
   db_backup_failed:      { emoji: '🚨', label: 'DB Backup FAILED',       color: '#B91C1C', adminLink: '/admin-migration.html' },
+  live_session_registered: { emoji: '📅', label: 'Live Session Registration', color: GOLD,  adminLink: '/admin-live-sessions.html' },
 };
 
 function buildEmailHtml({ emoji, label, color, rows, adminLink }) {
@@ -156,6 +157,16 @@ export async function sendAdminAlert(eventType, data = {}) {
         ['Event', data.event || 'used'],
         ['User',  data.userName || data.userEmail || 'Anonymous'],
         ['State', data.state || ''],
+      ];
+      break;
+    case 'live_session_registered':
+      subject += ` — ${data.sessionTitle || 'session'}`;
+      rows = [
+        ['User',    data.userName  || data.userEmail || ''],
+        ['Email',   data.userEmail || ''],
+        ['Session', data.sessionTitle || ''],
+        ['Date',    data.sessionDate  || 'TBD'],
+        ['Paid',    data.paid ? `$${data.amount || 0}` : 'Free (VIP)'],
       ];
       break;
     case 'db_backup':
