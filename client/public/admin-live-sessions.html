@@ -329,6 +329,10 @@
       <button onclick="closeBreaksModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
     </div>
     <div class="px-6 py-5">
+      <div id="brksOpts" class="flex flex-wrap items-center gap-x-5 gap-y-2 mb-3 text-xs text-forest-700">
+        <label class="flex items-center gap-1.5 cursor-pointer"><input id="brksExtend" type="checkbox" checked onchange="scheduleBreaksPreview()" class="accent-burgundy-800"> Extend end time so CE hours stay whole</label>
+        <label class="flex items-center gap-1.5 cursor-pointer"><input id="brksSnap" type="checkbox" checked onchange="scheduleBreaksPreview()" class="accent-burgundy-800"> Snap to run-of-show segment breaks</label>
+      </div>
       <div class="overflow-x-auto border border-gray-100 rounded-lg mb-3">
         <table class="w-full text-sm">
           <thead class="bg-stone-50 border-b border-gray-100">
@@ -343,12 +347,16 @@
         </table>
       </div>
       <p id="brksEmpty" class="hidden text-center py-3 text-forest-500 text-sm">No breaks declared yet.</p>
+      <div id="brksPreview" class="hidden rounded-lg border px-4 py-3 mb-3 text-sm" style="background:#F8F7F4;border-color:#e7e2d8;"></div>
       <div id="brksErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2 mb-3"></div>
       <div class="flex items-center justify-between pt-3 border-t border-gray-100">
-        <button id="brksAddBtn" type="button" onclick="addBreakRow()" class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1"><i class="fas fa-plus text-xs"></i> Add break</button>
+        <div id="brksAddBtn" class="flex items-center gap-2">
+          <button type="button" onclick="addBreakRow('Break',15)" class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1"><i class="fas fa-plus text-xs"></i> Add break</button>
+          <button type="button" onclick="addBreakRow('Lunch',30)" class="px-3 py-1.5 rounded-lg border border-forest-200 text-xs text-forest-700 hover:bg-forest-50 transition-colors flex items-center gap-1"><i class="fas fa-utensils text-xs"></i> Add lunch</button>
+        </div>
         <div class="flex items-center gap-3">
           <button type="button" onclick="closeBreaksModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
-          <button id="brksSubmitBtn" type="button" onclick="saveBreaks()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save Breaks</button>
+          <button id="brksSubmitBtn" type="button" onclick="saveBreaks()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save &amp; Apply</button>
         </div>
       </div>
     </div>
@@ -1144,24 +1152,33 @@
   document.getElementById('runOfShowModal').addEventListener('click',e=>{ if(e.target===document.getElementById('runOfShowModal')) closeRunOfShowModal(); });
   document.getElementById('statusModal').addEventListener('click',e=>{ if(e.target===document.getElementById('statusModal')) closeStatusModal(); });
 
-  /* ── Breaks modal ── */
-  let _breaksSessionId=null;
+  /* ── Breaks modal ──
+     Preview + apply both hit the server planner (services/breakPlanner.js):
+       POST /:id/breaks/plan  → preview (writes nothing)
+       PUT  /:id/breaks       → breaks + run-of-show break segments + end time
+                                extended + Whereby room re-created (scheduled only) */
+  let _breaksSessionId=null, _brksReadonly=false, _brksPreviewTimer=null, _brksPreviewSeq=0, _brksLastPlan=null;
   function openBreaksModal(id) {
-    _breaksSessionId=id;
+    _breaksSessionId=id; _brksLastPlan=null;
     const s=sessions.find(x=>x._id===id);
-    const readonly=s&&(s.status==='completed'||s.status==='cancelled');
+    _brksReadonly=!!(s&&(s.status==='completed'||s.status==='cancelled'));
     document.getElementById('brksSubtitle').textContent=(s?s.title+' - ':'')+
-      'break minutes excluded from NBCC attendance denominator; attendees get a resume reminder ~3 min before each break ends.'+
-      (readonly?' (read-only: session is '+s.status+')':'');
+      'break minutes are excluded from NBCC attendance; attendees get a resume reminder ~3 min before each break ends.'+
+      (_brksReadonly?' (read-only: session is '+s.status+')':'');
     const tbody=document.getElementById('brksTbody'); tbody.innerHTML='';
-    ((s&&s.breaks)||[]).forEach(b=>_appendBreakRow(tbody,b,readonly));
+    ((s&&s.breaks)||[]).forEach(b=>_appendBreakRow(tbody,b,_brksReadonly));
     _refreshBrksEmpty();
-    document.getElementById('brksAddBtn').classList.toggle('hidden',!!readonly);
-    document.getElementById('brksSubmitBtn').classList.toggle('hidden',!!readonly);
+    document.getElementById('brksExtend').checked=true;
+    document.getElementById('brksSnap').checked=true;
+    document.getElementById('brksOpts').classList.toggle('hidden',_brksReadonly);
+    document.getElementById('brksAddBtn').classList.toggle('hidden',_brksReadonly);
+    document.getElementById('brksSubmitBtn').classList.toggle('hidden',_brksReadonly);
     document.getElementById('brksErr').classList.add('hidden');
+    document.getElementById('brksPreview').classList.add('hidden');
     document.getElementById('breaksModal').classList.remove('hidden');
+    if(!_brksReadonly) scheduleBreaksPreview(0);
   }
-  function closeBreaksModal() { document.getElementById('breaksModal').classList.add('hidden'); }
+  function closeBreaksModal() { document.getElementById('breaksModal').classList.add('hidden'); clearTimeout(_brksPreviewTimer); }
   function _toDatetimeLocal(isoStr) {
     if (!isoStr) return '';
     const d=new Date(isoStr); const p=n=>String(n).padStart(2,'0');
@@ -1172,39 +1189,101 @@
     if(b&&b.resumeReminderSentAt) tr.dataset.resumeReminderSentAt=b.resumeReminderSentAt;
     const dis=readonly?' disabled':'';
     const cls='w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500'+(readonly?' bg-stone-100 cursor-not-allowed':'');
-    tr.innerHTML='<td class="px-2 py-2"><input type="text" placeholder="Break" value="'+escHtml(b?(b.label||'Break'):'')+'" class="'+cls+'"'+dis+'></td>'+
-      '<td class="px-2 py-2"><input type="datetime-local" value="'+escHtml(_toDatetimeLocal(b&&b.startsAt))+'" class="'+cls+'"'+dis+'></td>'+
-      '<td class="px-2 py-2 w-20"><input type="number" min="1" max="120" placeholder="10" value="'+escHtml(b?String(b.durationMin||''):'')+'" class="'+cls+' text-center"'+dis+'></td>'+
+    const on=readonly?'':' oninput="scheduleBreaksPreview()"';
+    tr.innerHTML='<td class="px-2 py-2"><input type="text" placeholder="Break" value="'+escHtml(b?(b.label||'Break'):'')+'" class="'+cls+'"'+dis+on+'></td>'+
+      '<td class="px-2 py-2"><input type="datetime-local" value="'+escHtml(_toDatetimeLocal(b&&b.startsAt))+'" class="'+cls+'"'+dis+on+'></td>'+
+      '<td class="px-2 py-2 w-20"><input type="number" min="1" max="120" placeholder="15" value="'+escHtml(b?String(b.durationMin||''):'')+'" class="'+cls+' text-center"'+dis+on+'></td>'+
       '<td class="px-2 py-2 text-right">'+(!readonly?'<button type="button" onclick="removeBreakRow(this)" class="text-red-500 hover:text-red-700 text-xs" title="Remove"><i class="fas fa-trash"></i></button>':' ')+'</td>';
     tbody.appendChild(tr);
   }
-  function addBreakRow() { const tbody=document.getElementById('brksTbody'); _appendBreakRow(tbody,null,false); _refreshBrksEmpty(); const rows=tbody.querySelectorAll('tr'); if(rows.length) rows[rows.length-1].querySelector('input').focus(); }
-  function removeBreakRow(btn) { btn.closest('tr').remove(); _refreshBrksEmpty(); }
+  function addBreakRow(label,mins) {
+    const s=sessions.find(x=>x._id===_breaksSessionId);
+    const tbody=document.getElementById('brksTbody');
+    // Default start: session midpoint — the server snaps it to the nearest segment break.
+    let start=null;
+    if(s&&s.scheduledStart&&s.scheduledEnd){ const a=new Date(s.scheduledStart).getTime(), z=new Date(s.scheduledEnd).getTime(); start=new Date(a+Math.round((z-a)/2/60000)*60000).toISOString(); }
+    _appendBreakRow(tbody,{label:label||'Break',startsAt:start,durationMin:mins||15},false);
+    _refreshBrksEmpty(); scheduleBreaksPreview(0);
+    const rows=tbody.querySelectorAll('tr'); if(rows.length) rows[rows.length-1].querySelector('input').focus();
+  }
+  function removeBreakRow(btn) { btn.closest('tr').remove(); _refreshBrksEmpty(); scheduleBreaksPreview(0); }
   function _refreshBrksEmpty() { const empty=document.getElementById('brksEmpty'); const count=document.getElementById('brksTbody').querySelectorAll('tr').length; empty.classList.toggle('hidden',count>0); }
-  async function saveBreaks() {
-    const tbody=document.getElementById('brksTbody'); const errEl=document.getElementById('brksErr'); const submitBtn=document.getElementById('brksSubmitBtn');
-    errEl.classList.add('hidden');
-    const rows=Array.from(tbody.querySelectorAll('tr'));
-    const breaks=[];
-    for(let i=0;i<rows.length;i++){
-      const inputs=rows[i].querySelectorAll('input');
-      const label=(inputs[0].value||'Break').trim(); const startVal=inputs[1].value; const dur=parseInt(inputs[2].value,10);
-      if(!startVal){errEl.textContent='Row '+(i+1)+': Start time is required.';errEl.classList.remove('hidden');return;}
-      if(!dur||dur<1||dur>120){errEl.textContent='Row '+(i+1)+': Duration must be 1-120 minutes.';errEl.classList.remove('hidden');return;}
-      const b={label:label||'Break',startsAt:new Date(startVal).toISOString(),durationMin:dur};
-      if(rows[i].dataset.resumeReminderSentAt) b.resumeReminderSentAt=rows[i].dataset.resumeReminderSentAt;
-      breaks.push(b);
+  function _collectBreaks() {
+    return Array.from(document.getElementById('brksTbody').querySelectorAll('tr')).map(tr=>{
+      const inputs=tr.querySelectorAll('input');
+      const startVal=inputs[1].value;
+      const b={label:(inputs[0].value||'Break').trim()||'Break',startsAt:startVal?new Date(startVal).toISOString():'',durationMin:parseInt(inputs[2].value,10)};
+      if(tr.dataset.resumeReminderSentAt) b.resumeReminderSentAt=tr.dataset.resumeReminderSentAt;
+      return b;
+    });
+  }
+  function _brksBody() {
+    return JSON.stringify({breaks:_collectBreaks(),adjustEnd:document.getElementById('brksExtend').checked,snap:document.getElementById('brksSnap').checked});
+  }
+  function scheduleBreaksPreview(delay) {
+    if(_brksReadonly) return;
+    clearTimeout(_brksPreviewTimer);
+    _brksPreviewTimer=setTimeout(runBreaksPreview, delay===0?0:400);
+  }
+  async function runBreaksPreview() {
+    const seq=++_brksPreviewSeq;
+    const box=document.getElementById('brksPreview');
+    try {
+      const r=await fetch(`${API}/${_breaksSessionId}/breaks/plan`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:_brksBody()});
+      const d=await r.json();
+      if(seq!==_brksPreviewSeq) return; // a newer preview is in flight
+      if(!r.ok) throw new Error(d.error||'Preview failed');
+      _brksLastPlan=d; _renderBreaksPreview(d);
+    } catch(e) {
+      if(seq!==_brksPreviewSeq) return;
+      _brksLastPlan=null;
+      box.innerHTML='<span class="text-red-600">Preview unavailable: '+escHtml(e.message)+'</span>';
+      box.classList.remove('hidden');
     }
-    breaks.sort((a,b)=>new Date(a.startsAt)-new Date(b.startsAt));
+  }
+  function _renderBreaksPreview(p) {
+    const box=document.getElementById('brksPreview');
+    const ok=p.instructionalMin>=p.targetMin && !p.errors.length;
+    const ce=p.ceuHours>0?(' · '+(p.instructionalMin/60).toFixed(2).replace(/\.?0+$/,'')+' of '+p.ceuHours+' CE'):'';
+    let h='<div class="flex items-center justify-between gap-3 mb-2">'+
+      '<div class="font-semibold" style="color:#284157;">'+escHtml(p.display.start)+' – '+escHtml(p.display.end)+
+      (p.endChanged?' <span class="text-xs font-normal" style="color:#8B6914;">(was '+escHtml(p.display.oldEnd)+')</span>':'')+'</div>'+
+      '<span class="px-2 py-0.5 rounded-full text-xs font-semibold" style="'+(ok?'background:#E3EFE6;color:#2F5A3C;':'background:#F6E3E7;color:#6B1D34;')+'">'+
+      p.instructionalMin+' of '+p.targetMin+' instructional min'+escHtml(ce)+(ok?' ✓':'')+'</span></div>';
+    if(p.placements.length){
+      h+='<ul class="space-y-0.5 mb-2">'+p.placements.map(x=>'<li class="text-xs text-forest-700"><strong>'+escHtml(x.label)+'</strong> '+escHtml(x.display)+(x.afterTitle?' <span class="text-forest-500">· after “'+escHtml(x.afterTitle)+'”</span>':'')+'</li>').join('')+'</ul>';
+    }
+    const changes=[];
+    if(p.endChanged) changes.push('End time moves '+(p.endDeltaMin>0?'+':'')+p.endDeltaMin+' min');
+    if(p.roomWillRegenerate) changes.push('Video room re-created for the new window');
+    if(p.agendaChange && p.agendaChange.breakSegsAfter!==p.agendaChange.breakSegsBefore) changes.push('Run of show: '+p.agendaChange.breakSegsAfter+' break segment'+(p.agendaChange.breakSegsAfter===1?'':'s')+' ('+p.agendaChange.after+' segments)');
+    if(changes.length) h+='<div class="text-xs mb-1" style="color:#284157;"><i class="fas fa-circle-info text-[10px]"></i> '+changes.map(escHtml).join(' · ')+'</div>';
+    (p.notices||[]).forEach(n=>{ h+='<div class="text-xs mb-1" style="color:#284157;"><i class="fas fa-bullhorn text-[10px]"></i> '+escHtml(n)+'</div>'; });
+    (p.warnings||[]).forEach(w=>{ h+='<div class="text-xs mb-1" style="color:#8B6914;"><i class="fas fa-triangle-exclamation text-[10px]"></i> '+escHtml(w)+'</div>'; });
+    (p.errors||[]).forEach(e=>{ h+='<div class="text-xs mb-1 text-red-600"><i class="fas fa-circle-xmark text-[10px]"></i> '+escHtml(e)+'</div>'; });
+    box.innerHTML=h; box.classList.remove('hidden');
+    const btn=document.getElementById('brksSubmitBtn');
+    btn.disabled=!!p.errors.length; btn.classList.toggle('opacity-50',!!p.errors.length); btn.classList.toggle('cursor-not-allowed',!!p.errors.length);
+  }
+  async function saveBreaks() {
+    const errEl=document.getElementById('brksErr'); const submitBtn=document.getElementById('brksSubmitBtn');
+    errEl.classList.add('hidden');
+    const p=_brksLastPlan;
+    if(p&&p.roomWillRegenerate&&!confirm('Save and apply?\n\nEnd time: '+p.display.oldEnd+' → '+p.display.end+'\nThe video room will be re-created for the new window.'+(p.registrants?'\n\n'+p.registrants+' registrant(s) will NOT be emailed — announce the new end time.':''))) return;
     submitBtn.disabled=true; submitBtn.textContent='Saving...';
     try {
-      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),10000);
-      const r=await fetch(`${API}/${_breaksSessionId}`,{method:'PATCH',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({breaks}),signal:controller.signal});
+      const controller=new AbortController(); const tid=setTimeout(()=>controller.abort(),30000);
+      const r=await fetch(`${API}/${_breaksSessionId}/breaks`,{method:'PUT',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:_brksBody(),signal:controller.signal});
       clearTimeout(tid); const d=await r.json();
-      if(!r.ok) throw new Error(d.error||'Failed');
-      const s=sessions.find(x=>x._id===_breaksSessionId); if(s) s.breaks=(d.session&&d.session.breaks)||breaks;
-      closeBreaksModal(); showToast('Saved '+breaks.length+' break(s).','#284157'); renderTable();
-    } catch(e) { errEl.textContent='Error: '+e.message; errEl.classList.remove('hidden'); submitBtn.disabled=false; submitBtn.textContent='Save Breaks'; }
+      if(!r.ok) { if(d.plan) _renderBreaksPreview(d.plan); throw new Error(d.error||'Failed'); }
+      const i=sessions.findIndex(x=>x._id===_breaksSessionId); if(i!==-1&&d.session) sessions[i]=d.session;
+      closeBreaksModal();
+      const sm=d.summary||{};
+      showToast('Saved '+sm.breaks+' break(s) · '+sm.instructionalMin+'/'+sm.targetMin+' instructional min'+(sm.endChanged?' · ends '+sm.end+' · room re-created':''),'#284157');
+      if(d.warnings&&d.warnings.length) setTimeout(()=>showToast(d.warnings.join(' '),'#8B6914'),3500);
+      renderTable();
+    } catch(e) { errEl.textContent='Error: '+e.message; errEl.classList.remove('hidden'); }
+    finally { submitBtn.disabled=false; submitBtn.textContent='Save & Apply'; }
   }
   document.getElementById('breaksModal').addEventListener('click',function(e){if(e.target===document.getElementById('breaksModal'))closeBreaksModal();});
 

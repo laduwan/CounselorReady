@@ -26,6 +26,7 @@ import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
 import { sendAdminAlert } from '../services/adminNotificationService.js';
+import { planBreaks } from '../services/breakPlanner.js';
 
 const router = express.Router();
 const agendaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
@@ -517,6 +518,116 @@ router.delete('/:id', protect, requireAdmin, async (req, res) => {
     res.json({ cancelled: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to cancel session' });
+  }
+});
+
+// ── Breaks & lunch (admin) ────────────────────────────────────────────────
+// Both routes run the SAME planner (services/breakPlanner.js), so what the admin
+// previews is exactly what gets written.
+//   scheduled  → breaks[] + run-of-show break segments + scheduledEnd extended so
+//                instructional minutes stay = ceuHours × 60 + Whereby room re-created
+//                for the new window (new room FIRST; old room deleted only after
+//                the DB write succeeds — a failed create writes nothing).
+//   live       → breaks[] only (end time, run of show, and room are left alone
+//                mid-session).
+//   completed / cancelled → read-only (409).
+function breakPlanOptions(session, body) {
+  return {
+    adjustEnd: body?.adjustEnd !== false,
+    snap: body?.snap !== false,
+    lockAgendaAndEnd: session.status === 'live'
+  };
+}
+
+function planPayload(plan, session) {
+  const registrants = (session.registrants || []).length;
+  return {
+    ...plan,
+    status: session.status,
+    registrants,
+    roomWillRegenerate: plan.endChanged && session.status === 'scheduled',
+    notices: [
+      ...(session.status === 'live' ? ['Session is live — breaks will save, but the end time, run of show, and video room will not change.'] : []),
+      ...(plan.endChanged && registrants ? [`${registrants} registrant${registrants === 1 ? '' : 's'} — announce the new end time (${plan.display.end}). This does not email anyone.`] : [])
+    ]
+  };
+}
+
+// POST /api/live-sessions/:id/breaks/plan — preview only, writes nothing
+router.post('/:id/breaks/plan', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id).lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    const plan = planBreaks(session, req.body?.breaks, breakPlanOptions(session, req.body));
+    res.json(planPayload(plan, session));
+  } catch (err) {
+    console.error('[live] breaks/plan:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PUT /api/live-sessions/:id/breaks — apply the plan
+router.put('/:id/breaks', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    if (session.status === 'completed' || session.status === 'cancelled') {
+      return res.status(409).json({ error: `Session is ${session.status} — breaks are read-only.` });
+    }
+
+    const plan = planBreaks(session.toObject(), req.body?.breaks, breakPlanOptions(session, req.body));
+    if (plan.errors.length) return res.status(400).json({ error: plan.errors.join(' '), plan: planPayload(plan, session.toObject()) });
+
+    const $set = { breaks: plan.breaks };
+    if (plan.agenda) $set.agenda = plan.agenda;
+
+    let newRoom = null;
+    const oldMeetingId = session.whereby?.meetingId || null;
+    if (plan.endChanged && session.status === 'scheduled') {
+      $set.scheduledEnd = plan.scheduledEnd;
+      try {
+        newRoom = await createMeeting({ ...session.toObject(), scheduledEnd: plan.scheduledEnd });
+      } catch (err) {
+        console.error('[live] breaks: room create failed:', err.message);
+        return res.status(502).json({ error: `Video room could not be re-created for the new end time — nothing was saved. (${err.message})` });
+      }
+      $set.whereby = newRoom;
+    }
+
+    await LiveSession.updateOne({ _id: session._id }, { $set });
+
+    const fresh = await LiveSession.findById(session._id);
+    const ok = fresh.breaks.length === plan.breaks.length
+      && fresh.scheduledEnd.getTime() === (plan.endChanged && session.status === 'scheduled' ? plan.scheduledEnd : session.scheduledEnd).getTime()
+      && (!newRoom || fresh.whereby?.meetingId === newRoom.meetingId);
+    if (!ok) {
+      console.error('[live] breaks: read-back mismatch for', session.slug);
+      return res.status(500).json({ error: 'Saved, but the read-back did not match. Refresh and check this session.' });
+    }
+
+    const warnings = [...plan.warnings];
+    if (newRoom && oldMeetingId) {
+      try { await deleteMeeting(oldMeetingId); }
+      catch (err) { warnings.push(`New room is live; old room ${oldMeetingId} could not be deleted (${err.message}).`); }
+    }
+
+    res.json({
+      session: fresh,
+      summary: {
+        breaks: plan.breaks.length,
+        instructionalMin: fresh.instructionalMinutes(),
+        targetMin: plan.targetMin,
+        end: plan.display.end,
+        endChanged: !!newRoom,
+        roomRegenerated: !!newRoom,
+        agendaSegments: fresh.agenda.length
+      },
+      warnings,
+      notices: planPayload(plan, session.toObject()).notices
+    });
+  } catch (err) {
+    console.error('[live] breaks:', err.message);
+    res.status(400).json({ error: err.message });
   }
 });
 
