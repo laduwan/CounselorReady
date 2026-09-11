@@ -21,6 +21,12 @@
 
 const WHEREBY_API_BASE = 'https://api.whereby.dev/v1';
 
+// Whereby's /meetings validator requires recording.destination to be PRESENT
+// on every recording object — including type:'none'. Omitting it returns
+// 400 "recording.destination MUST be an object or null". null is valid here
+// because nothing is being recorded. (Cloud branch still needs a real object.)
+const NO_RECORDING = Object.freeze({ type: 'none', destination: null, startTrigger: 'none' });
+
 function apiKey() {
   const key = process.env.WHEREBY_API_KEY;
   if (!key) throw new Error('WHEREBY_API_KEY is not set');
@@ -62,7 +68,7 @@ export async function createMeeting(session) {
     endDate: session.scheduledEnd.toISOString(),
     fields: ['hostRoomUrl'],
     recording: isSupervision
-      ? { type: 'none' } // HIPAA hard-lock — supervision can never record
+      ? { ...NO_RECORDING } // HIPAA hard-lock — supervision can never record
       : (session.recordingEnabled
           ? {
               type: 'cloud',
@@ -81,7 +87,7 @@ export async function createMeeting(session) {
               },
               startTrigger: 'automatic-2nd-participant'
             }
-          : { type: 'none' })
+          : { ...NO_RECORDING })
   };
 
   const data = await wherebyFetch('/meetings', {
