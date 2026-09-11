@@ -123,6 +123,19 @@ const liveSessionSchema = new mongoose.Schema({
   capacity: { type: Number, default: 50, min: 1, max: 200 },
   registrationCutoffDays: { type: Number, default: 7, min: 0, max: 30 }, // days before start; 0 = no cutoff
   price: { type: Number, default: 0, min: 0 }, // USD; 0 = free / included
+
+  // Which subscribers register free on THIS session (routes/liveSessions.js POST /:id/register).
+  //   'vip'  — VIP-tier plans only (vip / annual_vip / lifetime). The historical behavior, and
+  //            the default, so every session that predates this field is unaffected.
+  //   'any'  — any paying plan (starter / professional / vip / annual_vip / lifetime) whose
+  //            subscription status is 'active' or 'lifetime'. Trials are NOT included.
+  //   'none' — no subscription rides this session; everyone pays `price`.
+  // Non-qualifying users still pay `price` through Stripe Checkout when price > 0.
+  includedInSubscription: {
+    type: String,
+    enum: ['vip', 'any', 'none'],
+    default: 'vip'
+  },
   isPublished: { type: Boolean, default: false, index: true },
 
   registrants: [registrantSchema],
