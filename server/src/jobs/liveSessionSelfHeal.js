@@ -23,9 +23,16 @@
  *      finished processing for an orphaned session
  *
  * Scheduled via node-cron every 6 hours, alongside certificateSelfHeal.js.
+ *
+ * ALSO (runLiveRoomCheck, services/liveRoomService.js): every scheduled session
+ * starting in the next 7 days is checked against Whereby — a missing room is
+ * created, a room on the wrong window is re-created, and the admin is emailed
+ * for every fix or failure. Runs after the stuck-session pass, and runs even
+ * when there are no stuck sessions.
  */
 
 import LiveSession from '../models/LiveSession.js';
+import { runLiveRoomCheck } from '../services/liveRoomService.js';
 
 const LOG = '[LiveSessionSelfHeal]';
 const STUCK_AFTER_MS = 2 * 60 * 60000; // 2 hours past scheduledEnd
@@ -35,6 +42,18 @@ const STUCK_AFTER_MS = 2 * 60 * 60000; // 2 hours past scheduledEnd
  * Returns stats object for logging.
  */
 export async function runLiveSessionSelfHeal() {
+  const stats = await runStuckSessionHeal();
+  try {
+    const rooms = await runLiveRoomCheck({ days: 7, source: 'every-6-hours room check' });
+    stats.rooms = { scanned: rooms.scanned, ok: rooms.ok, fixed: rooms.fixed, skipped: rooms.skipped, failed: rooms.failed };
+  } catch (err) {
+    console.error(`${LOG} room check error:`, err.message);
+    stats.errors++;
+  }
+  return stats;
+}
+
+async function runStuckSessionHeal() {
   console.log(`${LOG} Starting stuck live-session scan...`);
 
   const stats = {

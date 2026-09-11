@@ -100,7 +100,10 @@ const liveSessionSchema = new mongoose.Schema({
     meetingId: { type: String, index: true },
     roomName: String,
     viewerRoomUrl: String,
-    hostRoomUrl: String
+    hostRoomUrl: String,
+    // Window the Whereby room was created for (see liveRoomService.js)
+    windowStart: Date,
+    windowEnd: Date
   },
 
   // Access & pricing

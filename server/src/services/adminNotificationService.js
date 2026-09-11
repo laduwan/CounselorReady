@@ -32,6 +32,8 @@ const EVENT_CONFIG = {
   db_backup:             { emoji: '🗄️', label: 'DB Backup Written',      color: GREEN,     adminLink: '/admin-migration.html' },
   db_backup_failed:      { emoji: '🚨', label: 'DB Backup FAILED',       color: '#B91C1C', adminLink: '/admin-migration.html' },
   live_session_registered: { emoji: '📅', label: 'Live Session Registration', color: GOLD,  adminLink: '/admin-live-sessions.html' },
+  live_room_fixed:       { emoji: '🎥', label: 'Live Session Room Auto-Fixed', color: NAVY,  adminLink: '/admin-live-sessions.html' },
+  live_room_failed:      { emoji: '🚨', label: 'Live Session Room FAILED',     color: '#B91C1C', adminLink: '/admin-live-sessions.html' },
 };
 
 function buildEmailHtml({ emoji, label, color, rows, adminLink }) {

@@ -27,6 +27,7 @@ import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
 import { sendAdminAlert } from '../services/adminNotificationService.js';
 import { planBreaks } from '../services/breakPlanner.js';
+import { ensureRoom, alertRoomResult } from '../services/liveRoomService.js';
 
 const router = express.Router();
 const agendaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
@@ -377,9 +378,19 @@ router.post('/:id/join', protect, async (req, res) => {
       });
     }
 
+    // Self-heal: if the room is missing (or, before the session goes live, set
+    // for the wrong window), create the right one now instead of failing the join.
+    try {
+      const heal = await ensureRoom(session);
+      alertRoomResult(session, heal, `join by ${isAdmin ? 'host' : 'attendee'} ${req.user.email}`);
+    } catch (err) {
+      console.error('[live] join room self-heal failed:', err.message);
+      alertRoomResult(session, { action: 'failed', detail: 'room missing or on the wrong window at join', error: err.message }, `join by ${req.user.email}`);
+    }
+
     const displayName = `${(req.user.profile?.firstName || '')} ${(req.user.profile?.lastName || '')}`.trim() || req.user.email;
-    const baseUrl = isAdmin ? (session.whereby.hostRoomUrl || session.whereby.viewerRoomUrl) : session.whereby.viewerRoomUrl;
-    if (!baseUrl) return res.status(500).json({ error: 'Room not provisioned. Contact support.' });
+    const baseUrl = isAdmin ? (session.whereby?.hostRoomUrl || session.whereby?.viewerRoomUrl) : session.whereby?.viewerRoomUrl;
+    if (!baseUrl) return res.status(503).json({ error: 'The video room could not be set up. Please try again in a minute — the host has been notified.' });
 
     const sep = baseUrl.includes('?') ? '&' : '?';
     const roomUrl = `${baseUrl}${sep}displayName=${encodeURIComponent(displayName)}`;

@@ -99,8 +99,27 @@ export async function createMeeting(session) {
     meetingId: data.meetingId,
     roomName: data.roomName,
     viewerRoomUrl: data.roomUrl,
-    hostRoomUrl: data.hostRoomUrl
+    hostRoomUrl: data.hostRoomUrl,
+    // The window the room was created for — lets liveRoomService detect a room
+    // left behind by a reschedule / break change without calling Whereby.
+    windowStart: new Date(data.startDate || body.startDate),
+    windowEnd: new Date(data.endDate || body.endDate)
   };
+}
+
+/**
+ * Fetch a Whereby meeting. Returns null if Whereby no longer has it (404 —
+ * deleted or expired). Any other failure throws.
+ * @returns {null | {meetingId, roomUrl, startDate, endDate}}
+ */
+export async function getMeeting(meetingId) {
+  if (!meetingId) return null;
+  try {
+    return await wherebyFetch(`/meetings/${encodeURIComponent(meetingId)}`, { method: 'GET' });
+  } catch (err) {
+    if (/Whereby API 404 /.test(err.message)) return null;
+    throw err;
+  }
 }
 
 /** Delete a Whereby meeting (cancellation cleanup). Safe to call twice. */
