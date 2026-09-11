@@ -30,7 +30,17 @@ const STATIC_PAGES = [
   ['/register',                'monthly', '0.6'],
   ['/blog',                    'weekly',  '0.6'],
   ['/live-sessions',           'weekly',  '0.6'],
-  ['/research-ready',          'weekly',  '0.6'],
+  ['/research-ready-about',    'monthly', '0.6'],
+  ['/tools',                   'weekly',  '0.7'],
+  ['/tools/consent-generator.html', 'monthly', '0.6'],
+  ['/tools/diagnostic-helper.html', 'monthly', '0.6'],
+  ['/tools/hold-guide.html',        'monthly', '0.6'],
+  ['/tools/note-writer.html',       'monthly', '0.6'],
+  ['/tools/safety-plan.html',       'monthly', '0.6'],
+  ['/tools/sliding-scale.html',     'monthly', '0.6'],
+  ['/tools/startup-checklist.html', 'monthly', '0.6'],
+  ['/tools/superbill.html',         'monthly', '0.6'],
+  ['/tools/treatment-plan.html',    'monthly', '0.6'],
   ['/about',                   'monthly', '0.5'],
   ['/help',                    'monthly', '0.5'],
   ['/legal/partner-marketplace-agreement', 'yearly', '0.2'],
@@ -81,13 +91,14 @@ async function fetchBlogPosts() {
 }
 
 async function main() {
+  let fetchFailed = false;
   let courses = [];
   try {
     courses = await fetchCourses();
     console.log(`Fetched ${courses.length} published courses from ${API_BASE}`);
   } catch (err) {
     console.error(`WARNING: ${err.message}`);
-    console.error('Writing sitemap with static pages only. Re-run when the API is reachable.');
+    fetchFailed = true;
   }
 
   let posts = [];
@@ -96,7 +107,15 @@ async function main() {
     console.log(`Fetched ${posts.length} published blog posts from ${API_BASE}`);
   } catch (err) {
     console.error(`WARNING: ${err.message}`);
-    console.error('Writing sitemap without blog posts. Re-run when the API is reachable.');
+    fetchFailed = true;
+  }
+
+  // Fail-safe: never overwrite a good sitemap with a partial one. If the API was
+  // unreachable during the build (e.g. API service mid-deploy), keep the last
+  // committed sitemap.xml and exit cleanly so the build continues.
+  if (fetchFailed && fs.existsSync(OUT)) {
+    console.error('WARNING: catalog/blog fetch failed — keeping existing sitemap.xml unchanged.');
+    return;
   }
 
   const entries = [];
