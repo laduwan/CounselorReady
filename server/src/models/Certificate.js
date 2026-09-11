@@ -22,6 +22,13 @@ const certificateSchema = new mongoose.Schema({
     ref: 'LiveSession',
     index: true
   },
+  // Multi-part live course: one certificate per user per series
+  seriesId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SessionSeries',
+    index: true
+  },
+  seriesSessionIds: [{ type: mongoose.Schema.Types.ObjectId, ref: 'LiveSession' }],
   title: {
     type: String,
     required: true,

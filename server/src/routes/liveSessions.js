@@ -28,6 +28,10 @@ import { issueLiveSessionCertificates } from '../services/liveSessionCompletionS
 import { sendAdminAlert } from '../services/adminNotificationService.js';
 import { planBreaks } from '../services/breakPlanner.js';
 import { ensureRoom, alertRoomResult } from '../services/liveRoomService.js';
+import { buildDuplicate, mergeAgendas, suggestSlug } from '../services/sessionCopyService.js';
+import SessionSeries from '../models/SessionSeries.js';
+import { partOf, ruleOf, describeRule } from '../services/seriesEligibility.js';
+import { buildMultiPartPolicy, POLICY_VERSION } from '../services/multiPartPolicy.js';
 
 const router = express.Router();
 const agendaUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB
@@ -149,6 +153,45 @@ function parseAgendaMarkdown(rawText) {
 
 /* ════════════════════════ PUBLIC / LEARNER ════════════════════════ */
 
+/**
+ * Multi-part policy block for series sessions (null for stand-alone sessions).
+ * The "run" is this session plus the nearest session of each other part in the
+ * same series (within the series' withinDays, or 7 days for flexible series).
+ * Pass preloaded series/siblings to avoid per-session queries in lists.
+ */
+async function multiPartFor(session, cache = {}) {
+  if (!session.seriesId) return null;
+  const sid = String(session.seriesId);
+  const series = cache.series?.[sid] ?? await SessionSeries.findById(sid).lean();
+  if (!series) return null;
+  const siblings = cache.siblings?.[sid] ?? await LiveSession.find({ seriesId: sid, status: { $ne: 'cancelled' } })
+    .select('title seriesPart scheduledStart status').lean();
+  const rule = ruleOf(series, siblings);
+  const reach = (rule.withinDays ?? 7) * 24 * 60 * 60000;
+  const t0 = new Date(session.scheduledStart).getTime();
+  const myPart = partOf(session);
+  const run = [{ part: myPart, scheduledStart: session.scheduledStart }];
+  for (let p = 1; p <= rule.partsRequired; p++) {
+    if (p === myPart) continue;
+    const near = siblings
+      .filter(x => partOf(x) === p && Math.abs(new Date(x.scheduledStart).getTime() - t0) <= reach)
+      .sort((a, b) => Math.abs(new Date(a.scheduledStart) - t0) - Math.abs(new Date(b.scheduledStart) - t0))[0];
+    if (near) run.push({ part: p, scheduledStart: near.scheduledStart });
+  }
+  return {
+    seriesTitle: series.certificateTitle || series.title,
+    part: myPart,
+    partsRequired: rule.partsRequired,
+    ...buildMultiPartPolicy({
+      part: myPart,
+      partsRequired: rule.partsRequired,
+      ceHours: Number(series.totalCeuHours) || null,
+      thresholdPct: session.attendanceThresholdPct || 90,
+      run
+    })
+  };
+}
+
 // GET /api/live-sessions/upcoming — published upcoming live courses (catalog)
 router.get('/upcoming', async (req, res) => {
   try {
@@ -158,7 +201,26 @@ router.get('/upcoming', async (req, res) => {
       status: { $in: ['scheduled', 'live'] },
       scheduledEnd: { $gte: new Date() }
     }).sort({ scheduledStart: 1 }).limit(50);
-    res.json({ sessions: sessions.map(s => s.toPublicJSON()) });
+
+    // Multi-part courses: attach the all-sales-final policy (batched lookups)
+    const sids = [...new Set(sessions.filter(s => s.seriesId).map(s => String(s.seriesId)))];
+    const cache = { series: {}, siblings: {} };
+    if (sids.length) {
+      const [seriesDocs, sibDocs] = await Promise.all([
+        SessionSeries.find({ _id: { $in: sids } }).lean(),
+        LiveSession.find({ seriesId: { $in: sids }, status: { $ne: 'cancelled' } }).select('title seriesPart scheduledStart status seriesId').lean()
+      ]);
+      for (const d of seriesDocs) cache.series[String(d._id)] = d;
+      for (const sid of sids) cache.siblings[sid] = sibDocs.filter(x => String(x.seriesId) === sid);
+    }
+    const out = [];
+    for (const s of sessions) {
+      const pub = s.toPublicJSON();
+      const mp = await multiPartFor(s, cache);
+      if (mp) pub.multiPart = mp;
+      out.push(pub);
+    }
+    res.json({ sessions: out });
   } catch (err) {
     console.error('[live] upcoming:', err.message);
     res.status(500).json({ error: 'Failed to load upcoming sessions' });
@@ -195,6 +257,87 @@ router.get('/admin/all', protect, requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[live] admin/all:', err.message);
     res.status(500).json({ error: 'Failed to load sessions' });
+  }
+});
+
+/* ── Series (multi-part course → one certificate) — admin ─────────────────
+   MUST stay above the /:id routes (ROUTE ORDER RULE). */
+
+function seriesPayload(series, members) {
+  const rule = ruleOf(series, members);
+  return {
+    _id: series._id,
+    title: series.title,
+    certificateTitle: series.certificateTitle || '',
+    totalCeuHours: Number(series.totalCeuHours) || 0,
+    category: series.category || '',
+    completionRule: { partsRequired: rule.partsRequired, withinDays: rule.withinDays },
+    ruleText: describeRule(rule),
+    sessions: members.map(m => ({ _id: m._id, title: m.title, slug: m.slug, part: partOf(m), status: m.status, scheduledStart: m.scheduledStart }))
+  };
+}
+
+// GET /api/live-sessions/series — all series with their sessions
+router.get('/series', protect, requireAdmin, async (req, res) => {
+  try {
+    const list = await SessionSeries.find({}).sort({ createdAt: -1 }).lean();
+    const members = await LiveSession.find({ seriesId: { $in: list.map(s => s._id) } })
+      .select('title slug seriesId seriesPart status scheduledStart').sort({ scheduledStart: 1 }).lean();
+    res.json({ series: list.map(s => seriesPayload(s, members.filter(m => String(m.seriesId) === String(s._id)))) });
+  } catch (err) {
+    console.error('[live] series list:', err.message);
+    res.status(500).json({ error: 'Failed to load series' });
+  }
+});
+
+function cleanSeriesBody(b = {}) {
+  const out = {};
+  if (b.title !== undefined) out.title = String(b.title).trim();
+  if (b.certificateTitle !== undefined) out.certificateTitle = String(b.certificateTitle).trim();
+  if (b.totalCeuHours !== undefined) out.totalCeuHours = Math.max(0, Number(b.totalCeuHours) || 0);
+  if (b.category !== undefined) out.category = String(b.category).trim();
+  if (b.partsRequired !== undefined) {
+    const n = parseInt(b.partsRequired, 10);
+    if (!Number.isInteger(n) || n < 1 || n > 20) throw new Error('Parts required must be 1–20.');
+    out['completionRule.partsRequired'] = n;
+  }
+  if (b.withinDays !== undefined) {
+    if (b.withinDays === null || b.withinDays === '') out['completionRule.withinDays'] = null;
+    else {
+      const d = Number(b.withinDays);
+      if (!Number.isFinite(d) || d < 0 || d > 365) throw new Error('"Within days" must be 0–365, or empty for any time.');
+      out['completionRule.withinDays'] = d;
+    }
+  }
+  return out;
+}
+
+// POST /api/live-sessions/series — create a series
+router.post('/series', protect, requireAdmin, async (req, res) => {
+  try {
+    const set = cleanSeriesBody(req.body);
+    if (!set.title) return res.status(400).json({ error: 'Series title is required.' });
+    const doc = { title: set.title, certificateTitle: set.certificateTitle || '', totalCeuHours: set.totalCeuHours || 0, category: set.category || '',
+      completionRule: { partsRequired: set['completionRule.partsRequired'] || 2, withinDays: set['completionRule.withinDays'] ?? null } };
+    const series = await SessionSeries.create(doc);
+    res.status(201).json({ series: seriesPayload(series.toObject(), []) });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// PATCH /api/live-sessions/series/:seriesId — edit title / certificate / rule
+router.patch('/series/:seriesId', protect, requireAdmin, async (req, res) => {
+  try {
+    const set = cleanSeriesBody(req.body);
+    if (set.title === '') return res.status(400).json({ error: 'Series title cannot be empty.' });
+    const r = await SessionSeries.updateOne({ _id: req.params.seriesId }, { $set: set });
+    if (!r.matchedCount) return res.status(404).json({ error: 'Series not found' });
+    const series = await SessionSeries.findById(req.params.seriesId).lean();
+    const members = await LiveSession.find({ seriesId: series._id }).select('title slug seriesId seriesPart status scheduledStart').sort({ scheduledStart: 1 }).lean();
+    res.json({ series: seriesPayload(series, members) });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
@@ -242,6 +385,18 @@ router.post('/:id/register', protect, async (req, res) => {
       return res.status(400).json({ error: 'This session is full.' });
     }
 
+    // Multi-part course: learner must accept the CURRENT no-refund/no-reschedule
+    // policy before a seat or a checkout is created (admins exempt).
+    const multiPart = await multiPartFor(session);
+    const ackAt = new Date();
+    if (multiPart && req.user.role !== 'admin' && req.body?.policyAck !== POLICY_VERSION) {
+      return res.status(400).json({
+        error: 'Please read and accept the multi-part course policy (no refunds, no reschedules) to register.',
+        reason: 'policy_ack_required',
+        multiPart
+      });
+    }
+
     const isAdmin = req.user.role === 'admin';
     // Same currency check as canBookConsultation(): VIP-tier plan AND subscription actually active.
     const isActiveVip = req.user.isVip() &&
@@ -273,16 +428,24 @@ router.post('/:id/register', protect, async (req, res) => {
         }],
         success_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?registered=${session.slug}`,
         cancel_url: `${process.env.CLIENT_URL || 'https://counselorready.com'}/live-sessions.html?canceled=true`,
+        ...(multiPart ? { custom_text: { submit: { message: multiPart.stripeText } } } : {}),
         metadata: {
           type: 'live-session',
           liveSessionId: session._id.toString(),
-          userId: req.user._id.toString()
-        }
+          userId: req.user._id.toString(),
+          // Dispute evidence: which policy text was accepted, and when
+          ...(multiPart ? { policyAckVersion: POLICY_VERSION, policyAckAt: ackAt.toISOString(), policy: 'multi-part-all-sales-final' } : {})
+        },
+        ...(multiPart ? { payment_intent_data: { metadata: { policyAckVersion: POLICY_VERSION, policyAckAt: ackAt.toISOString(), policy: 'multi-part-all-sales-final', liveSessionId: session._id.toString() } } } : {})
       });
       return res.json({ checkoutUrl: checkout.url });
     }
 
-    session.registrants.push({ user: req.user._id, paid: false });
+    session.registrants.push({
+      user: req.user._id,
+      paid: false,
+      ...(multiPart ? { policyAck: { version: POLICY_VERSION, acceptedAt: ackAt } } : {})
+    });
     await session.save();
     res.json({ registered: true });
 
@@ -506,6 +669,14 @@ router.patch('/:id', protect, requireAdmin, async (req, res) => {
 
     // Never allow client payloads to overwrite room URLs or attendance
     const { whereby, attendance, registrants, recordings, ...safe } = req.body;
+    if ('seriesId' in safe) {
+      if (!safe.seriesId) { safe.seriesId = null; safe.seriesPart = undefined; }
+      else if (!(await SessionSeries.exists({ _id: safe.seriesId }))) return res.status(400).json({ error: 'That series no longer exists.' });
+    }
+    if ('seriesPart' in safe && safe.seriesPart !== undefined) {
+      const p = parseInt(safe.seriesPart, 10);
+      safe.seriesPart = Number.isInteger(p) && p >= 1 ? p : undefined;
+    }
     Object.assign(session, safe);
     await session.save(); // pre-validate re-runs hard-locks
 
@@ -529,6 +700,107 @@ router.delete('/:id', protect, requireAdmin, async (req, res) => {
     res.json({ cancelled: true });
   } catch (err) {
     res.status(500).json({ error: 'Failed to cancel session' });
+  }
+});
+
+// ── Duplicate + copy run of show (admin) ──────────────────────────────────
+// Pure logic lives in services/sessionCopyService.js.
+
+// POST /api/live-sessions/:id/duplicate — new session that carries the source's
+// run of show (with speaker scripts), breaks, handouts, clips, and settings.
+// Body: { title, slug, scheduledStart, scheduledEnd?, isPublished?, ceuHours?,
+//         capacity?, price?, attendanceThresholdPct?, recordingEnabled?, registrationCutoffDays? }
+router.post('/:id/duplicate', protect, requireAdmin, async (req, res) => {
+  try {
+    const src = await LiveSession.findById(req.params.id).lean();
+    if (!src) return res.status(404).json({ error: 'Source session not found' });
+
+    const { doc, summary, warnings } = buildDuplicate(src, req.body || {});
+    if (await LiveSession.exists({ slug: doc.slug })) {
+      return res.status(409).json({ error: `The slug "${doc.slug}" is already used by another session — change it and try again.` });
+    }
+
+    // Other parts of the same run (e.g. Part 2 the next day) — found BEFORE creating anything.
+    const runMates = [];
+    if (req.body?.includeRun && src.seriesId) {
+      const series = await SessionSeries.findById(src.seriesId).lean();
+      const siblings = await LiveSession.find({ seriesId: src.seriesId, _id: { $ne: src._id }, status: { $ne: 'cancelled' } }).lean();
+      const rule = ruleOf(series, [src, ...siblings]);
+      const reach = (rule.withinDays ?? 7) * 24 * 60 * 60000;
+      const srcPart = partOf(src);
+      const srcStart = new Date(src.scheduledStart).getTime();
+      for (let p = 1; p <= rule.partsRequired; p++) {
+        if (p === srcPart) continue;
+        const near = siblings
+          .filter(x => partOf(x) === p && Math.abs(new Date(x.scheduledStart).getTime() - srcStart) <= reach)
+          .sort((a, b) => Math.abs(new Date(a.scheduledStart) - srcStart) - Math.abs(new Date(b.scheduledStart) - srcStart))[0];
+        if (near) runMates.push(near);
+        else warnings.push(`No Part ${p} found near the original session — create it with Duplicate on a Part ${p} session.`);
+      }
+    }
+
+    const session = new LiveSession(doc);
+    await session.validate(); // hard-lock invariants BEFORE provisioning the room
+    session.whereby = await createMeeting(session);
+    await session.save();
+
+    const alsoCreated = [];
+    const delta = new Date(doc.scheduledStart) - new Date(src.scheduledStart);
+    for (const mate of runMates) {
+      try {
+        const mateStart = new Date(new Date(mate.scheduledStart).getTime() + delta);
+        let slug = suggestSlug(mate.slug, mateStart);
+        for (let n = 2; await LiveSession.exists({ slug }); n++) slug = `${suggestSlug(mate.slug, mateStart)}-${n}`;
+        const built = buildDuplicate(mate, { slug, scheduledStart: mateStart, isPublished: !!req.body?.isPublished });
+        const m = new LiveSession(built.doc);
+        await m.validate();
+        m.whereby = await createMeeting(m);
+        await m.save();
+        alsoCreated.push({ _id: m._id, title: m.title, slug: m.slug, part: partOf(m), scheduledStart: m.scheduledStart, summary: built.summary });
+        warnings.push(...built.warnings.map(w => `${m.title}: ${w}`));
+      } catch (e) {
+        warnings.push(`Could not create Part ${partOf(mate)} ("${mate.title}"): ${e.message}. Duplicate it separately.`);
+      }
+    }
+
+    res.status(201).json({ session, summary, warnings, alsoCreated });
+  } catch (err) {
+    console.error('[live] duplicate:', err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// POST /api/live-sessions/:id/agenda/copy-from — fill this session's run of show
+// from other sessions, in order. Body: { sourceIds: [id, id?], mode: 'replace'|'append' }
+router.post('/:id/agenda/copy-from', protect, requireAdmin, async (req, res) => {
+  try {
+    const target = await LiveSession.findById(req.params.id).lean();
+    if (!target) return res.status(404).json({ error: 'Session not found' });
+    if (target.sessionType !== 'live-course') return res.status(400).json({ error: 'Run of show is only available for live CE courses.' });
+    if (target.status !== 'scheduled') return res.status(409).json({ error: `Session is ${target.status} — the run of show can only be copied into a scheduled session.` });
+
+    const ids = (Array.isArray(req.body?.sourceIds) ? req.body.sourceIds : []).map(String).filter(Boolean);
+    if (!ids.length) return res.status(400).json({ error: 'Pick at least one session to copy from.' });
+    if (ids.includes(String(target._id))) return res.status(400).json({ error: 'A session cannot copy from itself.' });
+    const mode = req.body?.mode === 'append' ? 'append' : 'replace';
+
+    const found = await LiveSession.find({ _id: { $in: ids } }).lean();
+    const sources = ids.map(id => found.find(f => String(f._id) === id));
+    if (sources.some(s => !s)) return res.status(404).json({ error: 'One of the source sessions was not found.' });
+    const empty = sources.find(s => !(s.agenda || []).length);
+    if (empty) return res.status(400).json({ error: `"${empty.title}" has no run of show to copy.` });
+
+    const { agenda, clips, stats, warnings } = mergeAgendas(target, sources, mode);
+    await LiveSession.updateOne({ _id: target._id }, { $set: { agenda, clips } });
+
+    const fresh = await LiveSession.findById(target._id).lean();
+    if ((fresh.agenda || []).length !== agenda.length) {
+      return res.status(500).json({ error: 'Saved, but the read-back did not match. Refresh and check this session.' });
+    }
+    res.json({ session: fresh, stats, warnings });
+  } catch (err) {
+    console.error('[live] agenda/copy-from:', err.message);
+    res.status(400).json({ error: err.message });
   }
 });
 
