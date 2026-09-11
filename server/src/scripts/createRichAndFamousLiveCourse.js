@@ -45,13 +45,15 @@
 //   If 4.0 CE is wanted instead, the window has to grow to 270 min (6:30-11:00pm) —
 //   240 instructional + the same two breaks. Do not get there by deleting a break.
 //
-// PRICING — free to subscribers, $115 to everyone else, with NO code change
-//   routes/liveSessions.js POST /:id/register already implements exactly this: an active
-//   VIP subscriber registers free; everyone else is sent to Stripe Checkout at `price`.
-//   ONE THING TO CHECK, KE: "subscriber" there means User.isVip() — plan 'vip',
-//   'annual_vip', or 'lifetime' with status active/lifetime. A member on a non-VIP plan
-//   pays the $115 like the general public. If you meant every paying member regardless
-//   of tier, that is a change to the register route and it is not in this script.
+// PRICING — free to EVERY current subscriber, $115 to everyone else
+//   includedInSubscription: 'any' (LiveSession field, default 'vip'). On this session any
+//   paying plan — starter, professional, vip, annual_vip, lifetime — registers free as long
+//   as subscription.status is 'active' or 'lifetime'. Everyone else, free-plan accounts and
+//   the general public alike, goes to Stripe Checkout at $115.
+//   Trials do NOT ride the subscription: status 'trial', 'past_due', 'paused', 'canceled'
+//   and 'expired' all pay. Otherwise a trial account could take a 3.5 CE course and cancel.
+//   The rule is per-session on purpose. Every other live session keeps the historical
+//   VIP-only default, so nothing that already exists changed.
 //
 // NO WHEREBY ROOM IS PROVISIONED HERE. Only the admin POST route calls createMeeting().
 // After --apply, mint the room:  node src/scripts/regenerateWherebyRoom.js --slugs <slug> --apply
@@ -306,9 +308,11 @@ function buildSession({ slug, start, end, price, capacity, cutoffDays }) {
 
     capacity,
     registrationCutoffDays: cutoffDays,
-    // Active VIP subscribers register free; everyone else pays this through Stripe
-    // Checkout. Both paths are already in routes/liveSessions.js POST /:id/register.
+    // Any current subscriber on any paying plan registers free; everyone else pays this
+    // through Stripe Checkout. Both paths are in routes/liveSessions.js POST /:id/register,
+    // which reads includedInSubscription to decide who rides the subscription.
     price,
+    includedInSubscription: 'any',
     isPublished: false,
     status: 'scheduled',
 
@@ -377,7 +381,8 @@ async function run() {
   console.log(`  window      ${fmt(start)}  ->  ${clock(end)} ET   (${agendaMin} min)`);
   console.log(`  CE          ${CEU_HOURS} hr  =  ${instructionalMin} instructional min  (${agendaMin} scheduled - ${breakMin} break)`);
   breaks.forEach(b => console.log(`  break       ${clock(b.startsAt)} ET for ${b.durationMin} min`));
-  console.log(`  price       $${price.toFixed(2)} for non-VIP (Stripe Checkout); $0 for active VIP subscribers`);
+  console.log(`  price       $${price.toFixed(2)} via Stripe Checkout; $0 for any current subscriber`);
+  console.log(`  included    includedInSubscription '${doc.includedInSubscription}' — any paying plan with status active/lifetime (no trials)`);
   console.log(`  capacity    ${capacity}    attendance threshold ${doc.attendanceThresholdPct}% of instructional min`);
   console.log(`  cutoff      ${cutoffDays} day(s)${cutoffDate ? ` — registration closes ${fmt(cutoffDate)}` : ' — no cutoff'}`);
   console.log(`  published   ${doc.isPublished}   recording ${doc.recordingEnabled}   status ${doc.status}`);
@@ -413,6 +418,8 @@ async function run() {
   console.log(`  read-back: ${fresh.agenda.length} agenda rows, ${scripted} scripted, ${fresh.breaks.length} break(s)`);
   console.log(`  read-back: window ${freshWindow} min - ${freshBreakMin} break = ${freshWindow - freshBreakMin} instructional (need ${CEU_HOURS * 60})`);
   console.log(`  read-back: ceuHours ${fresh.ceuHours}, price $${fresh.price}, isPublished ${fresh.isPublished}`);
+  console.log(`  read-back: includedInSubscription '${fresh.includedInSubscription}'`);
+  if (fresh.includedInSubscription !== 'any') console.log("  WARNING: includedInSubscription is not 'any' — subscribers will be charged.");
   if (freshWindow - freshBreakMin !== CEU_HOURS * 60) console.log('  WARNING: instructional minutes do not match ceuHours.');
   if (scripted !== AGENDA.filter(a => a.script).length) console.log('  WARNING: scripted segment count changed on save.');
 

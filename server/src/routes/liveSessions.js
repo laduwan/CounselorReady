@@ -398,22 +398,38 @@ router.post('/:id/register', protect, async (req, res) => {
     }
 
     const isAdmin = req.user.role === 'admin';
+    // Currency check, shared by both tiers below: the subscription has to be paid up right now.
+    // Trial / past_due / paused / canceled / expired never ride a subscription into a session.
+    const subCurrent = req.user.subscription.status === 'active' ||
+      req.user.subscription.status === 'lifetime';
     // Same currency check as canBookConsultation(): VIP-tier plan AND subscription actually active.
-    const isActiveVip = req.user.isVip() &&
-      (req.user.subscription.status === 'active' || req.user.subscription.status === 'lifetime');
+    const isActiveVip = req.user.isVip() && subCurrent;
+    // Any paying plan, currently paid up. 'free' is the default plan, so it is not a subscriber.
+    const isActiveSubscriber = req.user.subscription.plan !== 'free' && subCurrent;
 
-    // Live sessions are free for current VIP subscribers. Everyone else must pay per-session
-    // when the session is priced; if it isn't priced, there's no non-VIP path in.
-    if (!isAdmin && !isActiveVip && !(session.price > 0)) {
+    // Which subscribers ride this session for free is per-session (model: includedInSubscription).
+    // Default 'vip' — so every session created before that field existed behaves exactly as before.
+    const subscriptionRule = session.includedInSubscription || 'vip';
+    const freeBySubscription = subscriptionRule === 'any' ? isActiveSubscriber
+      : subscriptionRule === 'vip' ? isActiveVip
+      : false;
+
+    // Everyone who does not ride the subscription must pay per-session when the session is
+    // priced; if it isn't priced, there's no path in for them at all.
+    if (!isAdmin && !freeBySubscription && !(session.price > 0)) {
+      const anyTier = subscriptionRule === 'any';
       return res.status(403).json({
-        error: 'Live sessions are a VIP subscriber benefit, or available for individual purchase.',
-        reason: 'VIP subscription required',
-        requiredTier: 'vip'
+        error: anyTier
+          ? 'Live sessions are a subscriber benefit, or available for individual purchase.'
+          : 'Live sessions are a VIP subscriber benefit, or available for individual purchase.',
+        reason: anyTier ? 'Subscription required' : 'VIP subscription required',
+        requiredTier: anyTier ? 'any' : 'vip'
       });
     }
 
-    // Paid sessions → Stripe Checkout for non-VIP; fulfillment registers via webhook (WIRING.md)
-    if (!isAdmin && !isActiveVip && session.price > 0) {
+    // Paid sessions → Stripe Checkout for everyone the subscription doesn't cover;
+    // fulfillment registers via webhook (WIRING.md)
+    if (!isAdmin && !freeBySubscription && session.price > 0) {
       if (!stripe) return res.status(500).json({ error: 'Payments unavailable' });
       const checkout = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
@@ -463,7 +479,7 @@ router.post('/:id/register', protect, async (req, res) => {
           : 'TBD';
         if (twilioClient && process.env.ADMIN_PHONE) {
           twilioClient.messages.create({
-            body: `CounselorReady: Live Registration\n${registrant?.email || ''} registered for "${session.title}" (VIP free)\n${dateStr}`,
+            body: `CounselorReady: Live Registration\n${registrant?.email || ''} registered for "${session.title}" (free via ${subscriptionRule === 'any' ? 'subscription' : 'VIP'})\n${dateStr}`,
             from: process.env.TWILIO_PHONE_NUMBER,
             to: process.env.ADMIN_PHONE
           }).catch(e => console.error('[live] SMS notification error:', e.message));
