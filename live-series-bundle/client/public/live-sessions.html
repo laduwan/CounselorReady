@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta property="og:image" content="https://counselorready.com/images/og-social.png">
+  <title>Live Sessions - CounselorReady</title>
+  <meta name="description" content="Live, interactive NBCC-approved continuing education webinars for counselors. Earn synchronous CE hours from licensed presenters.">
+  <link rel="stylesheet" href="/css/design-tokens.css">
+  <link rel="stylesheet" href="/css/typography.css">
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/js/tailwind-config.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <style>
+    body{background:#F8F7F4; font-family:'Lato', system-ui, sans-serif;}
+    .font-display{font-family:'Cormorant Garamond', Georgia, serif;}
+    .badge-live{background:#FDF5F7;color:#6B1D34;border:1px solid #F0D9DF;}
+    .badge-ce{background:#FBF6EC;color:#B8903A;border:1px solid #EFE0C2;}
+    .cta{background:#4A7C59;color:#fff;transition:background .15s;}
+    .cta:hover{background:#3D6A4A;}
+    .cta:disabled{background:#CBD5D0;cursor:not-allowed;}
+  </style>
+</head>
+<body>
+  <script src="/shared/nav-footer.js"></script>
+
+  <main class="max-w-5xl mx-auto px-4 py-10">
+    <header class="mb-8">
+      <span class="inline-block badge-live text-xs font-semibold tracking-wide uppercase rounded-full px-3 py-1 mb-3">Live &amp; Interactive</span>
+      <h1 class="font-display text-4xl md:text-5xl font-bold" style="color:#6B1D34;">Live Sessions</h1>
+      <p class="mt-3 max-w-2xl" style="color:#284157;">Synchronous, NBCC-approved webinars with real-time interaction, verified attendance, and automatic certificate delivery. Attend live in your browser — no downloads required.</p>
+    </header>
+
+    <div id="alert" class="hidden mb-6 rounded-lg px-4 py-3 text-sm"></div>
+    <div id="sessions" class="grid gap-5">
+      <div class="text-center py-16" style="color:#284157;" id="loading">Loading upcoming sessions…</div>
+    </div>
+  </main>
+
+  <!-- Multi-part course policy — must be accepted before registering -->
+  <div id="mpModal" class="hidden fixed inset-0 z-[300] items-center justify-center p-4" style="background:rgba(0,0,0,.55);" role="dialog" aria-modal="true" aria-labelledby="mpHeading">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div class="px-6 py-4" style="background:#6B1D34;border-radius:1rem 1rem 0 0;">
+        <div class="text-xs font-semibold uppercase tracking-wide" style="color:#D4A855;">Please read before registering</div>
+        <h2 id="mpHeading" class="font-display text-2xl font-bold text-white">Multi-part course — all sales final</h2>
+      </div>
+      <div class="px-6 py-5 text-sm space-y-3" style="color:#284157;">
+        <p id="mpSummary" class="font-semibold"></p>
+        <ul id="mpDates" class="rounded-lg px-4 py-2 space-y-0.5" style="background:#F8F7F4;border:1px solid #EDE9E3;"></ul>
+        <ul id="mpPoints" class="list-disc ml-5 space-y-1.5"></ul>
+        <p id="mpException" class="text-xs" style="color:#57534e;"></p>
+        <label class="flex items-start gap-2 rounded-lg px-3 py-3 cursor-pointer" style="background:#FDF5F7;border:1px solid #F0D9DF;">
+          <input type="checkbox" id="mpAgree" class="mt-0.5 w-4 h-4" style="accent-color:#6B1D34;" onchange="document.getElementById('mpContinue').disabled=!this.checked">
+          <span id="mpCheckboxText" class="font-semibold" style="color:#6B1D34;"></span>
+        </label>
+        <p class="text-xs" style="color:#57534e;">Full details: <a href="/refund-policy.html#live-sessions" target="_blank" class="underline" style="color:#4A7C59;">Refund Policy — Live Sessions</a></p>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" onclick="closeMp()" class="px-4 py-2 rounded-lg text-sm border" style="border-color:#D6D3D1;color:#284157;">Cancel</button>
+          <button type="button" id="mpContinue" disabled class="cta rounded-lg px-5 py-2 font-semibold text-sm" onclick="confirmMp()">I agree — continue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000' : 'https://api.counselorready.com';
+    const token = localStorage.getItem('token');
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('registered')) showAlert('You are registered! A confirmation is on its way to your inbox.', true);
+    if (params.get('canceled')) showAlert('Checkout was canceled. Your seat was not reserved.', false);
+
+    function showAlert(msg, ok) {
+      const el = document.getElementById('alert');
+      el.textContent = msg;
+      el.className = 'mb-6 rounded-lg px-4 py-3 text-sm ' + (ok
+        ? 'bg-green-50 text-green-800 border border-green-200'
+        : 'bg-red-50 text-red-800 border border-red-200');
+    }
+
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleString('en-US', {
+        weekday:'short', month:'short', day:'numeric',
+        hour:'numeric', minute:'2-digit', timeZoneName:'short'
+      });
+    }
+
+    async function load() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/upcoming`);
+        const data = await res.json();
+        const wrap = document.getElementById('sessions');
+        wrap.innerHTML = '';
+
+        if (!data.sessions || data.sessions.length === 0) {
+          wrap.innerHTML = '<div class="text-center py-16 rounded-xl bg-white border" style="color:#284157;border-color:#EDE9E3;">No live sessions are scheduled right now. Check back soon — new webinars are added regularly.</div>';
+          return;
+        }
+
+        window._sessions = data.sessions;
+        for (const s of data.sessions) {
+          const full = s.seatsRemaining <= 0;
+
+          // Registration cutoff
+          const cutoffDays = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
+          const cutoffMs = cutoffDays > 0 && s.scheduledStart
+            ? new Date(s.scheduledStart).getTime() - cutoffDays * 24 * 60 * 60 * 1000
+            : null;
+          const regClosed = cutoffMs !== null && Date.now() > cutoffMs;
+          const regClosingSoon = !regClosed && cutoffMs !== null && (cutoffMs - Date.now()) < 3 * 24 * 60 * 60 * 1000;
+          const cutoffLabel = cutoffMs
+            ? new Date(cutoffMs).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            : '';
+
+          const btnDisabled = full || regClosed;
+          const btnLabel = full ? 'Full' : regClosed ? 'Registration Closed' : 'Register';
+
+          const card = document.createElement('div');
+          card.className = 'bg-white rounded-xl border p-6 flex flex-col md:flex-row md:items-center gap-4';
+          card.style.borderColor = '#EDE9E3';
+          card.innerHTML = `
+            <div class="flex-1">
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="badge-ce text-xs font-semibold rounded-full px-2.5 py-0.5">${s.ceuHours} CE Hour${s.ceuHours === 1 ? '' : 's'} · Live</span>
+                ${s.recordingEnabled ? '<span class="text-xs rounded-full px-2.5 py-0.5" style="background:#F2F7F4;color:#4A7C59;border:1px solid #DCE9E0;">Replay included</span>' : ''}
+                ${regClosed ? '<span class="text-xs rounded-full px-2.5 py-0.5 font-semibold" style="background:#FDF5F7;color:#6B1D34;border:1px solid #F0D9DF;">Registration Closed</span>' : ''}
+              </div>
+              <h2 class="font-display text-2xl font-bold" style="color:#284157;">${esc(s.title)}</h2>
+              <p class="text-sm mt-1" style="color:#57534e;">${esc(s.description || '')}</p>
+              <p class="text-sm mt-2 font-medium" style="color:#6B1D34;">${fmtDate(s.scheduledStart)}</p>
+              ${s.multiPart ? `<div class="mt-3 rounded-lg px-3 py-2 text-xs" style="background:#FDF5F7;border:1px solid #F0D9DF;color:#6B1D34;">
+                <div class="font-bold uppercase tracking-wide">Part ${s.multiPart.part || '?'} of ${s.multiPart.partsRequired} · All sales final — no refunds, no reschedules</div>
+                <div class="mt-0.5" style="color:#57534e;">Certificate requires attending every part of this run${s.multiPart.runDates.length ? ': ' + s.multiPart.runDates.map(esc).join(' · ') : ''}.</div>
+              </div>` : ''}
+              <p class="text-xs mt-1" style="color:#57534e;">
+                ${full ? 'Session full · ' : s.seatsRemaining <= 10 && !regClosed ? 'Only ' + s.seatsRemaining + ' seats left · ' : ''}
+                ${regClosed ? 'Registration closed ' + cutoffLabel + ' · ' : regClosingSoon ? '<strong>Registration closes ' + cutoffLabel + '</strong> · ' : cutoffLabel && !regClosed ? 'Reg. closes ' + cutoffLabel + ' · ' : ''}
+                Presented by ${esc(s.presenter?.name || 'CounselorReady')}
+              </p>
+            </div>
+            <div class="flex flex-col items-stretch gap-2 md:w-44">
+              <div class="text-center font-semibold" style="color:#284157;">${s.price > 0 ? '$' + s.price.toFixed(2) : 'Free'}</div>
+              <button class="cta rounded-lg px-4 py-2.5 font-semibold text-sm" ${btnDisabled ? 'disabled' : ''} onclick="register('${s._id}')">${btnLabel}</button>
+              <a class="text-center text-sm underline" style="color:#4A7C59;" href="/live-room.html?session=${esc(s.slug)}">Enter room</a>
+            </div>`;
+          wrap.appendChild(card);
+        }
+      } catch (e) {
+        document.getElementById('sessions').innerHTML = '<div class="text-center py-16 text-red-700">Could not load sessions. Please refresh.</div>';
+      }
+    }
+
+    let _mpPending = null;
+    function openMp(id, mp) {
+      _mpPending = { id, version: mp.version };
+      document.getElementById('mpSummary').textContent = mp.summary;
+      document.getElementById('mpDates').innerHTML = (mp.runDates || []).map(d => '<li>' + esc(d) + '</li>').join('') || '<li>See the session listing for dates.</li>';
+      document.getElementById('mpPoints').innerHTML = (mp.points || []).map((t, i) => '<li' + (i === 0 ? ' class="font-bold" style="color:#6B1D34;"' : '') + '>' + esc(t) + '</li>').join('');
+      document.getElementById('mpException').textContent = mp.exception || '';
+      document.getElementById('mpCheckboxText').textContent = mp.checkbox;
+      document.getElementById('mpAgree').checked = false;
+      document.getElementById('mpContinue').disabled = true;
+      const m = document.getElementById('mpModal'); m.classList.remove('hidden'); m.style.display = 'flex';
+    }
+    function closeMp() { const m = document.getElementById('mpModal'); m.classList.add('hidden'); m.style.display = 'none'; _mpPending = null; }
+    function confirmMp() {
+      if (!_mpPending || !document.getElementById('mpAgree').checked) return;
+      const { id, version } = _mpPending; closeMp(); register(id, version);
+    }
+
+    async function register(id, policyAck) {
+      if (!token) { window.location.href = '/login.html?next=' + encodeURIComponent('/live-sessions.html'); return; }
+      const s = (window._sessions || []).find(x => x._id === id);
+      if (s && s.multiPart && !policyAck) { openMp(id, s.multiPart); return; }
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${id}/register`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(policyAck ? { policyAck } : {})
+        });
+        const data = await res.json();
+        if (data.reason === 'policy_ack_required' && data.multiPart) { openMp(id, data.multiPart); return; }
+        if (data.checkoutUrl) { window.location.href = data.checkoutUrl; return; }
+        if (data.registered) { showAlert(data.message || 'You are registered! See you in the room.', true); load(); }
+        else showAlert(data.error || 'Registration failed.', false);
+      } catch { showAlert('Registration failed. Please try again.', false); }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+    load();
+  </script>
+</body>
+</html>
