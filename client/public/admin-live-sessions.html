@@ -263,6 +263,15 @@
         <input type="number" name="registrationCutoffDays" min="0" max="30" value="7" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500">
         <p class="text-xs text-forest-500 mt-1">Registration closes this many days before the session. Set to 0 for no cutoff. Default: 7.</p>
       </div>
+      <div id="seriesRow" class="rounded-lg border border-gray-200 px-3 py-2">
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Multi-part series <span class="text-xs font-normal text-forest-500">(one certificate for all parts)</span></label>
+        <div class="grid grid-cols-12 gap-2 items-center">
+          <select name="seriesId" id="seriesSelect" onchange="onSeriesSelectChange(this.value)" class="col-span-8 border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white focus:outline-none focus:border-burgundy-500"></select>
+          <input type="number" name="seriesPart" id="seriesPartInput" min="1" max="20" placeholder="Part #" class="col-span-2 border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:border-burgundy-500">
+          <button type="button" id="seriesSettingsBtn" onclick="openSeriesModal(document.getElementById('seriesSelect').value)" class="col-span-2 px-2 py-1.5 rounded-lg border border-gray-300 text-xs text-forest-700 hover:bg-stone-50" title="Series settings"><i class="fas fa-sliders-h text-xs"></i></button>
+        </div>
+        <p id="seriesHint" class="text-xs text-forest-500 mt-1">Leave as “Not part of a series” for a stand-alone session.</p>
+      </div>
       <div id="recordingRow">
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" name="recordingEnabled" id="recordingEnabled" class="w-4 h-4 accent-burgundy-700">
@@ -276,6 +285,11 @@
           <span class="text-sm font-medium text-burgundy-800">Publish immediately (visible in catalog)</span>
         </label>
       </div>
+      <div id="dupInfo" class="hidden rounded-lg border px-3 py-2 text-xs" style="background:#EEF4EF;border-color:#cfe0d3;color:#2F5A3C;"></div>
+      <label id="dupRunRow" class="hidden flex items-start gap-2 cursor-pointer rounded-lg border px-3 py-2 text-sm" style="border-color:#e7e2d8;">
+        <input type="checkbox" id="dupIncludeRun" checked class="mt-0.5 w-4 h-4 accent-burgundy-700">
+        <span><span class="font-medium text-burgundy-800">Also create the other part(s) of this run</span><br><span id="dupRunText" class="text-xs text-forest-500"></span></span>
+      </label>
       <div id="formError" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
       <div class="flex items-center justify-end gap-3 pt-2 border-t border-gray-100">
         <button type="button" onclick="closeCreateModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50 transition-colors">Cancel</button>
@@ -284,6 +298,39 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── Series Settings Modal ── -->
+<div id="seriesModal" class="hidden fixed inset-0 z-[260] bg-black/50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-burgundy-100">
+      <h2 id="seriesModalTitle" class="font-display text-2xl font-semibold text-burgundy-900">Series settings</h2>
+      <button onclick="closeSeriesModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
+    </div>
+    <div class="px-6 py-5 space-y-3 text-sm">
+      <div><label class="block font-medium text-burgundy-800 mb-1">Series name (admin)</label>
+        <input id="srTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. The Ethics Table Talk — Evening"></div>
+      <div><label class="block font-medium text-burgundy-800 mb-1">Title printed on the certificate</label>
+        <input id="srCertTitle" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm" placeholder="e.g. The Ethics Table Talk"></div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="block font-medium text-burgundy-800 mb-1">CE hours on the certificate</label>
+          <input id="srCe" type="number" min="0" step="0.5" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"><p class="text-xs text-forest-500 mt-1">0 = add up the parts</p></div>
+        <div><label class="block font-medium text-burgundy-800 mb-1">Parts required</label>
+          <input id="srParts" type="number" min="1" max="20" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"></div>
+      </div>
+      <div class="rounded-lg border border-gray-200 px-3 py-2 space-y-1.5">
+        <div class="font-medium text-burgundy-800">When must the parts be taken?</div>
+        <label class="flex items-center gap-2"><input type="radio" name="srRule" value="window" class="accent-burgundy-700"> Same run — all parts within <input id="srDays" type="number" min="0" max="365" class="w-16 border border-gray-300 rounded px-1 py-0.5 text-sm text-center"> days of each other</label>
+        <label class="flex items-center gap-2"><input type="radio" name="srRule" value="any" class="accent-burgundy-700"> Flexible — any run, any order</label>
+      </div>
+      <div id="srMembers" class="text-xs text-forest-600"></div>
+      <div id="srErr" class="hidden text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2"></div>
+      <div class="flex justify-end gap-3 pt-2 border-t border-gray-100">
+        <button type="button" onclick="closeSeriesModal()" class="px-4 py-2 rounded-lg border border-gray-300 text-sm text-forest-700 hover:bg-stone-50">Cancel</button>
+        <button type="button" id="srSave" onclick="saveSeries()" class="px-5 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold">Save series</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -371,6 +418,7 @@
       <button onclick="closeRunOfShowModal()" class="text-forest-400 hover:text-burgundy-700 transition-colors"><i class="fas fa-times text-lg"></i></button>
     </div>
     <div class="px-6 py-5 space-y-6">
+      <div id="rosCopySection"></div>
       <div id="rosClipsSection"></div>
       <div class="border-t border-gray-100"></div>
       <div id="rosImportSection"></div>
@@ -391,6 +439,10 @@
   let showArchive = false;
   let editMode = false;
   let editSessionId = null;
+  let seriesList = [];         // GET /series — multi-part courses (one certificate)
+  let _seriesModalId = null;   // null = creating a new series
+  let dupSourceId = null;      // set while the create modal is duplicating a session
+  let dupSlugTouched = false;  // stop auto-suggesting the slug once the admin edits it
   let filterStatus = 'all';
   let filterType = 'all';
   let _lastAttendanceReport = [];
@@ -435,6 +487,7 @@
       if (!r.ok) throw new Error('Failed');
       const d = await r.json();
       sessions = d.sessions || [];
+      await loadSeries();
       sortSessions();
       renderTable();
       document.getElementById('loadingState').classList.add('hidden');
@@ -540,7 +593,7 @@
     const tl = s.sessionType==='supervision' ? 'Supervision' : 'Live CE';
     const tc = s.sessionType==='supervision' ? 'bg-purple-100 text-purple-700' : 'bg-teal-100 text-teal-700';
     return `<tr class="border-b border-gray-100 hover:bg-stone-50 transition-colors">
-      <td class="px-4 py-3"><div class="font-medium text-burgundy-900">${escHtml(s.title)}</div><div class="text-xs text-forest-500">${escHtml(s.slug)}</div></td>
+      <td class="px-4 py-3"><div class="font-medium text-burgundy-900">${escHtml(s.title)}</div><div class="text-xs text-forest-500">${escHtml(s.slug)}</div>${seriesBadge(s)}</td>
       <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-xs font-medium ${tc}">${tl}</span></td>
       <td class="px-4 py-3 text-forest-700 text-xs">${start}</td>
       <td class="px-4 py-3">
@@ -563,7 +616,7 @@
     const archived = s.status==='completed'||s.status==='cancelled';
     return `<div class="bg-white rounded-xl border ${archived?'border-gray-200':'border-burgundy-100'} shadow-sm p-4">
       <div class="flex items-start justify-between gap-2 mb-2">
-        <div class="min-w-0 flex-1"><div class="font-semibold text-burgundy-900 leading-snug">${escHtml(s.title)}</div><div class="text-xs text-forest-500 truncate mt-0.5">${escHtml(s.slug)}</div></div>
+        <div class="min-w-0 flex-1"><div class="font-semibold text-burgundy-900 leading-snug">${escHtml(s.title)}</div><div class="text-xs text-forest-500 truncate mt-0.5">${escHtml(s.slug)}</div>${seriesBadge(s)}</div>
         <div class="flex flex-col items-end gap-1 flex-shrink-0">
           <span class="px-2 py-0.5 rounded-full text-xs font-medium ${sc}">${s.status||'scheduled'}</span>
           ${s.isPublished ? '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Published</span>' : '<span class="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Draft</span>'}
@@ -712,19 +765,124 @@
 
   /* ── Issue certificates ── */
   async function issueCerts(id, btn) {
-    if (!confirm('Issue certificates to all qualifying attendees for this session?')) return;
+    const s=sessions.find(x=>x._id===id);
+    const sr=s&&s.seriesId?seriesList.find(x=>x._id===String(s.seriesId)):null;
+    const msg=sr
+      ? `This session is Part ${seriesPartOf(s)||'?'} of “${sr.title}”.\n\nOnly people who have completed ALL ${sr.completionRule.partsRequired} parts (${sr.ruleText}) get ONE ${sr.totalCeuHours||'combined'} CE certificate. Everyone else is listed as waiting.\n\nContinue?`
+      : 'Issue certificates to all qualifying attendees for this session?';
+    if (!confirm(msg)) return;
     btn.disabled=true; btn.textContent='Issuing…';
     try {
       const controller = new AbortController();
-      const tid = setTimeout(()=>controller.abort(),30000);
+      const tid = setTimeout(()=>controller.abort(),60000);
       const r = await fetch(`${API}/${id}/issue-certificates`, { method:'POST', headers:{'Authorization':'Bearer '+token}, signal:controller.signal });
       clearTimeout(tid);
       const d = await r.json();
       if (!r.ok) throw new Error(d.error||'Failed');
-      showToast(`Issued ${d.issued??0} certificate(s). ${d.skipped??0} already had one.`, '#284157');
+      const n=k=>(Array.isArray(d[k])?d[k].length:(d[k]||0));
+      const sk=Array.isArray(d.skipped)?d.skipped:[];
+      const c=why=>sk.filter(x=>x.reason===why).length;
+      const parts=[`Issued ${n('issued')} certificate(s)`];
+      if (c('series-incomplete')) parts.push(`${c('series-incomplete')} waiting on other part(s)`);
+      if (c('series-out-of-window')) parts.push(`${c('series-out-of-window')} parts not in the same run`);
+      if (c('attendance-below-threshold')) parts.push(`${c('attendance-below-threshold')} below attendance`);
+      if (c('already-issued')) parts.push(`${c('already-issued')} already had one`);
+      if (n('failed')) parts.push(`${n('failed')} FAILED — check logs`);
+      showToast(parts.join(' · ')+'.', n('failed')?'#c0392b':'#284157');
       btn.textContent='Done';
+      loadSessions();
     } catch (e) { showToast('Error: '+e.message,'#c0392b'); btn.disabled=false; btn.textContent='Issue Certs'; }
   }
+
+  /* ── Series (multi-part course → one certificate) ── */
+  async function loadSeries() {
+    try {
+      const r=await fetch(`${API}/series`,{headers:{'Authorization':'Bearer '+token}});
+      if (r.ok) { const d=await r.json(); seriesList=d.series||[]; }
+    } catch { /* series optional — page still works */ }
+  }
+  function seriesPartOf(s) {
+    if (s&&s.seriesPart) return s.seriesPart;
+    const m=/\bPart\s+(\d+)\b/i.exec((s&&s.title)||''); return m?Number(m[1]):null;
+  }
+  function seriesBadge(s) {
+    if (!s.seriesId) return '';
+    const sr=seriesList.find(x=>x._id===String(s.seriesId));
+    const p=seriesPartOf(s);
+    return `<button type="button" onclick="openSeriesModal('${String(s.seriesId)}')" class="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium" style="background:#F3E6C8;color:#8B6914;" title="Series settings"><i class="fas fa-layer-group text-[10px]"></i> ${p?'Part '+p+' · ':''}${escHtml(sr?(sr.certificateTitle||sr.title):'Series')}${sr&&sr.totalCeuHours?' · '+sr.totalCeuHours+' CE total':''}</button>`;
+  }
+  function fillSeriesSelect(selectedId, part) {
+    const sel=document.getElementById('seriesSelect');
+    sel.innerHTML='<option value="">Not part of a series</option>'+
+      seriesList.map(x=>`<option value="${x._id}">${escHtml(x.title)} — ${escHtml(x.ruleText)}</option>`).join('')+
+      '<option value="__new">+ New series…</option>';
+    if (selectedId && !seriesList.some(x=>x._id===String(selectedId))) {
+      // never let a failed series load silently unlink a session on save
+      sel.insertAdjacentHTML('afterbegin',`<option value="${escHtml(String(selectedId))}">Current series (details not loaded)</option>`);
+    }
+    sel.value=selectedId?String(selectedId):'';
+    document.getElementById('seriesPartInput').value=part||'';
+    onSeriesSelectChange(sel.value,true);
+  }
+  function onSeriesSelectChange(v, silent) {
+    const on=!!v&&v!=='__new';
+    document.getElementById('seriesPartInput').disabled=!on;
+    document.getElementById('seriesSettingsBtn').disabled=!on;
+    const sr=seriesList.find(x=>x._id===v);
+    document.getElementById('seriesHint').textContent = sr
+      ? `One certificate (${sr.totalCeuHours||'sum of parts'} CE) after ${sr.ruleText}. Set which part this session is.`
+      : 'Leave as “Not part of a series” for a stand-alone session.';
+    if (v==='__new' && !silent) openSeriesModal(null);
+  }
+  function openSeriesModal(id) {
+    _seriesModalId=id&&id!=='__new'?id:null;
+    const sr=_seriesModalId?seriesList.find(x=>x._id===_seriesModalId):null;
+    document.getElementById('seriesModalTitle').textContent=sr?'Series settings':'New series';
+    document.getElementById('srTitle').value=sr?sr.title:'';
+    document.getElementById('srCertTitle').value=sr?sr.certificateTitle:'';
+    document.getElementById('srCe').value=sr?sr.totalCeuHours:0;
+    document.getElementById('srParts').value=sr?sr.completionRule.partsRequired:2;
+    const wd=sr?sr.completionRule.withinDays:3;
+    document.querySelector(`input[name="srRule"][value="${wd===null?'any':'window'}"]`).checked=true;
+    document.getElementById('srDays').value=wd===null?3:wd;
+    document.getElementById('srMembers').innerHTML=sr&&sr.sessions.length
+      ? '<div class="font-medium text-burgundy-800 mb-1">Sessions in this series</div>'+sr.sessions.map(m=>`<div>${m.part?'Part '+m.part:'<span class="text-red-600">No part #</span>'} · ${escHtml(m.title)} · ${new Date(m.scheduledStart).toLocaleDateString('en-US',{month:'short',day:'numeric'})} · ${escHtml(m.status)}</div>`).join('')
+      : '<div>No sessions linked yet. Link a session from its Edit screen (Multi-part series).</div>';
+    document.getElementById('srErr').classList.add('hidden');
+    document.getElementById('seriesModal').classList.remove('hidden');
+  }
+  function closeSeriesModal() {
+    document.getElementById('seriesModal').classList.add('hidden');
+    const sel=document.getElementById('seriesSelect');
+    if (sel&&sel.value==='__new') { sel.value=''; onSeriesSelectChange('',true); }
+  }
+  async function saveSeries() {
+    const err=document.getElementById('srErr'); err.classList.add('hidden');
+    const any=document.querySelector('input[name="srRule"]:checked').value==='any';
+    const body={
+      title:document.getElementById('srTitle').value.trim(),
+      certificateTitle:document.getElementById('srCertTitle').value.trim(),
+      totalCeuHours:parseFloat(document.getElementById('srCe').value||'0'),
+      partsRequired:parseInt(document.getElementById('srParts').value||'2',10),
+      withinDays:any?null:parseFloat(document.getElementById('srDays').value||'0')
+    };
+    if (!body.title) { err.textContent='Give the series a name.'; err.classList.remove('hidden'); return; }
+    const btn=document.getElementById('srSave'); btn.disabled=true;
+    try {
+      const r=await fetch(_seriesModalId?`${API}/series/${_seriesModalId}`:`${API}/series`,{method:_seriesModalId?'PATCH':'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify(body)});
+      const d=await r.json();
+      if (!r.ok) throw new Error(d.error||'Save failed');
+      await loadSeries();
+      const sel=document.getElementById('seriesSelect');
+      const keepPart=document.getElementById('seriesPartInput').value;
+      if (document.getElementById('createModal').classList.contains('open')) fillSeriesSelect(d.series._id, keepPart);
+      document.getElementById('seriesModal').classList.add('hidden');
+      showToast('Series saved — '+d.series.ruleText+'.','#284157');
+      renderTable();
+    } catch(e) { err.textContent=e.message; err.classList.remove('hidden'); }
+    finally { btn.disabled=false; }
+  }
+  document.getElementById('seriesModal').addEventListener('click',e=>{ if(e.target===document.getElementById('seriesModal')) closeSeriesModal(); });
 
   /* ── Toggle publish (single) ── */
   async function togglePublish(id, currentlyPublished) {
@@ -797,7 +955,8 @@
   function openEditModal(id) {
     const s = sessions.find(x=>x._id===id);
     if (!s) return;
-    editMode=true; editSessionId=id;
+    editMode=true; editSessionId=id; dupSourceId=null;
+    document.getElementById('dupInfo').classList.add('hidden');
     document.getElementById('createForm').reset();
     document.getElementById('formError').classList.add('hidden');
     document.getElementById('createModalTitle').textContent = 'Edit Session';
@@ -817,6 +976,8 @@
     document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
     document.getElementById('isPublished').checked = !!s.isPublished;
     form.registrationCutoffDays.value = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
+    fillSeriesSelect(s.seriesId, seriesPartOf(s));
+    document.getElementById('dupRunRow').classList.add('hidden');
     document.getElementById('createModal').classList.add('open');
   }
 
@@ -827,11 +988,45 @@
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
   }
 
-  /* ── Duplicate session ── */
+  /* ── Duplicate session ──
+     Server copies EVERYTHING that makes the session run (POST /:id/duplicate →
+     services/sessionCopyService.js): run of show with speaker scripts, breaks
+     (moved with the new start), handouts, clips, description, settings — and
+     creates the video room. Only pick the new date/time. */
+  function _dupSummaryHtml(s) {
+    const ag=s.agenda||[], withScript=ag.filter(a=>(a.script||'').trim()).length;
+    const items=[
+      ag.length ? `Run of show — ${ag.length} segment${ag.length===1?'':'s'}${withScript?` (${withScript} with speaker scripts)`:''}` : 'Run of show — none (this session has no segments)',
+      `${(s.breaks||[]).length} break${(s.breaks||[]).length===1?'':'s'} (moved with the new start time)`,
+      `${(s.handouts||[]).length} handout${(s.handouts||[]).length===1?'':'s'} · ${(s.clips||[]).length} clip${(s.clips||[]).length===1?'':'s'}`,
+      'Description, presenter, price, CE hours, and settings'
+    ];
+    return '<div class="font-semibold mb-1"><i class="fas fa-copy text-[10px]"></i> Copied automatically from “'+escHtml(s.title)+'”:</div>'+
+      '<ul class="list-disc ml-5 space-y-0.5">'+items.map(i=>'<li>'+escHtml(i)+'</li>').join('')+'</ul>'+
+      '<div class="mt-1" style="color:#57534e;">Pick the new start time — the end time fills in to match. Registrants, attendance, and recordings are never copied. A new video room is created.</div>';
+  }
+  function _suggestDupSlug() {
+    const s=sessions.find(x=>x._id===dupSourceId); if(!s||dupSlugTouched) return;
+    const form=document.getElementById('createForm');
+    const v=form.scheduledStart.value; if(!v) return;
+    const d=new Date(v); if(isNaN(d)) return;
+    const mon=d.toLocaleString('en-US',{month:'short'}).toLowerCase();
+    const base=String(s.slug||'session').replace(/-copy$/,'').replace(/-(wk\d+.*|[a-z]{3}\d{1,2}(-\d{4})?)$/,'');
+    form.slug.value=(base+'-'+mon+d.getDate()).slice(0,80);
+  }
+  function _onDupStartChange() {
+    if(!dupSourceId) return;
+    const s=sessions.find(x=>x._id===dupSourceId); if(!s) return;
+    const form=document.getElementById('createForm');
+    const v=form.scheduledStart.value; if(!v) return;
+    const lenMs=new Date(s.scheduledEnd)-new Date(s.scheduledStart);
+    form.scheduledEnd.value=_isoToLocal(new Date(new Date(v).getTime()+lenMs).toISOString());
+    _suggestDupSlug();
+  }
   function duplicateSession(id) {
     const s = sessions.find(x=>x._id===id);
     if (!s) return;
-    editMode=false; editSessionId=null;
+    editMode=false; editSessionId=null; dupSourceId=id; dupSlugTouched=false;
     document.getElementById('createForm').reset();
     document.getElementById('formError').classList.add('hidden');
     document.getElementById('createModalTitle').textContent = 'Duplicate Session';
@@ -839,18 +1034,35 @@
     document.getElementById('submitBtn').disabled=false;
     handleSessionTypeChange(s.sessionType||'live-course');
     const form = document.getElementById('createForm');
-    form.title.value = s.title+' (Copy)';
-    form.slug.value = s.slug+'-copy';
+    form.title.value = s.title||'';
+    form.slug.value = (s.slug||'session')+'-copy';
     form.sessionType.value = s.sessionType||'live-course';
     form.ceuHours.value = s.ceuHours||1;
     form.capacity.value = s.capacity||50;
     form.price.value = s.price||0;
     form.attendanceThresholdPct.value = s.attendanceThresholdPct||90;
+    form.registrationCutoffDays.value = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
     document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
     document.getElementById('isPublished').checked = false;
+    const info=document.getElementById('dupInfo'); info.innerHTML=_dupSummaryHtml(s); info.classList.remove('hidden');
+    fillSeriesSelect(s.seriesId, seriesPartOf(s));
+    const sr=s.seriesId?seriesList.find(x=>x._id===String(s.seriesId)):null;
+    const runRow=document.getElementById('dupRunRow');
+    if (sr && sr.completionRule.partsRequired>1) {
+      const p=seriesPartOf(s);
+      const others=[]; for(let i=1;i<=sr.completionRule.partsRequired;i++) if(i!==p) others.push('Part '+i);
+      document.getElementById('dupRunText').textContent=`Creates ${others.join(' and ')} at the same spacing as the original (e.g. Part 1 Monday → Part 2 Tuesday), all linked to “${sr.certificateTitle||sr.title}” for one ${sr.totalCeuHours||'combined'} CE certificate.`;
+      document.getElementById('dupIncludeRun').checked=true;
+      runRow.classList.remove('hidden');
+    } else runRow.classList.add('hidden');
     document.getElementById('createModal').classList.add('open');
-    showToast('Set a new date and slug, then save.', '#284157');
+    form.scheduledStart.focus();
   }
+  document.addEventListener('DOMContentLoaded',()=>{
+    const form=document.getElementById('createForm'); if(!form) return;
+    form.scheduledStart.addEventListener('change',_onDupStartChange);
+    form.slug.addEventListener('input',()=>{ if(dupSourceId) dupSlugTouched=true; });
+  });
 
   /* ── Cancel session ── */
   async function cancelSession(id) {
@@ -892,18 +1104,22 @@
 
   /* ── Create / Edit modal ── */
   function openCreateModal() {
-    editMode=false; editSessionId=null;
+    editMode=false; editSessionId=null; dupSourceId=null;
+    document.getElementById('dupInfo').classList.add('hidden');
     document.getElementById('createForm').reset();
     document.getElementById('formError').classList.add('hidden');
     document.getElementById('createModalTitle').textContent='Create Live Session';
     document.getElementById('submitLabel').textContent='Create Session';
     document.getElementById('submitBtn').disabled=false;
     handleSessionTypeChange('live-course');
+    fillSeriesSelect(null, '');
+    document.getElementById('dupRunRow').classList.add('hidden');
     document.getElementById('createModal').classList.add('open');
   }
   function closeCreateModal() {
     document.getElementById('createModal').classList.remove('open');
-    editMode=false; editSessionId=null;
+    editMode=false; editSessionId=null; dupSourceId=null;
+    document.getElementById('dupInfo').classList.add('hidden');
     document.getElementById('createModalTitle').textContent='Create Live Session';
     document.getElementById('submitLabel').textContent='Create Session';
   }
@@ -913,6 +1129,7 @@
     const recChk=document.getElementById('recordingEnabled');
     const ceuRow=document.getElementById('ceuHoursRow');
     recRow.classList.toggle('hidden',isSupervision);
+    const serRow=document.getElementById('seriesRow'); if (serRow) serRow.classList.toggle('hidden',isSupervision);
     if (isSupervision) { recChk.checked=false; recChk.disabled=true; ceuRow.classList.add('hidden'); }
     else { recChk.disabled=false; ceuRow.classList.remove('hidden'); }
   }
@@ -936,10 +1153,20 @@
       isPublished:!!fd.get('isPublished'),
       registrationCutoffDays:parseInt(fd.get('registrationCutoffDays')||'7',10)
     };
+    const sid=document.getElementById('seriesSelect').value;
+    payload.seriesId = sid&&sid!=='__new' ? sid : null;
+    if (payload.seriesId) {
+      const pn=parseInt(document.getElementById('seriesPartInput').value,10);
+      if (!Number.isInteger(pn)||pn<1) { errEl.textContent='Enter which part of the series this session is (Part #).'; errEl.classList.remove('hidden'); btn.disabled=false; lbl.textContent=editMode?'Save Changes':(dupSourceId?'Create Duplicate':'Create Session'); return; }
+      payload.seriesPart=pn;
+    }
+    if (!editMode && dupSourceId && !document.getElementById('dupRunRow').classList.contains('hidden')) payload.includeRun=document.getElementById('dupIncludeRun').checked;
+    const isDup=!editMode&&!!dupSourceId;
     try {
       const controller=new AbortController();
-      const tid=setTimeout(()=>controller.abort(),15000);
-      const r=await fetch(editMode?`${API}/${editSessionId}`:API, {
+      const tid=setTimeout(()=>controller.abort(),20000);
+      const url=editMode?`${API}/${editSessionId}`:(isDup?`${API}/${dupSourceId}/duplicate`:API);
+      const r=await fetch(url, {
         method:editMode?'PATCH':'POST',
         headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},
         body:JSON.stringify(payload), signal:controller.signal
@@ -948,11 +1175,18 @@
       const d=await r.json();
       if (!r.ok) throw new Error(d.error||(editMode?'Update failed':'Creation failed'));
       closeCreateModal();
-      showToast(editMode?'Session updated!':'Session created and Whereby room provisioned!', '#284157');
+      if (isDup&&d.summary) {
+        const sm=d.summary;
+        const extra=(d.alsoCreated||[]).map(x=>`Part ${x.part} (${new Date(x.scheduledStart).toLocaleString('en-US',{weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})})`);
+        showToast(`Duplicate created with video room · ${sm.segments} run-of-show segments (${sm.scripted} scripted) · ${sm.breaks} break(s) · ${sm.handouts} handout(s)`+(extra.length?` · also created ${extra.join(', ')}`:''), '#284157');
+        if (d.warnings&&d.warnings.length) setTimeout(()=>showToast(d.warnings.join(' '),'#8B6914'),3500);
+      } else {
+        showToast(editMode?'Session updated!':'Session created and Whereby room provisioned!', '#284157');
+      }
       loadSessions();
     } catch (e) {
       errEl.textContent=e.message; errEl.classList.remove('hidden');
-      btn.disabled=false; lbl.textContent=editMode?'Save Changes':'Create Session';
+      btn.disabled=false; lbl.textContent=editMode?'Save Changes':(isDup?'Create Duplicate':'Create Session');
     }
   }
 
@@ -992,7 +1226,70 @@
   function closeRunOfShowModal() { document.getElementById('runOfShowModal').style.display='none'; rosSession=null; rosAgenda=[]; }
   function renderRunOfShow() {
     document.getElementById('rosTitle').textContent='Run of Show — '+(rosSession?.title||'');
-    renderRosClips(); renderRosImport(); renderRosAgenda();
+    renderRosCopy(); renderRosClips(); renderRosImport(); renderRosAgenda();
+  }
+  /* Copy run of show from other sessions (POST /:id/agenda/copy-from) — scripts included */
+  function _rosCopyCandidates() {
+    return sessions
+      .filter(x=>x._id!==rosSession._id && x.sessionType==='live-course' && (x.agenda||[]).length)
+      .sort((a,b)=>new Date(b.scheduledStart)-new Date(a.scheduledStart));
+  }
+  function _rosCopyLabel(x) {
+    const d=new Date(x.scheduledStart).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const ag=x.agenda||[], sc=ag.filter(a=>(a.script||'').trim()).length;
+    const min=ag.filter(a=>a.type!=='break').reduce((n,a)=>n+(Number(a.durationMin)||0),0);
+    return `${x.title} · ${d} · ${ag.length} seg · ${min} min${sc?` · ${sc} scripted`:''}`;
+  }
+  function renderRosCopy() {
+    const el=document.getElementById('rosCopySection');
+    if (rosReadOnly() || rosSession.status!=='scheduled') { el.innerHTML=''; return; }
+    const cands=_rosCopyCandidates();
+    if (!cands.length) { el.innerHTML=''; return; }
+    const opts=cands.map(x=>`<option value="${x._id}">${escHtml(_rosCopyLabel(x))}</option>`).join('');
+    const has=(rosSession.agenda||[]).length;
+    el.innerHTML=`<div class="rounded-lg border px-4 py-3" style="background:#EEF4EF;border-color:#cfe0d3;">
+      <h3 class="font-display text-lg font-semibold text-burgundy-900 mb-1"><i class="fas fa-copy text-sm"></i> Copy run of show from another session</h3>
+      <p class="text-xs text-forest-600 mb-2">Brings over every segment with its speaker script. Pick a second session to run its segments right after (for example Part 1, then Part 2).</p>
+      <div class="space-y-2">
+        <select id="rosCopySrc1" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white"><option value="">— choose a session —</option>${opts}</select>
+        <select id="rosCopySrc2" class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-sm bg-white"><option value="">(optional) then add segments from…</option>${opts}</select>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 mt-2">
+        <div class="text-xs text-forest-700">${has?`<label class="mr-3"><input type="radio" name="rosCopyMode" value="replace" checked> Replace the ${has} current segment${has===1?'':'s'}</label><label><input type="radio" name="rosCopyMode" value="append"> Add after them</label>`:'<input type="hidden" name="rosCopyMode" value="replace">This session has no segments yet.'}</div>
+        <button onclick="copyRunOfShow()" id="rosCopyBtn" class="px-4 py-2 rounded-lg bg-burgundy-800 hover:bg-burgundy-900 text-white text-sm font-semibold flex items-center gap-2"><i class="fas fa-copy text-xs"></i> Copy run of show</button>
+      </div>
+    </div>`;
+  }
+  async function copyRunOfShow() {
+    const a=document.getElementById('rosCopySrc1').value, b=document.getElementById('rosCopySrc2').value;
+    if (!a) { showToast('Choose a session to copy from.','#c0392b'); return; }
+    const ids=[a]; if (b&&b!==a) ids.push(b);
+    const modeEl=document.querySelector('input[name="rosCopyMode"]:checked')||document.querySelector('input[name="rosCopyMode"]');
+    const mode=modeEl?modeEl.value:'replace';
+    const src=ids.map(id=>sessions.find(x=>x._id===id));
+    const segs=src.reduce((n,x)=>n+(x.agenda||[]).filter(g=>g.type!=='break').length,0);
+    const mins=src.reduce((n,x)=>n+(x.agenda||[]).filter(g=>g.type!=='break').reduce((m,g)=>m+(Number(g.durationMin)||0),0),0);
+    const winMin=Math.round((new Date(rosSession.scheduledEnd)-new Date(rosSession.scheduledStart))/60000)-(rosSession.breaks||[]).reduce((n,x)=>n+(x.durationMin||0),0);
+    const cur=(rosSession.agenda||[]).length;
+    if (!confirm(`Copy ${segs} segment(s), ${mins} min, from:
+• ${src.map(x=>_rosCopyLabel(x)).join('\n• ')}
+
+${cur?(mode==='replace'?`This REPLACES the ${cur} current segment(s).`:`Added after the ${cur} current segment(s).`):''}
+This session has ${winMin} instructional min.
+Any unsaved edits below will be lost.`)) return;
+    const btn=document.getElementById('rosCopyBtn'); btn.disabled=true;
+    try {
+      const r=await fetch(`${API}/${rosSession._id}/agenda/copy-from`,{method:'POST',headers:{'Authorization':'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({sourceIds:ids,mode})});
+      const d=await r.json();
+      if (!r.ok) throw new Error(d.error||'Copy failed');
+      const i=sessions.findIndex(x=>x._id===rosSession._id);
+      if (i!==-1) sessions[i]=d.session;
+      openRunOfShowModal(d.session._id);
+      const st=d.stats||{};
+      showToast(`Run of show copied · ${st.segments} segments (${st.scripted} scripted) · ${st.agendaMin} of ${st.instructionalMin} min`,'#284157');
+      if (d.warnings&&d.warnings.length) setTimeout(()=>showToast(d.warnings.join(' '),'#8B6914'),3500);
+      renderTable();
+    } catch(e) { showToast('Error: '+e.message,'#c0392b'); btn.disabled=false; }
   }
   function renderRosImport() {
     const ro=rosReadOnly();

@@ -23,7 +23,13 @@ const registrantSchema = new mongoose.Schema({
   paid: { type: Boolean, default: false },
   stripeCheckoutSessionId: String,
   phoneOptIn: { type: Boolean, default: false },  // SMS consent for session logistics
-  remindersEnabled: { type: Boolean, default: true }  // mirrors UserCredential.remindersEnabled
+  remindersEnabled: { type: Boolean, default: true },  // mirrors UserCredential.remindersEnabled
+  // Multi-part (series) courses: which no-refund/no-reschedule policy text the
+  // learner accepted, and when (services/multiPartPolicy.js). Dispute evidence.
+  policyAck: {
+    version: String,
+    acceptedAt: Date
+  }
 }, { _id: false });
 
 const attendanceSchema = new mongoose.Schema({
@@ -88,6 +94,13 @@ const liveSessionSchema = new mongoose.Schema({
     enum: ['individual', 'group', 'triadic', null],
     default: null
   },
+
+  // Series linkage (multi-part course → one certificate). See models/SessionSeries.js.
+  // These values already exist on the Ethics Table Talk documents; declaring them
+  // lets PATCH/duplicate keep them instead of silently dropping them.
+  seriesId: { type: mongoose.Schema.Types.ObjectId, ref: 'SessionSeries', index: true, default: null },
+  seriesPart: { type: Number, min: 1, max: 20 },   // which part of the series this session is
+  cohortKey: String,                              // legacy pairing key (informational)
 
   // Scheduling
   scheduledStart: { type: Date, required: true, index: true },
