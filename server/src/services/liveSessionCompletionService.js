@@ -64,11 +64,14 @@ export async function issueLiveSessionCertificates(liveSessionId) {
     const userId = registrant.user;
     try {
       if (!session.meetsAttendanceThreshold(userId)) {
+        // Must report the same pair meetsAttendanceThreshold() judged on —
+        // adjusted minutes over instructional minutes — or the skip reason
+        // contradicts the decision. Matches the multi-part path below.
         skipped.push({
           userId,
           reason: 'attendance-below-threshold',
-          attendedMin: session.attendedMinutes(userId),
-          requiredMin: Math.round(session.scheduledDurationMin() * session.attendanceThresholdPct / 100)
+          attendedMin: session.attendedMinutesAdjusted(userId),
+          requiredMin: Math.ceil(session.instructionalMinutes() * session.attendanceThresholdPct / 100)
         });
         continue;
       }
