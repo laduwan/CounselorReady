@@ -908,15 +908,49 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         if (session.metadata?.type === 'live-session') {
           const { liveSessionId, userId: liveUserId } = session.metadata;
           const LiveSession = (await import('../models/LiveSession.js')).default;
-          const live = await LiveSession.findById(liveSessionId);
-          if (live && !live.isRegistered(liveUserId)) {
-            live.registrants.push({
-              user: liveUserId,
-              paid: true,
-              stripeCheckoutSessionId: session.id
-            });
-            await live.save();
+          // Capacity is checked when the checkout is CREATED, not when it
+          // completes, so N buyers can each be quoted the same last seat and
+          // all pay. The seat is honoured either way — refusing money already
+          // captured is worse than one over-capacity room — but the write is
+          // now atomic (a document-wide save() let concurrent fulfilments
+          // clobber each other's registrants) and an overbook raises an alert
+          // instead of passing silently.
+          // To refuse + refund instead, replace the `overbooked` alert below
+          // with a stripe.refunds.create({ payment_intent: session.payment_intent }).
+          const live = await LiveSession.findOneAndUpdate(
+            { _id: liveSessionId, 'registrants.user': { $ne: liveUserId } },
+            {
+              $push: {
+                registrants: {
+                  user: liveUserId,
+                  registeredAt: new Date(),
+                  paid: true,
+                  stripeCheckoutSessionId: session.id
+                }
+              }
+            },
+            { new: true }
+          );
+          if (live) {
             logger.info({ liveSessionId, userId: liveUserId, requestId: req.requestId }, 'Live session seat purchased');
+
+            const seatCount = live.registrants.length;
+            const cap = live.capacity ?? 50;
+            if (seatCount > cap) {
+              logger.warn({ liveSessionId, seatCount, capacity: cap, userId: liveUserId, requestId: req.requestId },
+                'Live session overbooked by paid fulfilment');
+              try {
+                const { sendAdminAlert } = await import('../services/adminNotificationService.js');
+                await sendAdminAlert('live_session_overbooked', {
+                  sessionTitle: live.title,
+                  capacity: cap,
+                  registered: seatCount,
+                  overBy: seatCount - cap
+                });
+              } catch (alertErr) {
+                logger.error({ err: alertErr, liveSessionId, requestId: req.requestId }, 'Overbook alert failed');
+              }
+            }
 
             // Admin SMS notification (fire-and-forget)
             (async () => {

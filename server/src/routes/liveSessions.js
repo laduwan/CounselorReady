@@ -345,7 +345,12 @@ router.patch('/series/:seriesId', protect, requireAdmin, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const session = await findByIdOrSlug(req.params.id);
-    if (!session || (!session.isPublished && session.sessionType === 'live-course')) {
+    // Unpublished means unpublished for every sessionType. The previous form
+    // (&& sessionType === 'live-course') left draft supervision metadata —
+    // title, presenter, schedule, capacity, price — readable by anyone holding
+    // the id or slug, while /register (below) already rejected all types when
+    // unpublished. This aligns the two.
+    if (!session || !session.isPublished) {
       return res.status(404).json({ error: 'Session not found' });
     }
     res.json({ session: session.toPublicJSON() });
@@ -457,12 +462,48 @@ router.post('/:id/register', protect, async (req, res) => {
       return res.json({ checkoutUrl: checkout.url });
     }
 
-    session.registrants.push({
-      user: req.user._id,
-      paid: false,
-      ...(multiPart ? { policyAck: { version: POLICY_VERSION, acceptedAt: ackAt } } : {})
-    });
-    await session.save();
+    // The capacity and duplicate checks above are a fast path for good error
+    // messages, not the enforcement itself. Same lost-update problem the poll
+    // vote handler solves below: read-check-then-save let two requests both
+    // pass the capacity check on the last seat and both push a registrant.
+    // Here the $size guard and the $push commit together or not at all, so a
+    // session can never hold more registrants than its capacity.
+    // $ifNull mirrors the schema default (50) that Mongoose already applies on
+    // hydration, so docs written before `capacity` existed behave unchanged.
+    const seated = await LiveSession.findOneAndUpdate(
+      {
+        _id: session._id,
+        isPublished: true,
+        status: { $in: ['scheduled', 'live'] },
+        'registrants.user': { $ne: req.user._id },
+        $expr: { $lt: [{ $size: '$registrants' }, { $ifNull: ['$capacity', 50] }] }
+      },
+      {
+        $push: {
+          registrants: {
+            user: req.user._id,
+            registeredAt: new Date(),
+            paid: false,
+            ...(multiPart ? { policyAck: { version: POLICY_VERSION, acceptedAt: ackAt } } : {})
+          }
+        }
+      },
+      { new: true }
+    ).select('registrants capacity status');
+
+    if (!seated) {
+      // Nothing matched — re-read to say which guard rejected it.
+      const now = await LiveSession.findById(session._id)
+        .select('registrants capacity status isPublished').lean();
+      const uid = req.user._id.toString();
+      if (now && (now.registrants || []).some(r => r.user && r.user.toString() === uid)) {
+        return res.json({ registered: true, message: 'Already registered.' });
+      }
+      if (now && (now.registrants || []).length >= (now.capacity ?? 50)) {
+        return res.status(400).json({ error: 'This session is full.' });
+      }
+      return res.status(400).json({ error: 'Registration is closed for this session.' });
+    }
     res.json({ registered: true });
 
     // Admin notification — fire-and-forget, never blocks the response
@@ -938,21 +979,40 @@ router.get('/:id/attendance', protect, requireAdmin, async (req, res) => {
       .populate('attendance.user', 'email profile.firstName profile.lastName');
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
+    // attendancePct and qualifies must be the SAME ratio. They were not:
+    // the percentage used attendedMinutes()/scheduledDurationMin() (breaks
+    // counted on both sides) while qualifies used meetsAttendanceThreshold(),
+    // i.e. attendedMinutesAdjusted()/instructionalMinutes() (breaks clipped on
+    // both sides). An admin could see "82%" next to "does not qualify" with no
+    // way to reconcile them. The NBCC denominator is instructional minutes, so
+    // the report now reports that ratio. attendedMinutesRaw is kept alongside
+    // for reconciliation against the Whereby join/leave log.
     const scheduledMin = session.scheduledDurationMin();
+    const instructionalMin = session.instructionalMinutes();
+    const requiredMin = Math.ceil(instructionalMin * session.attendanceThresholdPct / 100);
     const report = session.registrants.map(r => {
-      const attended = session.attendedMinutes(r.user._id);
+      const attended = session.attendedMinutesAdjusted(r.user._id);
       return {
         user: r.user,
         registeredAt: r.registeredAt,
         paid: r.paid,
         attendedMinutes: attended,
-        attendancePct: scheduledMin ? Math.round((attended / scheduledMin) * 100) : 0,
+        attendedMinutesRaw: session.attendedMinutes(r.user._id),
+        requiredMinutes: requiredMin,
+        attendancePct: Math.round((attended / instructionalMin) * 100),
         qualifies: session.meetsAttendanceThreshold(r.user._id)
       };
     });
 
     res.json({
-      session: { title: session.title, sessionType: session.sessionType, scheduledMin, thresholdPct: session.attendanceThresholdPct },
+      session: {
+        title: session.title,
+        sessionType: session.sessionType,
+        scheduledMin,
+        instructionalMin,
+        requiredMin,
+        thresholdPct: session.attendanceThresholdPct
+      },
       report,
       rawAttendance: session.attendance
     });
