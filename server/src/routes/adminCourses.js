@@ -559,6 +559,7 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
       isPinned: isPinned || false,
       dismissible: dismissible !== false,
       sendEmail: sendEmail || false,
+      startDate: new Date(),
       endDate: endDate || null,
       ceChangeDetails: ceChangeDetails || null,
       createdBy: req.user._id,
