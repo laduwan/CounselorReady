@@ -107,7 +107,20 @@ const liveSessionSchema = new mongoose.Schema({
   scheduledEnd: { type: Date, required: true },
   timezone: { type: String, default: 'America/New_York' },
 
-  // Whereby room (URLs are NEVER sent to unauthenticated clients;
+  // Which video provider backs this session.
+  //   'whereby' — supervision and legacy live-course sessions (HIPAA BAA on Whereby account)
+  //   'daily'   — live-course sessions (Daily.co Prebuilt; whiteboard + breakout observation)
+  // Defaults to 'whereby' so every session created before this field existed is unaffected.
+  roomProvider: {
+    type: String,
+    enum: ['whereby', 'daily'],
+    default: 'whereby'
+  },
+
+  // Room metadata — field is reused for both providers.
+  // For Whereby: meetingId is the Whereby meeting UUID.
+  // For Daily:   meetingId stores the Daily room id, roomName is the Daily room name.
+  // (URLs are NEVER sent to unauthenticated clients;
   // viewerRoomUrl/hostRoomUrl only leave the server via the gated /join endpoint)
   whereby: {
     meetingId: { type: String, index: true },
@@ -339,6 +352,7 @@ liveSessionSchema.methods.toPublicJSON = function () {
     seatsRemaining: Math.max(0, this.capacity - this.registrants.length),
     price: this.price,
     status: this.status,
+    roomProvider: this.roomProvider || 'whereby',
     recordingEnabled: this.recordingEnabled,
     handouts: (this.handouts || []).map(h => ({
       _id: h._id, title: h.title, fileType: h.fileType, availability: h.availability

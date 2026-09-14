@@ -37,6 +37,21 @@
 
 import LiveSession from '../models/LiveSession.js';
 import { createMeeting, deleteMeeting, getMeeting } from './wherebyService.js';
+import { createRoom, deleteRoom, getRoom } from './dailyService.js';
+
+/** Route room operations to the correct provider based on session.roomProvider. */
+function isDaily(session) {
+  return (session.roomProvider || 'whereby') === 'daily';
+}
+async function provisionRoom(session) {
+  return isDaily(session) ? createRoom(session) : createMeeting(session);
+}
+async function removeRoom(session) {
+  return isDaily(session) ? deleteRoom(session.whereby?.roomName) : deleteMeeting(session.whereby?.meetingId);
+}
+async function fetchRoom(session) {
+  return isDaily(session) ? getRoom(session.whereby?.roomName) : getMeeting(session.whereby?.meetingId);
+}
 import { sendAdminAlert } from './adminNotificationService.js';
 
 const LOG = '[LiveRoom]';
@@ -63,7 +78,7 @@ export async function inspectRoom(session, { remote = false } = {}) {
   if (!w.meetingId || !w.viewerRoomUrl) return { state: 'missing', detail: 'no room on the session record' };
 
   if (remote) {
-    const m = await getMeeting(w.meetingId);
+    const m = await fetchRoom(session);
     if (!m) return { state: 'missing', detail: `room ${w.meetingId} no longer exists at Whereby` };
     const window = { start: new Date(m.startDate), end: new Date(m.endDate) };
     if (!covers(window.start, window.end, session)) {
@@ -115,7 +130,7 @@ export async function ensureRoom(session, { remote = false, dryRun = false } = {
   if (dryRun) return { action: `would-${verb}`, state: insp.state, detail: insp.detail, oldMeetingId: oldId };
 
   const plain = typeof session.toObject === 'function' ? session.toObject() : session;
-  const room = await createMeeting(plain);
+  const room = await provisionRoom(plain);
 
   // Switch only if nobody else switched it first.
   const guard = oldId
@@ -125,14 +140,14 @@ export async function ensureRoom(session, { remote = false, dryRun = false } = {
 
   if (!res.modifiedCount) {
     // Lost the race — another request already fixed it. Use theirs, drop ours.
-    await deleteMeeting(room.meetingId).catch(() => {});
+    await removeRoom({ ...plain, roomProvider: plain.roomProvider, whereby: room }).catch(() => {});
     const fresh = await LiveSession.findById(session._id).select('whereby').lean();
     if (fresh?.whereby) session.whereby = fresh.whereby;
     return { action: 'none', state: 'ok', detail: 'fixed concurrently by another request', meetingId: fresh?.whereby?.meetingId };
   }
 
   session.whereby = room;
-  if (oldId) await deleteMeeting(oldId).catch(err => console.warn(`${LOG} old room ${oldId} not deleted: ${err.message}`));
+  if (oldId) await removeRoom(session).catch(err => console.warn(`${LOG} old room ${oldId} not deleted: ${err.message}`));
 
   console.warn(`${LOG} ${verb}d room for ${session.slug}: ${insp.detail} → new room ${room.meetingId}`);
   return { action: insp.state === 'missing' ? 'created' : 'regenerated', state: insp.state, detail: insp.detail, meetingId: room.meetingId, oldMeetingId: oldId };
