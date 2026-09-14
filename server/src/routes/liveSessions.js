@@ -1072,7 +1072,7 @@ router.post('/:id/issue-certificates', protect, requireAdmin, async (req, res) =
 router.get('/:id/live-state', protect, async (req, res) => {
   try {
     const session = await LiveSession.findById(req.params.id)
-      .select('liveState agenda status scheduledStart scheduledEnd registrants')
+      .select('liveState agenda status scheduledStart scheduledEnd registrants sessionType')
       .lean();
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
@@ -1113,10 +1113,18 @@ router.get('/:id/live-state', protect, async (req, res) => {
         outLiveState = { ...outLiveState, poll: undefined };
       }
     }
+    // helpRequests: admins see the full list; attendees see only their own pending request
+    // (so they know it was received) but never see other people's.
+    const rawHelp = session.liveState?.helpRequests || [];
+    const helpRequests = isAdmin
+      ? rawHelp
+      : rawHelp.filter(r => r.userId && r.userId.toString() === req.user._id.toString());
+
     res.json({
       liveState: outLiveState,
       currentSegment: seg,
-      status: session.status
+      status: session.status,
+      helpRequests
     });
   } catch (err) {
     console.error('[live] live-state:', err.message);
@@ -1352,6 +1360,75 @@ router.post('/:id/live-state/poll/vote', protect, async (req, res) => {
   } catch (err) {
     console.error('[live] poll/vote:', err.message);
     res.status(500).json({ error: 'Failed to record vote' });
+  }
+});
+
+// POST /:id/live-state/help/request — attendee raises a help request during breakout
+router.post('/:id/live-state/help/request', protect, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const isRegistered = session.registrants.some(
+      r => r.user && r.user.toString() === req.user._id.toString()
+    );
+    if (!isRegistered && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Not registered for this session.' });
+    }
+
+    const currentSeg = session.agenda?.[session.liveState?.currentSegment ?? 0];
+    if (!currentSeg || currentSeg.type !== 'breakout') {
+      return res.status(400).json({ error: 'Help requests are only available during breakout segments.' });
+    }
+
+    // Dedupe — one pending request per user at a time
+    const alreadyPending = (session.liveState?.helpRequests || []).some(
+      r => r.userId && r.userId.toString() === req.user._id.toString()
+    );
+    if (alreadyPending) return res.json({ queued: true });
+
+    const displayName = `${req.user.profile?.firstName || ''} ${req.user.profile?.lastName || ''}`.trim() || req.user.email;
+
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      helpRequests: [
+        ...(session.liveState?.helpRequests || []),
+        { userId: req.user._id, displayName, requestedAt: new Date() }
+      ]
+    };
+    session.markModified('liveState');
+    await session.save();
+
+    res.json({ queued: true });
+  } catch (err) {
+    console.error('[live] help/request:', err.message);
+    res.status(500).json({ error: 'Failed to submit help request' });
+  }
+});
+
+// POST /:id/live-state/help/dismiss — host clears all (or one) help requests
+router.post('/:id/live-state/help/dismiss', protect, requireAdmin, async (req, res) => {
+  try {
+    const session = await LiveSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const { userId } = req.body; // optional — if provided, dismiss only that user's request
+    const existing = session.liveState?.helpRequests || [];
+    const updated = userId
+      ? existing.filter(r => !r.userId || r.userId.toString() !== userId)
+      : [];
+
+    session.liveState = {
+      ...(session.liveState?.toObject?.() ?? session.liveState ?? {}),
+      helpRequests: updated
+    };
+    session.markModified('liveState');
+    await session.save();
+
+    res.json({ dismissed: true, remaining: updated.length });
+  } catch (err) {
+    console.error('[live] help/dismiss:', err.message);
+    res.status(500).json({ error: 'Failed to dismiss help request' });
   }
 });
 
