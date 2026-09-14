@@ -24,6 +24,17 @@ import LiveSession from '../models/LiveSession.js';
 import User from '../models/User.js';
 import { protect, requireAdmin } from '../middleware/auth.js';
 import { createMeeting, deleteMeeting } from '../services/wherebyService.js';
+import { createRoom, deleteRoom, mintToken } from '../services/dailyService.js';
+
+/** Route room provisioning to the correct provider. */
+function provisionRoom(session) {
+  return (session.roomProvider || 'whereby') === 'daily' ? createRoom(session) : createMeeting(session);
+}
+function removeRoom(session) {
+  return (session.roomProvider || 'whereby') === 'daily'
+    ? deleteRoom(session.whereby?.roomName)
+    : deleteMeeting(session.whereby?.meetingId);
+}
 import { issueLiveSessionCertificates } from '../services/liveSessionCompletionService.js';
 import { sendAdminAlert } from '../services/adminNotificationService.js';
 import { planBreaks } from '../services/breakPlanner.js';
@@ -609,11 +620,33 @@ router.post('/:id/join', protect, async (req, res) => {
     }
 
     const displayName = `${(req.user.profile?.firstName || '')} ${(req.user.profile?.lastName || '')}`.trim() || req.user.email;
-    const baseUrl = isAdmin ? (session.whereby?.hostRoomUrl || session.whereby?.viewerRoomUrl) : session.whereby?.viewerRoomUrl;
-    if (!baseUrl) return res.status(503).json({ error: 'The video room could not be set up. Please try again in a minute — the host has been notified.' });
+    const provider = session.roomProvider || 'whereby';
 
-    const sep = baseUrl.includes('?') ? '&' : '?';
-    const roomUrl = `${baseUrl}${sep}displayName=${encodeURIComponent(displayName)}`;
+    let roomUrl;
+    if (provider === 'daily') {
+      const baseUrl = isAdmin
+        ? (session.whereby?.hostRoomUrl || session.whereby?.viewerRoomUrl)
+        : session.whereby?.viewerRoomUrl;
+      if (!baseUrl) return res.status(503).json({ error: 'The video room could not be set up. Please try again in a minute — the host has been notified.' });
+
+      if (isAdmin) {
+        roomUrl = baseUrl;
+      } else {
+        try {
+          const token = await mintToken(session.whereby.roomName, { user_name: displayName });
+          const sep = baseUrl.includes('?') ? '&' : '?';
+          roomUrl = `${baseUrl}${sep}t=${token}`;
+        } catch (tokenErr) {
+          console.error('[live] Daily token mint failed:', tokenErr.message);
+          return res.status(503).json({ error: 'Could not set up your room token. Please try again.' });
+        }
+      }
+    } else {
+      const baseUrl = isAdmin ? (session.whereby?.hostRoomUrl || session.whereby?.viewerRoomUrl) : session.whereby?.viewerRoomUrl;
+      if (!baseUrl) return res.status(503).json({ error: 'The video room could not be set up. Please try again in a minute — the host has been notified.' });
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      roomUrl = `${baseUrl}${sep}displayName=${encodeURIComponent(displayName)}`;
+    }
 
     if (session.status === 'scheduled' && now >= opens) {
       session.status = 'live';
@@ -707,7 +740,7 @@ router.post('/', protect, requireAdmin, async (req, res) => {
     const session = new LiveSession(req.body);
     await session.validate(); // run hard-lock invariants BEFORE provisioning the room
 
-    const room = await createMeeting(session);
+    const room = await provisionRoom(session);
     session.whereby = room;
     await session.save();
 
@@ -749,7 +782,7 @@ router.delete('/:id', protect, requireAdmin, async (req, res) => {
     const session = await LiveSession.findById(req.params.id);
     if (!session) return res.status(404).json({ error: 'Session not found' });
 
-    await deleteMeeting(session.whereby?.meetingId);
+    await removeRoom(session);
     session.status = 'cancelled';
     session.isPublished = false;
     await session.save();
@@ -798,7 +831,7 @@ router.post('/:id/duplicate', protect, requireAdmin, async (req, res) => {
 
     const session = new LiveSession(doc);
     await session.validate(); // hard-lock invariants BEFORE provisioning the room
-    session.whereby = await createMeeting(session);
+    session.whereby = await provisionRoom(session);
     await session.save();
 
     const alsoCreated = [];
@@ -811,7 +844,7 @@ router.post('/:id/duplicate', protect, requireAdmin, async (req, res) => {
         const built = buildDuplicate(mate, { slug, scheduledStart: mateStart, isPublished: !!req.body?.isPublished });
         const m = new LiveSession(built.doc);
         await m.validate();
-        m.whereby = await createMeeting(m);
+        m.whereby = await provisionRoom(m);
         await m.save();
         alsoCreated.push({ _id: m._id, title: m.title, slug: m.slug, part: partOf(m), scheduledStart: m.scheduledStart, summary: built.summary });
         warnings.push(...built.warnings.map(w => `${m.title}: ${w}`));
@@ -926,7 +959,7 @@ router.put('/:id/breaks', protect, requireAdmin, async (req, res) => {
     if (plan.endChanged && session.status === 'scheduled') {
       $set.scheduledEnd = plan.scheduledEnd;
       try {
-        newRoom = await createMeeting({ ...session.toObject(), scheduledEnd: plan.scheduledEnd });
+        newRoom = await provisionRoom({ ...session.toObject(), scheduledEnd: plan.scheduledEnd });
       } catch (err) {
         console.error('[live] breaks: room create failed:', err.message);
         return res.status(502).json({ error: `Video room could not be re-created for the new end time — nothing was saved. (${err.message})` });
@@ -947,7 +980,7 @@ router.put('/:id/breaks', protect, requireAdmin, async (req, res) => {
 
     const warnings = [...plan.warnings];
     if (newRoom && oldMeetingId) {
-      try { await deleteMeeting(oldMeetingId); }
+      try { await removeRoom(session); }
       catch (err) { warnings.push(`New room is live; old room ${oldMeetingId} could not be deleted (${err.message}).`); }
     }
 
