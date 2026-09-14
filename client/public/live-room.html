@@ -54,6 +54,8 @@
           <div id="nowCard" class="hidden">
             <h3>Now</h3>
             <div id="breakoutBadge">Breakout</div>
+            <button id="helpBtn" class="hidden text-xs px-3 py-1.5 rounded-lg font-semibold mt-2" style="background:#EEF4EF;color:#2F5A3C;border:1px solid #cfe0d3;" onclick="requestHelp()">🙋 Need help?</button>
+            <p id="helpSent" class="hidden text-xs mt-1" style="color:#2F5A3C;">✓ Host notified — hang tight.</p>
             <div id="nowSegTitle"></div>
             <div id="nowPrompt"></div>
             <div id="nowCountdown"></div>
@@ -242,6 +244,7 @@
     let syncInterval = null;
     let lastClipIndex = null;
     let currentSessionId = null;
+    let helpRequested = false;
 
     function startSyncLoop(sessionId) {
       currentSessionId = sessionId;
@@ -256,6 +259,12 @@
         if (!res.ok) return;
         const data = await res.json();
         updateNowCard(data.currentSegment, data.liveState);
+        if (data.helpRequests && data.helpRequests.length && !helpRequested) {
+          // User's own request is in the list — show confirmation
+          helpRequested = true;
+          document.getElementById('helpBtn').classList.add('hidden');
+          document.getElementById('helpSent').classList.remove('hidden');
+        }
         updateWatchParty(data.liveState);
         renderPoll(data.liveState?.poll);
         if (data.status === 'completed' && syncInterval) {
@@ -277,7 +286,17 @@
       promptEl.style.display = prompt ? '' : 'none';
 
       const badge = document.getElementById('breakoutBadge');
-      badge.style.display = seg.type === 'breakout' ? '' : 'none';
+      const isBreakout = seg.type === 'breakout';
+      badge.style.display = isBreakout ? '' : 'none';
+      const helpBtn = document.getElementById('helpBtn');
+      const helpSent = document.getElementById('helpSent');
+      if (!isBreakout) {
+        helpBtn.classList.add('hidden');
+        helpSent.classList.add('hidden');
+        helpRequested = false;
+      } else if (!helpRequested) {
+        helpBtn.classList.remove('hidden');
+      }
 
       // Countdown
       const countEl = document.getElementById('nowCountdown');
@@ -314,6 +333,21 @@
         ).join('');
       }
     }
+    async function requestHelp() {
+      if (helpRequested) return;
+      try {
+        const r = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/help/request`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+        });
+        if (r.ok) {
+          helpRequested = true;
+          document.getElementById('helpBtn').classList.add('hidden');
+          document.getElementById('helpSent').classList.remove('hidden');
+        }
+      } catch (e) { console.warn('[help] request failed:', e.message); }
+    }
+
     async function votePoll(idx, openedAt) {
       try {
         const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(currentSessionId)}/live-state/poll/vote`, {

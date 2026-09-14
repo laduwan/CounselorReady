@@ -125,6 +125,14 @@
             </div>
           </div>
 
+          <div id="helpPanel" class="hidden rounded-xl border p-4 mb-3" style="background:#FFF7F7;border-color:#FCCACA;">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold" style="color:#991B1B;">🙋 Help Requests</span>
+              <button onclick="dismissAllHelp()" class="text-xs px-2 py-1 rounded-lg" style="background:#991B1B;color:#fff;">Dismiss all</button>
+            </div>
+            <ul id="helpList" class="flex flex-col gap-1 text-sm" style="color:#7F1D1D;"></ul>
+          </div>
+
           <!-- Live poll -->
           <div class="bg-white rounded-xl border p-4 mt-4" style="border-color:#EDE9E3;">
             <h2 class="font-display text-lg font-bold mb-2" style="color:#284157;">Live poll</h2>
@@ -162,6 +170,7 @@
     let attendanceTimer = null;
     let elapsedTimer = null;
     let hostClipLoaded = null;
+    let helpTimer = null;
 
     function gateMsg(html) { const g = document.getElementById('gate'); g.innerHTML = html; g.classList.remove('hidden'); }
 
@@ -237,6 +246,10 @@
         // Poll attendance count every 10s
         pollAttendance();
         attendanceTimer = setInterval(pollAttendance, 10000);
+
+        // Poll live-state every 10s for pending breakout help requests
+        pollHelpRequests();
+        helpTimer = setInterval(pollHelpRequests, 10000);
 
         // Wire transport
         document.getElementById('playBtn').addEventListener('click', broadcastPlay);
@@ -386,6 +399,54 @@
           document.getElementById('attendeeCount').textContent = `${live} live`;
         }
       } catch {}
+    }
+
+    async function pollHelpRequests() {
+      try {
+        const res = await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          renderHelpRequests(data.helpRequests || []);
+        }
+      } catch {}
+    }
+
+    function renderHelpRequests(requests) {
+      const panel = document.getElementById('helpPanel');
+      const list = document.getElementById('helpList');
+      if (!requests || requests.length === 0) {
+        panel.classList.add('hidden');
+        list.innerHTML = '';
+        return;
+      }
+      panel.classList.remove('hidden');
+      list.innerHTML = requests.map(r =>
+        `<li class="flex items-center justify-between">
+          <span>${esc(r.displayName || 'A participant')}</span>
+          <button onclick="dismissHelp('${r.userId}')" class="text-xs px-2 py-0.5 rounded" style="background:#fee2e2;color:#991B1B;border:1px solid #FCCACA;">Dismiss</button>
+        </li>`
+      ).join('');
+    }
+
+    async function dismissHelp(userId) {
+      await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/help/dismiss`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(userId ? { userId } : {})
+      });
+      pollHelpRequests();
+    }
+
+    async function dismissAllHelp() {
+      await fetch(`${API_URL}/api/live-sessions/${encodeURIComponent(session._id)}/live-state/help/dismiss`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+      });
+      document.getElementById('helpPanel').classList.add('hidden');
+      document.getElementById('helpList').innerHTML = '';
     }
 
     function startElapsedTimer() {

@@ -272,6 +272,14 @@
         </div>
         <p id="seriesHint" class="text-xs text-forest-500 mt-1">Leave as “Not part of a series” for a stand-alone session.</p>
       </div>
+      <div id="providerRow">
+        <label class="block text-sm font-medium text-burgundy-800 mb-1">Video Provider</label>
+        <select name="roomProvider" id="roomProviderSelect" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-burgundy-500 bg-white">
+          <option value="whereby">Whereby (supervision-safe, HIPAA BAA)</option>
+          <option value="daily">Daily.co (whiteboard, breakout observation)</option>
+        </select>
+        <p class="text-xs text-forest-500 mt-1">Daily is for live-course sessions only. Supervision always uses Whereby.</p>
+      </div>
       <div id="recordingRow">
         <label class="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" name="recordingEnabled" id="recordingEnabled" class="w-4 h-4 accent-burgundy-700">
@@ -974,6 +982,7 @@
     form.price.value = s.price||0;
     form.attendanceThresholdPct.value = s.attendanceThresholdPct||90;
     document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+    document.getElementById('roomProviderSelect').value = s.roomProvider || 'whereby';
     document.getElementById('isPublished').checked = !!s.isPublished;
     form.registrationCutoffDays.value = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
     fillSeriesSelect(s.seriesId, seriesPartOf(s));
@@ -1043,6 +1052,7 @@
     form.attendanceThresholdPct.value = s.attendanceThresholdPct||90;
     form.registrationCutoffDays.value = typeof s.registrationCutoffDays === 'number' ? s.registrationCutoffDays : 7;
     document.getElementById('recordingEnabled').checked = !!s.recordingEnabled;
+    document.getElementById('roomProviderSelect').value = s.roomProvider || 'whereby';
     document.getElementById('isPublished').checked = false;
     const info=document.getElementById('dupInfo'); info.innerHTML=_dupSummaryHtml(s); info.classList.remove('hidden');
     fillSeriesSelect(s.seriesId, seriesPartOf(s));
@@ -1130,8 +1140,15 @@
     const ceuRow=document.getElementById('ceuHoursRow');
     recRow.classList.toggle('hidden',isSupervision);
     const serRow=document.getElementById('seriesRow'); if (serRow) serRow.classList.toggle('hidden',isSupervision);
-    if (isSupervision) { recChk.checked=false; recChk.disabled=true; ceuRow.classList.add('hidden'); }
-    else { recChk.disabled=false; ceuRow.classList.remove('hidden'); }
+    const provRow=document.getElementById('providerRow');
+    const provSel=document.getElementById('roomProviderSelect');
+    if (isSupervision) {
+      recChk.checked=false; recChk.disabled=true; ceuRow.classList.add('hidden');
+      if (provRow) { provRow.classList.add('hidden'); provSel.value='whereby'; }
+    } else {
+      recChk.disabled=false; ceuRow.classList.remove('hidden');
+      if (provRow) provRow.classList.remove('hidden');
+    }
   }
   async function submitCreate(evt) {
     evt.preventDefault();
@@ -1150,6 +1167,7 @@
       price:parseFloat(fd.get('price')||'0'),
       attendanceThresholdPct:parseInt(fd.get('attendanceThresholdPct')||'90',10),
       recordingEnabled:fd.get('sessionType')==='supervision' ? false : !!fd.get('recordingEnabled'),
+      roomProvider:fd.get('sessionType')==='supervision' ? 'whereby' : (fd.get('roomProvider')||'whereby'),
       isPublished:!!fd.get('isPublished'),
       registrationCutoffDays:parseInt(fd.get('registrationCutoffDays')||'7',10)
     };
@@ -1181,7 +1199,8 @@
         showToast(`Duplicate created with video room · ${sm.segments} run-of-show segments (${sm.scripted} scripted) · ${sm.breaks} break(s) · ${sm.handouts} handout(s)`+(extra.length?` · also created ${extra.join(', ')}`:''), '#284157');
         if (d.warnings&&d.warnings.length) setTimeout(()=>showToast(d.warnings.join(' '),'#8B6914'),3500);
       } else {
-        showToast(editMode?'Session updated!':'Session created and Whereby room provisioned!', '#284157');
+        const providerLabel = payload.roomProvider === 'daily' ? 'Daily.co' : 'Whereby';
+        showToast(editMode?'Session updated!':`Session created — ${providerLabel} room provisioned!`, '#284157');
       }
       loadSessions();
     } catch (e) {

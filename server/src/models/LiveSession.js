@@ -197,6 +197,14 @@ const liveSessionSchema = new mongoose.Schema({
       positionSec: { type: Number, default: 0 },
       stateUpdatedAt: Date
     },
+    // Breakout help requests — attendees can flag they need help during breakout segments.
+    // Cleared by the host via POST /:id/live-state/help/dismiss.
+    helpRequests: [{
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+      displayName: String,
+      requestedAt: { type: Date, default: Date.now }
+    }],
+
     poll: {
       active: { type: Boolean, default: false },
       question: String,
