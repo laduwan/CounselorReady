@@ -408,4 +408,15 @@
       'currency': 'USD'
     });
   };
+
+  // ── ADMIN BROADCAST POPUP ────────────────────────────────
+  // Loaded here because every static page already pulls in this file; the popup
+  // itself lives in /js/cr-broadcast.js so nothing else in the nav depends on it.
+  if (T && !document.getElementById('cr-broadcast-js')) {
+    const bc = document.createElement('script');
+    bc.id = 'cr-broadcast-js';
+    bc.src = '/js/cr-broadcast.js';
+    bc.async = true;
+    document.head.appendChild(bc);
+  }
 })();
