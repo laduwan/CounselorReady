@@ -585,6 +585,43 @@ router.patch('/:id/reminders', protect, async (req, res) => {
   }
 });
 
+// POST /api/live-sessions/:id/registrants — admin manually adds a participant (comps, walk-ins)
+// Body: { userId, paid? } — paid defaults to true; no Stripe session is recorded.
+router.post('/:id/registrants', protect, requireAdmin, async (req, res) => {
+  try {
+    const { userId, paid } = req.body;
+    if (!userId) return res.status(400).json({ error: 'userId is required.' });
+
+    const session = await findByIdOrSlug(req.params.id);
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (session.registrants.some(r => r.user && r.user.toString() === userId)) {
+      return res.status(409).json({ error: 'User is already registered for this session.' });
+    }
+
+    session.registrants.push({
+      user: user._id,
+      paid: paid !== false,
+      phoneOptIn: false,
+      remindersEnabled: true,
+      registeredAt: new Date()
+    });
+    await session.save();
+
+    const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    res.status(201).json({
+      message: `${name} added to ${session.title}`,
+      registrantCount: session.registrants.length
+    });
+  } catch (err) {
+    console.error('[live] admin add registrant:', err.message);
+    res.status(500).json({ error: 'Failed to add registrant' });
+  }
+});
+
 // POST /api/live-sessions/:id/join — mint the room URL (the access-control gate)
 router.post('/:id/join', protect, async (req, res) => {
   try {
