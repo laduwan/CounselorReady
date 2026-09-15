@@ -22,18 +22,25 @@
   // The course player runs its own timing and engagement tracking; do not interrupt it.
   if (/\/interactive-course(-legacy)?\.html/.test(location.pathname)) return;
 
-  // No FontAwesome classes here on purpose: only 23 of the 76 pages that load the
-  // shared nav also load FontAwesome, and an <i class="fas ..."> on the rest renders
-  // as nothing — which would make the close X an invisible button. The accent color
-  // and the label carry the type instead.
-  var TYPE_CONFIG = {
-    urgent:      { bg: '#FEF2F2', accent: '#991B1B', label: 'Urgent Notice' },
-    maintenance: { bg: '#FFFBEB', accent: '#92400E', label: 'Maintenance' },
-    info:        { bg: '#F5F0F2', accent: '#6B1D34', label: 'Announcement' },
-    update:      { bg: '#F0FDF4', accent: '#4A7C59', label: 'Update' },
-    promotion:   { bg: '#FAF5FF', accent: '#5B21B6', label: 'Promotion' },
-    ce_change:   { bg: '#FFFBEB', accent: '#92400E', label: 'CE Requirement Change' },
-    new_course:  { bg: '#F0FDF4', accent: '#4A7C59', label: 'New Course' }
+  // Brand burgundy for every type, matching the admin broadcast modal header and
+  // the --cr-burgundy token ("H1, logo, CTAs, alerts"). The type is carried by the
+  // label text, not by a per-type color: the platform palette is burgundy/forest/
+  // stone and no other palette belongs on these pages.
+  //
+  // No FontAwesome classes here on purpose either: only 23 of the 76 pages that load
+  // the shared nav also load FontAwesome, and an <i class="fas ..."> on the rest
+  // renders as nothing — which would make the close X an invisible button.
+  var ACCENT = '#6B1D34';  // --cr-burgundy-800, PRIMARY brand
+  var BODY_BG = '#FFFFFF';
+
+  var TYPE_LABELS = {
+    urgent:      'Urgent Notice',
+    maintenance: 'Maintenance',
+    info:        'Announcement',
+    update:      'Update',
+    promotion:   'Promotion',
+    ce_change:   'CE Requirement Change',
+    new_course:  'New Course'
   };
 
   var queue = [];
@@ -77,7 +84,7 @@
   function render() {
     var a = queue[index];
     if (!a) return;
-    var cfg = TYPE_CONFIG[a.type] || TYPE_CONFIG.info;
+    var label = TYPE_LABELS[a.type] || TYPE_LABELS.info;
     var multiple = queue.length > 1;
     var isLast = index >= queue.length - 1;
 
@@ -86,9 +93,9 @@
         'style="width:100%;max-width:32rem;background:#fff;border-radius:12px;outline:none;' +
         'box-shadow:0 25px 50px -12px rgba(0,0,0,.25);overflow:hidden">' +
         '<div style="padding:16px 24px;display:flex;align-items:center;gap:12px;' +
-          'background:' + cfg.accent + ';color:#fff">' +
+          'background:' + ACCENT + ';color:#fff">' +
           '<div style="flex:1;min-width:0">' +
-            '<p style="margin:0;font-size:13px;opacity:.9">' + esc(cfg.label) + '</p>' +
+            '<p style="margin:0;font-size:13px;opacity:.9">' + esc(label) + '</p>' +
             '<h2 id="crBcTitle" style="margin:0;font-size:18px;font-weight:700;' +
               'font-family:\'Cormorant Garamond\',Georgia,serif;overflow:hidden;' +
               'text-overflow:ellipsis;white-space:nowrap">' + esc(a.title) + '</h2>' +
@@ -97,7 +104,7 @@
             'style="flex-shrink:0;background:none;border:0;color:#fff;cursor:pointer;' +
             'padding:0 6px;border-radius:999px;font-size:24px;line-height:1">&times;</button>' +
         '</div>' +
-        '<div style="padding:20px 24px;background:' + cfg.bg + '">' +
+        '<div style="padding:20px 24px;background:' + BODY_BG + '">' +
           '<div style="margin:0;color:#374151;line-height:1.6;font-family:\'Lato\',sans-serif;' +
             'max-height:50vh;overflow-y:auto">' + (a.message || '') + '</div>' +
         '</div>' +
@@ -107,7 +114,7 @@
             (multiple ? (index + 1) + ' of ' + queue.length : '') + '</span>' +
           '<button type="button" data-cr-close ' +
             'style="padding:6px 16px;font-size:14px;font-weight:600;border:0;border-radius:8px;' +
-            'cursor:pointer;color:#fff;background:' + cfg.accent + '">' +
+            'cursor:pointer;color:#fff;background:' + ACCENT + '">' +
             (isLast ? 'Got it' : 'Next') + '</button>' +
         '</div>' +
       '</div>';
