@@ -930,11 +930,76 @@
             <tbody>${rows}</tbody>
           </table>
         </div>` : '<p class="text-center py-6 text-forest-500">No registrants yet.</p>'}
+
+        <div id="addParticipantPanel" class="hidden mt-4 p-4 rounded-lg border border-gray-200 bg-stone-50">
+          <div class="flex gap-2">
+            <input id="addParticipantSearch" type="text" placeholder="Search by name or email…"
+              class="flex-1 px-3 py-1.5 rounded-lg border border-gray-300 text-sm"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();searchUsersForRegistrant('${id}');}">
+            <button onclick="searchUsersForRegistrant('${id}')" class="px-3 py-1.5 rounded-lg bg-burgundy-800 text-white text-xs font-medium">Search</button>
+          </div>
+          <label class="flex items-center gap-1.5 mt-2 text-xs text-forest-700">
+            <input id="addParticipantPaid" type="checkbox" checked> Mark as paid
+          </label>
+          <div id="addParticipantResults" class="mt-2 max-h-48 overflow-y-auto"></div>
+        </div>
+
         <div class="mt-4 flex justify-between items-center">
-          ${regs.length ? '<button onclick="exportRegistrantsCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 font-medium"><i class="fas fa-download text-xs"></i> Download CSV</button>' : '<span></span>'}
+          <div class="flex gap-2">
+            ${regs.length ? '<button onclick="exportRegistrantsCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 font-medium"><i class="fas fa-download text-xs"></i> Download CSV</button>' : ''}
+            <button onclick="document.getElementById('addParticipantPanel').classList.toggle('hidden')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-forest-700 hover:bg-stone-50 font-medium"><i class="fas fa-user-plus text-xs"></i> Add Participant</button>
+          </div>
           <button onclick="closeInfoModal()" class="px-4 py-2 rounded-lg bg-burgundy-800 text-white text-sm font-medium">Close</button>
         </div>
       </div>`);
+  }
+
+  /* ── Add participant: search users (GET /api/admin/users?search=) ── */
+  async function searchUsersForRegistrant(sessionId) {
+    const q = document.getElementById('addParticipantSearch').value.trim();
+    const results = document.getElementById('addParticipantResults');
+    if (!q) { results.innerHTML = ''; return; }
+    results.innerHTML = '<p class="text-xs text-forest-500 py-2">Searching…</p>';
+    try {
+      const r = await fetch(`${API_URL}/api/admin/users?search=${encodeURIComponent(q)}&limit=8`, { headers:{'Authorization':'Bearer '+token} });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error||'Search failed');
+      const users = d.users || [];
+      if (!users.length) { results.innerHTML = '<p class="text-xs text-forest-500 py-2">No matching users.</p>'; return; }
+      const already = new Set(_lastRegistrants.map(reg => (reg.user?._id||reg.user||reg.userId||'').toString()));
+      results.innerHTML = users.map(u => {
+        const name = `${u.profile?.firstName||''} ${u.profile?.lastName||''}`.trim() || u.email;
+        const isReg = already.has(String(u._id));
+        return `<div class="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0">
+          <div class="text-sm"><span class="font-medium">${escHtml(name)}</span> <span class="text-forest-500">${escHtml(u.email)}</span></div>
+          ${isReg
+            ? '<span class="text-xs text-forest-500">Registered</span>'
+            : `<button onclick="addRegistrantToSession('${sessionId}','${u._id}')" class="px-2.5 py-1 rounded-lg bg-forest-700 text-white text-xs font-medium">Add</button>`}
+        </div>`;
+      }).join('');
+    } catch (e) {
+      results.innerHTML = `<p class="text-xs text-red-600 py-2">${escHtml(e.message)}</p>`;
+    }
+  }
+
+  /* ── Add participant: admin manually registers a user (POST /:id/registrants) ── */
+  async function addRegistrantToSession(sessionId, userId) {
+    const paid = document.getElementById('addParticipantPaid').checked;
+    try {
+      const r = await fetch(`${API}/${sessionId}/registrants`, {
+        method: 'POST',
+        headers: {'Authorization':'Bearer '+token,'Content-Type':'application/json'},
+        body: JSON.stringify({ userId, paid })
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error||'Failed to add participant');
+      showToast(d.message||'Participant added.', '#284157');
+      await loadSessions();
+      openRegistrantsModal(sessionId);
+      document.getElementById('addParticipantPanel').classList.remove('hidden');
+    } catch (e) {
+      showToast('Error: '+e.message, '#c0392b');
+    }
   }
 
   /* ── Export registrants CSV ── */
