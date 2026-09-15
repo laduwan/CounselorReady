@@ -585,7 +585,8 @@ router.patch('/:id/reminders', protect, async (req, res) => {
   }
 });
 
-// POST /api/live-sessions/:id/registrants — admin manually adds a participant (comp / walk-in)
+// POST /api/live-sessions/:id/registrants — admin manually adds a participant (comps, walk-ins)
+// Body: { userId, paid? } — paid defaults to true; no Stripe session is recorded.
 router.post('/:id/registrants', protect, requireAdmin, async (req, res) => {
   try {
     const { userId, paid } = req.body;

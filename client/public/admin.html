@@ -410,6 +410,18 @@
               </select>
             </div>
           </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1">Start date</label>
+              <input id="bcStartDate" type="date" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+              <p class="text-xs text-stone-400 mt-1">When the banner goes live. Defaults to today.</p>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-stone-700 mb-1">End date <span class="font-normal text-stone-400">(optional)</span></label>
+              <input id="bcEndDate" type="date" class="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-burgundy-500 focus:border-burgundy-500 outline-none">
+              <p class="text-xs text-stone-400 mt-1">Leave blank to run until removed.</p>
+            </div>
+          </div>
           <div class="flex items-center gap-4">
             <label class="flex items-center gap-2 text-sm text-stone-600">
               <input id="bcPinned" type="checkbox" class="rounded border-stone-300 text-burgundy-600 focus:ring-burgundy-500"> Pin to top
@@ -418,6 +430,7 @@
               <input id="bcEmail" type="checkbox" class="rounded border-stone-300 text-burgundy-600 focus:ring-burgundy-500"> Send email
             </label>
           </div>
+          <p class="text-xs text-stone-400 -mt-2">Email goes out as soon as you send, unless the start date is in the future.</p>
           <div id="bcError" class="text-sm text-red-600 hidden"></div>
           <div id="bcSuccess" class="text-sm text-green-600 hidden"></div>
         </div>
@@ -502,6 +515,26 @@
     });
 
     // ── Broadcast Messenger ──
+
+    // A date input hands back "YYYY-MM-DD" with no timezone, and new Date() on
+    // that string parses it as UTC midnight. Build the dates locally instead so a
+    // broadcast starts on the admin's own morning and ends at the close of the
+    // end date, rather than shifting a day in either direction.
+    function bcLocalDate(value, endOfDay) {
+      if (!value) return null;
+      const [y, m, d] = value.split('-').map(Number);
+      if (!y || !m || !d) return null;
+      return endOfDay
+        ? new Date(y, m - 1, d, 23, 59, 59, 999)
+        : new Date(y, m - 1, d, 0, 0, 0, 0);
+    }
+
+    function bcTodayValue() {
+      const now = new Date();
+      const pad = n => String(n).padStart(2, '0');
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    }
+
     function openBroadcastModal() {
       const modal = document.getElementById('broadcastModal');
       modal.classList.remove('hidden');
@@ -510,6 +543,8 @@
       document.getElementById('bcMessage').value = '';
       document.getElementById('bcType').value = 'info';
       document.getElementById('bcAudience').value = 'all';
+      document.getElementById('bcStartDate').value = bcTodayValue();
+      document.getElementById('bcEndDate').value = '';
       document.getElementById('bcPinned').checked = false;
       document.getElementById('bcEmail').checked = false;
       document.getElementById('bcError').classList.add('hidden');
@@ -530,6 +565,8 @@
       const audience = document.getElementById('bcAudience').value;
       const isPinned = document.getElementById('bcPinned').checked;
       const sendEmail = document.getElementById('bcEmail').checked;
+      const startDateObj = bcLocalDate(document.getElementById('bcStartDate').value, false);
+      const endDateObj = bcLocalDate(document.getElementById('bcEndDate').value, true);
       const errEl = document.getElementById('bcError');
       const successEl = document.getElementById('bcSuccess');
       errEl.classList.add('hidden');
@@ -541,6 +578,15 @@
         return;
       }
 
+      if (endDateObj && startDateObj && endDateObj <= startDateObj) {
+        errEl.textContent = 'End date must be on or after the start date.';
+        errEl.classList.remove('hidden');
+        return;
+      }
+
+      const startDate = startDateObj ? startDateObj.toISOString() : null;
+      const endDate = endDateObj ? endDateObj.toISOString() : null;
+
       const btn = document.getElementById('bcSendBtn');
       btn.disabled = true;
       btn.textContent = 'Sending...';
@@ -549,14 +595,29 @@
         const res = await fetch(`${API_URL}/api/admin/broadcast`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ title, message, type, audience, isPinned, sendEmail })
+          body: JSON.stringify({ title, message, type, audience, isPinned, sendEmail, startDate, endDate })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Failed to send');
-        successEl.textContent = `Broadcast sent to ${data.affectedUsers || 'all'} users!`;
+
+        const parts = [`Broadcast created for ${data.affectedUsers || 'all'} users.`];
+        if (startDateObj && startDateObj > new Date()) {
+          parts.push(`Goes live ${startDateObj.toLocaleDateString()}.`);
+        }
+        if (endDateObj) {
+          parts.push(`Ends ${endDateObj.toLocaleDateString()}.`);
+        }
+        if (sendEmail) {
+          parts.push(data.emailStatus === 'deferred'
+            ? 'Email was not sent \u2014 future-dated broadcasts email only once they are live.'
+            : 'Email is going out now.');
+        }
+        successEl.textContent = parts.join(' ');
         successEl.classList.remove('hidden');
         document.getElementById('bcTitle').value = '';
         document.getElementById('bcMessage').value = '';
+        document.getElementById('bcStartDate').value = bcTodayValue();
+        document.getElementById('bcEndDate').value = '';
       } catch (err) {
         errEl.textContent = err.message;
         errEl.classList.remove('hidden');
