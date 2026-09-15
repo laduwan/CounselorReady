@@ -611,7 +611,7 @@ router.post('/:id/registrants', protect, requireAdmin, async (req, res) => {
     });
     await session.save();
 
-    const name = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
+    const name = `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.email || '';
     res.status(201).json({
       message: `${name} added to ${session.title}`,
       registrantCount: session.registrants.length
