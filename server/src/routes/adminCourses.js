@@ -8,6 +8,7 @@ import express from 'express';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import Anthropic from '@anthropic-ai/sdk';
+import { Resend } from 'resend';
 import User from '../models/User.js';
 import Course from '../models/Course.js';
 import Certificate from '../models/Certificate.js';
@@ -53,6 +54,9 @@ const upload = multer({
 const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY
 }) : null;
+
+// Initialize Resend client (for broadcast emails)
+const resendClient = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // ============================================
 // CREDENTIAL TEMPLATE MONITORING ROUTES
@@ -515,6 +519,115 @@ router.get('/credential-export', protect, adminOnly, async (req, res) => {
 // BROADCAST / ANNOUNCEMENT ROUTES
 // ============================================
 
+// Badge colors used in the broadcast email, one per announcement type.
+const BROADCAST_EMAIL_STYLES = {
+  info:        { bg: '#e3f2fd', fg: '#1565c0' },
+  update:      { bg: '#e8f5e9', fg: '#2e7d32' },
+  maintenance: { bg: '#fff3e0', fg: '#ef6c00' },
+  promotion:   { bg: '#fce4ec', fg: '#c2185b' },
+  urgent:      { bg: '#ffebee', fg: '#c62828' },
+  ce_change:   { bg: '#e0f2f1', fg: '#00695c' },
+  new_course:  { bg: '#e8eaf6', fg: '#3949ab' }
+};
+
+// Resolve the users a broadcast should be emailed to, mirroring the targeting
+// that Announcement.getForUser applies to the on-screen banner.
+async function resolveBroadcastRecipients(announcement) {
+  if (announcement.audience === 'all') {
+    return User.find({}).select('email');
+  }
+
+  if (announcement.audience === 'specific') {
+    return User.find({ _id: { $in: announcement.specificUsers || [] } }).select('email');
+  }
+
+  if (announcement.audience === 'by_credential') {
+    const query = {};
+    if (announcement.targetStates?.length) query.state = { $in: announcement.targetStates };
+    if (announcement.targetCredentials?.length) query.credentialCode = { $in: announcement.targetCredentials };
+    const userIds = await UserCredential.find(query).distinct('userId');
+    return User.find({ _id: { $in: userIds } }).select('email');
+  }
+
+  const planMap = {
+    free: ['free'],
+    professional: ['professional', 'monthly'],
+    vip: ['vip', 'annual_vip', 'lifetime']
+  };
+  return User.find({ 'subscription.plan': { $in: planMap[announcement.audience] || [] } }).select('email');
+}
+
+// Email a saved broadcast to its audience. Called detached from the request so a
+// large audience never times out the admin's POST. One failed address does not
+// abort the run, and emailSent only flips once at least one message went out.
+async function sendBroadcastEmails(announcement) {
+  if (!resendClient) {
+    console.warn('Broadcast email skipped: RESEND_API_KEY is not configured');
+    return { sent: 0, failed: 0, skipped: true };
+  }
+
+  const users = await resolveBroadcastRecipients(announcement);
+  const style = BROADCAST_EMAIL_STYLES[announcement.type] || BROADCAST_EMAIL_STYLES.info;
+  const typeLabel = String(announcement.type || 'info').replace(/_/g, ' ').toUpperCase();
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: 'Segoe UI', sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #8B2542, #6B1D34); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #fff; padding: 30px; border: 1px solid #e5e5e5; border-top: none; border-radius: 0 0 10px 10px; }
+        .type-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-bottom: 15px; background: ${style.bg}; color: ${style.fg}; }
+        .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>CounselorReady</h1>
+        </div>
+        <div class="content">
+          <span class="type-badge">${typeLabel}</span>
+          <h2>${announcement.title}</h2>
+          <div>${announcement.message}</div>
+        </div>
+        <div class="footer">
+          <p>&copy; ${new Date().getFullYear()} CounselorReady</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const user of users) {
+    if (!user.email) continue;
+    try {
+      await resendClient.emails.send({
+        from: 'CounselorReady <announcements@counselorready.com>',
+        to: user.email,
+        subject: `\u{1F4E2} ${announcement.title}`,
+        html
+      });
+      sent++;
+    } catch (err) {
+      failed++;
+      console.error(`Broadcast email failed for ${user.email}:`, err.message);
+    }
+  }
+
+  if (sent > 0) {
+    await Announcement.updateOne({ _id: announcement._id }, { $set: { emailSent: true } });
+  }
+
+  console.log(`Broadcast "${announcement.title}" emailed to ${sent} user(s), ${failed} failed`);
+  return { sent, failed, skipped: false };
+}
+
 // @route   POST /api/admin/broadcast
 // @desc    Create a broadcast announcement
 // @access  Admin only
@@ -530,6 +643,7 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
       isPinned,
       dismissible,
       sendEmail,
+      startDate,
       endDate,
       ceChangeDetails
     } = req.body;
@@ -546,7 +660,23 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
     };
     
     const config = typeConfig[type] || typeConfig.info;
-    
+
+    // Scheduling window. Announcement.getForUser only shows a broadcast while
+    // startDate <= now <= endDate, so startDate is when the banner goes live and
+    // endDate retires it on its own. Both arrive as ISO strings from the admin UI.
+    const start = startDate ? new Date(startDate) : new Date();
+    const end = endDate ? new Date(endDate) : null;
+
+    if (Number.isNaN(start.getTime())) {
+      return res.status(400).json({ error: 'Invalid start date' });
+    }
+    if (end && Number.isNaN(end.getTime())) {
+      return res.status(400).json({ error: 'Invalid end date' });
+    }
+    if (end && end <= start) {
+      return res.status(400).json({ error: 'End date must be after the start date' });
+    }
+
     const announcement = new Announcement({
       title,
       message,
@@ -559,8 +689,8 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
       isPinned: isPinned || false,
       dismissible: dismissible !== false,
       sendEmail: sendEmail || false,
-      startDate: new Date(),
-      endDate: endDate || null,
+      startDate: start,
+      endDate: end,
       ceChangeDetails: ceChangeDetails || null,
       createdBy: req.user._id,
       isActive: true
@@ -582,10 +712,25 @@ router.post('/broadcast', protect, adminOnly, async (req, res) => {
       affectedCount = creds.length;
     }
     
+    // Send the email now when the broadcast is already live. There is no job
+    // that sweeps pending announcement emails, so a future-dated broadcast keeps
+    // sendEmail/emailSent recorded and reports back that nothing was mailed yet.
+    let emailStatus = 'not_requested';
+    if (sendEmail) {
+      if (start <= new Date()) {
+        emailStatus = 'sending';
+        sendBroadcastEmails(announcement)
+          .catch(err => console.error('sendBroadcastEmails failed:', err));
+      } else {
+        emailStatus = 'deferred';
+      }
+    }
+
     res.status(201).json({
       message: 'Broadcast created successfully',
       announcement,
-      affectedUsers: affectedCount
+      affectedUsers: affectedCount,
+      emailStatus
     });
     
   } catch (error) {
